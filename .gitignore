@@ -1,0 +1,18 @@
+# Temporários e backups
+*.bak
+*.bak_*
+*.patch
+new_modern_styles.css
+base_working.html
+commit_base.html
+test_enc.txt
+screenshot_preview.png
+css2
+lz-string.min.js.download
+
+# Scripts de automação / scratch
+*.ps1
+test_script_*.js
+
+# Pastas de assets locais avulsas
+LOGOS DOS PARTIDOS/
