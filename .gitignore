@@ -1,18 +1,35 @@
-# Temporários e backups
+# Temporários, logs e testes
 *.bak
-*.bak_*
+*.bak*
 *.patch
+*.txt
+*.png
+*.json
+*.download
+css2
 new_modern_styles.css
 base_working.html
 commit_base.html
-test_enc.txt
-screenshot_preview.png
-css2
-lz-string.min.js.download
+edge_test_profile/
+test_*.html
+test_*.js
+diagnose_*.html
+build_geo_dataset.html
+generate_geo_all.html
+
+# Pastas locais e scratch legados
+LOGOS DOS PARTIDOS/
+geojson_ibge/
+assets_mapa/
+modulo_grande_abc_completo.js
+modulo_logic*.js
+novo_modulo_abc*.js
+mapas_visuais_*.js
 
 # Scripts de automação / scratch
 *.ps1
-test_script_*.js
 
-# Pastas de assets locais avulsas
-LOGOS DOS PARTIDOS/
+# Permitir scripts de build e fontes essenciais
+!build_clean_html.ps1
+!geo_abc_data.js
+!modulo_abc_logic.js
