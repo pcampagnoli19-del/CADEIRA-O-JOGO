@@ -465,7 +465,7 @@
       const vistaCur = mp.vista || "maua";
 
       const navCidades = `
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <div class="map-nav-scroll" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
           ${vistasABC.map(v => btn(v.rot, "mapvista", [v.id], "mini " + (vistaCur === v.id ? "confirma" : "branco"))).join("")}
           ${btn("Grande SP", "mapvista", ["gsp"], "mini " + (vistaCur === "gsp" ? "confirma" : "branco"))}
           ${btn("Estado de SP", "mapvista", ["sp"], "mini " + (vistaCur === "sp" ? "confirma" : "branco"))}
@@ -474,7 +474,7 @@
       `;
 
       const modoBtns = `
-        <div class="row" style="margin-bottom:8px">
+        <div class="map-modo-scroll row" style="margin-bottom:8px">
           ${btn("Minha Aprovação", "mapmodo", ["aprov"], "mini " + (mp.modo === "aprov" ? "corrige" : "branco"))}
           ${btn("Eleitorado", "mapmodo", ["el"], "mini " + (mp.modo === "el" ? "corrige" : "branco"))}
           ${btn("Tráfego Pago", "mapmodo", ["traf"], "mini " + (mp.modo === "traf" ? "corrige" : "branco"))}
@@ -647,11 +647,13 @@
 
       return `
         <div class="inicio">
-          <div class="urna-topo" style="position:relative">
-            <button class="b mini" data-a="toggleTema" title="Alternar Modo Escuro / Claro" style="position:absolute;top:10px;right:12px;z-index:20;border-radius:20px;padding:6px 14px;font-size:0.8rem;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.12);border:1px solid var(--linha);color:var(--tinta);display:inline-flex;align-items:center;gap:6px">
-              ${(document.documentElement.getAttribute("data-theme") || (typeof localStorage !== "undefined" && localStorage.getItem("cadeira_tema"))) === "dark" ? "☀️ Modo Claro" : "🌙 Modo Noturno"}
-            </button>
-            <div class="lcd lcd-big">
+          <div class="urna-topo" style="position:relative;display:flex;flex-direction:column;align-items:center">
+            <div style="width:100%;display:flex;justify-content:flex-end;margin-bottom:6px">
+              <button class="b mini" data-a="toggleTema" title="Alternar Modo Escuro / Claro" style="border-radius:20px;padding:5px 12px;font-size:0.8rem;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.12);border:1px solid var(--linha);color:var(--tinta);display:inline-flex;align-items:center;gap:6px">
+                ${(document.documentElement.getAttribute("data-theme") || (typeof localStorage !== "undefined" && localStorage.getItem("cadeira_tema"))) === "dark" ? "☀️ Modo Claro" : "🌙 Modo Noturno"}
+              </button>
+            </div>
+            <div class="lcd lcd-big" style="width:100%">
               <div class="lcd-linha">CADEIRA</div>
               <div class="lcd-sub">simulador de poder — universo do Grande ABC ao Planalto</div>
             </div>
@@ -774,7 +776,7 @@
                 "${inspObj.citacao}"
               </blockquote>
               <p class="txt" style="font-size:0.8rem;color:#cbd5e1;margin:6px 0">${inspObj.descricao}</p>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+              <div class="insp-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
                 <div style="background:rgba(34,197,94,0.1);padding:6px 8px;border-radius:6px;border:1px solid rgba(34,197,94,0.3)">
                   <div style="color:#22c55e;font-size:0.75rem;font-weight:bold">Vantagens Históricas:</div>
                   <ul style="margin:2px 0 0 14px;padding:0;font-size:0.72rem;color:#cbd5e1">
@@ -793,7 +795,7 @@
 
           <!-- BOTÃO PRINCIPAL DE INÍCIO -->
           <div style="margin-top:20px;text-align:center">
-            <button class="b confirma big" data-a="novo" style="font-size:1.15rem;padding:12px 24px;border-radius:10px;font-weight:bold;cursor:pointer">🏛️ Iniciar Carreira Política no Grande ABC</button>
+            <button class="b confirma big" data-a="novo" style="font-size:1.1rem;padding:14px 20px;border-radius:12px;font-weight:bold;cursor:pointer;width:100%;max-width:440px;box-sizing:border-box">🏛️ Iniciar Carreira Política no Grande ABC</button>
           </div>
         </div>
       `;
@@ -891,12 +893,12 @@
       const crachaInsp = `<span class="badge" title="Escola Política: ${esc(insp)}" style="background:rgba(56,189,248,0.15);border:1px solid #38bdf8;color:#38bdf8;font-weight:700">🏛️ ${esc(insp)}</span>`;
 
       const isDark = (document.documentElement.getAttribute("data-theme") || (typeof localStorage !== "undefined" && localStorage.getItem("cadeira_tema"))) === "dark";
-      const btnTema = `<button class="b mini" data-a="toggleTema" title="Alternar Modo Escuro / Claro" style="margin-left:auto;padding:3px 10px;border-radius:14px;font-size:0.75rem;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:var(--tinta,#f8fafc);display:inline-flex;align-items:center;gap:4px;flex-shrink:0">${isDark ? "☀️ Claro" : "🌙 Noturno"}</button>`;
+      const btnTema = `<button class="b mini tema-header-btn" data-a="toggleTema" title="Alternar Modo Escuro / Claro" style="margin-left:auto;padding:3px 8px;border-radius:14px;font-size:0.75rem;font-weight:bold;cursor:pointer;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:var(--tinta,#f8fafc);display:inline-flex;align-items:center;gap:4px;flex-shrink:0">${isDark ? "☀️ <span class='tema-label'>Claro</span>" : "🌙 <span class='tema-label'>Noturno</span>"}</button>`;
 
       if (h.includes('<span class="badges">')) {
         h = h.replace('<span class="badges">', `<span class="badges">${crachaTerr}${crachaProf}${crachaInsp}`);
       }
-      h = h.replace(/(<\/div>\s*<div class="chips2">)/, `${btnTema}$1`);
+      h = h.replace(/(<span class="dt">.*?<\/span>)/, `$1${btnTema}`);
       return h;
     };
   }
@@ -1114,6 +1116,211 @@
       return ok;
     };
   }
+
+  // 15. ESTILOS RESPONSIVOS MODERNOS PARA MOBILE (SMARTPHONES E TABLETS)
+  (function injetarEstilosMobile() {
+    if (document.getElementById("cadeira-mobile-responsive-css")) return;
+    const st = document.createElement("style");
+    st.id = "cadeira-mobile-responsive-css";
+    st.textContent = `
+      /* OTIMIZAÇÕES MOBILE GERAIS */
+      * { -webkit-tap-highlight-color: transparent; }
+      
+      @media (max-width: 680px) {
+        html, body {
+          overflow-x: hidden !important;
+          width: 100% !important;
+        }
+        #app {
+          padding-left: 10px !important;
+          padding-right: 10px !important;
+          padding-bottom: calc(140px + env(safe-area-inset-bottom, 16px)) !important;
+        }
+
+        /* Prevenir zoom forçado no iOS Safari em inputs/selects */
+        input[type="text"], input[type="search"], select, textarea {
+          font-size: 16px !important;
+        }
+
+        /* Formulários e Seletores em coluna única para não truncar texto */
+        .grid2 {
+          grid-template-columns: 1fr !important;
+          gap: 10px !important;
+        }
+
+        /* Topo da Urna na Tela Inicial */
+        .urna-topo {
+          padding: 8px 6px 12px !important;
+        }
+        .lcd.lcd-big .lcd-linha {
+          font-size: 1.85rem !important;
+          letter-spacing: 0.08em !important;
+        }
+        .lcd.lcd-big .lcd-sub {
+          font-size: 0.76rem !important;
+          line-height: 1.3 !important;
+        }
+
+        /* Cards de Inspiração e Arquetipos em coluna única */
+        .insp-grid {
+          grid-template-columns: 1fr !important;
+          gap: 8px !important;
+        }
+
+        /* Cabeçalho In-Game (LCD) - Moderno e sem colisões */
+        .lcd {
+          padding: 8px 10px !important;
+        }
+        .lcd-top {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          gap: 6px !important;
+        }
+        .lcd-top .who {
+          font-size: 1.15rem !important;
+          max-width: 55% !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+        .lcd-top .cg {
+          font-size: 0.78rem !important;
+          padding: 2px 6px !important;
+          max-width: 42% !important;
+        }
+        .lcd-top .dt {
+          font-size: 0.78rem !important;
+          padding: 2px 6px !important;
+          margin-left: auto !important;
+        }
+        .tema-header-btn {
+          margin-left: 2px !important;
+          padding: 2px 7px !important;
+          font-size: 0.75rem !important;
+          line-height: 1.2 !important;
+        }
+        .tema-header-btn .tema-label {
+          display: none !important;
+        }
+        .lcd-top .badges {
+          width: 100% !important;
+          display: flex !important;
+          flex-wrap: nowrap !important;
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch !important;
+          gap: 5px !important;
+          padding: 3px 0 !important;
+          scrollbar-width: none !important;
+        }
+        .lcd-top .badges::-webkit-scrollbar {
+          display: none !important;
+        }
+        .lcd-top .badge {
+          flex-shrink: 0 !important;
+          font-size: 0.72rem !important;
+          padding: 2px 7px !important;
+          white-space: nowrap !important;
+        }
+
+        /* Barra de Métricas (Chips2) */
+        .chips2 {
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 4px !important;
+          margin-top: 6px !important;
+        }
+        .chip2 {
+          padding: 4px 2px !important;
+          min-width: 0 !important;
+          text-align: center !important;
+        }
+        .chip2 small {
+          font-size: 0.65rem !important;
+          display: block !important;
+        }
+        .chip2 b {
+          font-size: 0.82rem !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          display: block !important;
+        }
+
+        /* Seletor de Cidades do Mapa Territorial em Carrossel Horizontal */
+        .map-nav-scroll {
+          display: flex !important;
+          flex-wrap: nowrap !important;
+          gap: 6px !important;
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch !important;
+          padding: 4px 2px 8px !important;
+          scrollbar-width: thin !important;
+          white-space: nowrap !important;
+        }
+        .map-nav-scroll::-webkit-scrollbar {
+          height: 4px !important;
+        }
+        .map-nav-scroll::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.2) !important;
+          border-radius: 4px !important;
+        }
+        .map-nav-scroll .b {
+          flex-shrink: 0 !important;
+          padding: 6px 12px !important;
+          font-size: 0.8rem !important;
+        }
+
+        .map-modo-scroll {
+          display: flex !important;
+          flex-wrap: nowrap !important;
+          gap: 6px !important;
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch !important;
+          padding: 2px 0 6px !important;
+          white-space: nowrap !important;
+        }
+        .map-modo-scroll .b {
+          flex-shrink: 0 !important;
+          padding: 5px 10px !important;
+          font-size: 0.78rem !important;
+        }
+
+        /* Botão Flutuante de Avanço (FAB) */
+        .fab {
+          bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+          right: 12px !important;
+          padding: 8px 14px !important;
+          min-height: 44px !important;
+        }
+        .fab .fl {
+          font-size: 0.78rem !important;
+        }
+        .fab b {
+          font-size: 0.95rem !important;
+        }
+
+        /* Bottom Navigation Bar (.bnav) */
+        .bnav {
+          padding-bottom: max(6px, env(safe-area-inset-bottom, 0px)) !important;
+        }
+
+        /* Modais Bottom-sheet no celular */
+        .modal {
+          align-items: flex-end !important;
+          padding: 0 !important;
+        }
+        .mbox {
+          border-radius: 18px 18px 0 0 !important;
+          max-width: 100% !important;
+          width: 100% !important;
+          max-height: 88vh !important;
+          padding: 16px 14px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+      }
+    `;
+    document.head.appendChild(st);
+  })();
 
   // Sincronização explícita de escopo global
   try {
