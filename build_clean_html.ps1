@@ -46,6 +46,8 @@ if ($baseHtml.Contains($targetClose)) {
     exit 1
 }
 
-# 6. Salvar CADEIRA_O_Jogo_25.html
+# 6. Salvar CADEIRA_O_Jogo_25.html e index.html para GitHub Pages
 [System.IO.File]::WriteAllText("CADEIRA_O_Jogo_25.html", $baseHtml, [System.Text.Encoding]::UTF8)
-Write-Host "CADEIRA_O_Jogo_25.html salvo com sucesso! Tamanho: $($baseHtml.Length) caracteres."
+[System.IO.File]::WriteAllText("index.html", $baseHtml, [System.Text.Encoding]::UTF8)
+Write-Host "CADEIRA_O_Jogo_25.html e index.html salvos com sucesso! Tamanho: $($baseHtml.Length) caracteres."
+
