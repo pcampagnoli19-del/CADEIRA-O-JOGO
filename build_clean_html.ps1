@@ -6,8 +6,16 @@ Write-Host "Iniciando compilação limpa de CADEIRA_O_Jogo_25.html..."
 $geoData = [System.IO.File]::ReadAllText("geo_abc_data.js", [System.Text.Encoding]::UTF8)
 $logicData = [System.IO.File]::ReadAllText("modulo_abc_logic.js", [System.Text.Encoding]::UTF8)
 
+# Modulo de Empresarios & Conglomerados (aditivo). Opcional: se ausente, o build segue normal.
+$empData = ""
+if (Test-Path "modulo_empresarios.js") {
+  $empData = [System.IO.File]::ReadAllText("modulo_empresarios.js", [System.Text.Encoding]::UTF8)
+} else {
+  Write-Host "AVISO: modulo_empresarios.js ausente - build sem o modulo de empresarios."
+}
+
 # Combinar módulo final
-$finalModule = $geoData + "`r`n`r`n" + $logicData
+$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData
 
 # 2. Ler base HTML limpa CADEIRA_O_Jogo_25.html.bak_abc
 $baseHtml = [System.IO.File]::ReadAllText("CADEIRA_O_Jogo_25.html.bak_abc", [System.Text.Encoding]::UTF8)
