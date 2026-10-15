@@ -4126,74 +4126,212 @@
   })();
 
 
-  /* ---------- PONTO DE ENTRADA NO JOGO (secao 11, item 1: "aba dentro de
-     Gabinete/Articulação"). Injeta um botao no topo do app e um badge de
-     eventos pendentes, sem alterar nada existente. ---------- */
-  (function injetarEntradaEmp() {
-    // O jogo reescreve #app.innerHTML a cada render(), o que apagaria um botao
-    // inserido uma unica vez. Solucao: re-injetar apos cada render, observando
-    // o #app; e tambem expor um "re-inject" que o proprio modal chama.
-    var _ultimoApp = null;
+  /* ---------- PONTO DE ENTRADA NO JOGO ----------
+     O botao flutuante no #app foi REMOVIDO (ficava orfao no canto da landing
+     e do HUD). O empresariado vive na base de Figuras Publicas (aba Influencia),
+     junto com jornalistas/formadores de opiniao — com acoes proprias, nao de
+     entrevista. Spec: CADEIRA_Spec_Empresarios + integracao Diplomacia.
+     ----------------------------------------------------------------- */
+  (function integrarEmpresariosNaInfluencia() {
+    function ehFiguraEmpresario(f) {
+      if (!f) return false;
+      if (f.empresario_id) return true;
+      if (f.categoria === "Empresario" || f.categoria === "Empresário") return true;
+      if (f.id && String(f.id).indexOf("EMP_") === 0) return true;
+      return false;
+    }
+    EMP.ehFiguraEmpresario = ehFiguraEmpresario;
 
-    function criar() {
-      var app = document.getElementById("app");
-      if (!app) return false;
-      if (document.getElementById("emp-entry")) return true;
+    function idEmpresarioDeFigura(f) {
+      if (!f) return null;
+      if (f.empresario_id) return f.empresario_id;
+      if (f.id && String(f.id).indexOf("EMP_") === 0) return String(f.id).slice(4);
+      return null;
+    }
 
-      var wrap = document.createElement("div");
-      wrap.id = "emp-entry";
-      wrap.className = "emp-entry";
-      wrap.innerHTML =
-        '<button class="emp-btn" data-emp-acao="abrir-painel" title="Empresários e Conglomerados">' +
-          '<span aria-hidden="true">🏭</span><span class="emp-btn-txt">Empresários</span>' +
-          '<span class="emp-btn-badge" id="emp-badge" hidden>0</span>' +
-        "</button>";
-      app.insertBefore(wrap, app.firstChild);
-      atualizarBadge();
+    function badgeHtml() {
+      var n = 0;
+      try { n = EMP.qtdEventosPendentes ? EMP.qtdEventosPendentes() : 0; } catch (e) { n = 0; }
+      if (!n) return "";
+      return '<span class="emp-btn-badge" style="position:static;display:inline-flex;margin-left:6px">' +
+        (n > 9 ? "9+" : String(n)) + "</span>";
+    }
+
+    function cardEntradaInfluencia() {
+      return '' +
+        '<div class="card emp-inf-entry" style="margin:0 0 14px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--eu,#3b82f6);background:var(--superficie2,rgba(59,130,246,.08))">' +
+          '<div style="min-width:0;flex:1">' +
+            "<b>🏭 Empresários &amp; Conglomerados</b>" +
+            '<div style="font-size:12px;color:var(--tinta2,#94a3b8);margin-top:2px">Negociação setorial, lobby e compromissos — na mesma base de figuras públicas, com fluxo próprio (sem entrevista).</div>' +
+          "</div>" +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+            '<button type="button" class="b confirma" data-a="empAbrirPainel" data-p="[]">Abrir painel' + badgeHtml() + "</button>" +
+            '<button type="button" class="b branco mini" data-a="empAbrirCompromissos" data-p="[]">📋 Compromissos</button>' +
+            '<button type="button" class="b branco mini" data-a="infFiltro" data-p=\'["Empresario"]\'>Filtrar empresários</button>' +
+          "</div>" +
+        "</div>";
+    }
+
+    function acoesFichaEmpresario(f) {
+      var eid = idEmpresarioDeFigura(f);
+      if (!eid) return "";
+      return '' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap" data-emp-acoes-figura="1">' +
+          '<button type="button" class="b azul grow" data-a="empContatar" data-p=\'' + JSON.stringify([eid]) + '\'>📞 Contatar / Reunião de gabinete</button>' +
+          '<button type="button" class="b confirma grow" data-a="empNegociar" data-p=\'' + JSON.stringify([eid]) + '\'>🤝 Negociar acordo / lobby</button>' +
+          '<button type="button" class="b branco grow" data-a="empAbrirPainel" data-p="[]">🏭 Painel de Empresários</button>' +
+        "</div>";
+    }
+
+    // --- Acoes no dispatcher A.* (data-a) ---
+    function registrarAcoes() {
+      if (typeof A === "undefined" || !A) return false;
+      A.empAbrirPainel = function () {
+        try {
+          S.modal = null;
+          if (EMP.abrirPainel) EMP.abrirPainel({});
+          else if (EMP.abrirEventos && EMP.qtdEventosPendentes && EMP.qtdEventosPendentes() > 0) EMP.abrirEventos();
+        } catch (e) {
+          try { toast("Não foi possível abrir o painel de empresários.", "err"); } catch (_) {}
+        }
+      };
+      A.empAbrirCompromissos = function () {
+        try {
+          S.modal = null;
+          if (EMP.abrirCompromissos) EMP.abrirCompromissos();
+          else if (EMP.abrirPainel) EMP.abrirPainel({});
+        } catch (e) {
+          try { toast(String(e.message || e), "err"); } catch (_) {}
+        }
+      };
+      A.empContatar = function (empresarioId) {
+        try {
+          var r = EMP.contatar(empresarioId, "Reunião de gabinete");
+          if (!r || !r.ok) {
+            try { toast((r && r.motivo) || "Contato indisponível.", "err"); } catch (_) {}
+            return;
+          }
+          try { toast(r.msg || ("Contato realizado com " + ((EMP.porId(empresarioId) || {}).nome || "empresário") + "."), "ok"); } catch (_) {}
+        } catch (e) {
+          try { toast(String(e.message || e), "err"); } catch (_) {}
+        }
+      };
+      A.empNegociar = function (empresarioId) {
+        try {
+          S.modal = null;
+          if (EMP.abrirNegociacao) EMP.abrirNegociacao(empresarioId);
+        } catch (e) {
+          try { toast(String(e.message || e), "err"); } catch (_) {}
+        }
+      };
+      A.empAbrirEventos = function () {
+        try {
+          S.modal = null;
+          if (EMP.abrirEventos) EMP.abrirEventos();
+        } catch (e) {}
+      };
+      return true;
+    }
+    if (!registrarAcoes()) {
+      var tA = setInterval(function () { if (registrarAcoes()) clearInterval(tA); }, 200);
+    }
+
+    // --- Wrap VIEWS.inf: filtro Empresario + card de entrada ---
+    function patchViewsInf() {
+      if (typeof VIEWS === "undefined" || typeof VIEWS.inf !== "function") return false;
+      if (VIEWS.inf._empPatched) return true;
+      var _orig = VIEWS.inf;
+      VIEWS.inf = function () {
+        var h = _orig.apply(this, arguments);
+        try {
+          var sub = (typeof S !== "undefined" && (S.infSubtab || (gameState && gameState.influencia && gameState.influencia.subtab))) || "figuras";
+          if (sub !== "figuras") return h;
+          var filtroCat = (typeof S !== "undefined" && (S.infFiltro || (gameState && gameState.influencia && gameState.influencia.filtro_cat))) || "todos";
+          var empFiltro = '<button class="b mini ' + (filtroCat === "Empresario" ? "confirma" : "branco") +
+            '" data-a="infFiltro" data-p=\'["Empresario"]\'>Empresario</button>';
+          if (h.indexOf('data-p=\'["Empresario"]\'') === -1 && h.indexOf('data-p=["Empresario"]') === -1) {
+            h = h.replace(
+              /(<button class="b mini [^"]*" data-a="infFiltro" data-p='\["Comunicador"\]'>Comunicador<\/button>)/,
+              "$1" + empFiltro
+            );
+          }
+          if (h.indexOf("emp-inf-entry") === -1) {
+            h = h.replace(
+              '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">',
+              cardEntradaInfluencia() +
+                '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">'
+            );
+          }
+        } catch (e) { console.warn("EMP patch VIEWS.inf", e); }
+        return h;
+      };
+      VIEWS.inf._empPatched = true;
       return true;
     }
 
-    function atualizarBadge() {
+    // --- Wrap modalInfluencia: acoes de empresario, nao de jornalista ---
+    function patchModalInfluencia() {
+      if (typeof modalInfluencia !== "function") return false;
+      if (modalInfluencia._empPatched) return true;
+      var _origM = modalInfluencia;
+      modalInfluencia = function () {
+        var h = _origM.apply(this, arguments);
+        try {
+          var m = (typeof S !== "undefined") ? S.modal : null;
+          if (!m || m.tipo !== "influencia" || m.subTipo !== "figura") return h;
+          var figs = (gameState && gameState.influencia && gameState.influencia.figuras) || [];
+          var f = null;
+          for (var i = 0; i < figs.length; i++) {
+            if (figs[i] && figs[i].id === m.id) { f = figs[i]; break; }
+          }
+          if (!ehFiguraEmpresario(f)) return h;
+          var acoes = acoesFichaEmpresario(f);
+          if (!acoes) return h;
+          var replaced = h.replace(
+            /<div style="display:flex;gap:8px;flex-wrap:wrap">\s*<button class="b azul grow" data-a="infConcederEntrevista"[\s\S]*?<\/div>/,
+            acoes
+          );
+          if (replaced === h) {
+            // fallback: qualquer bloco que ainda cite entrevista na ficha
+            replaced = h.replace(
+              /<div style="display:flex;gap:8px;flex-wrap:wrap">[\s\S]*?Conceder Entrevista[\s\S]*?<\/div>/,
+              acoes
+            );
+          }
+          h = replaced;
+        } catch (e) { console.warn("EMP patch modalInfluencia", e); }
+        return h;
+      };
+      modalInfluencia._empPatched = true;
+      return true;
+    }
+
+    function boot() {
+      patchViewsInf();
+      patchModalInfluencia();
+      registrarAcoes();
+      // remove residual orphan button if a stale session left it
       try {
-        var n = EMP.qtdEventosPendentes ? EMP.qtdEventosPendentes() : 0;
-        var badge = document.getElementById("emp-badge");
-        if (!badge) return;
-        badge.hidden = n === 0;
-        badge.textContent = n > 9 ? "9+" : String(n);
+        var stale = document.getElementById("emp-entry");
+        if (stale) stale.remove();
       } catch (e) {}
     }
-    window.empAtualizarBadge = atualizarBadge;
-    window.empReinjetarEntrada = criar;
-
-    // observa o #app: sempre que ele for substituido (render do jogo), recria
-    if (typeof MutationObserver === "function") {
-      var obs = new MutationObserver(function () {
-        if (!document.getElementById("emp-entry")) criar();
-        else atualizarBadge();
-      });
-      var start = function () {
-        var app = document.getElementById("app");
-        if (app) { obs.observe(app, { childList: true }); criar(); }
-        else setTimeout(start, 120);
-      };
-      start();
-    } else {
-      var t = setInterval(function () { if (criar()) clearInterval(t); }, 250);
+    boot();
+    if (!VIEWS || !VIEWS.inf || !VIEWS.inf._empPatched || typeof modalInfluencia !== "function" || !modalInfluencia._empPatched) {
+      var n = 0;
+      var t = setInterval(function () {
+        boot();
+        n++;
+        if ((VIEWS && VIEWS.inf && VIEWS.inf._empPatched && modalInfluencia && modalInfluencia._empPatched) || n > 40) clearInterval(t);
+      }, 150);
     }
-
     ["DOMContentLoaded", "load"].forEach(function (evt) {
-      document.addEventListener(evt, function () { criar(); });
+      document.addEventListener(evt, boot);
     });
   })();
 
-  // handler do botao de entrada + badge
-  document.addEventListener("click", function (ev) {
-    var b = ev.target && ev.target.closest ? ev.target.closest("#emp-entry [data-emp-acao]") : null;
-    if (!b) return;
-    var acao = b.getAttribute("data-emp-acao");
-    if (acao === "abrir-painel") { try { EMP.abrirPainel({}); } catch (e) {} }
-    else if (acao === "eventos") { try { EMP.abrirEventos(); } catch (e) {} }
-  });
+  window.empAtualizarBadge = function () {};
+  window.empReinjetarEntrada = function () { return false; };
 
   // atalho: tambem expoe no console
   window.emp = EMP;
