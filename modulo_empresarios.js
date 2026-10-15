@@ -1324,6 +1324,694 @@
   window.EMPRESARIOS_FOTOS_URLS = EMP.FOTOS;
 
 
+  /* =========================================================================
+     FASE 2 — A MECANICA DE NEGOCIACAO (secao 5 da spec)
+     ========================================================================= */
+  EMP.fase = 2;
+
+  var _estado = function () {
+    if (typeof gameState === "undefined" || !gameState) return null;
+    if (!gameState.empresarios) {
+      gameState.empresarios = { versao: EMP.versao, relacoes: {}, acordos: [], compromissos: [], mes_atual: 0, agenda_usada: 0, mes_agenda: -1 };
+    }
+    if (!gameState.empresarios.relacoes) gameState.empresarios.relacoes = {};
+    if (!gameState.empresarios.acordos) gameState.empresarios.acordos = [];
+    if (!gameState.empresarios.compromissos) gameState.empresarios.compromissos = [];
+    return gameState.empresarios;
+  };
+  EMP.estado = _estado;
+
+  var _jogador = function () {
+    try { return (typeof J === "function") ? J() : null; } catch (e) { return null; }
+  };
+  var _clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  var _r = function () { return (typeof R !== "undefined" && R.i) ? R.i(0, 100) : Math.floor(Math.random() * 101); };
+  var _rd = function () { return (typeof R !== "undefined" && R.c) ? function (a, b, c) { return R.c(a, b, c); } : function (v, a, b) { return _clamp(v, a, b); }; };
+
+  /* ---------- 5.1 Formula: alinhamento ideologico (-100..100) ---------- */
+  EMP.alinhamento = function (empresarioId) {
+    var e = EMP.porId(empresarioId);
+    if (!e) return 0;
+    var j = _jogador();
+    if (!j) return 0;
+    // ideologia do jogador vem do partido; usa espectro se existir
+    var partido = j.partido_atual || j.partido || "";
+    var esp = (typeof PARTIDOS !== "undefined" && PARTIDOS[partido]) ? PARTIDOS[partido] : null;
+    var ecoJ = (esp && typeof esp.economico === "number") ? esp.economico : 0;
+    var cosJ = (esp && typeof esp.social === "number") ? esp.social : 0;
+    var ecoE = (e.ideologia || {}).economica || 0;
+    var cosE = (e.ideologia || {}).costumes || 0;
+    // peso 60/40 economia/costumes; distancia maxima 200 -> normaliza para -100..100
+    var dist = Math.abs(ecoJ - ecoE) * 0.6 + Math.abs(cosJ - cosE) * 0.4;
+    return _clamp(100 - dist, -100, 100);
+  };
+
+  /* ---------- 5.1 Formula: forca politica do jogador (0..100) ---------- */
+  EMP.forcaPolitica = function () {
+    var j = _jogador();
+    if (!j) return 50;
+    var pop = 50, gov = 50;
+    try {
+      var aps = j.aprovacao || {};
+      var vals = Object.keys(aps).map(function (k) { return aps[k]; }).filter(function (v) { return typeof v === "number"; });
+      if (vals.length) pop = vals.reduce(function (s, v) { return s + v; }, 0) / vals.length;
+    } catch (e) {}
+    gov = (typeof j.relacao_partido === "number") ? j.relacao_partido : gov;
+    var ban = Array.isArray(j.bancadas) ? Math.min(j.bancadas.length * 6, 30) : 0;
+    return _clamp(pop * 0.45 + gov * 0.35 + ban, 0, 100);
+  };
+
+  /* ---------- cargo atual do jogador, no vocabulario do modulo ---------- */
+  EMP.cargoAtual = function () {
+    var j = _jogador();
+    if (!j) return null;
+    var c = j.cargo || j.cargo_atual || "";
+    c = String(c);
+    if (/presidente/i.test(c) && !/vice/i.test(c)) return "presidente";
+    if (/governador/i.test(c)) return "governador";
+    if (/senador/i.test(c)) return "senador";
+    if (/deputado federal/i.test(c)) return "dep_federal";
+    if (/deputado estadual|deputado\b/i.test(c) && !/federal/i.test(c)) return "dep_estadual";
+    if (/prefeito/i.test(c)) return "prefeito";
+    if (/vereador/i.test(c)) return "vereador";
+    // fallback pelo cargo alvo
+    var alvo = (j.campanha && j.campanha.cargo_alvo) || "";
+    if (/presidente/i.test(alvo)) return "presidente";
+    if (/governador/i.test(alvo)) return "governador";
+    if (/senador/i.test(alvo)) return "senador";
+    if (/federal/i.test(alvo)) return "dep_federal";
+    if (/Estadual/i.test(alvo)) return "dep_estadual";
+    if (/Prefeito/i.test(alvo)) return "prefeito";
+    if (/Vereador/i.test(alvo)) return "vereador";
+    return "vereador";
+  };
+  window.empCargoAtual = EMP.cargoAtual;
+
+  /* ---------- regra 5: pauta forcada pela competencia do cargo ---------- */
+  EMP.pautasDisponiveis = function (cargoId) {
+    var c = cargoId || EMP.cargoAtual() || "vereador";
+    return EMP.COMPETENCIAS[c] || EMP.COMPETENCIAS.vereador;
+  };
+  EMP.pautaEhDaCompetencia = function (pauta, cargoId) {
+    return EMP.pautasDisponiveis(cargoId).indexOf(pauta) !== -1;
+  };
+
+  /* ---------- 3.2 criacao/leitura de relacao ---------- */
+  EMP.afinidadeInicial = function (empresarioId, cargoId) {
+    var cargo = cargoId || EMP.cargoAtual() || "vereador";
+    var alinhamento = EMP.alinhamento(empresarioId);
+    var poder = (EMP.CARGOS[cargo] || {}).poder || 0;
+    return Math.round(_clamp(35 + alinhamento * 0.25 + poder * 0.10, 0, 100));
+  };
+
+  EMP.relacao = function (empresarioId) {
+    var st = _estado();
+    if (!st) return null;
+    if (!st.relacoes[empresarioId]) {
+      st.relacoes[empresarioId] = {
+        afinidade: EMP.afinidadeInicial(empresarioId),
+        favor: 0,
+        exposicao: 0,
+        confianca: 50,
+        contatos: 0,
+        ultimo_contato_mes: st.mes_atual || 0,
+        acordos_ativos: [],
+        historico: []
+      };
+    }
+    return st.relacoes[empresarioId];
+  };
+
+  EMP.empresariosAtivos = function () {
+    var st = _estado();
+    if (!st) return [];
+    return Object.keys(st.relacoes).map(function (id) { return EMP.porId(id); }).filter(Boolean);
+  };
+
+  /* ---------- 4.1 papel do empresario para o cargo (titular x emissario) ---------- */
+  EMP.papelParaCargo = function (empresarioId, cargoId) {
+    var e = EMP.porId(empresarioId);
+    var cargo = cargoId || EMP.cargoAtual();
+    if (!e || !cargo) return null;
+    var ac = e.acesso || {};
+    if ((ac.direto || []).indexOf(cargo) !== -1) return { tipo: "titular", fator: 1 };
+    if ((ac.emissario || []).indexOf(cargo) !== -1) {
+      var f = (EMP.CARGOS[cargo] || {}).fator_emissario || 0.6;
+      return { tipo: "emissario", fator: f };
+    }
+    return null; // nao aparece para este cargo
+  };
+
+  EMP.visiveisParaCargo = function (cargoId) {
+    var cargo = cargoId || EMP.cargoAtual();
+    return CATALOGO_EMPRESARIOS.filter(function (e) { return !!EMP.papelParaCargo(e.id, cargo); });
+  };
+
+  /* ---------- quem procura quem (5.1) ---------- */
+  EMP.chanceProcurarVoce = function (empresarioId, cargoId, relevancia) {
+    var cargo = cargoId || EMP.cargoAtual() || "vereador";
+    var papel = EMP.papelParaCargo(empresarioId, cargo);
+    if (!papel) return 0;
+    var base = (EMP.CARGOS[cargo] || {}).base_contato || 0.15;
+    var rel = EMP.relacao(empresarioId);
+    var af = rel ? rel.afinidade : 35;
+    var fav = rel ? rel.favor : 0;
+    var p = base * (relevancia || 1) * (1 + af / 200) * (1 + Math.max(0, fav) / 400) * papel.fator;
+    return Math.min(p, 0.95);
+  };
+
+  /* ---------- probabilidade de aceitar proposta (5.1) ---------- */
+  EMP.scoreAceite = function (empresarioId, cargoId, gravidadePedido) {
+    var cargo = cargoId || EMP.cargoAtual() || "vereador";
+    var papel = EMP.papelParaCargo(empresarioId, cargo) || { fator: 0.5 };
+    var rel = EMP.relacao(empresarioId) || { afinidade: 35, confianca: 50, favor: 0 };
+    var afinidade = rel.afinidade, confianca = rel.confianca, favor = rel.favor;
+    var alinhamento = EMP.alinhamento(empresarioId);
+    var forca = EMP.forcaPolitica();
+
+    // rival_penalty: soma da afinidade ponderada dos rivais ja fechados com voce
+    var rivalPenalty = 0;
+    var rivais = EMP.rivaisDe(empresarioId);
+    var st = _estado();
+    if (st) {
+      rivais.forEach(function (rid) {
+        var r = st.relacoes[rid];
+        if (r && r.acordos_ativos && r.acordos_ativos.length) rivalPenalty += r.afinidade * 0.1;
+      });
+    }
+
+    // bonus temporario de negociacao (contraproposta aceita)
+    var bonusNeg = (rel && rel.bonus_negociacao) || 0;
+
+    var score = afinidade * 0.40 + alinhamento * 0.20 + forca * 0.20 + confianca * 0.10 + favor * 0.10
+              - (gravidadePedido || 1) * 6 - rivalPenalty + bonusNeg;
+
+    // arredonda ANTES de aplicar os limiares (evita score exibido 40 virar recusa)
+    score = Math.round(score);
+    return { score: score, aceita: score >= 60, contraproposta: score >= 40 && score < 60, rivalPenalty: Math.round(rivalPenalty) };
+  };
+
+  /* ---------- exposicao por canal (5.1) ---------- */
+  EMP.exposicaoDoCanal = function (canal, gravidade) {
+    var g = gravidade || 1;
+    if (canal === "legal") return _rd()(g * 1.2, 0, 5);
+    if (canal === "cinza") return _rd()(10 + g * 3, 10, 25);
+    if (canal === "caixa2") return _rd()(20 + g * 4, 20, 40);
+    return 0;
+  };
+
+  /* ---------- chance mensal de vazamento (5.1) ---------- */
+  EMP.chanceVazamento = function () {
+    var st = _estado();
+    if (!st) return 0;
+    var exp = 0;
+    Object.keys(st.relacoes).forEach(function (id) { exp += (st.relacoes[id].exposicao || 0); });
+    var j = _jogador();
+    var riscoPF = (j && j.juridico && typeof j.juridico.ieo_risco === "number") ? j.juridico.ieo_risco : 0;
+    var fatorImprensa = 1;
+    // empresarios de midia/bigtech com afinidade alta blindam; baixa amplifica
+    var midia = 0;
+    CATALOGO_EMPRESARIOS.forEach(function (e) {
+      if (e.bloco === "midia" || e.bloco === "bigtech") {
+        var r = st.relacoes[e.id];
+        if (r) midia += (50 - r.afinidade) / 50;
+      }
+    });
+    fatorImprensa = 1 + Math.max(-0.5, Math.min(1.5, midia * 0.25));
+    var vinganca = 0;
+    Object.keys(st.relacoes).forEach(function (id) {
+      var r = st.relacoes[id];
+      var e = EMP.porId(id);
+      if (r && r.afinidade < 30 && e && e.perfil) vinganca += (e.perfil.vinganca || 0) / 200;
+    });
+    var v = (exp * exp / 10000) * (1 + riscoPF / 100) * fatorImprensa * (1 + vinganca);
+    return _clamp(v, 0, 0.95);
+  };
+
+
+  /* ---------- 5.3 Tipos de acordo ---------- */
+  EMP.TIPOS_ACORDO = [
+    { id: "doacao_campanha",  nome: "Doacao de campanha",      canal: "legal",  descricao: "Dinheiro oficial para campanha ou partido, respeitando o limite." },
+    { id: "doacao_extra",     nome: "Doacao extra",            canal: "caixa2", descricao: "Dinheiro fora do limite, direto na Caixa 2." },
+    { id: "apoio_politico",   nome: "Apoio politico",          canal: "legal",  descricao: "Cabo eleitoral, endosso publico e voto de seguidores." },
+    { id: "cobertura_midia",  nome: "Cobertura de midia",      canal: "cinza",  descricao: "Espaco favoravel. So midia e big tech." },
+    { id: "investimento",     nome: "Investimento",            canal: "legal",  descricao: "Fabrica, obra ou centro de distribuicao." },
+    { id: "pacote_votos",     nome: "Pacote de votos",         canal: "cinza",  descricao: "Bancada alinhada vota com voce, via Frente." },
+    { id: "nomeacao",         nome: "Nomeacao",                canal: "cinza",  descricao: "Indicacao a cargo estatal, secretaria ou agencia." },
+    { id: "contrapartida_obra", nome: "Contrapartida de obra", canal: "cinza",  descricao: "Obra feita rapido e com vantagem politica." },
+    { id: "informacao",       nome: "Informacao",              canal: "cinza",  descricao: "Dossie contra adversario. Exposicao propria se vazar." },
+    { id: "protecao",         nome: "Protecao",                canal: "cinza",  descricao: "Aliviar pressao da imprensa ou do Judiciario sobre voce." }
+  ];
+
+  /* ---------- agenda (pontos por mes, por cargo) ---------- */
+  EMP.pontosAgendaMes = function (cargoId) {
+    var cargo = cargoId || EMP.cargoAtual() || "vereador";
+    return (EMP.CARGOS[cargo] || {}).agenda || 4;
+  };
+  EMP.agendaDisponivel = function () {
+    var st = _estado();
+    if (!st) return 0;
+    var mesAtual = _mesAtualJogo();
+    if (st.mes_agenda !== mesAtual) { st.mes_agenda = mesAtual; st.agenda_usada = 0; }
+    return Math.max(0, EMP.pontosAgendaMes() - (st.agenda_usada || 0));
+  };
+  EMP.gastarAgenda = function (n) {
+    var st = _estado();
+    if (!st) return false;
+    if (EMP.agendaDisponivel() < (n || 1)) return false;
+    st.agenda_usada = (st.agenda_usada || 0) + (n || 1);
+    return true;
+  };
+
+  function _mesAtualJogo() {
+    var j = null;
+    try { j = _jogador(); } catch (e) { j = null; }
+    if (!j) return (typeof S !== "undefined" && S && typeof S.mes === "number") ? S.mes : 0;
+    if (typeof j.mes === "number") return j.mes;
+    if (typeof j.ano === "number" && typeof j.mes_atual === "number") return j.ano * 12 + j.mes_atual;
+    return (typeof S !== "undefined" && S && typeof S.mes === "number") ? S.mes : 0;
+  }
+
+  /* ---------- FASE 1 do ciclo: CONTATO ---------- */
+  EMP.contatar = function (empresarioId, tipoContato) {
+    var st = _estado();
+    if (!st) return { ok: false, motivo: "Sem jogo ativo." };
+    var papel = EMP.papelParaCargo(empresarioId);
+    if (!papel) return { ok: false, motivo: "Este empresario nao negocia com o seu cargo." };
+
+    var e = EMP.porId(empresarioId);
+    var custoAgenda = papel.tipo === "emissario" ? 1 : 2;
+    if (!EMP.gastarAgenda(custoAgenda)) return { ok: false, motivo: "Agenda insuficiente neste mes." };
+
+    var rel = EMP.relacao(empresarioId);
+    rel.contatos++;
+
+    // Contato constroi relacao (espec 2: "relacao continua com memoria").
+    // Sem isso o jogador nunca sai do score minimo e nao consegue fechar acordo.
+    var ganhoContato = papel.tipo === "titular" ? 5 : 3;
+    rel.afinidade = _clamp(rel.afinidade + ganhoContato, 0, 100);
+    if (rel.contatos >= 3) rel.confianca = _clamp(rel.confianca + 4, 0, 100);
+
+    rel.ultimo_contato_mes = st.mes_atual;
+
+    // custo de energia (recurso existente) e registro
+    var j = _jogador();
+    if (j && typeof j.energia === "number") j.energia = _clamp(j.energia - 3, 0, 100);
+
+    _log(rel, "contato", (tipoContato || "Reuniao") + " com " + e.nome);
+    return { ok: true, tipo: papel.tipo, relacao: rel };
+  };
+
+  /* ---------- FASES 2 e 3: OFERTA + PEDIDO + CANAL ---------- */
+  EMP.propor = function (empresarioId, pedidoId, ofertaId, canal) {
+    var st = _estado();
+    if (!st) return { ok: false, motivo: "Sem jogo ativo." };
+
+    var e = EMP.porId(empresarioId);
+    if (!e) return { ok: false, motivo: "Empresario inexistente." };
+
+    var papel = EMP.papelParaCargo(empresarioId) || { tipo: "emissario", fator: 0.5 };
+    var pedido = (e.pedidos_tipicos || []).filter(function (p) { return p.id === pedidoId; })[0];
+    if (!pedido) return { ok: false, motivo: "Pedido inexistente." };
+
+    // regra 5: pauta forcada pela competencia do cargo
+    if (!EMP.pautaEhDaCompetencia(pedido.pauta)) {
+      return { ok: false, motivo: "A pauta \"" + (EMP.PAUTA_LABEL[pedido.pauta] || pedido.pauta) + "\" nao e da competencia do seu cargo." };
+    }
+
+    var oferta = (e.efeitos_oferta || []).filter(function (o) { return o.id === ofertaId; })[0] || (e.efeitos_oferta || [])[0];
+    if (!oferta) return { ok: false, motivo: "Oferta inexistente." };
+
+    canal = canal || "legal";
+    var aval = EMP.scoreAceite(empresarioId, null, pedido.gravidade);
+
+    // canal cinza/caixa2: +25% efeito, -20% pedido, mas sobe exposicao
+    var multCanal = (canal === "legal") ? 1 : 1.25;
+
+    // teto de acordos
+    var cargo = EMP.cargoAtual();
+    var tetoPorEmp = (EMP.CARGOS[cargo] || {}).teto_por_emp || 2;
+    var rel = EMP.relacao(empresarioId);
+    if ((rel.acordos_ativos || []).length >= tetoPorEmp) {
+      return { ok: false, motivo: "Teto de " + tetoPorEmp + " acordos ativos com este empresario." };
+    }
+    var tetoTotal = (EMP.CARGOS[cargo] || {}).teto_acordos || 4;
+    if (st.acordos.length >= tetoTotal) {
+      return { ok: false, motivo: "Teto de " + tetoTotal + " acordos ativos no cargo." };
+    }
+
+    if (!aval.aceita) {
+      // recusa ou contraproposta
+      if (aval.contraproposta) {
+        rel.afinidade = _clamp(rel.afinidade - 1, 0, 100);
+        _log(rel, "contraproposta", e.nome + " pediu mais em troca.");
+        return { ok: false, contraproposta: true, motivo: "Ele quer mais em troca (ou oferece menos).", score: aval.score };
+      }
+      rel.afinidade = _clamp(rel.afinidade - 2, 0, 100);
+      _log(rel, "recusa", e.nome + " recusou a proposta.");
+      return { ok: false, motivo: "Recusou formalmente.", score: aval.score };
+    }
+
+    // acordo fechado
+    var exposicao = EMP.exposicaoDoCanal(canal, pedido.gravidade);
+    var custo = { partido: 0, candidato: 0, pessoal: 0 };
+    var valorEfeito = (oferta.valor || 0) * multCanal * papel.fator;
+
+    // integracao secao 8: dinheiro entra/sai das caixas reais
+    var j = _jogador();
+    var grana = 0;
+    if (oferta.tipo === "bonus") {
+      // doacao/oferta financeira proporcional ao alcance do empresario
+      grana = Math.round(((e.perfil && e.perfil.ganancia) || 50) * 4000 * papel.fator * (canal === "legal" ? 1 : 1.6));
+    }
+    if (canal === "caixa2" && j && j.financas) {
+      j.financas.caixa2 = (j.financas.caixa2 || 0) + grana;
+      custo.candidato = grana;
+      // sobe tambem a exposicao da Caixa 2 (integracao com Caixa 2 por candidatura)
+      if (typeof addIEO === "function") addIEO(Math.ceil(exposicao / 5));
+    } else if (j && j.financas) {
+      j.financas.caixa1 = (j.financas.caixa1 || 0) + grana;
+      custo.candidato = grana;
+    }
+
+    var acordo = {
+      id: "ac_" + Math.random().toString(36).slice(2, 9),
+      empresarioId: empresarioId,
+      cargo: cargo,
+      canal: canal,
+      tipo: papel.tipo,
+      fator: papel.fator,
+      oferta: oferta,
+      oferta_valor_final: valorEfeito,
+      pedido: {
+        pauta: pedido.pauta, descricao: pedido.descricao,
+        gravidade: pedido.gravidade, prazo_meses: pedido.prazo_meses, cumprido: false
+      },
+      inicio_mes: _mesAtualJogo(),
+      fim_mes: _mesAtualJogo() + (pedido.prazo_meses || 6),
+      custo_caixa: custo,
+      exposicao_gerada: Math.round(exposicao),
+      status: "ativo"
+    };
+
+    st.acordos.push(acordo);
+    rel.acordos_ativos.push(acordo.id);
+    rel.exposicao = _clamp(rel.exposicao + exposicao, 0, 100);
+    rel.favor = _clamp(rel.favor - 10, -100, 100); // voce agora deve a ele
+    if (rel.bonus_negociacao) rel.bonus_negociacao = 0; // consumido ao fechar
+    _log(rel, "acordo", "Acordo (" + canal + ") com " + e.nome + ": " + (EMP.PAUTA_LABEL[pedido.pauta] || pedido.pauta));
+
+    return { ok: true, acordo: acordo, score: aval.score };
+  };
+
+  /* ---------- contraproposta: ajustar pedido/oferta/prazo ---------- */
+  EMP.contrapropor = function (empresarioId, ajuste) {
+    // ajuste: { reduzirPedido:0..1, aumentarOferta:0..1, esticarPrazo:0..1 }
+    var rel = EMP.relacao(empresarioId);
+    if (!rel) return { ok: false, motivo: "Sem relacao." };
+    var chance = 0.35 + (rel.confianca / 200) + (rel.afinidade / 300);
+    var ok = (typeof R !== "undefined" && R.chance) ? R.chance(chance) : Math.random() < chance;
+    if (ok) {
+      rel.confianca = _clamp(rel.confianca + 4, 0, 100);
+      // bonus temporario de negociacao: permite fechar na proxima proposta
+      rel.bonus_negociacao = _clamp((rel.bonus_negociacao || 0) + 12, 0, 20);
+      return { ok: true, bonus: rel.bonus_negociacao, ajuste: ajuste || null };
+    }
+    rel.afinidade = _clamp(rel.afinidade - 3, 0, 100);
+    return { ok: false, motivo: "A contraproposta foi rejeitada." };
+  };
+
+  /* ---------- FASE 4/5: cumprir ou descumprir o pedido ---------- */
+  EMP.cumprirPedido = function (acordoId, parcial) {
+    var st = _estado();
+    if (!st) return { ok: false };
+    var ac = st.acordos.filter(function (a) { return a.id === acordoId; })[0];
+    if (!ac) return { ok: false, motivo: "Acordo inexistente." };
+    var rel = EMP.relacao(ac.empresarioId);
+    var e = EMP.porId(ac.empresarioId);
+
+    var ganho = parcial ? 5 : (8 + Math.round(ac.pedido.gravidade * 1.5));
+    if (parcial) ganho = Math.round(ganho * 0.5);
+    rel.afinidade = _clamp(rel.afinidade + ganho, 0, 100);
+    rel.favor = _clamp(rel.favor + (parcial ? 8 : 15), -100, 100);
+    rel.confianca = _clamp(rel.confianca + (parcial ? 2 : 6), 0, 100);
+    ac.pedido.cumprido = true;
+    ac.status = parcial ? "cumprido_parcial" : "cumprido";
+    _log(rel, "cumprimento", (parcial ? "Cumpriu parcialmente" : "Cumpriu") + " o pedido de " + e.nome);
+    _aplicarEfeitosAcordo(ac, 1);
+    return { ok: true, afinidade: rel.afinidade };
+  };
+
+  EMP.descumprirPedido = function (acordoId) {
+    var st = _estado();
+    if (!st) return { ok: false };
+    var ac = st.acordos.filter(function (a) { return a.id === acordoId; })[0];
+    if (!ac) return { ok: false, motivo: "Acordo inexistente." };
+    var rel = EMP.relacao(ac.empresarioId);
+    var e = EMP.porId(ac.empresarioId);
+    var per = e.perfil || {};
+
+    // gravidade_retaliacao = gravidade_pedido x (1 - cumprimento) x (vinganca/100)
+    var retal = ac.pedido.gravidade * 1.0 * ((per.vinganca || 50) / 100);
+    rel.confianca = _clamp(rel.confianca - _rd()(20 + retal * 10, 20, 50), 0, 100);
+    rel.afinidade = _clamp(rel.afinidade - _rd()(10 + retal * 6, 10, 40), 0, 100);
+    rel.favor = _clamp(rel.favor - 10, -100, 100);
+    ac.status = "descumprido";
+    _log(rel, "descumprimento", "Descumpriu o pedido de " + e.nome + ". Retaliacao: " + retal.toFixed(1));
+
+    // remove acordo da lista de ativos e aplica retaliacao
+    rel.acordos_ativos = (rel.acordos_ativos || []).filter(function (id) { return id !== ac.id; });
+    _retaliar(ac, retal);
+    return { ok: true, retaliacao: retal };
+  };
+
+  function _retaliar(ac, retal) {
+    var e = EMP.porId(ac.empresarioId);
+    var j = _jogador();
+    var efeitos = [];
+    // cortar financiamento
+    if (j && j.financas) {
+      j.financas.caixa1 = Math.max(0, (j.financas.caixa1 || 0) - Math.round(retal * 8000));
+      efeitos.push("cortou financiamento");
+    }
+    // atacar na imprensa propria
+    if ((e.bloco === "midia" || e.bloco === "bigtech") && typeof mudarAprovTodos === "function") {
+      mudarAprovTodos(-retal * 0.8);
+      efeitos.push("atacou na imprensa propria");
+    }
+    // vazar acordo (exposicao)
+    var rel = EMP.relacao(ac.empresarioId);
+    rel.exposicao = _clamp(rel.exposicao + Math.round(retal * 4), 0, 100);
+    if (ac.canal !== "legal" && typeof addEscandalo === "function") addEscandalo(Math.ceil(retal));
+    if (typeof toast === "function") {
+      toast("RETALIACAO: " + e.nome + " " + (efeitos.join(" e ") || "reagiu") + ".", "err");
+    }
+  }
+
+  function _log(rel, tipo, resumo) {
+    if (!rel.historico) rel.historico = [];
+    rel.historico.unshift({ mes: _mesAtualJogo(), tipo: tipo, resumo: resumo });
+    if (rel.historico.length > 20) rel.historico.length = 20;
+  }
+  EMP.log = _log;
+
+  /* ---------- aplicacao dos efeitos de um acordo (secao 6.1) ---------- */
+  function _aplicarEfeitosAcordo(ac, sinal) {
+    var o = ac.oferta || {};
+    var v = (ac.oferta_valor_final || 0) * (sinal || 1);
+    if (!o.variavel) return;
+    // efeito registrado em gameState.empresarios.efeitos para o tick mensal consumir
+    var st = _estado();
+    if (!st) return;
+    if (!st.efeitos) st.efeitos = [];
+    st.efeitos.push({
+      variavel: o.variavel, valor: v, restantes: o.duracao_meses || 12,
+      inicio: _mesAtualJogo(), empresarioId: ac.empresarioId
+    });
+  }
+  EMP.aplicarEfeitosAcordo = _aplicarEfeitosAcordo;
+
+
+  /* ---------- Compromissos (lista com prazo e consequencia) ---------- */
+  EMP.compromissos = function () {
+    var st = _estado();
+    if (!st) return [];
+    var mes = _mesAtualJogo();
+    return st.acordos.filter(function (a) { return a.status === "ativo"; }).map(function (a) {
+      var e = EMP.porId(a.empresarioId) || {};
+      var restam = Math.max(0, (a.fim_mes || 0) - mes);
+      return {
+        acordo: a,
+        empresario: e.nome,
+        empresarioId: a.empresarioId,
+        pauta: a.pedido.pauta,
+        pautaLabel: EMP.PAUTA_LABEL[a.pedido.pauta] || a.pedido.pauta,
+        descricao: a.pedido.descricao,
+        gravidade: a.pedido.gravidade,
+        canal: a.canal,
+        restam_meses: restam,
+        vencido: restam <= 0
+      };
+    });
+  };
+  window.empCompromissos = EMP.compromissos;
+
+  /* ---------- tick mensal: decaimento, vazamento, retaliacao, blocos ---------- */
+  EMP.processarMes = function () {
+    var st = _estado();
+    if (!st) return null;
+    var j = _jogador();
+    var rel = st.relacoes;
+    var eventos = [];
+
+    // 1. decaimento de afinidade dependente de lealdade
+    Object.keys(rel).forEach(function (id) {
+      var r = rel[id];
+      var e = EMP.porId(id);
+      var lealdade = (e && e.perfil && e.perfil.lealdade) || 50;
+      var taxa = lealdade < 50 ? 1 : 0.5;
+      // senador tem decaimento mais lento (secao 7.4)
+      if (EMP.cargoAtual() === "senador") taxa *= 0.6;
+      if (r.contatos === 0 && r.afinidade > 0) {
+        r.afinidade = _clamp(r.afinidade - taxa, 0, 100);
+      }
+      // decaimento de exposicao: -2% ao mes sem novo acordo
+      r.exposicao = _clamp(r.exposicao - 2, 0, 100);
+    });
+
+    // 2. compromissos vencidos sem cumprimento -> retaliacao
+    st.acordos.forEach(function (a) {
+      if (a.status !== "ativo") return;
+      if (_mesAtualJogo() > (a.fim_mes || 0)) {
+        EMP.descumprirPedido(a.id);
+        eventos.push({ tipo: "retaliacao", empresario: a.empresarioId });
+      }
+    });
+
+    // 3. vazamento mensal
+    var vaz = EMP.chanceVazamento();
+    if (vaz > 0 && Math.random() < vaz) {
+      // escolhe o acordo cinza/caixa2 mais exposto
+      var candidatos = st.acordos.filter(function (a) { return a.canal !== "legal" && a.status === "ativo"; });
+      var alvo = candidatos.length ? candidatos[candidatos.length - 1] : null;
+      if (alvo) {
+        alvo.status = "vazado";
+        var relAlvo = rel[alvo.empresarioId];
+        if (relAlvo) relAlvo.exposicao = _clamp(relAlvo.exposicao + 15, 0, 100);
+        // justica por fases ja existente
+        if (typeof addIEO === "function") addIEO(8 + (alvo.pedido.gravidade * 2));
+        if (typeof addEscandalo === "function") addEscandalo(2);
+        if (typeof manchete === "function") manchete("Vazamento de acordo com " + (EMP.porId(alvo.empresarioId) || {}).nome + " abre investigacao.", "pf");
+        if (typeof toast === "function") toast("VAZAMENTO: acordo com " + (EMP.porId(alvo.empresarioId) || {}).nome + " foi exposto.", "err");
+        eventos.push({ tipo: "vazamento", empresario: alvo.empresarioId });
+      }
+    }
+
+    // 4. blocos: indice < 30 por 3 meses -> bloco se organiza
+    if (!st.bloco_meses_baixos) st.bloco_meses_baixos = {};
+    Object.keys(EMP.BLOCOS).forEach(function (b) {
+      var idx = EMP.indiceBloco(b);
+      if (idx < 30) {
+        st.bloco_meses_baixos[b] = (st.bloco_meses_baixos[b] || 0) + 1;
+        if (st.bloco_meses_baixos[b] >= 3) {
+          // bloco financia a oposicao
+          if (typeof mudarAprovTodos === "function") mudarAprovTodos(-1.5);
+          if (typeof toast === "function") toast("O bloco " + EMP.BLOCOS[b].nome + " se organizou e financia a oposicao.", "warn");
+          eventos.push({ tipo: "bloco_organizado", bloco: b });
+          st.bloco_meses_baixos[b] = 0;
+        }
+      } else {
+        st.bloco_meses_baixos[b] = 0;
+      }
+    });
+
+    // 5. reavaliacao de lado: afinidade < 30 e vinganca > 50 -> financia adversario
+    Object.keys(rel).forEach(function (id) {
+      var r = rel[id];
+      var e = EMP.porId(id);
+      if (!e || !e.perfil) return;
+      if (r.afinidade < 30 && e.perfil.vinganca > 50 && Math.random() < 0.25) {
+        if (typeof mudarAprovTodos === "function") mudarAprovTodos(-0.8);
+        eventos.push({ tipo: "financia_adversario", empresario: id });
+      }
+    });
+
+    // 6. efeitos ativos decaem
+    if (st.efeitos) {
+      st.efeitos = st.efeitos.filter(function (ef) {
+        ef.restantes -= 1;
+        return ef.restantes > 0;
+      });
+    }
+
+    st.mes_atual = _mesAtualJogo();
+    st.ultimo_evento = eventos;
+    return { eventos: eventos, indices: EMP.indiceBlocos(), vazamento: vaz };
+  };
+  window.empProcessarMes = EMP.processarMes;
+
+  /* ---------- quem procura voce neste mes (amostragem) ---------- */
+  EMP.procurandoVoce = function () {
+    var cargo = EMP.cargoAtual();
+    if (!cargo) return [];
+    var maximo = (cargo === "vereador" || cargo === "dep_estadual") ? 2 : (cargo === "dep_federal" || cargo === "senador") ? 4 : 6;
+    var lista = EMP.visiveisParaCargo(cargo).map(function (e) {
+      return { e: e, p: EMP.chanceProcurarVoce(e.id, cargo, 1) };
+    }).filter(function (x) { return x.p > 0.05; })
+      .sort(function (a, b) { return b.p - a.p; })
+      .slice(0, maximo);
+    return lista.map(function (x) { return { empresario: x.e, chance: x.p }; });
+  };
+  window.empProcurandoVoce = EMP.procurandoVoce;
+
+  /* ---------- relacao com favorecimento (regra 4.1 aliados/rivais) ---------- */
+  EMP.aplicarGanhoAfinidade = function (empresarioId, ganho) {
+    var rel = EMP.relacao(empresarioId);
+    if (!rel) return;
+    rel.afinidade = _clamp(rel.afinidade + ganho, 0, 100);
+    // rivais perdem 15% do ganho (minimo 1 ponto)
+    var perda = Math.max(1, ganho * 0.15);
+    EMP.rivaisDe(empresarioId).forEach(function (rid) {
+      var r = EMP.relacao(rid);
+      if (r) r.afinidade = _clamp(r.afinidade - perda, 0, 100);
+    });
+  };
+  EMP.rivalPenaltyAcordos = function (empresarioId) {
+    var st = _estado();
+    if (!st) return 0;
+    var pen = 0;
+    EMP.rivaisDe(empresarioId).forEach(function (rid) {
+      var r = st.relacoes[rid];
+      if (r && r.acordos_ativos && r.acordos_ativos.length) pen += r.afinidade * 0.1;
+    });
+    return pen;
+  };
+
+  /* ---------- ganancia (quanto pede em troca de cada favor) ---------- */
+  EMP.custoDoFavor = function (empresarioId, valorBase) {
+    var e = EMP.porId(empresarioId);
+    var g = (e && e.perfil && e.perfil.ganancia) || 50;
+    return Math.round((valorBase || 10000) * (0.5 + g / 100));
+  };
+  window.empCustoDoFavor = EMP.custoDoFavor;
+
+  /* ---------- atualiza resumo ---------- */
+  var _resumoBase = EMP.resumo;
+  EMP.resumo = function () {
+    var r = _resumoBase ? _resumoBase() : {};
+    var st = _estado();
+    r.fase = EMP.fase;
+    r.cargoAtual = EMP.cargoAtual();
+    r.visiveisParaCargo = EMP.visiveisParaCargo().length;
+    r.relacoesAtivas = st ? Object.keys(st.relacoes).length : 0;
+    r.acordosAtivos = st ? st.acordos.filter(function (a) { return a.status === "ativo"; }).length : 0;
+    r.compromissos = st ? st.acordos.filter(function (a) { return a.status === "ativo"; }).length : 0;
+    r.agendaDisponivel = EMP.agendaDisponivel();
+    r.chanceVazamento = EMP.chanceVazamento();
+    return r;
+  };
+
+
   EMP.FOTOS_B64 = {
     "Rubens Ometto":  "data:image/jpeg;base64,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",
     "Guilherme Benchimol":  "data:image/jpeg;base64,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",
@@ -1367,32 +2055,17 @@
 
   /* ---------------------------------------------------------------------------
      EXPORTACAO / DIAGNOSTICO
+     Encadeia no resumo definido pelas fases (nao sobrescreve).
      --------------------------------------------------------------------------- */
+  var _resumoEncadeado = EMP.resumo;
   EMP.resumo = function () {
-    var blocos = {};
-    var eixos = {};
-    CATALOGO_EMPRESARIOS.forEach(function (e) {
-      blocos[e.bloco] = (blocos[e.bloco] || 0) + 1;
-      eixos[e.eixo] = (eixos[e.eixo] || 0) + 1;
-    });
-    var comFoto = 0;
-    for (var n in EMP.FOTOS) { if (EMP.FOTOS[n]) comFoto++; }
-    return {
-      versao: EMP.versao,
-      total: CATALOGO_EMPRESARIOS.length,
-      titulares: CATALOGO_EMPRESARIOS.filter(function (e) { return e.tipo === "titular"; }).length,
-      registradosNaBase: EMP.registrados,
-      blocos: blocos,
-      eixos: eixos,
-      fotos: comFoto,
-      pautas: EMP.PAUTAS.length,
-      indicesBlocos: EMP.indiceBlocos()
-    };
+    var r = _resumoEncadeado ? _resumoEncadeado() : {};
+    r.fase = EMP.fase;
+    r.total = CATALOGO_EMPRESARIOS.length;
+    r.registradosNaBase = EMP.registrados;
+    return r;
   };
   window.empResumo = EMP.resumo;
-
-  // API placeholder para as fases seguintes (mecanica, cargos, eventos, UI)
-  EMP.fase = 1;
 
 })();
 
