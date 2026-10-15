@@ -263,6 +263,22 @@
       contras: ["Conflito inevitável com a bancada ruralista e mineradoras em disputas territoriais.", "Despesas de manutenção orçamentária dos aparelhos educacionais exigem gestão fiscal refinada."]
     },
     {
+      id: "paulo_freire",
+      nome: "Paulo Freire",
+      alcunha: "O Patrono da Educação Libertadora",
+      eixo: "humanista",
+      arquetipo: "Pedagogia Crítica & Mobilização de Base",
+      citacao: "Se a educação sozinha não transforma a sociedade, sem ela tampouco a sociedade muda.",
+      descricao: "Educador e filósofo pernambucano reconhecido mundialmente pela criação de um método revolucionário de alfabetização de adultos e pela defesa da educação como prática de liberdade e consciência política dos oprimidos.",
+      pros: [
+        "+35% de engajamento entre estudantes, professores, universidades e movimentos de base popular",
+        "Aceleração massiva nos índices de alfabetização e consciência cívica a longo prazo"
+      ],
+      contras: [
+        "Alvo número um da guerra cultural: oposição feroz e constante de bancadas conservadoras, religiosas e militares"
+      ]
+    },
+    {
       id: "ulysses",
       nome: "Ulysses Guimarães",
       alcunha: "O Senhor Diretas",
