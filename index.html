@@ -1475,14 +1475,12 @@ details summary { font-weight: 700; }
 <link rel="stylesheet" href="cadeira-theme.css">
 <style id="cadeira-theme-inline">
 /* =============================================================================
-   CADEIRA — Tema visual "Gabinete Noturno"
-   Simulador de poder BR: institucional, satírico, noturno.
-   Sobrescreve tokens e casca; não altera lógica JS.
+   CADEIRA — Tema visual "Gabinete Noturno" (só cor/tipografia)
+   NÃO altera position / top / margin / height / sticky de .tabs, .lcd, #app.
+   Layout permanece o do CSS original do jogo.
    ============================================================================= */
 
-
 :root {
-  /* Atmosfera: gabinete / Planalto à noite */
   --plastico: #0c1412;
   --superficie: #15201c;
   --superficie2: #1c2a25;
@@ -1507,30 +1505,22 @@ details summary { font-weight: 700; }
   --ok: #3d9a6a;
   --warn: #c4923a;
   --bad: #c45c4a;
-  --eu: #c4a35a; /* latão institucional — não azul genérico */
+  --eu: #c4a35a;
 
   --font-display: "Fraunces", "Times New Roman", serif;
   --font-ui: "DM Sans", system-ui, sans-serif;
   --font-lcd: "IBM Plex Mono", ui-monospace, monospace;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  /* radius/shadows de cor — sem mudar box model crítico */
   --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.04);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.28);
   --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.35);
   --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04), 0 10px 28px rgba(0, 0, 0, 0.22);
 
-  --vinheta: radial-gradient(ellipse 120% 80% at 50% -10%, rgba(196, 163, 90, 0.09), transparent 55%),
-    radial-gradient(ellipse 90% 70% at 100% 100%, rgba(20, 60, 45, 0.35), transparent 50%),
-    linear-gradient(180deg, #0e1815 0%, #0c1412 40%, #0a100e 100%);
-
   color-scheme: dark;
 }
 
-:root[data-theme="light"],
-html:not([data-theme="dark"]) {
+:root[data-theme="light"] {
   --plastico: #e8ebe4;
   --superficie: #f4f6f1;
   --superficie2: #ebeee7;
@@ -1558,8 +1548,6 @@ html:not([data-theme="dark"]) {
   --eu: #8a6e2f;
 
   --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 22px rgba(26, 36, 32, 0.08);
-  --vinheta: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(138, 110, 47, 0.08), transparent 50%),
-    linear-gradient(180deg, #eef1ea 0%, #e8ebe4 100%);
   color-scheme: light;
 }
 
@@ -1571,326 +1559,72 @@ html:not([data-theme="dark"]) {
   --tinta2: #9aada3;
   --linha: rgba(196, 163, 90, 0.18);
   --eu: #c4a35a;
-  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04), 0 10px 28px rgba(0, 0, 0, 0.22);
   color-scheme: dark;
 }
 
-/* ---------- Base / atmosfera ---------- */
-html {
-  background: var(--plastico);
-}
-
+/* Tipografia apenas — sem mexer em espaçamento de layout */
 body {
-  background: var(--vinheta);
-  background-attachment: fixed;
+  background-color: var(--plastico);
   color: var(--tinta);
   font-family: var(--font-ui);
-  font-size: 15px;
-  line-height: 1.55;
-  letter-spacing: 0.01em;
-}
-
-#app {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 0 18px 160px;
-  animation: cadeira-fade-in 0.45s ease both;
-}
-
-@keyframes cadeira-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
 }
 
 h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--tinta);
 }
 
 h4 {
   font-family: var(--font-ui);
-  font-weight: 600;
-  color: var(--tinta2);
-  text-transform: uppercase;
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-}
-
-/* ---------- Landing / marca ---------- */
-.inicio {
-  padding-top: 18px;
-  padding-bottom: 24px;
-}
-
-.inicio .urna-topo {
-  margin-bottom: 22px;
-}
-
-.inicio .lcd-big {
-  position: relative;
-  overflow: hidden;
-  padding: 42px 24px 36px;
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--lcd-border);
-  background:
-    linear-gradient(180deg, rgba(196, 163, 90, 0.08), transparent 42%),
-    linear-gradient(145deg, #0e1c17 0%, #152820 55%, #0f1a15 100%);
-  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  text-align: center;
-}
-
-.inicio .lcd-big::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(0, 0, 0, 0.04) 3px,
-    rgba(0, 0, 0, 0.04) 4px
-  );
-  pointer-events: none;
-  opacity: 0.45;
 }
 
 .inicio .lcd-linha {
-  position: relative;
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 8vw, 4.4rem);
   font-weight: 800;
   letter-spacing: 0.04em;
   color: #f6f0e0;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
-  line-height: 1.05;
 }
 
 .inicio .lcd-sub {
-  position: relative;
-  margin-top: 12px;
-  font-family: var(--font-ui);
-  font-size: 1.05rem;
-  font-weight: 500;
   color: var(--eu);
-  letter-spacing: 0.04em;
-}
-
-.inicio .credito {
-  text-align: center;
-  color: var(--tinta2);
-  font-size: 0.85rem;
-  margin: 0 0 12px;
-  opacity: 0.85;
-}
-
-.inicio .card h3 {
-  font-size: 1.15rem;
-}
-
-/* ---------- HUD (.lcd) ---------- */
-.lcd {
-  background: var(--lcd-bg);
-  border: 1px solid var(--lcd-border);
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.lcd:hover {
-  border-color: rgba(196, 163, 90, 0.4);
+  font-family: var(--font-ui);
 }
 
 .lcd-top .who {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: 0.01em;
 }
 
 .lcd .cells {
   font-family: var(--font-lcd);
-  font-size: 0.78rem;
 }
 
-/* ---------- Tabs ---------- */
-.tabs {
-  top: calc(env(safe-area-inset-top, 0px) + 88px);
-  gap: 4px;
-  padding: 12px 2px 8px;
-  background: linear-gradient(180deg, rgba(12, 20, 18, 0.92), rgba(12, 20, 18, 0.75));
-  border-bottom: 1px solid var(--linha);
-  backdrop-filter: blur(8px);
+.card h3,
+.mbox h2,
+.news h4,
+.news b {
+  font-family: var(--font-display);
 }
 
-.tab {
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--tinta2);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-weight: 600;
-  font-size: 0.86rem;
-  box-shadow: none;
-  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
-}
-
-.tab:hover {
-  color: var(--tinta);
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--linha);
-  transform: translateY(-1px);
-}
-
+/* Cor do tab ativo — sem position/top/padding/margin */
 .tab.on {
-  background: rgba(196, 163, 90, 0.16);
+  background: rgba(196, 163, 90, 0.2);
   color: #f3e6c4;
   border-color: rgba(196, 163, 90, 0.45);
   box-shadow: none;
 }
 
-.tab.alerta {
-  border-color: rgba(196, 92, 74, 0.5);
-  color: #e8a090;
-}
-
-.tab.on.alerta {
-  background: rgba(196, 92, 74, 0.25);
-  color: #ffe8e2;
-}
-
-/* ---------- Cards: menos "spam", mais painel ---------- */
-main {
-  margin-top: 14px;
-}
-
-.card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 28%), var(--superficie);
-  border: 1px solid var(--linha);
-  border-radius: var(--radius-lg);
-  padding: 16px 18px;
-  margin: 0 0 14px;
-  box-shadow: var(--shadow-card);
-  transition: border-color 0.18s ease, transform 0.18s ease;
-}
-
-.card:hover {
-  border-color: rgba(196, 163, 90, 0.32);
-}
-
-.card h3 {
-  font-family: var(--font-display);
-  font-size: 1.12rem;
-  margin-bottom: 0.45rem;
-}
-
-.card.ev {
-  border-color: rgba(196, 163, 90, 0.45);
-  box-shadow: var(--shadow-md);
-  border-left: 4px solid var(--eu);
-  background: linear-gradient(90deg, rgba(196, 163, 90, 0.08), transparent 40%), var(--superficie);
-}
-
-.aviso {
-  background: rgba(196, 163, 90, 0.06);
-  border: 1px solid var(--linha);
-  border-radius: var(--radius-md);
-  color: var(--tinta2);
-}
-
-/* ---------- Botões ---------- */
-.b, button.b {
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  transition: transform 0.12s ease, filter 0.12s ease, background 0.15s ease;
-}
-
-.b:hover:not(:disabled),
-button.b:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-
 .b.confirma, button.b.confirma {
   background: var(--confirma);
   color: var(--confirma-tx);
-  border-color: transparent;
 }
 
 .b.corrige, button.b.corrige {
   background: var(--corrige);
   color: var(--corrige-tx);
-  border-color: transparent;
 }
 
-.b.branco, button.b.branco {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--tinta);
-  border: 1px solid var(--linha);
-}
-
-.b.grande {
-  padding: 12px 20px;
-  font-size: 1.02rem;
-  border-radius: var(--radius-md);
-}
-
-/* ---------- Footer / avançar ---------- */
-.foot {
-  background: linear-gradient(180deg, transparent, rgba(12, 20, 18, 0.85) 30%, var(--plastico));
-  border-top: 1px solid var(--linha);
-  backdrop-filter: blur(8px);
-}
-
-/* ---------- Modais / plenário ---------- */
-.modal {
-  animation: cadeira-modal-in 0.22s ease both;
-  background: rgba(6, 10, 9, 0.72);
-  backdrop-filter: blur(6px);
-}
-
-@keyframes cadeira-modal-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.mbox {
-  border: 1px solid var(--lcd-border);
-  border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, #17241f 0%, #121c18 100%);
-  box-shadow: var(--shadow-lg);
-  animation: cadeira-mbox-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes cadeira-mbox-in {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
-  to { opacity: 1; transform: none; }
-}
-
-.mbox h2 {
-  font-family: var(--font-display);
-  font-weight: 700;
-}
-
-/* Sessão legislativa — harmonizar com o tema (troca ciano “kit” por latão) */
-.sessao-box,
-.sessao-modal,
-.mbox.sessao-box {
-  border-color: var(--lcd-border) !important;
-  background: linear-gradient(180deg, #17241f 0%, #121c18 100%) !important;
-  box-shadow: var(--shadow-lg) !important;
-}
-
-.sessao-legenda-bar,
-.sessao-inspector-card {
-  border-radius: var(--radius-md);
-}
-
+/* Plenário: latão no lugar do ciano — só cor */
 [data-exf-lideres],
-[data-sesf-nego],
-.sessao-inspector-card[data-sesf-nego] {
+[data-sesf-nego] {
   border-color: rgba(196, 163, 90, 0.4) !important;
   background: rgba(196, 163, 90, 0.07) !important;
 }
@@ -1900,113 +1634,22 @@ circle.lider-dot {
   stroke: #c4a35a !important;
 }
 
-.sessao-legenda-item[data-sesf-legenda-lider],
 [data-sesf-legenda-lider] {
   color: #c4a35a !important;
 }
 [data-sesf-legenda-lider] .sessao-legenda-dot {
   background: #c4a35a !important;
-  box-shadow: 0 0 6px rgba(196, 163, 90, 0.45) !important;
-}
-
-/* ---------- Notícias / imprensa ---------- */
-.news {
-  border-radius: var(--radius-md);
-  background: var(--superficie);
-  border: 1px solid var(--linha);
-  border-left-width: 4px;
-}
-
-.news h4, .news b {
-  font-family: var(--font-display);
-}
-
-/* ---------- Arquétipos na landing ---------- */
-.arq {
-  border: 1px solid var(--linha);
-  border-radius: var(--radius-md);
-  background: var(--superficie2);
-  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-}
-
-.arq:hover {
-  border-color: rgba(196, 163, 90, 0.4);
-  transform: translateY(-2px);
+  box-shadow: none !important;
 }
 
 .arq.on {
   border-color: var(--eu);
   background: rgba(196, 163, 90, 0.12);
-  box-shadow: inset 0 0 0 1px rgba(196, 163, 90, 0.25);
-}
-
-/* ---------- Forms ---------- */
-.f input, .f select, input[type=text], input[type=search], select, textarea, .row input {
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid var(--linha);
-  border-radius: var(--radius-sm);
-  color: var(--tinta);
-}
-
-:root[data-theme="light"] .f input,
-:root[data-theme="light"] .f select,
-html:not([data-theme="dark"]) .f input,
-html:not([data-theme="dark"]) .f select {
-  background: #fff;
 }
 
 .f input:focus, .f select:focus, input[type=text]:focus, select:focus, textarea:focus {
   border-color: var(--eu);
   box-shadow: 0 0 0 3px rgba(196, 163, 90, 0.18);
-}
-
-/* ---------- Desktop conforto ---------- */
-@media (min-width: 1280px) {
-  #app {
-    max-width: 1040px;
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-  .tabs {
-    display: flex;
-  }
-  .inicio .lcd-linha {
-    font-size: 4.6rem;
-  }
-}
-
-/* Evento do mês / opções — evita azul genérico herdado */
-.modal .op, .mbox .op, .ev .op, button.op, .opcoes .b, .card.ev .b {
-  border-radius: var(--radius-md);
-}
-.modal .b.confirma.grande,
-.mbox .b.confirma {
-  box-shadow: 0 4px 14px rgba(61, 154, 106, 0.25);
-}
-
-/* Toasts */
-#toasts .toast, .toast {
-  border-radius: var(--radius-md);
-  border: 1px solid var(--linha);
-  font-family: var(--font-ui);
-}
-
-/* Bottom nav mobile */
-.bnav {
-  background: rgba(18, 28, 24, 0.96);
-  border-top: 1px solid var(--linha);
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
-}
-.bnav button.on {
-  color: var(--eu);
-}
-
-/* Preferência: menos motion se o SO pedir */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
 }
 </style>
 
