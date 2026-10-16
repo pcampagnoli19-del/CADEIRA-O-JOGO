@@ -22,8 +22,16 @@ if (Test-Path "modulo_diplomacia.js") {
   Write-Host "AVISO: modulo_diplomacia.js ausente - build sem o modulo de diplomacia."
 }
 
+# Modulo Nucleo de Influenciadores (aditivo). Opcional.
+$infData = ""
+if (Test-Path "modulo_influenciadores.js") {
+  $infData = [System.IO.File]::ReadAllText("modulo_influenciadores.js", [System.Text.Encoding]::UTF8)
+} else {
+  Write-Host "AVISO: modulo_influenciadores.js ausente - build sem nucleo de influenciadores."
+}
+
 # Combinar módulo final
-$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData
+$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData + "`r`n`r`n" + $infData
 
 # 2. Ler base HTML limpa CADEIRA_O_Jogo_25.html.bak_abc
 $baseHtml = [System.IO.File]::ReadAllText("CADEIRA_O_Jogo_25.html.bak_abc", [System.Text.Encoding]::UTF8)
