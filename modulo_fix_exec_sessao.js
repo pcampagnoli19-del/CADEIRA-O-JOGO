@@ -19,6 +19,30 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
   }
+  /** Caixa 2 real do jogo fica em financas.caixa2 (não em j.caixa2). */
+  function _saldoCaixa2() {
+    try {
+      var j = J();
+      if (!j) return 0;
+      if (j.financas && j.financas.caixa2 != null) return Number(j.financas.caixa2) || 0;
+      return Number(j.caixa2) || 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+  function _debitarCaixa2(v) {
+    var j = J();
+    if (!j) return false;
+    j.financas = j.financas || {};
+    var saldo = _saldoCaixa2();
+    if (saldo < v) return false;
+    j.financas.caixa2 = saldo - v;
+    if (j.caixa2 != null) j.caixa2 = Math.max(0, (Number(j.caixa2) || 0) - v);
+    return true;
+  }
+  function _partidoDe(m) {
+    return (m && (m.partidoBase || m.partido || m._bancadaLider)) || "";
+  }
 
   /* ---------- P0: cheats Pref / Gov / Pres / Sen ---------- */
   function patchModalCheats() {
@@ -138,21 +162,48 @@
 
   /* ---------- Voto com bias / animação lenta + velocidade ---------- */
   function votoComBias(npc, materia) {
+    // Bias forte: acordo de bancada manda no voto restante
+    try {
+      if (npc && npc._biasSessao) {
+        var b = Number(npc._biasSessao) || 0;
+        if (b >= 0.9) return "S";
+        if (b <= -0.9) return "N";
+        if (b > 0.2 && Math.random() < Math.min(0.98, 0.55 + b)) return "S";
+        if (b < -0.2 && Math.random() < Math.min(0.98, 0.55 - b)) return "N";
+      }
+    } catch (e0) {}
     try {
       if (typeof simularVotoNPC === "function") {
-        var v = simularVotoNPC(npc, materia);
-        if (npc && npc._biasSessao) {
-          var b = npc._biasSessao;
-          if (b > 0.2 && Math.random() < Math.min(0.92, 0.35 + b)) return "S";
-          if (b < -0.2 && Math.random() < Math.min(0.92, 0.35 - b)) return "N";
-        }
-        return v;
+        return simularVotoNPC(npc, materia);
       }
     } catch (e) {}
-    // fallback simples
-    if (npc && npc._biasSessao > 0.2) return Math.random() < 0.75 ? "S" : "N";
-    if (npc && npc._biasSessao < -0.2) return Math.random() < 0.75 ? "N" : "S";
+    if (npc && npc._biasSessao > 0.2) return Math.random() < 0.9 ? "S" : "N";
+    if (npc && npc._biasSessao < -0.2) return Math.random() < 0.9 ? "N" : "S";
     return Math.random() < 0.55 ? "S" : Math.random() < 0.7 ? "N" : "A";
+  }
+
+  /** Converte votos ainda pendentes da bancada (efeito imediato no placar). */
+  function aplicarAcordoBancada(partido, lado, forcarImediato) {
+    var sl = S.sessaoLeg;
+    if (!sl || !partido) return { pendentes: 0, convertidos: 0 };
+    sl.votos = sl.votos || {};
+    var pendentes = 0;
+    var convertidos = 0;
+    var alvo = lado === "N" ? "N" : "S";
+    var delta = alvo === "S" ? 1.25 : -1.25;
+    (sl.membros || []).forEach(function (m) {
+      if (!m || m.jogador || m.id === "JOGADOR") return;
+      if (_partidoDe(m) !== partido) return;
+      m._biasSessao = (m._biasSessao || 0) + delta;
+      if (sl.votos[m.id]) return;
+      pendentes++;
+      if (forcarImediato) {
+        sl.votos[m.id] = alvo;
+        convertidos++;
+      }
+    });
+    if (convertidos) atualizarPlacarLocal();
+    return { pendentes: pendentes, convertidos: convertidos, lado: alvo };
   }
 
   function atualizarPlacarLocal() {
@@ -205,7 +256,10 @@
           });
           if (npc) {
             s.votos = s.votos || {};
-            s.votos[npcId] = votoComBias(npc, s.materia);
+            // Não sobrescreve voto já lançado (ex.: acordo de bancada imediato)
+            if (!s.votos[npcId]) {
+              s.votos[npcId] = votoComBias(npc, s.materia);
+            }
             ultimo = { npc: npc, voto: s.votos[npcId] };
             s.votandoAgora = ultimo;
           }
@@ -405,18 +459,18 @@
         return;
       }
 
-      var delta = 0.25;
+      var lado = "S"; // articulação puxa a bancada para SIM nesta matéria
       if (modo === "falar") {
         if (typeof gastarEnergia === "function" && !gastarEnergia(2)) return;
-        delta = 0.3;
       } else if (modo === "caixa2") {
-        var j = J();
-        if ((j.caixa2 || 0) < 40000) {
-          _toast("Caixa 2 insuficiente (precisa R$ 40 mil).", "err");
+        if (!_debitarCaixa2(40000)) {
+          _toast(
+            "Caixa 2 insuficiente (precisa R$ 40 mil). Saldo: R$ " +
+              Math.round(_saldoCaixa2()).toLocaleString("pt-BR"),
+            "err"
+          );
           return;
         }
-        j.caixa2 -= 40000;
-        delta = 0.55;
         try {
           if (typeof emitirFato === "function")
             emitirFato({
@@ -430,35 +484,37 @@
         } catch (e) {}
       } else if (modo === "colar") {
         if (typeof gastarEnergia === "function" && !gastarEnergia(3)) return;
-        delta = 0.4;
-        var j2 = J();
-        j2.atributos.influencia = Math.min(100, (j2.atributos.influencia || 0) + 0.4);
+        try {
+          var j2 = J();
+          j2.atributos = j2.atributos || {};
+          j2.atributos.influencia = Math.min(100, (j2.atributos.influencia || 0) + 0.4);
+        } catch (eInf) {}
       } else {
         _toast("Ação inválida.", "err");
         return;
       }
 
-      var afetados = 0;
-      (sl.membros || []).forEach(function (m) {
-        if (!m || m.jogador || m.id === "JOGADOR") return;
-        if ((m.partidoBase || m.partido) !== part) return;
-        m._biasSessao = (m._biasSessao || 0) + delta;
-        if (!sl.votos || !sl.votos[m.id]) afetados++;
-      });
+      var res = aplicarAcordoBancada(part, lado, true);
       sl._negoFeitas[key] = true;
       sl.negociarAberto = id;
       sl.parlamentarSelecionado = id;
+      sl._ultimoAcordo = { partido: part, modo: modo, convertidos: res.convertidos, lado: res.lado };
 
-      // NÃO pausa a votação — bias vale para os próximos votos; painel continua rodando
+      var rotuloLado = res.lado === "N" ? "NÃO" : "SIM";
       _toast(
-        (modo === "caixa2" ? "Caixa 2 com " : modo === "colar" ? "Colou na bancada " : "Conversa com ") +
+        "Bancada " +
           part +
-          " — ~" +
-          afetados +
-          " votos pendentes tendem a Sim.",
+          ": +" +
+          res.convertidos +
+          " voto" +
+          (res.convertidos === 1 ? "" : "s") +
+          " para " +
+          rotuloLado,
         modo === "caixa2" ? "err" : "ok"
       );
-      render();
+      try {
+        render();
+      } catch (eR) {}
     };
     A.sessaoNegociar._exf = true;
 

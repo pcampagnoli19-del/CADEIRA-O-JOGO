@@ -32562,18 +32562,41 @@ window.GEO_ABC = GEO_ABC;
     modais._sesf = true;
   }
 
-  function aplicarInfluenciaBancada(partido, deltaSim) {
+  function aplicarInfluenciaBancada(partido, deltaSim, forcarImediato) {
     var sl = S.sessaoLeg;
     if (!sl) return 0;
+    sl.votos = sl.votos || {};
     var n = 0;
     sl.membros.forEach(function (m) {
       if (!m || m.jogador || m.id === "JOGADOR") return;
       if ((m.partidoBase || m.partido) !== partido) return;
+      m._biasSessao = (m._biasSessao || 0) + (deltaSim || 0) + (forcarImediato ? 1.0 : 0);
       if (sl.votos[m.id]) return; // já votou
-      m._biasSessao = (m._biasSessao || 0) + deltaSim;
+      if (forcarImediato) {
+        sl.votos[m.id] = deltaSim >= 0 ? "S" : "N";
+      }
       n++;
     });
     return n;
+  }
+
+  function _sesfSaldoCaixa2() {
+    try {
+      var j = J();
+      if (j && j.financas && j.financas.caixa2 != null) return Number(j.financas.caixa2) || 0;
+      return Number(j && j.caixa2) || 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+  function _sesfDebitarCaixa2(v) {
+    var j = J();
+    if (!j) return false;
+    j.financas = j.financas || {};
+    var saldo = _sesfSaldoCaixa2();
+    if (saldo < v) return false;
+    j.financas.caixa2 = saldo - v;
+    return true;
   }
 
   function patchSimularVoto() {
@@ -32611,20 +32634,18 @@ window.GEO_ABC = GEO_ABC;
 
       if (modo === "falar") {
         if (typeof gastarEnergia === "function" && !gastarEnergia(2)) return;
-        var afetados = aplicarInfluenciaBancada(part, 0.25);
+        var afetados = aplicarInfluenciaBancada(part, 0.25, true);
         sl._negoFeitas[id + ":" + modo] = true;
-        _toast("Conversa com o líder do " + part + ": ~" + afetados + " votos tendem a Sim.", "ok");
+        _toast("Bancada " + part + ": +" + afetados + " votos para SIM", "ok");
       } else if (modo === "caixa2") {
-        var j = J();
         var custo = 40000;
-        if ((j.caixa2 || 0) < custo) {
-          _toast("Caixa 2 insuficiente.", "err");
+        if (!_sesfDebitarCaixa2(custo)) {
+          _toast("Caixa 2 insuficiente (precisa R$ 40 mil).", "err");
           return;
         }
-        j.caixa2 -= custo;
-        aplicarInfluenciaBancada(part, 0.45);
+        var nCx = aplicarInfluenciaBancada(part, 0.45, true);
         sl._negoFeitas[id + ":" + modo] = true;
-        _toast("Acordo sob a mesa com a bancada " + part + ". Risco sobe.", "err");
+        _toast("Bancada " + part + ": +" + nCx + " votos para SIM (Caixa 2)", "err");
         try {
           if (typeof emitirFato === "function")
             emitirFato({
@@ -32638,11 +32659,14 @@ window.GEO_ABC = GEO_ABC;
         } catch (e) {}
       } else if (modo === "colar") {
         if (typeof gastarEnergia === "function" && !gastarEnergia(3)) return;
-        aplicarInfluenciaBancada(part, 0.35);
-        var j2 = J();
-        j2.atributos.influencia = Math.min(100, (j2.atributos.influencia || 0) + 0.4);
+        var nCol = aplicarInfluenciaBancada(part, 0.35, true);
+        try {
+          var j2 = J();
+          j2.atributos = j2.atributos || {};
+          j2.atributos.influencia = Math.min(100, (j2.atributos.influencia || 0) + 0.4);
+        } catch (eInf) {}
         sl._negoFeitas[id + ":" + modo] = true;
-        _toast("Você colou na liderança do " + part + ".", "ok");
+        _toast("Bancada " + part + ": +" + nCol + " votos para SIM", "ok");
       }
       // pausa votação para o jogador ver o efeito, depois pode retomar
       try {
@@ -32786,19 +32810,27 @@ window.GEO_ABC = GEO_ABC;
   };
 
   function patchFeedFiguras() {
-    // Sobrescreve postsParaUI do IMPF para misturar figuras reais no topo
-    if (typeof IMPF === "undefined") return;
+    if (typeof IMPF === "undefined" || !IMPF.postsParaUI) return;
+    if (IMPF.postsParaUI._sesf) return;
     var _orig = IMPF.postsParaUI;
     IMPF.postsParaUI = function () {
       var reais = SESF.postsFigurasReais();
       var bus = [];
       try {
-        bus = _orig ? _orig.apply(this, arguments) || [] : [];
+        bus = _orig.apply(this, arguments) || [];
       } catch (e) {}
-      // Preferir reais no topo; depois posts do barramento (sem duplicar handles fictícios demais)
-      var out = reais.concat(bus || []);
+      // Preferir reais no topo; depois posts do barramento
+      var seen = {};
+      var out = [];
+      reais.concat(bus || []).forEach(function (p) {
+        var k = (p.handle || p.autor || "") + ":" + (p.texto || "").slice(0, 40);
+        if (seen[k]) return;
+        seen[k] = true;
+        out.push(p);
+      });
       return out.slice(0, 40);
     };
+    IMPF.postsParaUI._sesf = true;
   }
 
   /* ---------- P2: pele real como default + label claro ---------- */
@@ -32869,7 +32901,6 @@ window.GEO_ABC = GEO_ABC;
   };
 })();
 
-
 /* =============================================================================
    CADEIRA — Cheats executivos + sessão plenário (clique/scroll/velocidade) + voo DIP
    ============================================================================= */
@@ -32890,6 +32921,30 @@ window.GEO_ABC = GEO_ABC;
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+  /** Caixa 2 real do jogo fica em financas.caixa2 (não em j.caixa2). */
+  function _saldoCaixa2() {
+    try {
+      var j = J();
+      if (!j) return 0;
+      if (j.financas && j.financas.caixa2 != null) return Number(j.financas.caixa2) || 0;
+      return Number(j.caixa2) || 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+  function _debitarCaixa2(v) {
+    var j = J();
+    if (!j) return false;
+    j.financas = j.financas || {};
+    var saldo = _saldoCaixa2();
+    if (saldo < v) return false;
+    j.financas.caixa2 = saldo - v;
+    if (j.caixa2 != null) j.caixa2 = Math.max(0, (Number(j.caixa2) || 0) - v);
+    return true;
+  }
+  function _partidoDe(m) {
+    return (m && (m.partidoBase || m.partido || m._bancadaLider)) || "";
   }
 
   /* ---------- P0: cheats Pref / Gov / Pres / Sen ---------- */
@@ -32960,9 +33015,16 @@ window.GEO_ABC = GEO_ABC;
     if (typeof render !== "function" || render._exfScroll) return;
     var _orig = render;
     window.render = function () {
-      var emSessao = S.modal && S.modal.tipo === "sessao_leg";
+      var emSessao = false;
+      try {
+        emSessao = !!(S && S.modal && S.modal.tipo === "sessao_leg");
+      } catch (e) {}
       // Impede o render nativo de jogar a página pro topo
-      if (emSessao) S._top = false;
+      if (emSessao) {
+        try {
+          S._top = false;
+        } catch (eT) {}
+      }
       // O plenário é position:fixed — o scroll útil é o do .sessao-box / .sessao-modal
       var boxY = 0,
         modalY = 0;
@@ -32978,7 +33040,9 @@ window.GEO_ABC = GEO_ABC;
       if (emSessao) {
         try {
           EXF.injectSessaoExtras();
-        } catch (e2) {}
+        } catch (e2) {
+          console.warn("EXF injectSessaoExtras", e2);
+        }
         var restore = function () {
           try {
             var b1 = document.querySelector(".sessao-box");
@@ -32988,7 +33052,6 @@ window.GEO_ABC = GEO_ABC;
           } catch (e1) {}
         };
         restore();
-        // segundo passe: layout/foto pode ajustar altura depois do paint
         try {
           requestAnimationFrame(restore);
         } catch (e3) {
@@ -33002,21 +33065,48 @@ window.GEO_ABC = GEO_ABC;
 
   /* ---------- Voto com bias / animação lenta + velocidade ---------- */
   function votoComBias(npc, materia) {
+    // Bias forte: acordo de bancada manda no voto restante
+    try {
+      if (npc && npc._biasSessao) {
+        var b = Number(npc._biasSessao) || 0;
+        if (b >= 0.9) return "S";
+        if (b <= -0.9) return "N";
+        if (b > 0.2 && Math.random() < Math.min(0.98, 0.55 + b)) return "S";
+        if (b < -0.2 && Math.random() < Math.min(0.98, 0.55 - b)) return "N";
+      }
+    } catch (e0) {}
     try {
       if (typeof simularVotoNPC === "function") {
-        var v = simularVotoNPC(npc, materia);
-        if (npc && npc._biasSessao) {
-          var b = npc._biasSessao;
-          if (b > 0.2 && Math.random() < Math.min(0.92, 0.35 + b)) return "S";
-          if (b < -0.2 && Math.random() < Math.min(0.92, 0.35 - b)) return "N";
-        }
-        return v;
+        return simularVotoNPC(npc, materia);
       }
     } catch (e) {}
-    // fallback simples
-    if (npc && npc._biasSessao > 0.2) return Math.random() < 0.75 ? "S" : "N";
-    if (npc && npc._biasSessao < -0.2) return Math.random() < 0.75 ? "N" : "S";
+    if (npc && npc._biasSessao > 0.2) return Math.random() < 0.9 ? "S" : "N";
+    if (npc && npc._biasSessao < -0.2) return Math.random() < 0.9 ? "N" : "S";
     return Math.random() < 0.55 ? "S" : Math.random() < 0.7 ? "N" : "A";
+  }
+
+  /** Converte votos ainda pendentes da bancada (efeito imediato no placar). */
+  function aplicarAcordoBancada(partido, lado, forcarImediato) {
+    var sl = S.sessaoLeg;
+    if (!sl || !partido) return { pendentes: 0, convertidos: 0 };
+    sl.votos = sl.votos || {};
+    var pendentes = 0;
+    var convertidos = 0;
+    var alvo = lado === "N" ? "N" : "S";
+    var delta = alvo === "S" ? 1.25 : -1.25;
+    (sl.membros || []).forEach(function (m) {
+      if (!m || m.jogador || m.id === "JOGADOR") return;
+      if (_partidoDe(m) !== partido) return;
+      m._biasSessao = (m._biasSessao || 0) + delta;
+      if (sl.votos[m.id]) return;
+      pendentes++;
+      if (forcarImediato) {
+        sl.votos[m.id] = alvo;
+        convertidos++;
+      }
+    });
+    if (convertidos) atualizarPlacarLocal();
+    return { pendentes: pendentes, convertidos: convertidos, lado: alvo };
   }
 
   function atualizarPlacarLocal() {
@@ -33069,7 +33159,10 @@ window.GEO_ABC = GEO_ABC;
           });
           if (npc) {
             s.votos = s.votos || {};
-            s.votos[npcId] = votoComBias(npc, s.materia);
+            // Não sobrescreve voto já lançado (ex.: acordo de bancada imediato)
+            if (!s.votos[npcId]) {
+              s.votos[npcId] = votoComBias(npc, s.materia);
+            }
             ultimo = { npc: npc, voto: s.votos[npcId] };
             s.votandoAgora = ultimo;
           }
@@ -33269,18 +33362,18 @@ window.GEO_ABC = GEO_ABC;
         return;
       }
 
-      var delta = 0.25;
+      var lado = "S"; // articulação puxa a bancada para SIM nesta matéria
       if (modo === "falar") {
         if (typeof gastarEnergia === "function" && !gastarEnergia(2)) return;
-        delta = 0.3;
       } else if (modo === "caixa2") {
-        var j = J();
-        if ((j.caixa2 || 0) < 40000) {
-          _toast("Caixa 2 insuficiente (precisa R$ 40 mil).", "err");
+        if (!_debitarCaixa2(40000)) {
+          _toast(
+            "Caixa 2 insuficiente (precisa R$ 40 mil). Saldo: R$ " +
+              Math.round(_saldoCaixa2()).toLocaleString("pt-BR"),
+            "err"
+          );
           return;
         }
-        j.caixa2 -= 40000;
-        delta = 0.55;
         try {
           if (typeof emitirFato === "function")
             emitirFato({
@@ -33294,35 +33387,37 @@ window.GEO_ABC = GEO_ABC;
         } catch (e) {}
       } else if (modo === "colar") {
         if (typeof gastarEnergia === "function" && !gastarEnergia(3)) return;
-        delta = 0.4;
-        var j2 = J();
-        j2.atributos.influencia = Math.min(100, (j2.atributos.influencia || 0) + 0.4);
+        try {
+          var j2 = J();
+          j2.atributos = j2.atributos || {};
+          j2.atributos.influencia = Math.min(100, (j2.atributos.influencia || 0) + 0.4);
+        } catch (eInf) {}
       } else {
         _toast("Ação inválida.", "err");
         return;
       }
 
-      var afetados = 0;
-      (sl.membros || []).forEach(function (m) {
-        if (!m || m.jogador || m.id === "JOGADOR") return;
-        if ((m.partidoBase || m.partido) !== part) return;
-        m._biasSessao = (m._biasSessao || 0) + delta;
-        if (!sl.votos || !sl.votos[m.id]) afetados++;
-      });
+      var res = aplicarAcordoBancada(part, lado, true);
       sl._negoFeitas[key] = true;
       sl.negociarAberto = id;
       sl.parlamentarSelecionado = id;
+      sl._ultimoAcordo = { partido: part, modo: modo, convertidos: res.convertidos, lado: res.lado };
 
-      // NÃO pausa a votação — bias vale para os próximos votos; painel continua rodando
+      var rotuloLado = res.lado === "N" ? "NÃO" : "SIM";
       _toast(
-        (modo === "caixa2" ? "Caixa 2 com " : modo === "colar" ? "Colou na bancada " : "Conversa com ") +
+        "Bancada " +
           part +
-          " — ~" +
-          afetados +
-          " votos pendentes tendem a Sim.",
+          ": +" +
+          res.convertidos +
+          " voto" +
+          (res.convertidos === 1 ? "" : "s") +
+          " para " +
+          rotuloLado,
         modo === "caixa2" ? "err" : "ok"
       );
-      render();
+      try {
+        render();
+      } catch (eR) {}
     };
     A.sessaoNegociar._exf = true;
 
@@ -33711,24 +33806,6 @@ window.GEO_ABC = GEO_ABC;
     return { versao: EXF.versao, vel: S.sessaoVelocidade || 1 };
   };
 })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 </script>
 </body>

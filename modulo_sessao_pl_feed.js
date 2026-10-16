@@ -360,18 +360,41 @@
     modais._sesf = true;
   }
 
-  function aplicarInfluenciaBancada(partido, deltaSim) {
+  function aplicarInfluenciaBancada(partido, deltaSim, forcarImediato) {
     var sl = S.sessaoLeg;
     if (!sl) return 0;
+    sl.votos = sl.votos || {};
     var n = 0;
     sl.membros.forEach(function (m) {
       if (!m || m.jogador || m.id === "JOGADOR") return;
       if ((m.partidoBase || m.partido) !== partido) return;
+      m._biasSessao = (m._biasSessao || 0) + (deltaSim || 0) + (forcarImediato ? 1.0 : 0);
       if (sl.votos[m.id]) return; // já votou
-      m._biasSessao = (m._biasSessao || 0) + deltaSim;
+      if (forcarImediato) {
+        sl.votos[m.id] = deltaSim >= 0 ? "S" : "N";
+      }
       n++;
     });
     return n;
+  }
+
+  function _sesfSaldoCaixa2() {
+    try {
+      var j = J();
+      if (j && j.financas && j.financas.caixa2 != null) return Number(j.financas.caixa2) || 0;
+      return Number(j && j.caixa2) || 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+  function _sesfDebitarCaixa2(v) {
+    var j = J();
+    if (!j) return false;
+    j.financas = j.financas || {};
+    var saldo = _sesfSaldoCaixa2();
+    if (saldo < v) return false;
+    j.financas.caixa2 = saldo - v;
+    return true;
   }
 
   function patchSimularVoto() {
@@ -409,20 +432,18 @@
 
       if (modo === "falar") {
         if (typeof gastarEnergia === "function" && !gastarEnergia(2)) return;
-        var afetados = aplicarInfluenciaBancada(part, 0.25);
+        var afetados = aplicarInfluenciaBancada(part, 0.25, true);
         sl._negoFeitas[id + ":" + modo] = true;
-        _toast("Conversa com o líder do " + part + ": ~" + afetados + " votos tendem a Sim.", "ok");
+        _toast("Bancada " + part + ": +" + afetados + " votos para SIM", "ok");
       } else if (modo === "caixa2") {
-        var j = J();
         var custo = 40000;
-        if ((j.caixa2 || 0) < custo) {
-          _toast("Caixa 2 insuficiente.", "err");
+        if (!_sesfDebitarCaixa2(custo)) {
+          _toast("Caixa 2 insuficiente (precisa R$ 40 mil).", "err");
           return;
         }
-        j.caixa2 -= custo;
-        aplicarInfluenciaBancada(part, 0.45);
+        var nCx = aplicarInfluenciaBancada(part, 0.45, true);
         sl._negoFeitas[id + ":" + modo] = true;
-        _toast("Acordo sob a mesa com a bancada " + part + ". Risco sobe.", "err");
+        _toast("Bancada " + part + ": +" + nCx + " votos para SIM (Caixa 2)", "err");
         try {
           if (typeof emitirFato === "function")
             emitirFato({
@@ -436,11 +457,14 @@
         } catch (e) {}
       } else if (modo === "colar") {
         if (typeof gastarEnergia === "function" && !gastarEnergia(3)) return;
-        aplicarInfluenciaBancada(part, 0.35);
-        var j2 = J();
-        j2.atributos.influencia = Math.min(100, (j2.atributos.influencia || 0) + 0.4);
+        var nCol = aplicarInfluenciaBancada(part, 0.35, true);
+        try {
+          var j2 = J();
+          j2.atributos = j2.atributos || {};
+          j2.atributos.influencia = Math.min(100, (j2.atributos.influencia || 0) + 0.4);
+        } catch (eInf) {}
         sl._negoFeitas[id + ":" + modo] = true;
-        _toast("Você colou na liderança do " + part + ".", "ok");
+        _toast("Bancada " + part + ": +" + nCol + " votos para SIM", "ok");
       }
       // pausa votação para o jogador ver o efeito, depois pode retomar
       try {
