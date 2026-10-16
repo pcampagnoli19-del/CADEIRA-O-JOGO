@@ -46,8 +46,16 @@ if (Test-Path "modulo_legislativo_fix.js") {
   Write-Host "AVISO: modulo_legislativo_fix.js ausente - build sem fix legislativo."
 }
 
+# Fix sessao plenário / PL lista / feed figuras (aditivo). Opcional.
+$sesfData = ""
+if (Test-Path "modulo_sessao_pl_feed.js") {
+  $sesfData = [System.IO.File]::ReadAllText("modulo_sessao_pl_feed.js", [System.Text.Encoding]::UTF8)
+} else {
+  Write-Host "AVISO: modulo_sessao_pl_feed.js ausente - build sem fix sessao/PL/feed."
+}
+
 # Combinar módulo final
-$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData + "`r`n`r`n" + $infData + "`r`n`r`n" + $impfData + "`r`n`r`n" + $legfData
+$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData + "`r`n`r`n" + $infData + "`r`n`r`n" + $impfData + "`r`n`r`n" + $legfData + "`r`n`r`n" + $sesfData
 
 # 2. Ler base HTML limpa CADEIRA_O_Jogo_25.html.bak_abc
 $baseHtml = [System.IO.File]::ReadAllText("CADEIRA_O_Jogo_25.html.bak_abc", [System.Text.Encoding]::UTF8)

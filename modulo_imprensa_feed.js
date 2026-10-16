@@ -177,7 +177,7 @@
     var st = {
       schema: IMPF.SCHEMA,
       versao: IMPF.versao,
-      usar_nomes_reais: false,
+      usar_nomes_reais: true,
       semente: (gameState.imprensa_feed && gameState.imprensa_feed.semente) || (Math.floor(Math.random() * 1e9) + 1),
       _rng: 0,
       fatos: [],
