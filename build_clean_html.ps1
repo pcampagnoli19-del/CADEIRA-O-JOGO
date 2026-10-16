@@ -1,6 +1,7 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "Iniciando compilação limpa de CADEIRA_O_Jogo_25.html..."
+Write-Host "Nota: cadeira-theme.css deve permanecer ao lado do HTML (ou embutido no head)."
 
 # 1. Ler os dois arquivos JS em UTF-8 puro
 $geoData = [System.IO.File]::ReadAllText("geo_abc_data.js", [System.Text.Encoding]::UTF8)

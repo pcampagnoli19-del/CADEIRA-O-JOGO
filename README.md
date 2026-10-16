@@ -8,6 +8,10 @@ python3 -m http.server 8765 --bind 127.0.0.1
 
 Depois acesse http://127.0.0.1:8765/
 
+## Visual
+
+Tema **Gabinete Noturno** em `cadeira-theme.css` (também embutido no HTML). Tipografia Fraunces + DM Sans; atmosfera institucional satírica. Não altera a lógica do jogo.
+
 ## Módulos aditivos (build)
 
 `build_clean_html.ps1` injeta, nesta ordem: geo, lógica ABC, empresários, diplomacia, influenciadores, imprensa/feed, legislativo, sessão/PL/feed, **cheats exec + sessão + voo (`modulo_fix_exec_sessao.js`)**.
