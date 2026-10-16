@@ -30,8 +30,16 @@ if (Test-Path "modulo_influenciadores.js") {
   Write-Host "AVISO: modulo_influenciadores.js ausente - build sem nucleo de influenciadores."
 }
 
+# Modulo Imprensa e Feed (aditivo). Opcional.
+$impfData = ""
+if (Test-Path "modulo_imprensa_feed.js") {
+  $impfData = [System.IO.File]::ReadAllText("modulo_imprensa_feed.js", [System.Text.Encoding]::UTF8)
+} else {
+  Write-Host "AVISO: modulo_imprensa_feed.js ausente - build sem imprensa/feed v2."
+}
+
 # Combinar módulo final
-$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData + "`r`n`r`n" + $infData
+$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData + "`r`n`r`n" + $infData + "`r`n`r`n" + $impfData
 
 # 2. Ler base HTML limpa CADEIRA_O_Jogo_25.html.bak_abc
 $baseHtml = [System.IO.File]::ReadAllText("CADEIRA_O_Jogo_25.html.bak_abc", [System.Text.Encoding]::UTF8)
