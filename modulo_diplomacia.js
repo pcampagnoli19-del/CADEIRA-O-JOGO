@@ -1327,12 +1327,21 @@
     if (typeof VIEWS === "undefined" || typeof VIEWS.poder !== "function" || VIEWS.poder._dipEntry) return false;
     var _vp = VIEWS.poder;
     VIEWS.poder = function () {
-      var h = _vp.apply(this, arguments);
-      // Se cardPresidente nao rodou (nao-presidente), ainda assim oferece entrada
-      if (h.indexOf("dip-entry") < 0) h = DIP.cardRelacoes() + h;
+      var h = "";
+      try {
+        h = _vp.apply(this, arguments);
+      } catch (e) {
+        console.warn("DIP VIEWS.poder", e);
+        h = '<section class="card"><h3>Poder</h3><p class="txt">Falha parcial ao montar a aba.</p></section>';
+      }
+      // Se cardPresidente nao rodou (nao-presidente), ainda assim mostra entrada
+      try {
+        if (h.indexOf("dip-entry") < 0) h = DIP.cardRelacoes() + h;
+      } catch (e2) {}
       return h;
     };
     VIEWS.poder._dipEntry = true;
+    if (_vp._legfPrep) VIEWS.poder._legfPrep = true;
     return true;
   }
 

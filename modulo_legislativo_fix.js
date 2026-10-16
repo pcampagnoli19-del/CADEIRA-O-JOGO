@@ -266,20 +266,67 @@
     novos.forEach(function (m) {
       var esf = m.casaCod === "M" ? "M" : m.casaCod === "E" ? "E" : m.casaCod === "S" ? "S" : "C";
       if (haveDb[m.id] || haveDb[m.nome]) return;
-      DB.push({
+      var row = {
         id: m.id,
         nome: m.nome,
         tipo: m.tipo,
         ementa: m.ementa,
-        tema: m.tema,
-        pos: m.pos,
+        tema: m.tema || "Gestão Pública",
+        pos: m.pos || { social: 0.5 },
         esf: esf,
-        polemica: m.polemica
-      });
+        polemica: m.polemica,
+        fiscal: 0,
+        imp: {}
+      };
+      DB.push(row);
       haveDb[m.id] = true;
+      // DBI é o índice usado por pick()/painelMat — sem isso a aba Poder quebra
+      try {
+        if (typeof DBI === "undefined" || !DBI) window.DBI = {};
+        DBI[row.id] = row;
+      } catch (e) {}
     });
+    LEGF.syncDBI();
     return novos.length;
   };
+
+  /** Garante DBI[id] para todo item de DB (catálogo Excel + banco legado). */
+  LEGF.syncDBI = function () {
+    try {
+      if (typeof DB === "undefined" || !Array.isArray(DB)) return 0;
+      if (typeof DBI === "undefined" || !DBI || typeof DBI !== "object") window.DBI = {};
+      var n = 0;
+      DB.forEach(function (d) {
+        if (!d || d.id == null) return;
+        if (!d.tema) d.tema = d.area || d.nome || "Gestão Pública";
+        if (!d.pos) d.pos = { social: 0.5 };
+        if (!d.imp || typeof d.imp !== "object") d.imp = {};
+        if (d.fiscal == null) d.fiscal = 0;
+        DBI[d.id] = d;
+        n++;
+      });
+      // Limpa filas de pauta com ids órfãos (evita pick() → d.tema em undefined)
+      try {
+        var lg = null;
+        if (typeof V === "function" && V() && V().leg) lg = V().leg;
+        else if (typeof M === "function" && M().v24 && M().v24.leg) lg = M().v24.leg;
+        if (lg && lg.fila) {
+          Object.keys(lg.fila).forEach(function (esf) {
+            var f = lg.fila[esf];
+            if (f && Array.isArray(f.ids)) {
+              f.ids = f.ids.filter(function (id) {
+                return id != null && !!DBI[id];
+              });
+            }
+          });
+        }
+      } catch (eFila) {}
+      return n;
+    } catch (e) {
+      console.warn("LEGF.syncDBI", e);
+      return 0;
+    }
+  };;
 
   function poolCatalogoParaCasa() {
     var cod = typeof casaLegCod === "function" ? casaLegCod() : typeof casaCodAtual === "function" ? casaCodAtual() : "M";
@@ -656,7 +703,19 @@
         if (typeof VIEWS[k] !== "function" || VIEWS[k]._legfPrep) return;
         var _o = VIEWS[k];
         VIEWS[k] = function () {
-          var h = _o.apply(this, arguments);
+          try {
+            LEGF.syncDBI();
+          } catch (e0) {}
+          var h = "";
+          try {
+            h = _o.apply(this, arguments);
+          } catch (eView) {
+            console.warn("LEGF VIEWS." + k, eView);
+            h =
+              '<section class="card"><h3>Poder</h3><p class="txt">Parte da aba falhou ao montar, mas o restante segue disponível. (' +
+              String(eView && eView.message ? eView.message : eView) +
+              ")</p></section>";
+          }
           try {
             var prep = LEGF.renderPrepBancadas();
             if (prep && h.indexOf("data-legf-prep") < 0) h = prep + h;
@@ -684,8 +743,54 @@
           return h;
         };
         VIEWS[k]._legfPrep = true;
+        // preservar flags de outros wraps (DIP etc.) para não re-embrulhar em loop
+        if (_o._dipEntry) VIEWS[k]._dipEntry = true;
+        if (_o._exf) VIEWS[k]._exf = true;
       });
     } catch (e) {}
+  }
+
+  /** pick()/ensurePauta/painelMat quebram se DBI não tem o id — guarda + sync. */
+  function patchEnsurePautaSafe() {
+    if (typeof window.ensurePauta !== "function" || window.ensurePauta._legfSafe) return;
+    var _orig = window.ensurePauta;
+    window.ensurePauta = function () {
+      try {
+        LEGF.syncDBI();
+      } catch (e0) {}
+      try {
+        return _orig.apply(this, arguments);
+      } catch (e) {
+        console.warn("ensurePauta safe", e);
+        try {
+          var L = M().leg;
+          if (L) {
+            L.pauta = (L.pauta || []).filter(function (m) {
+              return m && (m.nome || m.titulo);
+            });
+          }
+        } catch (e2) {}
+      }
+    };
+    window.ensurePauta._legfSafe = true;
+
+    if (typeof window.cardVotacao === "function" && !window.cardVotacao._legfSafe) {
+      var _cv = window.cardVotacao;
+      window.cardVotacao = function () {
+        try {
+          LEGF.syncDBI();
+        } catch (e0) {}
+        try {
+          return _cv.apply(this, arguments);
+        } catch (e) {
+          console.warn("cardVotacao safe", e);
+          return (
+            '<section class="card"><h3>Painel de votação</h3><p class="txt">Pauta indisponível no momento. Avance o mês ou protocolar um PL.</p></section>'
+          );
+        }
+      };
+      window.cardVotacao._legfSafe = true;
+    }
   }
 
   function patchIniciarSessao() {
@@ -762,6 +867,8 @@
       patchCheatsSetCargo();
       garantirAprovacaoTodosTerritorios();
       LEGF.expandirMateriasDoCatalogo();
+      LEGF.syncDBI();
+      patchEnsurePautaSafe();
       patchTramitarPLs();
       patchLegislativoMensal();
       patchResultadoSessao();
