@@ -32877,102 +32877,148 @@ window.GEO_ABC = GEO_ABC;
   EXF.iniciarAnimacaoVotacao = function () {
     if (window._sessaoLegTimer) clearInterval(window._sessaoLegTimer);
     var sl = S.sessaoLeg;
-    if (!sl) return;
+    if (!sl || !sl.membros || !sl.ordemVotacao) return false;
+    if (sl.concluida) return false;
     sl.emAndamento = true;
     sl.votandoAgora = null;
+    if (sl.proximoIdx == null) sl.proximoIdx = 0;
     S.sessaoVelocidade = S.sessaoVelocidade || 1;
 
     window._sessaoLegTimer = setInterval(function () {
-      if (!S.sessaoLeg || !S.sessaoLeg.emAndamento || S.sessaoLeg.concluida) {
-        clearInterval(window._sessaoLegTimer);
-        return;
-      }
-      var s = S.sessaoLeg;
-      var fila = s.ordemVotacao || [];
-      // 1 voto por tick (mais legível); em casas enormes no máx 2 se 3x
-      var step = S.sessaoVelocidade >= 3 && s.cap > 200 ? 2 : 1;
-      var ultimo = null;
-      for (var k = 0; k < step && s.proximoIdx < fila.length; k++) {
-        var npcId = fila[s.proximoIdx++];
-        var npc = s.membros.find(function (x) {
-          return x.id === npcId;
-        });
-        if (npc) {
-          s.votos[npcId] = votoComBias(npc, s.materia);
-          ultimo = { npc: npc, voto: s.votos[npcId] };
-          s.votandoAgora = ultimo;
-        }
-      }
       try {
-        if (typeof somVoto === "function") somVoto();
-      } catch (e) {}
-      atualizarPlacarLocal();
+        if (!S.sessaoLeg || !S.sessaoLeg.emAndamento || S.sessaoLeg.concluida) {
+          clearInterval(window._sessaoLegTimer);
+          return;
+        }
+        var s = S.sessaoLeg;
+        var fila = s.ordemVotacao || [];
+        // 1 voto por tick; casas enormes no 3x andam um pouco mais
+        var step = S.sessaoVelocidade >= 3 && s.cap > 200 ? 2 : 1;
+        var ultimo = null;
+        for (var k = 0; k < step && s.proximoIdx < fila.length; k++) {
+          var npcId = fila[s.proximoIdx++];
+          var npc = (s.membros || []).find(function (x) {
+            return x && x.id === npcId;
+          });
+          if (npc) {
+            s.votos = s.votos || {};
+            s.votos[npcId] = votoComBias(npc, s.materia);
+            ultimo = { npc: npc, voto: s.votos[npcId] };
+            s.votandoAgora = ultimo;
+          }
+        }
+        try {
+          if (typeof somVoto === "function") somVoto();
+        } catch (e) {}
+        atualizarPlacarLocal();
 
-      if (s.proximoIdx >= fila.length) {
-        if (s.votoJogador) {
+        if (s.proximoIdx >= fila.length) {
           clearInterval(window._sessaoLegTimer);
           s.emAndamento = false;
-          // usa caminho nativo de fechamento
-          if (typeof A !== "undefined" && A.sessaoRapida) A.sessaoRapida();
-          else render();
+          if (s.votoJogador) {
+            // fechamento nativo (proclamação)
+            if (typeof A !== "undefined" && typeof A.sessaoRapida === "function") A.sessaoRapida();
+            else render();
+          } else {
+            render();
+          }
         } else {
-          s.emAndamento = false;
-          clearInterval(window._sessaoLegTimer);
           render();
         }
-      } else {
-        render();
+      } catch (tickErr) {
+        console.warn("EXF voto tick", tickErr);
+        try {
+          clearInterval(window._sessaoLegTimer);
+        } catch (e2) {}
+        if (S.sessaoLeg) S.sessaoLeg.emAndamento = false;
+        try {
+          render();
+        } catch (e3) {}
       }
     }, intervaloVelocidade());
+    return true;
   };
 
   function patchSessaoAnimacao() {
     if (typeof A === "undefined") return false;
-    // A animação nativa vive num IIFE fechado (110ms) — só conseguimos
-    // interceptar pelos handlers A.* (botões data-a).
+    // Guard: não re-embrulhar a cada boot (senão sessaoFechar vira pilha)
+    if (A.sessaoIniciar && A.sessaoIniciar._exf) {
+      window._exfIniciarAnimacao = EXF.iniciarAnimacaoVotacao;
+      return true;
+    }
+
+    // Guarda o nativo (fecha sobre iniciarAnimacaoVotacao do IIFE) como fallback
+    var _iniciarNativo = A.sessaoIniciar;
+    var _votarNativo = A.sessaoVotar;
+    var _fecharNativo = A.sessaoFechar;
+    EXF._iniciarNativo = _iniciarNativo;
+    EXF._votarNativo = _votarNativo;
+
     window._exfIniciarAnimacao = EXF.iniciarAnimacaoVotacao;
 
     A.sessaoIniciar = function () {
       if (!S.sessaoLeg || S.sessaoLeg.concluida) return;
-      EXF.iniciarAnimacaoVotacao();
-      render();
+      try {
+        var ok = EXF.iniciarAnimacaoVotacao();
+        if (!ok || !S.sessaoLeg.emAndamento) {
+          if (_iniciarNativo) return _iniciarNativo.apply(this, arguments);
+        }
+        render();
+      } catch (e) {
+        console.warn("EXF sessaoIniciar fallback nativo", e);
+        if (_iniciarNativo) return _iniciarNativo.apply(this, arguments);
+      }
     };
+    A.sessaoIniciar._exf = true;
 
-    // Retomar após o próprio voto do jogador também precisa da versão lenta+bias
     A.sessaoVotar = function (voto) {
       if (!S.sessaoLeg || S.sessaoLeg.concluida) return;
       try {
-        if (typeof somVoto === "function") somVoto();
-      } catch (e) {}
-      S.sessaoLeg.votoJogador = voto;
-      S.sessaoLeg.votos["JOGADOR"] = voto;
-      atualizarPlacarLocal();
-      if (S.sessaoLeg.proximoIdx >= (S.sessaoLeg.ordemVotacao || []).length) {
-        if (typeof A.sessaoRapida === "function") A.sessaoRapida();
-        else render();
-      } else if (!S.sessaoLeg.emAndamento) {
-        EXF.iniciarAnimacaoVotacao();
-        render();
-      } else {
-        render();
+        try {
+          if (typeof somVoto === "function") somVoto();
+        } catch (e) {}
+        S.sessaoLeg.votoJogador = voto;
+        S.sessaoLeg.votos = S.sessaoLeg.votos || {};
+        S.sessaoLeg.votos["JOGADOR"] = voto;
+        atualizarPlacarLocal();
+        if (S.sessaoLeg.proximoIdx >= (S.sessaoLeg.ordemVotacao || []).length) {
+          if (typeof A.sessaoRapida === "function") A.sessaoRapida();
+          else render();
+        } else if (!S.sessaoLeg.emAndamento) {
+          var ok2 = EXF.iniciarAnimacaoVotacao();
+          if (!ok2 && _votarNativo) return _votarNativo.apply(this, arguments);
+          render();
+        } else {
+          render();
+        }
+      } catch (e2) {
+        console.warn("EXF sessaoVotar fallback nativo", e2);
+        if (_votarNativo) return _votarNativo.apply(this, arguments);
       }
     };
+    A.sessaoVotar._exf = true;
 
     A.sessaoVel = function (v) {
       S.sessaoVelocidade = Math.max(1, Math.min(3, Number(v) || 1));
       _toast("Velocidade da votação: " + S.sessaoVelocidade + "x", "ok");
       if (S.sessaoLeg && S.sessaoLeg.emAndamento) {
-        EXF.iniciarAnimacaoVotacao();
+        try {
+          EXF.iniciarAnimacaoVotacao();
+        } catch (e) {}
       }
       render();
     };
-    var _fechar = A.sessaoFechar;
+    A.sessaoVel._exf = true;
+
     A.sessaoFechar = function () {
-      if (_fechar) return _fechar.apply(this, arguments);
-      if (window._sessaoLegTimer) clearInterval(window._sessaoLegTimer);
+      try {
+        if (window._sessaoLegTimer) clearInterval(window._sessaoLegTimer);
+      } catch (e) {}
+      if (_fecharNativo) return _fecharNativo.apply(this, arguments);
       S.modal = null;
       render();
     };
+    A.sessaoFechar._exf = true;
     return true;
   }
 
@@ -33020,24 +33066,22 @@ window.GEO_ABC = GEO_ABC;
 
   function patchNegociar() {
     if (typeof A === "undefined") return false;
+    if (A.sessaoNegociar && A.sessaoNegociar._exf) return true;
+
     A.sessaoInspecionar = function (id) {
       if (!S.sessaoLeg) return;
       garantirLideres();
       var sl = S.sessaoLeg;
       sl.parlamentarSelecionado = sl.parlamentarSelecionado === id ? null : id;
-      // líder → abre painel + pausa a animação pra o clique não “sumir”
+      // líder → abre painel de negociação, SEM pausar a votação
       if (sl.parlamentarSelecionado && sl.lideresIds && sl.lideresIds[sl.parlamentarSelecionado]) {
         sl.negociarAberto = sl.parlamentarSelecionado;
-        if (sl.emAndamento) {
-          sl.emAndamento = false;
-          if (window._sessaoLegTimer) clearInterval(window._sessaoLegTimer);
-          _toast("Votação pausada — negocie com o líder ou clique Iniciar/Continuar.", "ok");
-        }
       } else if (!sl.parlamentarSelecionado) {
         sl.negociarAberto = null;
       }
       render();
     };
+    A.sessaoInspecionar._exf = true;
 
     A.sessaoNegociar = function (id, modo) {
       garantirLideres();
@@ -33092,23 +33136,17 @@ window.GEO_ABC = GEO_ABC;
       }
 
       var afetados = 0;
-      sl.membros.forEach(function (m) {
+      (sl.membros || []).forEach(function (m) {
         if (!m || m.jogador || m.id === "JOGADOR") return;
         if ((m.partidoBase || m.partido) !== part) return;
         m._biasSessao = (m._biasSessao || 0) + delta;
-        // se ainda não votou, chance de já fixar intenção visível no bias
-        if (!sl.votos[m.id]) afetados++;
+        if (!sl.votos || !sl.votos[m.id]) afetados++;
       });
       sl._negoFeitas[key] = true;
       sl.negociarAberto = id;
       sl.parlamentarSelecionado = id;
 
-      // pausa votação para o jogador ver
-      if (sl.emAndamento) {
-        sl.emAndamento = false;
-        if (window._sessaoLegTimer) clearInterval(window._sessaoLegTimer);
-      }
-
+      // NÃO pausa a votação — bias vale para os próximos votos; painel continua rodando
       _toast(
         (modo === "caixa2" ? "Caixa 2 com " : modo === "colar" ? "Colou na bancada " : "Conversa com ") +
           part +
@@ -33119,11 +33157,32 @@ window.GEO_ABC = GEO_ABC;
       );
       render();
     };
+    A.sessaoNegociar._exf = true;
 
     A.sessaoAbrirLider = function (id) {
       A.sessaoInspecionar(id);
     };
+    A.sessaoAbrirLider._exf = true;
     return true;
+  }
+
+  function patchAbrirPlenario() {
+    if (typeof A === "undefined" || !A.abrirPlenarioMateria || A.abrirPlenarioMateria._exf) return;
+    var _orig = A.abrirPlenarioMateria;
+    A.abrirPlenarioMateria = function (idx) {
+      try {
+        if (typeof ehLegislador === "function" && !ehLegislador()) {
+          _toast("Painel do Plenário é para cargos legislativos (Vereador, Deputado, Senador). Use Virar cargo → Vereador/Senador.", "err");
+          return;
+        }
+      } catch (e) {}
+      try {
+        return _orig.apply(this, arguments);
+      } catch (e2) {
+        _toast("Não foi possível abrir o plenário: " + (e2 && e2.message ? e2.message : e2), "err");
+      }
+    };
+    A.abrirPlenarioMateria._exf = true;
   }
 
   EXF.barraLideresHtml = function () {
@@ -33464,6 +33523,7 @@ window.GEO_ABC = GEO_ABC;
       patchSessaoAnimacao();
       patchIniciarSessao();
       patchNegociar();
+      patchAbrirPlenario();
       patchDipVoo();
     } catch (e) {
       console.warn("EXF boot", e);
@@ -33484,6 +33544,8 @@ window.GEO_ABC = GEO_ABC;
     return { versao: EXF.versao, vel: S.sessaoVelocidade || 1 };
   };
 })();
+
+
 
 
 
