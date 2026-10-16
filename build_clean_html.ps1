@@ -14,8 +14,16 @@ if (Test-Path "modulo_empresarios.js") {
   Write-Host "AVISO: modulo_empresarios.js ausente - build sem o modulo de empresarios."
 }
 
+# Modulo de Diplomacia (aditivo). Opcional.
+$dipData = ""
+if (Test-Path "modulo_diplomacia.js") {
+  $dipData = [System.IO.File]::ReadAllText("modulo_diplomacia.js", [System.Text.Encoding]::UTF8)
+} else {
+  Write-Host "AVISO: modulo_diplomacia.js ausente - build sem o modulo de diplomacia."
+}
+
 # Combinar módulo final
-$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData
+$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData
 
 # 2. Ler base HTML limpa CADEIRA_O_Jogo_25.html.bak_abc
 $baseHtml = [System.IO.File]::ReadAllText("CADEIRA_O_Jogo_25.html.bak_abc", [System.Text.Encoding]::UTF8)
