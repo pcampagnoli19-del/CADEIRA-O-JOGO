@@ -38,8 +38,16 @@ if (Test-Path "modulo_imprensa_feed.js") {
   Write-Host "AVISO: modulo_imprensa_feed.js ausente - build sem imprensa/feed v2."
 }
 
+# Fix legislativo + catalogo Excel (aditivo). Opcional.
+$legfData = ""
+if (Test-Path "modulo_legislativo_fix.js") {
+  $legfData = [System.IO.File]::ReadAllText("modulo_legislativo_fix.js", [System.Text.Encoding]::UTF8)
+} else {
+  Write-Host "AVISO: modulo_legislativo_fix.js ausente - build sem fix legislativo."
+}
+
 # Combinar módulo final
-$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData + "`r`n`r`n" + $infData + "`r`n`r`n" + $impfData
+$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData + "`r`n`r`n" + $infData + "`r`n`r`n" + $impfData + "`r`n`r`n" + $legfData
 
 # 2. Ler base HTML limpa CADEIRA_O_Jogo_25.html.bak_abc
 $baseHtml = [System.IO.File]::ReadAllText("CADEIRA_O_Jogo_25.html.bak_abc", [System.Text.Encoding]::UTF8)

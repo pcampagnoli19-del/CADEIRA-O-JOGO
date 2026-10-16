@@ -1390,24 +1390,6 @@
     });
   };
 
-  IMPF.noticiasParaPortal = function (portalId) {
-    var st = IMPF.estado();
-    if (!st) return [];
-    var map = { g1: "V4", cnn: "V3", estadao: "V1", folha: "V2" };
-    var vid = map[portalId];
-    if (!vid) return [];
-    return st.publicacoes.filter(function (p) { return p.veiculo_id === vid; }).slice(0, 6).map(function (p) {
-      return {
-        portal: portalId,
-        cat: (p.genero || "noticia").toUpperCase(),
-        hora: "Ciclo " + p.turno,
-        tit: p.titulo,
-        lead: p.linha_fina || "",
-        corpo: "Enquadramento: " + p.frame + " · tom " + p.tom + " · template " + p.template_id + " · fato " + p.fato_id
-      };
-    });
-  };
-
   /* ---------- Patches / hooks ---------- */
   function wrapManchete() {
     if (typeof manchete !== "function" || manchete._impfWrapped) return;
@@ -1426,49 +1408,161 @@
     manchete._impfSkipInfer = false;
   }
 
+  var FRAME_PT = {
+    escandalo: "Escândalo",
+    incompetencia: "Incompetência",
+    conquista: "Conquista",
+    conflito: "Conflito",
+    economia_no_bolso: "Bolso",
+    legalidade: "Legalidade",
+    humano: "Humano",
+    moral: "Moral",
+    geopolitico: "Geopolítico",
+    tecnico: "Técnico"
+  };
+
+  IMPF._framePt = function (f) {
+    return FRAME_PT[f] || f || "—";
+  };
+
+  /** Matérias só do barramento — UI de portal reaproveitada, motor legado desligado. */
+  IMPF.noticiasParaPortal = function (portalId) {
+    var st = IMPF.estado();
+    if (!st) return [];
+    var map = { g1: "V4", cnn: "V3", estadao: "V1", folha: "V2" };
+    var vid = map[portalId];
+    if (!vid) return [];
+    var pubs = st.publicacoes.filter(function (p) { return p.veiculo_id === vid; });
+    if (!pubs.length) {
+      try {
+        if ((!st.publicacoes || !st.publicacoes.length) && typeof IMPF.tick === "function") IMPF.tick();
+      } catch (e) {}
+      pubs = st.publicacoes.filter(function (p) { return p.veiculo_id === vid; });
+    }
+    return pubs.slice(0, 8).map(function (p) {
+      var framePt = IMPF._framePt(p.frame);
+      return {
+        portal: portalId,
+        cat: framePt.toUpperCase(),
+        hora: "Fato · ciclo " + (p.turno || 0),
+        tit: p.titulo,
+        lead: p.linha_fina || ("Enquadramento: " + framePt + " · tom " + (p.tom || "neutro")),
+        corpo: (p.linha_fina ? "" : "") + "Este texto nasceu do barramento de fatos (id " + (p.fato_id || "?")
+          + "). Frame " + framePt + ", tom " + (p.tom || "neutro")
+          + ", template " + (p.template_id || "—") + ". Não é lista fixa de manchetes.",
+        _impf: true,
+        frame: p.frame,
+        tom: p.tom,
+        veiculo_id: p.veiculo_id
+      };
+    });
+  };
+
   function wrapGerarFeed() {
-    if (typeof gerarFeedDeNoticias !== "function" || gerarFeedDeNoticias._impf) return;
-    var _orig = gerarFeedDeNoticias;
+    if (typeof gerarFeedDeNoticias !== "function") return;
+    // Re-wrap sempre que o legado voltar a sobrescrever
+    if (gerarFeedDeNoticias._impfMotor === true && gerarFeedDeNoticias._impfVersao === 2) return;
+    var _orig = gerarFeedDeNoticias._impfOrig || gerarFeedDeNoticias;
     window.gerarFeedDeNoticias = function () {
-      var base = _orig.apply(this, arguments) || [];
       try {
         var st = IMPF.estado();
-        if (!st || !st.publicacoes.length) return base;
-        var extras = [];
-        ["g1", "cnn", "estadao", "folha"].forEach(function (p) {
-          extras = extras.concat(IMPF.noticiasParaPortal(p));
-        });
-        // Preferir conteudo do barramento no topo; manter legado abaixo
-        return extras.concat(base);
-      } catch (e) { return base; }
+        if (st && st.publicacoes && st.publicacoes.length) {
+          var soBarramento = [];
+          ["g1", "cnn", "estadao", "folha"].forEach(function (p) {
+            soBarramento = soBarramento.concat(IMPF.noticiasParaPortal(p));
+          });
+          if (soBarramento.length) return soBarramento;
+        }
+      } catch (e) {}
+      // Fallback legado só se o barramento ainda estiver vazio
+      return _orig.apply(this, arguments) || [];
     };
     gerarFeedDeNoticias._impf = true;
+    gerarFeedDeNoticias._impfMotor = true;
+    gerarFeedDeNoticias._impfVersao = 2;
+    gerarFeedDeNoticias._impfOrig = _orig;
   }
 
   function wrapGerarPosts() {
-    if (typeof gerarPostsSociaisDinamicos !== "function" || gerarPostsSociaisDinamicos._impf) return;
-    var _orig = gerarPostsSociaisDinamicos;
+    if (typeof gerarPostsSociaisDinamicos !== "function") return;
+    if (gerarPostsSociaisDinamicos._impfMotor === true && gerarPostsSociaisDinamicos._impfVersao === 2) return;
+    var _orig = gerarPostsSociaisDinamicos._impfOrig || gerarPostsSociaisDinamicos;
     window.gerarPostsSociaisDinamicos = function () {
       try {
+        var st = IMPF.estado();
+        if (st && (!st.posts || !st.posts.length) && typeof IMPF.tick === "function") {
+          try { IMPF.tick(); } catch (e2) {}
+        }
         var fromBus = IMPF.postsParaUI();
         if (fromBus && fromBus.length) return fromBus;
       } catch (e) {}
       return _orig.apply(this, arguments);
     };
     gerarPostsSociaisDinamicos._impf = true;
+    gerarPostsSociaisDinamicos._impfMotor = true;
+    gerarPostsSociaisDinamicos._impfVersao = 2;
+    gerarPostsSociaisDinamicos._impfOrig = _orig;
   }
 
+  IMPF.renderPortalBarramento = function (pId) {
+    var st = IMPF.estado();
+    var map = { g1: "V4", cnn: "V3", estadao: "V1", folha: "V2" };
+    var vid = map[pId];
+    var v = vid && st.veiculos[vid];
+    var nome = v ? IMPF.nomeVeiculo(v) : pId;
+    var arq = v ? v.arquetipo : "";
+    var feed = IMPF.noticiasParaPortal(pId);
+    var cor = (typeof PORTAIS_INFO !== "undefined" && PORTAIS_INFO[pId] && PORTAIS_INFO[pId].cor) || "#1d4ed8";
+    var html = "";
+    html += '<div data-impf-portal="1" style="background:' + cor + ';color:#fff;padding:12px 16px;border-radius:10px;margin-bottom:14px">';
+    html += "<div style=\"display:flex;justify-content:space-between;align-items:center\"><div>";
+    html += "<span style=\"font-size:1.25rem;font-weight:900\">" + _esc(nome) + "</span>";
+    html += "<small style=\"display:block;opacity:.9;margin-top:2px\">Arquétipo " + _esc(arq) + " · motor IMPF (fatos → capa)</small>";
+    html += "</div><span style=\"font-size:.75rem;background:rgba(0,0,0,.25);padding:4px 8px;border-radius:6px\">barramento</span></div></div>";
+    if (!feed.length) {
+      html += "<p class=\"txt\">Sem publicação deste veículo neste ciclo. Avance o mês ou use o Inspetor para forçar um fato.</p>";
+      return html;
+    }
+    feed.forEach(function (art) {
+      html += '<article data-impf-art="1" style="background:rgba(255,255,255,0.04);border:1px solid var(--linha);border-radius:10px;padding:14px;margin-bottom:12px">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;margin-bottom:6px">';
+      html += "<span style=\"color:" + cor + ";font-weight:800;letter-spacing:.4px\">" + _esc(art.cat) + "</span>";
+      html += "<span style=\"opacity:.7\">" + _esc(art.hora) + "</span></div>";
+      html += "<h3 style=\"margin:0 0 8px;font-size:1.12rem;line-height:1.3\">" + _esc(art.tit) + "</h3>";
+      html += "<p style=\"font-size:.9rem;margin:0 0 8px;opacity:.95\"><b>" + _esc(art.lead) + "</b></p>";
+      html += "<p style=\"font-size:.85rem;margin:0;opacity:.8\">" + _esc(art.corpo) + "</p></article>";
+    });
+    return html;
+  };
+
   function wrapRenderHub() {
-    if (typeof renderHubNoticias !== "function" || renderHubNoticias._impf) return;
-    var _orig = renderHubNoticias;
+    if (typeof renderHubNoticias !== "function") return;
+    if (renderHubNoticias._impfMotor === true && renderHubNoticias._impfVersao === 2) return;
+    var _orig = renderHubNoticias._impfOrig || renderHubNoticias;
     window.renderHubNoticias = function () {
       IMPF.estado();
-      var h = _orig.apply(this, arguments);
+      var pId = (typeof S !== "undefined" && S.portalAtivo) || "g1";
+      var bloco = IMPF.renderInspetor() + IMPF.renderCapaDoDia() + IMPF.renderArcos() + IMPF.renderCampanhas() + IMPF.renderAgenda();
+
+      // Nav compartilhada (reaproveita UI)
+      var nav = function (ativo) {
+        var b = function (id, label, extra) {
+          var on = ativo === id;
+          return '<button type="button" class="btn ' + (on ? "confirma" : "branco") + ' mini" data-a="trocarPortalNoticias" data-p=\'' + JSON.stringify([id]) + "' " + (extra || "") + ">" + label + "</button>";
+        };
+        return '<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px;border-bottom:1px solid var(--linha)" data-impf-nav="1">'
+          + b("g1", "🔴 Portal TV aberta")
+          + b("cnn", "📺 Cabo 24h")
+          + b("estadao", "🏛️ Jornal liberal")
+          + b("folha", "📰 Centro-progressista")
+          + b("redes", "💬 CadeiraFeed", 'style="background:#1d9bf0;color:#fff;border-color:#1d9bf0"')
+          + b("veiculos", "💼 Relações & Dossiês")
+          + "</div>";
+      };
+
       try {
-        var pId = (typeof S !== "undefined" && S.portalAtivo) || "g1";
-        var bloco = IMPF.renderInspetor() + IMPF.renderCapaDoDia() + IMPF.renderArcos() + IMPF.renderCampanhas() + IMPF.renderAgenda();
         if (pId === "redes") {
-          // injeta termometro + trending do barramento + botoes de tom
+          var hRedes = _orig.apply(this, arguments);
           var termo = IMPF.renderTermometro();
           var st = IMPF.estado();
           var trendExtra = "";
@@ -1484,37 +1578,33 @@
             + '<button type="button" class="b mini branco" data-a="impfPostar" data-p=\'["tecnico"]\'>Postar · técnico</button>'
             + '<button type="button" class="b mini branco" data-a="impfVerBolha">Ver outra bolha</button>'
             + "</div>";
-          if (h.indexOf("data-impf-termo") < 0) {
-            h = h.replace(/(CadeiraFeed[^<]*<\/b>)/, "$1");
-            // inserir apos banner se possivel
-            var inj = termo + trendExtra + compor;
-            if (h.indexOf("trendingHtml") >= 0) { /* noop */ }
-            h = inj + h;
-          }
-          return h;
+          var banner = '<div data-impf-feed-banner="1" style="margin:0 0 10px;padding:10px;border-radius:10px;background:#15202b;color:#fff;border:1px solid #38444d">'
+            + "<b>CadeiraFeed</b> · posts gerados a partir do barramento de fatos (não é lista fixa)."
+            + "</div>";
+          if (hRedes.indexOf("data-impf-termo") < 0) hRedes = banner + termo + trendExtra + compor + hRedes;
+          return hRedes;
         }
+
         if (pId === "veiculos") {
-          return h.replace(/(<\/div>\s*)(<div class="card"|$)/, bloco + "$1$2") || (bloco + h);
+          var hV = _orig.apply(this, arguments);
+          if (hV.indexOf("data-impf-capa") < 0) hV = (typeof card === "function" ? card("Central de Imprensa e Inteligência", nav(pId) + bloco) : nav(pId) + bloco) + hV;
+          else if (hV.indexOf("data-impf-capa") < 0) hV = bloco + hV;
+          return hV;
         }
-        // portais de noticia: capa + arcos no topo do card
-        if (h.indexOf("data-impf-capa") < 0) {
-          h = h.replace(
-            /(Central de Imprensa[^<]*<\/div>|class="card"[^>]*>)/,
-            function (m) { return m; }
-          );
-          // prepend inside first card content after nav
-          var navEnd = h.indexOf("</div>");
-          // simpler: inject after navPortais block
-          h = h.replace(
-            /(border-bottom:1px solid var\(--linha\)">\s*<\/div>\s*)/,
-            "$1" + bloco
-          );
-          if (h.indexOf("data-impf-capa") < 0) h = bloco + h;
-        }
-      } catch (e) { console.warn("IMPF hub", e); }
-      return h;
+
+        // Portais: UI nova do barramento (capa + matérias IMPF). Legado não aparece.
+        var corpo = bloco + IMPF.renderPortalBarramento(pId);
+        if (typeof card === "function") return card("Central de Imprensa — barramento de fatos", nav(pId) + corpo);
+        return nav(pId) + corpo;
+      } catch (e) {
+        console.warn("IMPF hub v2", e);
+        return _orig.apply(this, arguments);
+      }
     };
     renderHubNoticias._impf = true;
+    renderHubNoticias._impfMotor = true;
+    renderHubNoticias._impfVersao = 2;
+    renderHubNoticias._impfOrig = _orig;
   }
 
   function wrapAvancarMes() {
