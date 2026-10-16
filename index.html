@@ -5109,8 +5109,15 @@ function dispensarAgencia(id){ const c=J().campanha; c.agencias=c.agencias.filte
 function setTrafego(tid,v){ const c=J().campanha; v=Math.max(0,Math.round(v/1000)*1000); if(v<=0) delete c.trafego[tid]; else c.trafego[tid]=v; c.investimento_trafego_mensal=Object.values(c.trafego).reduce((s,x)=>s+x,0); }
 function setPauta(pid,v){ J().campanha.pautas[pid]=Math.max(0,Math.min(100,v)); }
 function pautaMulti(tid){
-  const c=J().campanha, sh=c.pautas, tot=Object.values(sh).reduce((s,x)=>s+x,0)||1; const esp=(PARTIDOS[J().partido_atual]||{e:"C"}).e;
-  return PAUTAS.reduce((s,p,i)=>s+(sh[p.id]/tot)*AFIN[tid][i]*ALINH[esp][i],0);
+  const c=J().campanha||{};
+  const sh=c.pautas||{};
+  const vals=Object.values(sh);
+  const tot=(vals.length?vals.reduce((s,x)=>s+(+x||0),0):0)||1;
+  const esp=(PARTIDOS[J().partido_atual]||{e:"C"}).e;
+  const afin=AFIN[tid]||[1,1,1,1];
+  const alin=ALINH[esp]||ALINH.C||[1,1,1,1];
+  if(!AFIN[tid]) AFIN[tid]=afin.slice();
+  return PAUTAS.reduce((s,p,i)=>s+((+sh[p.id]||0)/tot)*(afin[i]??1)*(alin[i]??1),0);
 }
 function agEfic(grupo){
   const ags=J().campanha.agencias.map(id=>AGENCIAS.find(a=>a.id===id)).filter(a=>a.alc.includes(grupo));
@@ -6045,9 +6052,11 @@ function iniciarTurno(){
   if(!M().operacao) gerarEvento(); gameState.fase_do_turno="ACAO";
 }
 function aplicarMarketing(fator=1){
-  const c=J().campanha; const bonus=emCampanha()?1.35:1; const tf=(c.traf_fator==null?1:c.traf_fator); const dob=c.dobradinha?.8:1;
+  const c=J().campanha; if(!c||!c.trafego) return; const bonus=emCampanha()?1.35:1; const tf=(c.traf_fator==null?1:c.traf_fator); const dob=c.dobradinha?.8:1;
   for(const tid of Object.keys(c.trafego)){
-    const t=TERRITORIOS.find(x=>x.id===tid); const s=c.trafego[tid]*tf; const a=J().aprovacao[tid];
+    const t=TERRITORIOS.find(x=>x.id===tid); if(!t) continue;
+    const s=(+c.trafego[tid]||0)*tf; if(s<=0) continue;
+    const a=+(J().aprovacao[tid]||0);
     const el=Math.pow(Math.max(t.el,20)/50,.32)*(t.grupo==="BR"?1.35:1);
     const d=agEfic(t.grupo)*Math.log10(1+s/3000)*pautaMulti(tid)*(1-a/125)*3.4*bonus*dob/el*fator; mudarAprov(tid,d);
   }
@@ -15606,12 +15615,12 @@ window.v24Relatorio=relHTML;
       if (ehLegislador() && !preso()) {
         safeEnsurePauta();
         const L = M().leg;
-        if (L && L.pauta && L.pauta.length) {
-          const idx = L.pauta.findIndex(m => !m.voto);
-          if (idx >= 0) {
-            iniciarSessaoLegislativa(idx, true);
-          }
-        }
+        if (!L) return r;
+        L.pauta = L.pauta || [];
+        let idx = L.pauta.findIndex(m => m && !m.voto);
+        // Sem matéria pendente: ainda assim abre o plenário (iniciarSessaoLegislativa gera PL fresco)
+        if (idx < 0) idx = 0;
+        iniciarSessaoLegislativa(idx, true);
       }
     } catch(e) {
       console.error("Erro ao convocar sessao legislativa mensal:", e);
@@ -21506,7 +21515,17 @@ window.GEO_ABC = GEO_ABC;
           t.grupo = cNome;
           t.cidade = cNome;
         }
+        // AFIN é exigido por pautaMulti/aplicarMarketing — territórios do ABC não tinham entrada
+        if (typeof AFIN !== "undefined" && AFIN && !AFIN[t.id]) {
+          AFIN[t.id] = [1, 1, 1, 1];
+        }
       });
+    });
+    // aliases legados
+    ["jardim_caicara", "quarta_divisao", "pedreira"].forEach(function (id) {
+      if (typeof AFIN !== "undefined" && AFIN && !AFIN[id] && TERRITORIOS.some(function (x) { return x.id === id; })) {
+        AFIN[id] = [1, 1, 1, 1];
+      }
     });
   }
   try { garantirTerritoriosDoGrandeABC(); } catch(e) { console.warn(e); }
@@ -31434,11 +31453,13 @@ window.GEO_ABC = GEO_ABC;
       j.aprovacao = j.aprovacao || {};
       j.campanha = j.campanha || {};
       j.campanha.trafego = j.campanha.trafego || {};
+      j.campanha.pautas = j.campanha.pautas || {};
       (TERRITORIOS || []).forEach(function (t) {
         if (j.aprovacao[t.id] == null || isNaN(j.aprovacao[t.id])) {
           j.aprovacao[t.id] = 40 + Math.random() * 15;
         }
         if (j.campanha.trafego[t.id] == null) j.campanha.trafego[t.id] = 0;
+        if (typeof AFIN !== "undefined" && AFIN && !AFIN[t.id]) AFIN[t.id] = [1, 1, 1, 1];
       });
     } catch (e) {}
   }

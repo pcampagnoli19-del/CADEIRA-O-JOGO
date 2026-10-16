@@ -159,11 +159,13 @@
       j.aprovacao = j.aprovacao || {};
       j.campanha = j.campanha || {};
       j.campanha.trafego = j.campanha.trafego || {};
+      j.campanha.pautas = j.campanha.pautas || {};
       (TERRITORIOS || []).forEach(function (t) {
         if (j.aprovacao[t.id] == null || isNaN(j.aprovacao[t.id])) {
           j.aprovacao[t.id] = 40 + Math.random() * 15;
         }
         if (j.campanha.trafego[t.id] == null) j.campanha.trafego[t.id] = 0;
+        if (typeof AFIN !== "undefined" && AFIN && !AFIN[t.id]) AFIN[t.id] = [1, 1, 1, 1];
       });
     } catch (e) {}
   }
