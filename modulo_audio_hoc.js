@@ -10,7 +10,7 @@
   "use strict";
 
   var AUD = (window.AUD = window.AUD || {});
-  AUD.versao = 1;
+  AUD.versao = 2;
 
   var LS_KEY = "cadeira_som_mutado";
   var ctx = null;
@@ -110,31 +110,59 @@
     updateBtn();
   }
 
-  /** Notas do trecho inicial do Hino Nacional (aproximação melódica, DP). */
-  // Frequências relativas à frase "Ouviram do Ipiranga..." (simplificada)
-  var HINO_PHRASE = [
-    // grau aproximado em Hz (dó4=261.6 base transp. para grave)
-    [392.0, 0.45],
-    [440.0, 0.3],
-    [493.88, 0.3],
-    [523.25, 0.55],
-    [493.88, 0.25],
-    [440.0, 0.35],
-    [392.0, 0.5],
-    [349.23, 0.35],
-    [392.0, 0.35],
-    [440.0, 0.7],
-    [0, 0.25],
-    [523.25, 0.4],
-    [587.33, 0.35],
-    [659.25, 0.55],
-    [587.33, 0.3],
-    [523.25, 0.35],
-    [493.88, 0.45],
-    [440.0, 0.35],
-    [392.0, 0.8],
-    [0, 0.6]
-  ];
+  /**
+   * Hino Nacional Brasileiro — melodia de Francisco Manuel da Silva (domínio público).
+   * Trecho cantado oficial em Fá maior (Lei 5.700/71, anexo vocal):
+   *   "Ouviram do Ipiranga as margens plácidas
+   *    De um povo heroico o brado retumbante"
+   * Sequência: DÓ FÁ MI FÁ SOL LÁ SOL LÁ SIb SI dó FÁ |
+   *            DÓ FÁ MI FÁ SOL LÁ SOL LÁ SIb LÁ FÁ# SOL
+   * (cifra melódica escolar / partitura de canto em F; NÃO é o tema genérico anterior.)
+   * Pares: [freqHz, duraçãoSeg] — 0 = pausa.
+   */
+  var HINO_PHRASE = (function () {
+    var C4 = 261.63,
+      E4 = 329.63,
+      F4 = 349.23,
+      Fs4 = 369.99,
+      G4 = 392.0,
+      A4 = 440.0,
+      Bb4 = 466.16,
+      B4 = 493.88,
+      C5 = 523.25;
+    // colcheia ≈ 0.28s (~107 BPM); finais da frase mais longos
+    var e = 0.28;
+    return [
+      // Ouviram do Ipiranga as margens plácidas
+      [C4, e],
+      [F4, e],
+      [E4, e],
+      [F4, e],
+      [G4, e],
+      [A4, e],
+      [G4, e],
+      [A4, e],
+      [Bb4, e],
+      [B4, e],
+      [C5, e],
+      [F4, 0.9],
+      [0, 0.16],
+      // De um povo heroico o brado retumbante
+      [C4, e],
+      [F4, e],
+      [E4, e],
+      [F4, e],
+      [G4, e],
+      [A4, e],
+      [G4, e],
+      [A4, e],
+      [Bb4, e],
+      [A4, e],
+      [Fs4, e],
+      [G4, 0.95],
+      [0, 0.75]
+    ];
+  })();
 
   function playTone(freq, when, dur, type, gainVal) {
     if (!ctx || !master || !freq) return;
@@ -155,6 +183,15 @@
     nodes.push(o, g);
   }
 
+  /** Piano simples: fundamental + harmônico + oitava grave, ataque rápida. */
+  function playPiano(freq, when, dur, gainVal) {
+    if (!ctx || !master || !freq) return;
+    var g = gainVal || 0.09;
+    playTone(freq, when, dur, "triangle", g);
+    playTone(freq * 2, when, dur * 0.7, "sine", g * 0.28);
+    playTone(freq * 0.5, when, dur, "sine", g * 0.38);
+  }
+
   function startHino() {
     if (!ensureCtx()) return;
     clearAll();
@@ -163,18 +200,15 @@
 
     function loopPhrase() {
       if (mode !== "hino") return;
-      var t0 = ctx.currentTime + 0.05;
+      var t0 = ctx.currentTime + 0.08;
       var cursor = t0;
       HINO_PHRASE.forEach(function (pair) {
         var f = pair[0];
         var d = pair[1];
-        if (f > 0) {
-          playTone(f, cursor, d * 0.92, "triangle", 0.07);
-          playTone(f * 0.5, cursor, d * 0.92, "sine", 0.035); // oitava grave
-        }
+        if (f > 0) playPiano(f, cursor, d * 0.94, 0.085);
         cursor += d;
       });
-      var waitMs = Math.max(500, (cursor - ctx.currentTime) * 1000 + 400);
+      var waitMs = Math.max(500, (cursor - ctx.currentTime) * 1000 + 200);
       timers.push(
         setTimeout(function () {
           if (mode === "hino") loopPhrase();
@@ -401,6 +435,12 @@
   window.addEventListener("load", boot);
 
   AUD.resumo = function () {
-    return { versao: AUD.versao, muted: muted, mode: mode, licenca: "hino DP (melodia); trilhas procedurais originais" };
+    return {
+      versao: AUD.versao,
+      muted: muted,
+      mode: mode,
+      licenca:
+        "Hino: melodia F. M. da Silva (DP, Lei 5.700/71 canto em F) — frase Ouviram do Ipiranga; demais trilhas procedurais originais"
+    };
   };
 })();
