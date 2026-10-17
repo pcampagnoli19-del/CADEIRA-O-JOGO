@@ -63,8 +63,24 @@ if (Test-Path "modulo_fix_exec_sessao.js") {
   Write-Host "AVISO: modulo_fix_exec_sessao.js ausente - build sem cheats exec/sessao/viagem."
 }
 
+# Navegação agrupada House of Cards (aditivo).
+$navhData = ""
+if (Test-Path "modulo_nav_hoc.js") {
+  $navhData = [System.IO.File]::ReadAllText("modulo_nav_hoc.js", [System.Text.Encoding]::UTF8)
+} else {
+  Write-Host "AVISO: modulo_nav_hoc.js ausente - build sem hubs de menu."
+}
+
+# Áudio procedural (aditivo).
+$audData = ""
+if (Test-Path "modulo_audio_hoc.js") {
+  $audData = [System.IO.File]::ReadAllText("modulo_audio_hoc.js", [System.Text.Encoding]::UTF8)
+} else {
+  Write-Host "AVISO: modulo_audio_hoc.js ausente - build sem áudio."
+}
+
 # Combinar módulo final
-$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData + "`r`n`r`n" + $infData + "`r`n`r`n" + $impfData + "`r`n`r`n" + $legfData + "`r`n`r`n" + $sesfData + "`r`n`r`n" + $exfData
+$finalModule = $geoData + "`r`n`r`n" + $logicData + "`r`n`r`n" + $empData + "`r`n`r`n" + $dipData + "`r`n`r`n" + $infData + "`r`n`r`n" + $impfData + "`r`n`r`n" + $legfData + "`r`n`r`n" + $sesfData + "`r`n`r`n" + $exfData + "`r`n`r`n" + $navhData + "`r`n`r`n" + $audData
 
 # 2. Ler base HTML limpa CADEIRA_O_Jogo_25.html.bak_abc
 $baseHtml = [System.IO.File]::ReadAllText("CADEIRA_O_Jogo_25.html.bak_abc", [System.Text.Encoding]::UTF8)

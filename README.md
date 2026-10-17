@@ -10,7 +10,7 @@ Depois acesse http://127.0.0.1:8765/
 
 ## Visual
 
-Tema **Gabinete Noturno** em `cadeira-theme.css` (também embutido no HTML). Tipografia Fraunces + DM Sans; atmosfera institucional satírica. Não altera a lógica do jogo.
+Tema **House of Cards** (thriller) + menu em 6 hubs em `cadeira-theme.css` (também embutido no HTML). Tipografia Fraunces + DM Sans; atmosfera institucional satírica. Não altera a lógica do jogo.
 
 ## Módulos aditivos (build)
 
