@@ -8362,18 +8362,29 @@ function faseCalendario(){
 /* ---------- Mês ---------- */
 function vMes(){
   const j=J(), fase=faseCalendario(); const ev=M().evento; let evH="";
-  if(ev){ const m=EVENTOS[ev.id].montar(ev.ctx);
-    evH=card(esc(m.titulo),`<p class="txt">${esc(m.texto)}</p>${ev.resolvido?`<p class="done">${ev.escolha>=0?`Você escolheu: ${esc(m.opcoes[ev.escolha][0])}`:"Você deixou passar."}</p>`:m.opcoes.map((o,i)=>btn(`<b>${"ABCD"[i]}</b> ${esc(o[0])}`,"opt",[i],"opt")).join("")}`,"ev"); }
+  if(ev){
+    const def=EVENTOS&&EVENTOS[ev.id];
+    if(def&&typeof def.montar==="function"){
+      try{
+        const m=def.montar(ev.ctx||{});
+        const ops=Array.isArray(m.opcoes)?m.opcoes:[];
+        const escolhida=(ev.resolvido&&ev.escolha>=0&&ops[ev.escolha])?ops[ev.escolha][0]:null;
+        evH=card(esc(m.titulo||"Evento"),`<p class="txt">${esc(m.texto||"")}</p>${ev.resolvido?`<p class="done">${escolhida!=null?`Você escolheu: ${esc(escolhida)}`:"Você deixou passar."}</p>`:ops.map((o,i)=>btn(`<b>${"ABCD"[i]||(i+1)}</b> ${esc((o&&o[0])||"Opção")}`,"opt",[i],"opt")).join("")}`,"ev");
+      }catch(eEv){ console.warn("vMes evento",eEv); evH=card("Evento do mês","<p class='txt'>Não foi possível montar este evento. Avance ou ignore.</p>","ev"); }
+    } else evH=card("Evento do mês","<p class='txt'>Evento desconhecido neste save. Você pode avançar o mês.</p>","ev");
+  }
   else evH=card("Mês tranquilo","<p class='txt'>Sem evento principal neste mês. Use as abas para agir.</p>");
   const feed=M().feedMes||[]; const n=S.verTodas?feed:feed.slice(0,2);
   const alvo=cargoIdPorNome(j.campanha.cargo_alvo); const P=M().pesquisaAtual;
   let meta=`<p class="txt">Alvo: <b>${esc(j.campanha.cargo_alvo)}</b>, eleição em <b>${alvo?proximaEleicaoAno(alvo):"?"}</b>.</p>`;
   if(P&&P.tipo==="LEG") meta+=`<p class="txt">Projeção: ${fmtV(P.jv)} votos, ${P.pos}º lugar para ${P.N} vagas (corte aproximado ${fmtV(P.corte)}). ${P.vence?tag("Dentro","ok"):tag("Fora","bad")}</p>`;
-  if(P&&P.tipo==="MAJ") meta+=P.lista.slice(0,4).map(x=>`<div class="row"><span class="grow ${x.jogador?"eu":""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share,60,x.jogador?"eu":"")}`).join("");
+  if(P&&P.tipo==="MAJ") meta+=(P.lista||[]).slice(0,4).map(x=>`<div class="row"><span class="grow ${x.jogador?"eu":""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${Number(x.share||0).toFixed(1)}%</b></div>${bar(x.share,60,x.jogador?"eu":"")}`).join("");
+  const mesNome=x=>{ const mm=MESES&&MESES[x&&x.mes]; return mm?String(mm).slice(0,3):"—"; };
+  const atr=j.atributos||{};
   return `${card(esc(fase.t),`<p class="txt">${esc(fase.x)}</p>`,"fase "+fase.c)}${evH}${cardMetas()}${cardRelatorio()}
-  ${card("Notícias do mês",n.length?n.map(x=>`<p class="news ${x.tipo}"><small>${MESES[x.mes].slice(0,3)}</small> ${esc(x.txt)}</p>`).join("")+(feed.length>2?btn(S.verTodas?"Mostrar menos":`Ver as outras ${feed.length-2}`,"vertodas","","link"):""):"<p class='txt'>Sem notícias relevantes.</p>")}
+  ${card("Notícias do mês",n.length?n.map(x=>`<p class="news ${x.tipo||""}"><small>${mesNome(x)}</small> ${esc(x.txt||"")}</p>`).join("")+(feed.length>2?btn(S.verTodas?"Mostrar menos":`Ver as outras ${feed.length-2}`,"vertodas","","link"):""):"<p class='txt'>Sem notícias relevantes.</p>")}
   ${card("Seu momento",`<div class="grid2">${kv("Saúde",`${Math.round(j.saude)}%`)}${kv("Escândalo",`${Math.round(j.escandalo)}%`)}${kv("Relação com o partido",Math.round(j.relacao_partido))}${kv("Padrinho",esc((npcPorId(j.padrinho_id)||{nome:"nenhum"}).nome))}</div>${bar(j.saude,100,"ok")}${meta}`)}
-  ${card("Atributos",Object.entries(j.atributos).map(([k,v])=>`<div class="row"><span class="grow">${k[0].toUpperCase()+k.slice(1)}</span><b>${Math.round(v)}</b></div>${bar(v)}`).join(""))}`;
+  ${card("Atributos",Object.entries(atr).map(([k,v])=>`<div class="row"><span class="grow">${(k&&k[0]?k[0].toUpperCase():"")+String(k||"").slice(1)}</span><b>${Math.round(v)}</b></div>${bar(v)}`).join(""))}`;
 }
 A.opt=i=>{ escolherOpcao(i); };
 A.vertodas=()=>{S.verTodas=!S.verTodas;};
@@ -8728,10 +8739,10 @@ function fv(l,v){ return l.k==="cx1"||l.k==="cx2"?fmtK(v):(Math.round(v*10)/10).
 function fd(l,v){ const s=v>0?"+":v<0?"−":""; const a=Math.abs(v); return s+(l.k==="cx1"||l.k==="cx2"?fmtK(a):(Math.round(a*10)/10).toString().replace(".",",")); }
 function cardRelatorio(){
   const r=M().relatorio; let h="";
-  if(r&&r.linhas.length){
+  if(r&&r.linhas&&r.linhas.length){
     const open=S.relOpen;
-    h+=card(`O que mudou: ${esc(r.rotulo)}`,r.linhas.map(l=>{ const bom=l.delta*BOM[l.k]>0; const cls=Math.abs(l.delta)<(l.dec?.05:1)?"":bom?"pos":"neg"; const top=l.itens[0];
-      return `<div class="rep"><div class="row"><b class="grow">${l.nome}</b><span class="dl ${cls}">${fd(l,l.delta)}</span></div><small>${fv(l,l.de)} → ${fv(l,l.para)}${!open&&top?` · principal causa: ${esc(top.causa)} (${fd(l,top.delta)})`:""}</small>${open?l.itens.map(i=>`<div class="row sub"><span class="grow">${esc(i.causa)}</span><span class="dl ${i.delta*BOM[l.k]>0?"pos":"neg"}">${fd(l,i.delta)}</span></div>`).join(""):""}</div>`; }).join("")+btn(open?"Recolher causas":"Ver todas as causas","relOpen","","link"),"rel");
+    h+=card(`O que mudou: ${esc(r.rotulo)}`,r.linhas.map(l=>{ if(!l) return ""; const itens=Array.isArray(l.itens)?l.itens:[]; const bom=l.delta*(BOM[l.k]|0)>0; const cls=Math.abs(l.delta)<(l.dec?.05:1)?"":bom?"pos":"neg"; const top=itens[0];
+      return `<div class="rep"><div class="row"><b class="grow">${esc(l.nome||"")}</b><span class="dl ${cls}">${fd(l,l.delta)}</span></div><small>${fv(l,l.de)} → ${fv(l,l.para)}${!open&&top?` · principal causa: ${esc(top.causa)} (${fd(l,top.delta)})`:""}</small>${open?itens.map(i=>`<div class="row sub"><span class="grow">${esc(i.causa)}</span><span class="dl ${i.delta*(BOM[l.k]|0)>0?"pos":"neg"}">${fd(l,i.delta)}</span></div>`).join(""):""}</div>`; }).join("")+btn(open?"Recolher causas":"Ver todas as causas","relOpen","","link"),"rel");
   }
   const x=execNPC(), m=M().mercado;
   h+=card("Cenário nacional",`<div class="grid2">${kv("Dólar","R$ "+m.dolar.toFixed(2).replace(".",","))}${kv("Bolsa",Math.round(m.bolsa))}${kv("Inflação",(m.inflacao||4.5).toFixed(1).replace(".",",")+"%")}${kv("Selic",(m.selic||10.5).toFixed(2).replace(".",",")+"%")}${x.pres?kv("Popul. do Presidente",Math.round(x.pres.popularidade)+"%"):""}${x.gov?kv("Popul. do Gov. de SP",Math.round(x.gov.popularidade)+"%"):""}${x.pref?kv("Popul. do Prefeito de Mauá",Math.round(x.pref.popularidade)+"%"):""}${efx().antipol_ate>agoraM()?kv("Clima","anti-política"):""}</div>${efx().foro_ate>agoraM()?`<p class="warn-txt">Foro privilegiado restrito pelo STF.</p>`:""}${efx().centrao_ate>agoraM()?`<p class="txt">Centrão: ${efx().centrao_delta<0?"fora da base do governo":"dentro da base do governo"}.</p>`:""}<p class="txt"><small>O mundo anda sozinho: governo federal, STF, PGR, Banco Central e Congresso agem todo mês.</small></p>`);
@@ -12727,7 +12738,8 @@ const popupEvento=()=>{
     if(S.evRes){ const r=S.evRes; const nova=animEv("r|"+r.key);
       return `<div class="evping ${nova?"entra":""}" role="dialog" aria-modal="true" aria-label="Decisão registrada" data-k="r|${esc(r.key)}"><div class="evcard"><div class="evtop"><span class="evq">DECISÃO REGISTRADA</span><span class="evdt">${mesCurto()}</span></div><div class="evbody"><h2>${esc(r.titulo)}</h2><p class="evtxt">Você escolheu: <b>${esc(r.escolha)}</b></p>${r.chips.length?`<div class="evres">${r.chips.map(c=>`<span class="evc ${c.bom?"bom":"mau"}">${esc(c.l)}${c.v?` <b>${esc(c.v)}</b>`:""}</span>`).join("")}</div>`:""}<div class="evfoot">${btn("Entendi","evOk","","confirma grande")}</div></div></div></div>`; }
     if(!ev||ev.resolvido) return "";
-    const m=EVENTOS[ev.id].montar(ev.ctx);
+    const def=EVENTOS&&EVENTOS[ev.id]; if(!def||typeof def.montar!=="function") return "";
+    const m=def.montar(ev.ctx||{});
     if(S.evMin===key) return `<button class="evchip" data-a="evAbrir" aria-label="Há um evento pendente: ${esc(m.titulo)}. Toque para decidir."><span class="evradar"><i></i></span><span>Evento pendente</span></button>`;
     const nova=animEv(key);
     const ops=m.opcoes.map((o,i)=>{ const falta=faltaCaixa(o[1]), h=custoHint(o[1]);
@@ -34055,6 +34067,7 @@ window.GEO_ABC = GEO_ABC;
 
 
 /* =============================================================================
+   /* =============================================================================
    CADEIRA — Navegação agrupada (House of Cards)
    ~6 hubs no topo + submenus. Não remove conteúdo; só reorganiza onde aparece.
    ============================================================================= */
@@ -34282,7 +34295,54 @@ window.GEO_ABC = GEO_ABC;
         S.tab = sub;
         S._top = true;
       }
+      // Garante remount mesmo se o handler de clique não chamar render
+      try {
+        if (typeof render === "function") render();
+      } catch (e) {}
     };
+    return true;
+  }
+
+  /** Sanitiza estado que quebrava a aba Mês/Gabinete (reading '0'). */
+  function sanitizeMesState() {
+    try {
+      if (typeof M !== "function" || !gameState) return;
+      var m = M();
+      if (!m) return;
+      if (m.relatorio && Array.isArray(m.relatorio.linhas)) {
+        m.relatorio.linhas.forEach(function (l) {
+          if (l && !Array.isArray(l.itens)) l.itens = [];
+        });
+      }
+      if (Array.isArray(m.feedMes)) {
+        m.feedMes.forEach(function (x) {
+          if (x && (x.mes == null || !(typeof MESES !== "undefined" && MESES[x.mes]))) x.mes = (typeof dt === "function" && dt().mes) || 1;
+        });
+      }
+    } catch (e) {}
+  }
+
+  function patchMesView() {
+    if (typeof VIEWS === "undefined" || typeof VIEWS.mes !== "function" || VIEWS.mes._navhGuard) return false;
+    var _vm = VIEWS.mes;
+    VIEWS.mes = function () {
+      sanitizeMesState();
+      try {
+        return _vm.apply(this, arguments);
+      } catch (e) {
+        console.error("NAVH mes guard", e);
+        try {
+          return (
+            '<section class="card"><h3>Cenário</h3><p class="txt">Houve um erro ao montar o mês (' +
+            (typeof esc === "function" ? esc(e.message) : String(e.message || e)) +
+            "). Tente outra subaba ou avance o mês.</p></section>"
+          );
+        } catch (e2) {
+          return "<section class=\"card\"><h3>Cenário</h3><p class=\"txt\">Erro ao montar o mês.</p></section>";
+        }
+      }
+    };
+    VIEWS.mes._navhGuard = true;
     return true;
   }
 
@@ -34363,6 +34423,7 @@ window.GEO_ABC = GEO_ABC;
       patchTabAction();
       patchTabsBar();
       patchBottomNav();
+      patchMesView();
       remapperDeepLinks();
       // Se tab atual for órfã ok; se for desconhecida, manda pro Gabinete
       if (typeof S !== "undefined" && S.tab && !hubOfTab(S.tab)) {
@@ -34395,6 +34456,7 @@ window.GEO_ABC = GEO_ABC;
     };
   };
 })();
+
 
 /* =============================================================================
    CADEIRA — Áudio procedural (domínio público / original)

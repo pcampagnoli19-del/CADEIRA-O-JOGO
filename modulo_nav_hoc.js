@@ -226,7 +226,54 @@
         S.tab = sub;
         S._top = true;
       }
+      // Garante remount mesmo se o handler de clique não chamar render
+      try {
+        if (typeof render === "function") render();
+      } catch (e) {}
     };
+    return true;
+  }
+
+  /** Sanitiza estado que quebrava a aba Mês/Gabinete (reading '0'). */
+  function sanitizeMesState() {
+    try {
+      if (typeof M !== "function" || !gameState) return;
+      var m = M();
+      if (!m) return;
+      if (m.relatorio && Array.isArray(m.relatorio.linhas)) {
+        m.relatorio.linhas.forEach(function (l) {
+          if (l && !Array.isArray(l.itens)) l.itens = [];
+        });
+      }
+      if (Array.isArray(m.feedMes)) {
+        m.feedMes.forEach(function (x) {
+          if (x && (x.mes == null || !(typeof MESES !== "undefined" && MESES[x.mes]))) x.mes = (typeof dt === "function" && dt().mes) || 1;
+        });
+      }
+    } catch (e) {}
+  }
+
+  function patchMesView() {
+    if (typeof VIEWS === "undefined" || typeof VIEWS.mes !== "function" || VIEWS.mes._navhGuard) return false;
+    var _vm = VIEWS.mes;
+    VIEWS.mes = function () {
+      sanitizeMesState();
+      try {
+        return _vm.apply(this, arguments);
+      } catch (e) {
+        console.error("NAVH mes guard", e);
+        try {
+          return (
+            '<section class="card"><h3>Cenário</h3><p class="txt">Houve um erro ao montar o mês (' +
+            (typeof esc === "function" ? esc(e.message) : String(e.message || e)) +
+            "). Tente outra subaba ou avance o mês.</p></section>"
+          );
+        } catch (e2) {
+          return "<section class=\"card\"><h3>Cenário</h3><p class=\"txt\">Erro ao montar o mês.</p></section>";
+        }
+      }
+    };
+    VIEWS.mes._navhGuard = true;
     return true;
   }
 
@@ -307,6 +354,7 @@
       patchTabAction();
       patchTabsBar();
       patchBottomNav();
+      patchMesView();
       remapperDeepLinks();
       // Se tab atual for órfã ok; se for desconhecida, manda pro Gabinete
       if (typeof S !== "undefined" && S.tab && !hubOfTab(S.tab)) {
