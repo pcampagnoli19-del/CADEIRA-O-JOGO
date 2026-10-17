@@ -4582,7 +4582,7 @@ function garantirFotosUnicasFicticios() {
 
 function obterFotoPolitico(n) {
   if (!n) return "";
-  if (n.foto) return n.foto;
+  if (n.foto) return (typeof window.normalizarUrlFoto==="function" ? window.normalizarUrlFoto(n.foto) : n.foto);
 
   const fotosEmb = window._fotosEmbutidasMap || (function(){
     try {
@@ -4593,7 +4593,7 @@ function obterFotoPolitico(n) {
     return window._fotosEmbutidasMap;
   })();
   if (n.nome) {
-    if (fotosEmb[n.nome]) return fotosEmb[n.nome];
+    if (fotosEmb[n.nome]) return (typeof window.normalizarUrlFoto==="function" ? window.normalizarUrlFoto(fotosEmb[n.nome]) : fotosEmb[n.nome]);
     const kn = typeof normKey === "function" ? normKey(n.nome) : "";
     if (kn) {
       if (!window._fotosEmbutidasNormMap) {
@@ -4602,7 +4602,7 @@ function obterFotoPolitico(n) {
           if (fotosEmb[k]) window._fotosEmbutidasNormMap[typeof normKey === "function" ? normKey(k) : k.toLowerCase()] = fotosEmb[k];
         }
       }
-      if (window._fotosEmbutidasNormMap[kn]) return window._fotosEmbutidasNormMap[kn];
+      if (window._fotosEmbutidasNormMap[kn]) return (typeof window.normalizarUrlFoto==="function" ? window.normalizarUrlFoto(window._fotosEmbutidasNormMap[kn]) : window._fotosEmbutidasNormMap[kn]);
     }
   }
 
@@ -4612,11 +4612,100 @@ function obterFotoPolitico(n) {
     return "";
   }
 
-  if (n._fotoProc) return n._fotoProc;
+  if (n._fotoProc) return (typeof window.normalizarUrlFoto==="function" ? window.normalizarUrlFoto(n._fotoProc) : n._fotoProc);
 
   garantirFotosUnicasFicticios();
-  return n._fotoProc || "";
+  return (typeof window.normalizarUrlFoto==="function" ? window.normalizarUrlFoto(n._fotoProc||"") : (n._fotoProc || ""));
 }
+
+
+/* ===================== FOTOS: falhas + contador honesto ===================== */
+window._fotoFalhas = window._fotoFalhas || new Set();
+window.marcarFotoFalhou = function(id){
+  if(id==null || id==="") return;
+  const k=String(id);
+  if(window._fotoFalhas.has(k)) return;
+  window._fotoFalhas.add(k);
+  try{ if(typeof window.atualizarContadorFotos==="function") window.atualizarContadorFotos(); }catch(e){}
+};
+window.temFotoPolitico = function(n){
+  if(!n) return false;
+  try{
+    if(n.id!=null && window._fotoFalhas && window._fotoFalhas.has(String(n.id))) return false;
+    if(n.foto) return true;
+    if(typeof obterFotoPolitico==="function"){
+      const u=obterFotoPolitico(n);
+      return !!(u && String(u).trim());
+    }
+    return false;
+  }catch(e){ return false; }
+};
+window.normalizarUrlFoto = function(url){
+  if(!url) return "";
+  let u=String(url).trim();
+  // HTTPS para evitar mixed-content no tunnel
+  if(/^http:\/\/www\.senado\.leg\.br\/senadores\/img\/fotos-oficiais\/senador(\d+)\.jpg/i.test(u)){
+    const id=u.match(/senador(\d+)/i)[1];
+    return "https://legis.senado.leg.br/senadores/fotos-oficiais/"+id;
+  }
+  if(/^http:\/\//i.test(u) && /(senado\.leg\.br|camara\.leg\.br|wikimedia\.org|wikipedia\.org)/i.test(u)){
+    u=u.replace(/^http:\/\//i,"https://");
+  }
+  return u;
+};
+window.atualizarContadorFotos = function(){
+  try{
+    if(typeof bancoDeNPCs==="undefined" || !Array.isArray(bancoDeNPCs)) return;
+    if(typeof S==="undefined" || S.tab!=="todos") return;
+    const todos=bancoDeNPCs.filter(n=>!n.jogador);
+    const com=todos.filter(window.temFotoPolitico).length;
+    const sem=todos.length-com;
+    const main=document.getElementById("main");
+    if(!main) return;
+    main.querySelectorAll(".kv").forEach(el=>{
+      const sp=el.querySelector("span");
+      const b=el.querySelector("b");
+      if(!sp||!b) return;
+      const t=(sp.textContent||"").trim();
+      if(t==="Com foto") b.textContent=String(com);
+      else if(t==="Sem foto") b.textContent=String(sem);
+    });
+  }catch(e){}
+};
+window._onFotoErr = function(img){
+  try{
+    if(!img || img.dataset && img.dataset.fotoFalhou==="1") return;
+    if(img.dataset) img.dataset.fotoFalhou="1";
+    img.onerror=null;
+    img.onload=null;
+    img.style.display="none";
+    img.removeAttribute("src");
+    const sib=img.nextElementSibling;
+    if(sib){ sib.style.display="inline-flex"; }
+    const nid=img.getAttribute("data-nid")||(img.dataset&&img.dataset.nid);
+    if(nid && window.marcarFotoFalhou) window.marcarFotoFalhou(nid);
+  }catch(e){}
+};
+window._varrerFotosQuebradas = function(root){
+  try{
+    const scope=root||document;
+    scope.querySelectorAll("img[data-nid]").forEach(img=>{
+      try{
+        if(img.dataset && img.dataset.fotoFalhou==="1") return;
+        if(img.complete && (!img.naturalWidth || img.naturalWidth===0)){
+          window._onFotoErr(img);
+        }
+      }catch(e){}
+    });
+  }catch(e){}
+};
+window._onFotoOk = function(img){
+  try{
+    if(!img) return;
+    const sib=img.nextElementSibling;
+    if(sib && sib.classList && sib.classList.contains("pv-ini")) sib.style.display="none";
+  }catch(e){}
+};
 
 function renderFotoPolitico(n, tamanho=44) {
   if (!n) return "";
@@ -4624,11 +4713,14 @@ function renderFotoPolitico(n, tamanho=44) {
   const pb = n.partido || n.partidoBase || "SP";
   const corPartido = (PARTIDOS && PARTIDOS[pb] && PARTIDOS[pb].cor) || "#34495e";
   const iniciais = esc(String(n.nome || "P").substring(0, 2).toUpperCase());
-
+  const nid = esc(String(n.id||""));
+  if(!url){
+    return `<div style="width:${tamanho}px;height:${tamanho}px;border-radius:50%;overflow:hidden;background:${corPartido};border:2px solid rgba(255,255,255,0.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.5)"><div style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:900;font-size:${Math.round(tamanho*0.36)}px;color:#fff">${iniciais}</div></div>`;
+  }
   return `
     <div style="width:${tamanho}px;height:${tamanho}px;border-radius:50%;overflow:hidden;background:${corPartido};border:2px solid rgba(255,255,255,0.4);flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.5)">
-      <img src="${url}" alt="${esc(n.nome)}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-      <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:900;font-size:${Math.round(tamanho*0.36)}px;color:#fff">${iniciais}</div>
+      <img src="${esc(url)}" alt="${esc(n.nome)}" data-nid="${nid}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="window._onFotoErr&&window._onFotoErr(this)" onload="window._onFotoOk&&window._onFotoOk(this)">
+      <div class="pv-ini" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:900;font-size:${Math.round(tamanho*0.36)}px;color:#fff">${iniciais}</div>
     </div>
   `;
 }
@@ -10066,7 +10158,9 @@ function getFotoFiguraOuPolitico(c, w, h) {
     }
     const ini = esc((c.nome || "?").trim().charAt(0));
     if (url) {
-      return '<img class="pv-foto" style="width:' + w + 'px;height:' + h + 'px;object-fit:cover;border-radius:50%" src="' + esc(url) + '" alt="" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'inline-block\'"><span class="pv-foto pv-ini" style="width:' + w + 'px;height:' + h + 'px;line-height:' + h + 'px;display:none;border-radius:50%">' + ini + '</span>';
+      if (typeof window.normalizarUrlFoto === "function") url = window.normalizarUrlFoto(url);
+      const nid = (c && c.id != null) ? esc(String(c.id)) : "";
+      return '<img class="pv-foto" data-nid="' + nid + '" style="width:' + w + 'px;height:' + h + 'px;object-fit:cover;border-radius:50%" src="' + esc(url) + '" alt="" loading="lazy" onerror="window._onFotoErr&&window._onFotoErr(this)" onload="window._onFotoOk&&window._onFotoOk(this)"><span class="pv-foto pv-ini" style="width:' + w + 'px;height:' + h + 'px;line-height:' + h + 'px;display:none;border-radius:50%;align-items:center;justify-content:center">' + ini + '</span>';
     }
     return '<span class="pv-foto pv-ini" style="width:' + w + 'px;height:' + h + 'px;line-height:' + h + 'px;border-radius:50%">' + ini + '</span>';
   } catch(e) {
@@ -10932,10 +11026,11 @@ S.acc=S.acc||{};
 /* ===================== FOTOS DOS PERSONAGENS (upload manual) ===================== */
 {
 const FW=144,FH=180;
-const st=document.createElement("style"); st.textContent=`.foto-box{float:right;text-align:center;margin:0 0 6px 10px}.foto-f{width:96px;height:120px;object-fit:cover;border-radius:10px;border:2px solid var(--linha);display:block;margin-bottom:4px}.foto-m{width:34px;height:42px;object-fit:cover;border-radius:6px;flex:none}button.npc.com-foto{display:flex;align-items:center;gap:8px;text-align:left}.foto-ed{width:120px;height:150px;object-fit:cover;border-radius:10px;border:2px solid var(--linha)}`; document.head.appendChild(st);
+const st=document.createElement("style"); st.textContent=`.foto-box{float:right;text-align:center;margin:0 0 6px 10px}.foto-f{width:96px;height:120px;object-fit:cover;border-radius:10px;border:2px solid var(--linha);display:block;margin-bottom:4px}.foto-m{width:34px;height:42px;object-fit:cover;border-radius:6px;flex:none}button.npc.com-foto{display:flex;align-items:center;gap:8px;text-align:left}.npc-foto-slot{flex:none;display:inline-flex;align-items:center;justify-content:center}.npc-txt{flex:1;min-width:0;text-align:left}.npc-txt .nm{display:block}.foto-m,.pv-foto{flex:none}.foto-ed{width:120px;height:150px;object-fit:cover;border-radius:10px;border:2px solid var(--linha)}`; document.head.appendChild(st);
 { const _mf=modalFicha; modalFicha=function(id){ const h=_mf(id); const n=npcPorId(id); if(!n) return h;
     const urlFoto = n.foto || (typeof obterFotoPolitico==="function" ? obterFotoPolitico(n) : null);
-    const box=`<div class="foto-box">${urlFoto?`<img class="foto-f" src="${urlFoto}" alt="${esc(n.nome)}" onerror="this.style.display='none'">`:""}${btn("📷 Foto","edFoto",[n.id],"mini branco")}</div>`;
+    const urlFotoB = urlFoto && typeof window.normalizarUrlFoto==="function" ? window.normalizarUrlFoto(urlFoto) : urlFoto;
+    const box=`<div class="foto-box">${urlFotoB?`<img class="foto-f" src="${esc(urlFotoB)}" alt="${esc(n.nome)}" data-nid="${esc(String(n.id||""))}" onerror="window._onFotoErr&&window._onFotoErr(this)"><div class="pv-ini" style="display:none;width:96px;height:120px;align-items:center;justify-content:center;border-radius:10px;background:var(--linha);font-weight:800">${esc((n.nome||"?").trim().charAt(0))}</div>`:`<div class="pv-ini" style="display:flex;width:96px;height:120px;align-items:center;justify-content:center;border-radius:10px;background:var(--linha);font-weight:800;margin-bottom:4px">${esc((n.nome||"?").trim().charAt(0))}</div>`}${btn("📷 Foto","edFoto",[n.id],"mini branco")}</div>`;
     return h.replace('<div class="mbox">','<div class="mbox">'+box); }; }
 A.edFoto=id=>{ S.ed.id=id; Object.assign(S.ed,{cargo:"",uf:"",mun:"",part:"",sit:""}); S.modal=null; S.tab="ed"; S._top=true; };
 A.edFotoRem=()=>{ const n=npcPorId(S.ed.id); if(n){ delete n.foto; toast("Foto manual removida.","ok"); } };
@@ -10945,10 +11040,26 @@ A.edFotoRem=()=>{ const n=npcPorId(S.ed.id); if(n){ delete n.foto; toast("Foto m
     return card("📷 Foto de "+esc(n.nome),`${urlFoto?`<img class="foto-ed" src="${urlFoto}" alt="">`:"<p class='txt'><small>Sem foto ainda.</small></p>"}<label class="f">Enviar imagem personalizada (galeria ou arquivo) <input type="file" accept="image/*" data-i="edfoto"></label>${n.foto?btn("Remover foto personalizada","edFotoRem",[],"branco mini"):""}<p class="txt"><small>A imagem é recortada e reduzida (${FW}×${FH}) para não pesar o save. Depois, toque em Salvar.</small></p>`)+h; }; }
 document.addEventListener("change",e=>{ const t=e.target; if(!t.dataset||t.dataset.i!=="edfoto") return; const n=npcPorId(S.ed.id), f=t.files&&t.files[0]; if(!n||!f) return;
   const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ const c=document.createElement("canvas"); c.width=FW; c.height=FH; const x=c.getContext("2d"); const s=Math.max(FW/im.width,FH/im.height), w=im.width*s, hh=im.height*s; x.fillStyle="#ddd"; x.fillRect(0,0,FW,FH); x.drawImage(im,(FW-w)/2,(FH-hh)*.2,w,hh); n.foto=c.toDataURL("image/jpeg",.82); toast("Foto adicionada a "+n.nome+". Toque em Salvar para gravar.","ok"); render(); }; im.onerror=()=>toast("Não consegui ler essa imagem.","err"); im.src=rd.result; }; rd.readAsDataURL(f); });
-{ const _r=render; render=function(){ _r(); try{ document.querySelectorAll("button.npc[data-a=ficha]").forEach(b=>{ if(b.classList.contains("com-foto")) return; let id; try{ id=JSON.parse(b.dataset.p)[0]; }catch(_){ return; } const n=npcPorId(id); if(!n) return;
-      const urlFoto = n.foto || (typeof obterFotoPolitico==="function" ? obterFotoPolitico(n) : null);
-      if(!urlFoto) return;
-      const w=document.createElement("div"); while(b.firstChild) w.appendChild(b.firstChild); const im=document.createElement("img"); im.className="foto-m"; im.src=urlFoto; im.alt=""; im.onerror=function(){ this.style.display='none'; }; b.classList.add("com-foto"); b.appendChild(im); b.appendChild(w); }); }catch(e){ console.error("fotos",e); } }; }
+{ const _r=render; render=function(){ _r(); try{ document.querySelectorAll("button.npc[data-a=ficha]").forEach(b=>{
+      if(b.classList.contains("com-foto") || b.querySelector(".foto-m,.pv-foto,.npc-foto-slot")) return;
+      let id; try{ id=JSON.parse(b.dataset.p)[0]; }catch(_){ return; }
+      const n=npcPorId(id); if(!n) return;
+      const w=document.createElement("div"); w.className="npc-txt";
+      while(b.firstChild) w.appendChild(b.firstChild);
+      const slot=document.createElement("span"); slot.className="npc-foto-slot";
+      if(typeof fotoTag==="function"){ slot.innerHTML=fotoTag(n,34,42,"foto-m"); }
+      else {
+        const ini=esc((n.nome||"?").trim().charAt(0));
+        slot.innerHTML=`<span class="pv-foto pv-ini" style="width:34px;height:42px;line-height:42px;display:inline-flex;align-items:center;justify-content:center">${ini}</span>`;
+      }
+      b.classList.add("com-foto");
+      b.appendChild(slot); b.appendChild(w);
+    });
+    if(typeof window._varrerFotosQuebradas==="function") window._varrerFotosQuebradas();
+    if(typeof window.atualizarContadorFotos==="function") window.atualizarContadorFotos();
+    setTimeout(function(){ try{ if(window._varrerFotosQuebradas) window._varrerFotosQuebradas(); if(window.atualizarContadorFotos) window.atualizarContadorFotos(); }catch(e){} }, 1200);
+    setTimeout(function(){ try{ if(window._varrerFotosQuebradas) window._varrerFotosQuebradas(); if(window.atualizarContadorFotos) window.atualizarContadorFotos(); }catch(e){} }, 4000);
+    }catch(e){ console.error("fotos",e); } }; }
 }
 
 /* ===================== EDITOR: MINHAS SKILLS ===================== */
@@ -11029,9 +11140,12 @@ window.fotoTag=function(n,w,h,cls){
   if(!url && n && typeof obterFotoPolitico === "function"){
     url = obterFotoPolitico(n);
   }
+  if(url && typeof window.normalizarUrlFoto==="function") url = window.normalizarUrlFoto(url);
+  if(n && n.id!=null && window._fotoFalhas && window._fotoFalhas.has(String(n.id))) url = null;
   const ini=n?esc((n.nome||"?").trim().charAt(0)):"?";
-  if(url) return `<img class="${cls||"pv-foto"}" style="width:${w}px;height:${h}px;object-fit:cover" src="${url}" alt="" loading="lazy" onerror="this.onerror=null;this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline-block'"><span class="pv-foto pv-ini" style="width:${w}px;height:${h}px;line-height:${h}px;display:none">${ini}</span>`;
-  return `<span class="pv-foto pv-ini" style="width:${w}px;height:${h}px;line-height:${h}px">${ini}</span>`;
+  const nid=n&&n.id!=null?esc(String(n.id)):"";
+  if(url) return `<img class="${cls||"pv-foto"}" data-nid="${nid}" style="width:${w}px;height:${h}px;object-fit:cover" src="${esc(url)}" alt="" loading="lazy" onerror="window._onFotoErr&&window._onFotoErr(this)" onload="window._onFotoOk&&window._onFotoOk(this)"><span class="pv-foto pv-ini" style="width:${w}px;height:${h}px;line-height:${h}px;display:none;align-items:center;justify-content:center">${ini}</span>`;
+  return `<span class="pv-foto pv-ini" style="width:${w}px;height:${h}px;line-height:${h}px;display:inline-flex;align-items:center;justify-content:center">${ini}</span>`;
 };
 /* Mapeamento de siglas e nomes completos */
 const DIC_PARTIDOS_NOMES = {
@@ -11578,7 +11692,7 @@ TABS.splice(TABS.findIndex(t=>t[0]==="ed"),0,["todos","👥 Todos"]);
 A.todPg=d=>{ S.tod.pg=Math.max(0,S.tod.pg+d); }; A.todLimpar=()=>{ S.tod={p:"",c:"",uf:"",st:"vivos",o:"",f:"",q:"",ord:"cargo",pg:0}; };
 document.addEventListener("change",e=>{ const t=e.target; if(!t.dataset||t.dataset.i!=="tod") return; S.tod[t.dataset.k]=t.value; S.tod.pg=0; render(); });
 VIEWS.todos=function(){ deduplicarBancoNPCs(); try{ if(typeof garantirSistemaInfluencia==="function") garantirSistemaInfluencia(); }catch(_){} ["Filtros","Resultados"].forEach(k=>{ if(!(("todos|"+k) in S.acc)) S.acc["todos|"+k]=true; }); const f=S.tod, todos=bancoDeNPCs.filter(n=>!n.jogador); let l=todos.slice();
-  const temFoto = n => { try { return !!(n && (n.foto || (typeof obterFotoPolitico==="function" && obterFotoPolitico(n)))); } catch(e){ return false; } };
+  const temFoto = n => (typeof window.temFotoPolitico==="function" ? window.temFotoPolitico(n) : !!(n && (n.foto || (typeof obterFotoPolitico==="function" && obterFotoPolitico(n)))));
   const vivos=todos.filter(n=>n.vivo).length, comFoto=todos.filter(temFoto).length;
   if(f.st==="vivos") l=l.filter(n=>n.vivo); else if(f.st==="falecidos") l=l.filter(n=>!n.vivo);
   if(f.p) l=l.filter(n=>(n.partidoBase||n.partido)===f.p); if(f.c) l=l.filter(n=>n.cargo===f.c); if(f.uf) l=l.filter(n=>n.uf===f.uf);
@@ -11592,7 +11706,7 @@ VIEWS.todos=function(){ deduplicarBancoNPCs(); try{ if(typeof garantirSistemaInf
   const partidos=[...new Set(todos.map(n=>n.partidoBase||n.partido).filter(Boolean))].sort(), cargos=[...new Set(todos.map(n=>n.cargo).filter(Boolean))].sort(), ufs=[...new Set(todos.map(n=>n.uf).filter(Boolean))].sort();
   return card("Todos os políticos do save",`<div class="grid2">${kv("Total",todos.length)}${kv("Vivos",vivos)}${kv("Com foto",comFoto)}${kv("Sem foto",todos.length-comFoto)}</div><p class="txt"><small>Toque em qualquer nome para abrir a ficha (e ver ou personalizar a foto).</small></p>`)
   +card("Filtros",`<div class="grid2"><label class="f">Situação <select data-i="tod" data-k="st">${fixo("st",[["vivos","Vivos"],["falecidos","Falecidos"],["todos","Todos"]],f.st)}</select></label><label class="f">Origem <select data-i="tod" data-k="o">${fixo("o",[["","Todos"],["reais","Reais"],["ficticios","Fictícios"]],f.o)}</select></label></div><div class="grid2"><label class="f">Partido <select data-i="tod" data-k="p">${opt(partidos,f.p,"Todos")}</select></label><label class="f">Cargo <select data-i="tod" data-k="c">${opt(cargos,f.c,"Todos")}</select></label></div><div class="grid2"><label class="f">Estado <select data-i="tod" data-k="uf">${opt(ufs,f.uf,"Todos")}</select></label><label class="f">Foto <select data-i="tod" data-k="f">${fixo("f",[["","Todas"],["com","Com foto"],["sem","Sem foto"]],f.f)}</select></label></div><div class="grid2"><label class="f">Ordenar por <select data-i="tod" data-k="ord">${fixo("ord",[["cargo","Cargo"],["nome","Nome (A–Z)"],["pop","Popularidade"],["rel","Relação comigo"]],f.ord)}</select></label><label class="f">Nome <input type="text" data-i="tod" data-k="q" value="${esc(f.q)}" placeholder="parte do nome"></label></div><div class="row">${btn("Limpar filtros","todLimpar",[],"mini branco")}</div>`)
-  +card("Resultados",`<p class="txt"><b>${l.length}</b> resultado(s) — página ${f.pg+1} de ${pages}</p>`+(pag.map(n=>`<button class="npc" data-a="ficha" data-p="${esc(JSON.stringify([n.id]))}"><span class="nm">${esc(n.nome)} ${n.real?"":tag("fictício")}</span><small>${esc(n.vivo?(n.papel||n.cargo):"Falecido(a)")} — ${esc(n.partido||"")}${n.uf?" · "+esc(n.uf):""}</small></button>`).join("")||"<p class='txt'><small>Ninguém com esses filtros.</small></p>")+`<div class="row">${btn("Anterior","todPg",[-1],"mini",f.pg<=0)}<span class="grow c">${f.pg+1}/${pages}</span>${btn("Próxima","todPg",[1],"mini",f.pg>=pages-1)}</div>`); };
+  +card("Resultados",`<p class="txt"><b>${l.length}</b> resultado(s) — página ${f.pg+1} de ${pages}</p>`+(pag.map(n=>`<button class="npc com-foto" data-a="ficha" data-p="${esc(JSON.stringify([n.id]))}">${typeof fotoTag==="function"?fotoTag(n,34,42,"foto-m"):""}<span class="npc-txt"><span class="nm">${esc(n.nome)} ${n.real?"":tag("fictício")}</span><small>${esc(n.vivo?(n.papel||n.cargo):"Falecido(a)")} — ${esc(n.partido||"")}${n.uf?" · "+esc(n.uf):""}</small></span></button>`).join("")||"<p class='txt'><small>Ninguém com esses filtros.</small></p>")+`<div class="row">${btn("Anterior","todPg",[-1],"mini",f.pg<=0)}<span class="grow c">${f.pg+1}/${pages}</span>${btn("Próxima","todPg",[1],"mini",f.pg>=pages-1)}</div>`); };
 }
 
 /* ===================== v11: STF, COMPOSIÇÃO DO CONGRESSO, SENADO, MENUS ===================== */
@@ -12585,7 +12699,9 @@ document.addEventListener("keydown",e=>{ const t=e.target; if(!t||!t.dataset||t.
     h=h.replace(/<div class="foto-box">[\s\S]*?<\/div>/,"");
     const p=JSON.stringify([id]), edit=S.fichaNomeId===id;
     const urlFoto = n.foto || (typeof obterFotoPolitico === "function" ? obterFotoPolitico(n) : null);
-    const foto=`<span class="ficha-foto" data-a="fichaFoto" data-p='${p}' title="Trocar foto" role="button" tabindex="0">${urlFoto?`<img src="${urlFoto}" alt="" style="width:64px;height:80px;object-fit:cover;border-radius:10px" onerror="this.onerror=null;this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex'"><span class="ph" style="display:none">📷</span>`:`<span class="ph">📷</span>`}</span>`;
+    const urlFotoN = urlFoto && typeof window.normalizarUrlFoto==="function" ? window.normalizarUrlFoto(urlFoto) : urlFoto;
+    const fotoFalhou = n.id!=null && window._fotoFalhas && window._fotoFalhas.has(String(n.id));
+    const foto=`<span class="ficha-foto" data-a="fichaFoto" data-p='${p}' title="Trocar foto" role="button" tabindex="0">${(urlFotoN && !fotoFalhou)?`<img src="${esc(urlFotoN)}" alt="" data-nid="${esc(String(n.id||""))}" style="width:64px;height:80px;object-fit:cover;border-radius:10px" onerror="window._onFotoErr&&window._onFotoErr(this)" onload="window._onFotoOk&&window._onFotoOk(this)"><span class="ph pv-ini" style="display:none;width:64px;height:80px;align-items:center;justify-content:center;border-radius:10px">${esc((n.nome||"?").trim().charAt(0))}</span>`:`<span class="ph pv-ini" style="display:flex;width:64px;height:80px;align-items:center;justify-content:center;border-radius:10px">${esc((n.nome||"?").trim().charAt(0))}</span>`}</span>`;
     const nome=edit?`<input type="text" maxlength="60" data-i="fichanome" value="${esc(n.nome)}"><button class="mini confirma" data-a="fichaNomeOk" data-p='${p}'>Salvar</button><button class="mini branco" data-a="fichaNomeX">Cancelar</button>`:`<h2>${esc(n.nome)}</h2><button class="lapis" data-a="fichaNome" data-p='${p}' aria-label="Editar nome" title="Editar nome">✏️</button>`;
     const top=`<div class="ficha-top">${foto}<div class="ficha-nm">${nome}<div class="row">${btn("📷 Foto","fichaFoto",[id],"mini branco")}${n.foto?btn("Remover foto","fichaFotoRem",[id],"mini branco"):""}</div></div></div>`;
     return h.replace(`<h2>${esc(n.nome)}</h2>`,top); }; }
@@ -18312,7 +18428,7 @@ if (typeof VIEWS !== "undefined" && VIEWS.todos) {
     deduplicarBancoNPCs(); try{ if(typeof garantirSistemaInfluencia==="function") garantirSistemaInfluencia(); }catch(_){}
     ["Filtros","Resultados"].forEach(k => { if(!(("todos|"+k) in S.acc)) S.acc["todos|"+k]=true; });
     
-    const temFoto = n => { try { return !!(n && (n.foto || (typeof obterFotoPolitico==="function" && obterFotoPolitico(n)))); } catch(e){ return false; } };
+    const temFoto = n => (typeof window.temFotoPolitico==="function" ? window.temFotoPolitico(n) : !!(n && (n.foto || (typeof obterFotoPolitico==="function" && obterFotoPolitico(n)))));
     const todos = bancoDeNPCs.filter(n => !n.jogador);
     let l = todos.slice();
 
@@ -18359,7 +18475,7 @@ if (typeof VIEWS !== "undefined" && VIEWS.todos) {
     <label class="f">Nome <input type="text" data-i="tod" data-k="q" value="${esc(f.q)}" placeholder="parte do nome"></label>
     <div class="row">${btn("Limpar filtros","todLimpar",[],"mini branco")}</div>`)
     + card("Resultados", `<p class="txt"><b>${l.length}</b> resultado(s) — página ${f.pg+1} de ${pages}</p>`
-    + (pag.map(n => `<button class="npc" data-a="ficha" data-p="${esc(JSON.stringify([n.id]))}"><span class="nm">${esc(n.nome)} ${n.real?"":tag("fictício")}</span><small>${esc(n.vivo?(n.papel||n.cargo):"Falecido(a)")} — ${esc(n.partido||"")} · <b>${esc(n.profissao||obterProfissaoNPC(n))}</b>${n.uf?" · "+esc(n.uf):""}</small></button>`).join("") || "<p class='txt'><small>Ninguém com esses filtros.</small></p>")
+    + (pag.map(n => `<button class="npc com-foto" data-a="ficha" data-p="${esc(JSON.stringify([n.id]))}">${typeof fotoTag==="function"?fotoTag(n,34,42,"foto-m"):""}<span class="npc-txt"><span class="nm">${esc(n.nome)} ${n.real?"":tag("fictício")}</span><small>${esc(n.vivo?(n.papel||n.cargo):"Falecido(a)")} — ${esc(n.partido||"")} · <b>${esc(n.profissao||obterProfissaoNPC(n))}</b>${n.uf?" · "+esc(n.uf):""}</small></span></button>`).join("") || "<p class='txt'><small>Ninguém com esses filtros.</small></p>")
     + `<div class="row">${btn("Anterior","todPg",[-1],"mini",f.pg<=0)}<span class="grow c">${f.pg+1}/${pages}</span>${btn("Próxima","todPg",[1],"mini",f.pg>=pages-1)}</div>`);
   };
 }
