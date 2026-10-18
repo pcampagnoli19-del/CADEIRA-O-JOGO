@@ -60,6 +60,99 @@
     alvara_licenca: "Alvara / licenca", isencao_municipal: "Isencao municipal"
   };
 
+  /* Rótulos amigáveis para variáveis de efeito (nunca mostrar chave crua) */
+  EMP.VAR_LABEL = {
+    simpatia_popular: "Simpatia popular",
+    alcance_microempreendedor: "Alcance junto a microempreendedores",
+    eficiencia_concessao: "Eficiência em concessões",
+    credito_externo: "Crédito externo",
+    velocidade_obra_logistica: "Velocidade de obras logísticas",
+    exportacao_agro: "Exportação agropecuária",
+    balanca_comercial: "Balança comercial",
+    emprego_interior: "Emprego no interior",
+    emissao_titulos: "Emissão de títulos",
+    risco_pais: "Risco-país",
+    estabilidade_bancaria: "Estabilidade bancária",
+    financiamento_infra: "Financiamento de infraestrutura",
+    credito_rural: "Crédito rural",
+    fila_sus: "Fila do SUS",
+    aprovacao_jovem: "Aprovação entre jovens",
+    modernizacao_pagamentos: "Modernização de pagamentos",
+    debentures_infra: "Debêntures de infraestrutura",
+    alcance_influencers: "Alcance com influenciadores",
+    governabilidade_fpa: "Governabilidade na FPA",
+    infra_portuaria: "Infraestrutura portuária",
+    custo_infra_obra_publica: "Custo de obras públicas",
+    apoio_cni_fiesp: "Apoio CNI/FIESP",
+    modernizacao_industrial: "Modernização industrial",
+    prestigio_tech: "Prestígio tecnológico",
+    entrada_dolares: "Entrada de dólares",
+    desenvolvimento_interior: "Desenvolvimento do interior",
+    emprego_jovem: "Emprego jovem",
+    apoio_shoppings: "Apoio de shoppings",
+    prestigio_ambiental: "Prestígio ambiental",
+    fundos_internacionais: "Fundos internacionais",
+    construcao_civil: "Construção civil",
+    cobertura_midia: "Cobertura na mídia",
+    contencao_precos: "Contenção de preços",
+    influencia_empresarial: "Influência empresarial",
+    leitos_alta_complexidade: "Leitos de alta complexidade",
+    blindagem_imprensa: "Blindagem na imprensa",
+    mobilizacao_nacional: "Mobilização nacional",
+    boa_vontade_editorial: "Boa vontade editorial",
+    desgaste_judiciario: "Desgaste no Judiciário",
+    bancada_evangelica: "Bancada evangélica",
+    cobertura_tv: "Cobertura na TV",
+    revitalizacao_urbana: "Revitalização urbana",
+    arrecadacao_iss: "Arrecadação de ISS",
+    velocidade_obra_monumental: "Velocidade de obras monumentais",
+    apoio_fisiologico: "Apoio fisiológico",
+    soberania_tecnologica: "Soberania tecnológica",
+    exportacao_alto_valor: "Exportação de alto valor",
+    conectividade_rural: "Conectividade rural",
+    popularidade_digital: "Popularidade digital",
+    influxo_dolares: "Influxo de dólares",
+    juros_divida: "Juros da dívida",
+    polo_data_centers: "Polo de data centers",
+    produtividade_ia: "Produtividade com IA",
+    linhas_montagem: "Linhas de montagem",
+    prestigio_juridico: "Prestígio jurídico",
+    alcance_organico: "Alcance orgânico",
+    comercio_digital: "Comércio digital",
+    nuvem_governamental: "Nuvem governamental",
+    monitoramento_climatico: "Monitoramento climático",
+    centros_distribuicao: "Centros de distribuição",
+    doacao_ambiental: "Doação ambiental",
+    turismo_alta_renda: "Turismo de alta renda",
+    acordo_mercosul_ue: "Acordo Mercosul–UE",
+    emprego_logistico: "Emprego logístico",
+    eficiencia_logistica: "Eficiência logística",
+    expansao_5g: "Expansão do 5G",
+    apetite_leiloes: "Apetite por leilões",
+    reindustrializacao: "Reindustrialização",
+    frota_eletrica: "Frota elétrica",
+    rede_5g: "Rede 5G",
+    cameras_seguranca: "Câmeras de segurança",
+    execucao_infra: "Execução de infraestrutura",
+    eixo_brics: "Eixo BRICS",
+    injecao_dolares_vista: "Injeção de dólares à vista",
+    zero_exigencia_ideologica: "Sem exigência ideológica",
+    financiamento_barato: "Financiamento barato",
+    liquidez_safra: "Liquidez da safra",
+    terminais_privados: "Terminais privados"
+  };
+  EMP.rotuloVariavel = function (k) {
+    if (!k) return "";
+    if (EMP.VAR_LABEL[k]) return EMP.VAR_LABEL[k];
+    return String(k).replace(/_/g, " ").replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  };
+  EMP.CANAL_LABEL = {
+    legal: { titulo: "Caminho legal", desc: "Doação oficial, concessão por edital. Exposição baixa (0–5)." },
+    cinza: { titulo: "Zona cinza", desc: "Jabuti, nomeação, tráfico de influência. Exposição média (10–25)." },
+    caixa2: { titulo: "Por fora (Caixa 2)", desc: "Dinheiro por fora. Exposição alta (20–40) e sobe o IEO." }
+  };
+
+
   /* ---------------------------------------------------------------------------
      4.3 — BLOCOS EMPRESARIAIS (indice de apoio 0-100 por bloco)
      --------------------------------------------------------------------------- */
@@ -3663,8 +3756,8 @@
           (ofertas.length ? ofertas.map(function (o) {
             return '<label class="emp-opt' + (ofertaSel && o.id === ofertaSel.id ? " sel" : "") + '">' +
               '<input type="radio" name="emp-oferta" value="' + _esc(o.id) + '"' + (ofertaSel && o.id === ofertaSel.id ? " checked" : "") + ">" +
-              "<b>" + _esc(o.variavel) + " " + (o.valor > 0 ? "+" : "") + Math.round(o.valor * 100) + "%</b>" +
-              "<small>" + (o.duracao_meses || 12) + " meses</small></label>";
+              "<b>" + _esc(EMP.rotuloVariavel(o.variavel)) + " " + (o.valor > 0 ? "+" : "") + Math.round(o.valor * 100) + "%</b>" +
+              "<small>Por " + (o.duracao_meses || 12) + " meses</small></label>";
           }).join("") : "<p>Sem ofertas cadastradas.</p>") +
         "</div>" +
         '<div class="emp-troca">⇄</div>' +
@@ -3682,13 +3775,13 @@
       '<div class="emp-neg-direita">' +
         '<h4>Canal do acordo</h4>' +
         '<div class="emp-canais">' +
-          '<label class="emp-canal sel"><input type="radio" name="emp-canal" value="legal" checked><b>Legal</b><small>Doação oficial, concessão por edital. Exposição 0–5.</small></label>' +
-          '<label class="emp-canal"><input type="radio" name="emp-canal" value="cinza"><b>Cinza</b><small>Jabuti, nomeação, tráfico de influência. Exposição 10–25.</small></label>' +
-          '<label class="emp-canal"><input type="radio" name="emp-canal" value="caixa2"><b>Caixa 2</b><small>Dinheiro por fora. Exposição 20–40, sobe o IEO.</small></label>' +
+          '<label class="emp-canal sel"><input type="radio" name="emp-canal" value="legal" checked><b>' + _esc(EMP.CANAL_LABEL.legal.titulo) + '</b><small>' + _esc(EMP.CANAL_LABEL.legal.desc) + '</small></label>' +
+          '<label class="emp-canal"><input type="radio" name="emp-canal" value="cinza"><b>' + _esc(EMP.CANAL_LABEL.cinza.titulo) + '</b><small>' + _esc(EMP.CANAL_LABEL.cinza.desc) + '</small></label>' +
+          '<label class="emp-canal"><input type="radio" name="emp-canal" value="caixa2"><b>' + _esc(EMP.CANAL_LABEL.caixa2.titulo) + '</b><small>' + _esc(EMP.CANAL_LABEL.caixa2.desc) + '</small></label>' +
         "</div>" +
         '<div class="emp-prev"><h4>Probabilidade</h4>' +
           '<span class="emp-faixa ' + faixa[1] + '">' + faixa[0] + "</span>" +
-          '<p class="emp-custo">Custo do favor: <b>' + _fmt(EMP.custoDoFavor(e.id, 15000)) + "</b> · Papel: <b>" + papel.tipo + (papel.tipo === "emissario" ? " ×" + papel.fator : "") + "</b></p>" +
+          '<p class="emp-custo">Custo do favor: <b>' + _fmt(EMP.custoDoFavor(e.id, 15000)) + "</b> · Papel: <b>" + (papel.tipo === "titular" ? "titular" : papel.tipo === "emissario" ? ("emissário ×" + papel.fator) : _esc(papel.tipo)) + "</b></p>" +
         "</div>" +
         '<div class="emp-risco"><h4>Risco de exposição</h4>' +
           "<p>Canal cinza/caixa2 geram exposição permanente. A chance de vazamento mensal atual é <b>" + Math.round(EMP.chanceVazamento() * 100) + "%</b>.</p>" +
@@ -3717,7 +3810,7 @@
     var linhas = lista.map(function (c) {
       return '<div class="emp-comp ' + (c.vencido ? "vencido" : "") + '">' +
         '<div class="emp-comp-top"><b>' + _esc(c.empresario) + "</b>" +
-          '<span class="emp-canal ' + _esc(c.canal) + '">' + _esc(c.canal) + "</span></div>" +
+          '<span class="emp-canal ' + _esc(c.canal) + '">' + _esc((EMP.CANAL_LABEL[c.canal] || {}).titulo || c.canal) + "</span></div>" +
         "<p><b>" + _esc(c.pautaLabel) + "</b> — " + _esc(c.descricao) + "</p>" +
         '<div class="emp-comp-meta">' +
           "<span>Gravidade <b>" + c.gravidade + "/5</b></span>" +
@@ -4027,7 +4120,11 @@
       ".emp-alerta{color:var(--corrige);font-weight:700}",
       ".emp-vazio{font-size:.86rem;color:var(--tinta2);padding:16px 8px;text-align:center;margin:0}",
       /* negociacao */
-      ".emp-neg-cols{display:grid;grid-template-columns:1.1fr 1fr .95fr;gap:12px}",
+      ".emp-modal .mbox{max-width:min(1100px,96vw);width:100%}",
+      ".emp-neg{overflow-wrap:break-word;word-break:normal}",
+      ".emp-neg-cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,.95fr);gap:16px;align-items:start}",
+      ".emp-neg-ficha,.emp-neg-centro,.emp-neg-direita{min-width:0}",
+      ".emp-faixa{max-width:100%;white-space:normal;line-height:1.25;border-radius:8px}",
       ".emp-neg-ficha h3{margin:0 0 2px;font-size:1.05rem}",
       ".emp-alc{color:var(--tinta2);font-size:.78rem;font-style:italic}",
       ".emp-cit{margin:8px 0;padding:6px 11px;border-left:3px solid var(--eu);background:var(--superficie2);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:.8rem;font-style:italic;color:var(--tinta2)}",

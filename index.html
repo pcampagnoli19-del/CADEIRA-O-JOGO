@@ -1366,7 +1366,18 @@ input, select, textarea { font-size: 16px; }
 #app { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 .row { flex-wrap: wrap; }
 .row .grow { min-width: 130px; }
-h1, h2, h3, p, .kv b, .npc .nm { overflow-wrap: anywhere; }
+h1, h2, h3, p, .npc .nm { overflow-wrap: break-word; }
+.kv b { overflow-wrap: break-word; word-break: normal; hyphens: auto; }
+.kv { min-width: 0; }
+.kv span { flex: 0 1 auto; min-width: 0; overflow-wrap: break-word; }
+.mbox .grid2 { grid-template-columns: 1fr 1fr; align-items: start; }
+.mbox .grid2 .kv { flex-wrap: wrap; gap: 4px 10px; }
+.mbox .stack { clear: both; }
+.mbox { overflow-wrap: normal; word-break: normal; }
+.ficha-top, .ficha-nm, .ficha-foto { min-width: 0; }
+@media (max-width: 520px) {
+  .mbox .grid2 { grid-template-columns: 1fr; }
+}
 
 #toasts { bottom: calc(132px + env(safe-area-inset-bottom, 0px)); }
 .card { padding: 13px 15px; }
@@ -11027,11 +11038,7 @@ S.acc=S.acc||{};
 {
 const FW=144,FH=180;
 const st=document.createElement("style"); st.textContent=`.foto-box{float:right;text-align:center;margin:0 0 6px 10px}.foto-f{width:96px;height:120px;object-fit:cover;border-radius:10px;border:2px solid var(--linha);display:block;margin-bottom:4px}.foto-m{width:34px;height:42px;object-fit:cover;border-radius:6px;flex:none}button.npc.com-foto{display:flex;align-items:center;gap:8px;text-align:left}.npc-foto-slot{flex:none;display:inline-flex;align-items:center;justify-content:center}.npc-txt{flex:1;min-width:0;text-align:left}.npc-txt .nm{display:block}.foto-m,.pv-foto{flex:none}.foto-ed{width:120px;height:150px;object-fit:cover;border-radius:10px;border:2px solid var(--linha)}`; document.head.appendChild(st);
-{ const _mf=modalFicha; modalFicha=function(id){ const h=_mf(id); const n=npcPorId(id); if(!n) return h;
-    const urlFoto = n.foto || (typeof obterFotoPolitico==="function" ? obterFotoPolitico(n) : null);
-    const urlFotoB = urlFoto && typeof window.normalizarUrlFoto==="function" ? window.normalizarUrlFoto(urlFoto) : urlFoto;
-    const box=`<div class="foto-box">${urlFotoB?`<img class="foto-f" src="${esc(urlFotoB)}" alt="${esc(n.nome)}" data-nid="${esc(String(n.id||""))}" onerror="window._onFotoErr&&window._onFotoErr(this)"><div class="pv-ini" style="display:none;width:96px;height:120px;align-items:center;justify-content:center;border-radius:10px;background:var(--linha);font-weight:800">${esc((n.nome||"?").trim().charAt(0))}</div>`:`<div class="pv-ini" style="display:flex;width:96px;height:120px;align-items:center;justify-content:center;border-radius:10px;background:var(--linha);font-weight:800;margin-bottom:4px">${esc((n.nome||"?").trim().charAt(0))}</div>`}${btn("📷 Foto","edFoto",[n.id],"mini branco")}</div>`;
-    return h.replace('<div class="mbox">','<div class="mbox">'+box); }; }
+{ const _mf=modalFicha; modalFicha=function(id){ /* foto-box float removido: a ficha usa .ficha-top */ return _mf(id); }; }
 A.edFoto=id=>{ S.ed.id=id; Object.assign(S.ed,{cargo:"",uf:"",mun:"",part:"",sit:""}); S.modal=null; S.tab="ed"; S._top=true; };
 A.edFotoRem=()=>{ const n=npcPorId(S.ed.id); if(n){ delete n.foto; toast("Foto manual removida.","ok"); } };
 { const _ve=VIEWS.ed; VIEWS.ed=function(){ let h=_ve(); const n=npcPorId(S.ed.id); if(!n) return h;
@@ -12685,7 +12692,11 @@ function cardChapaJogador(){ try{ const j=J(); const alvo=cargoIdPorNome(j.campa
 
 /* ===================== PATCH 8: FICHA — LÁPIS NO NOME, FOTO DIRETA; MENUS DE TOPO MANTÊM A POSIÇÃO ===================== */
 {
-const st=document.createElement("style"); st.textContent=`.ficha-top{display:flex;gap:10px;align-items:center;margin:4px 0 8px}.ficha-top .ficha-nm{display:flex;align-items:center;gap:6px 8px;flex:1;min-width:0;flex-wrap:wrap}.ficha-top h2{margin:0}.ficha-foto{flex:none;cursor:pointer;display:inline-block}.ficha-foto img,.ficha-foto .ph{width:64px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--linha);display:block}.ficha-foto .ph{display:flex;align-items:center;justify-content:center;background:var(--linha);font-size:1.6rem}.lapis{background:transparent;border:1px solid var(--linha);border-radius:8px;padding:2px 8px;cursor:pointer;font-size:1rem;color:inherit}.ficha-top .ficha-nm input[type=text]{flex:1;min-width:140px}`; document.head.appendChild(st);
+const st=document.createElement("style"); st.textContent=`.ficha-top{display:flex;gap:10px;align-items:center;margin:4px 0 8px}.ficha-top .ficha-nm{display:flex;align-items:center;gap:6px 8px;flex:1;min-width:0;flex-wrap:wrap}.ficha-top h2{margin:0}.ficha-foto{flex:none;cursor:pointer;display:inline-block}.ficha-foto img,.ficha-foto .ph{width:64px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--linha);display:block}.ficha-foto .ph{display:flex;align-items:center;justify-content:center;background:var(--linha);font-size:1.6rem}.lapis{background:transparent;border:1px solid var(--linha);border-radius:8px;padding:2px 8px;cursor:pointer;font-size:1rem;color:inherit}.ficha-top .ficha-nm input[type=text]{flex:1;min-width:140px}/* ficha legível — sem float que espreme o grid */
+.mbox .foto-box{float:none!important;display:block;margin:0 0 10px;text-align:left}
+.mbox .grid2>.kv{width:100%;box-sizing:border-box}
+.writing-mode-fix,.mbox *{writing-mode:horizontal-tb!important}
+`; document.head.appendChild(st);
 
 function aplicarFotoNPC(id,f){ const FW=144,FH=180; const n=npcPorId(id); if(!n||!f) return; const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ try{ const c=document.createElement("canvas"); c.width=FW; c.height=FH; const x=c.getContext("2d"); const s=Math.max(FW/im.width,FH/im.height), w=im.width*s, hh=im.height*s; x.fillStyle="#ddd"; x.fillRect(0,0,FW,FH); x.drawImage(im,(FW-w)/2,(FH-hh)*.2,w,hh); n.foto=c.toDataURL("image/jpeg",.82); let ok=false; try{ ok=salvar(); }catch(e){} toast(ok?"Foto de "+n.nome+" atualizada e salva.":"Foto aplicada, mas o navegador não deixou gravar no save. Use Salvar ou gere o texto do save.",ok?"ok":"err"); render(); }catch(err){ console.error("foto",err); toast("Erro ao aplicar a foto: "+err.message,"err"); } }; im.onerror=()=>toast("Não consegui ler essa imagem.","err"); im.src=rd.result; }; rd.onerror=()=>toast("Não consegui abrir o arquivo.","err"); rd.readAsDataURL(f); }
 A.fichaFoto=id=>{ let inp=document.getElementById("ficha-file-inp"); if(!inp){ inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.id="ficha-file-inp"; inp.style.display="none"; document.body.appendChild(inp); inp.addEventListener("change",()=>{ const f=inp.files&&inp.files[0], pid=inp.dataset.id; inp.value=""; if(f) aplicarFotoNPC(pid,f); }); } inp.dataset.id=id; inp.click(); };
@@ -12696,7 +12707,7 @@ A.fichaNomeOk=id=>{ const inp=document.querySelector("input[data-i=fichanome]");
 { const _f=A.fechar; A.fechar=function(){ S.fichaNomeId=null; return _f.apply(this,arguments); }; }
 document.addEventListener("keydown",e=>{ const t=e.target; if(!t||!t.dataset||t.dataset.i!=="fichanome") return; if(e.key==="Enter"){ e.preventDefault(); const b=document.querySelector('[data-a="fichaNomeOk"]'); if(b) b.click(); } else if(e.key==="Escape"){ e.preventDefault(); const b=document.querySelector('[data-a="fichaNomeX"]'); if(b) b.click(); } });
 { const _mf=modalFicha; modalFicha=function(id){ let h=_mf(id); const n=npcPorId(id); if(!n) return h;
-    h=h.replace(/<div class="foto-box">[\s\S]*?<\/div>/,"");
+    (function(){ const s=h.indexOf('<div class="foto-box">'); if(s<0) return; let i=s+22, d=1; while(i<h.length&&d>0){ const o=h.indexOf('<div',i), c=h.indexOf('</div>',i); if(c<0) break; if(o>=0&&o<c){ d++; i=o+4; } else { d--; i=c+6; } } h=h.slice(0,s)+h.slice(i); })();
     const p=JSON.stringify([id]), edit=S.fichaNomeId===id;
     const urlFoto = n.foto || (typeof obterFotoPolitico === "function" ? obterFotoPolitico(n) : null);
     const urlFotoN = urlFoto && typeof window.normalizarUrlFoto==="function" ? window.normalizarUrlFoto(urlFoto) : urlFoto;
@@ -23517,6 +23528,99 @@ window.GEO_ABC = GEO_ABC;
     alvara_licenca: "Alvara / licenca", isencao_municipal: "Isencao municipal"
   };
 
+  /* Rótulos amigáveis para variáveis de efeito (nunca mostrar chave crua) */
+  EMP.VAR_LABEL = {
+    simpatia_popular: "Simpatia popular",
+    alcance_microempreendedor: "Alcance junto a microempreendedores",
+    eficiencia_concessao: "Eficiência em concessões",
+    credito_externo: "Crédito externo",
+    velocidade_obra_logistica: "Velocidade de obras logísticas",
+    exportacao_agro: "Exportação agropecuária",
+    balanca_comercial: "Balança comercial",
+    emprego_interior: "Emprego no interior",
+    emissao_titulos: "Emissão de títulos",
+    risco_pais: "Risco-país",
+    estabilidade_bancaria: "Estabilidade bancária",
+    financiamento_infra: "Financiamento de infraestrutura",
+    credito_rural: "Crédito rural",
+    fila_sus: "Fila do SUS",
+    aprovacao_jovem: "Aprovação entre jovens",
+    modernizacao_pagamentos: "Modernização de pagamentos",
+    debentures_infra: "Debêntures de infraestrutura",
+    alcance_influencers: "Alcance com influenciadores",
+    governabilidade_fpa: "Governabilidade na FPA",
+    infra_portuaria: "Infraestrutura portuária",
+    custo_infra_obra_publica: "Custo de obras públicas",
+    apoio_cni_fiesp: "Apoio CNI/FIESP",
+    modernizacao_industrial: "Modernização industrial",
+    prestigio_tech: "Prestígio tecnológico",
+    entrada_dolares: "Entrada de dólares",
+    desenvolvimento_interior: "Desenvolvimento do interior",
+    emprego_jovem: "Emprego jovem",
+    apoio_shoppings: "Apoio de shoppings",
+    prestigio_ambiental: "Prestígio ambiental",
+    fundos_internacionais: "Fundos internacionais",
+    construcao_civil: "Construção civil",
+    cobertura_midia: "Cobertura na mídia",
+    contencao_precos: "Contenção de preços",
+    influencia_empresarial: "Influência empresarial",
+    leitos_alta_complexidade: "Leitos de alta complexidade",
+    blindagem_imprensa: "Blindagem na imprensa",
+    mobilizacao_nacional: "Mobilização nacional",
+    boa_vontade_editorial: "Boa vontade editorial",
+    desgaste_judiciario: "Desgaste no Judiciário",
+    bancada_evangelica: "Bancada evangélica",
+    cobertura_tv: "Cobertura na TV",
+    revitalizacao_urbana: "Revitalização urbana",
+    arrecadacao_iss: "Arrecadação de ISS",
+    velocidade_obra_monumental: "Velocidade de obras monumentais",
+    apoio_fisiologico: "Apoio fisiológico",
+    soberania_tecnologica: "Soberania tecnológica",
+    exportacao_alto_valor: "Exportação de alto valor",
+    conectividade_rural: "Conectividade rural",
+    popularidade_digital: "Popularidade digital",
+    influxo_dolares: "Influxo de dólares",
+    juros_divida: "Juros da dívida",
+    polo_data_centers: "Polo de data centers",
+    produtividade_ia: "Produtividade com IA",
+    linhas_montagem: "Linhas de montagem",
+    prestigio_juridico: "Prestígio jurídico",
+    alcance_organico: "Alcance orgânico",
+    comercio_digital: "Comércio digital",
+    nuvem_governamental: "Nuvem governamental",
+    monitoramento_climatico: "Monitoramento climático",
+    centros_distribuicao: "Centros de distribuição",
+    doacao_ambiental: "Doação ambiental",
+    turismo_alta_renda: "Turismo de alta renda",
+    acordo_mercosul_ue: "Acordo Mercosul–UE",
+    emprego_logistico: "Emprego logístico",
+    eficiencia_logistica: "Eficiência logística",
+    expansao_5g: "Expansão do 5G",
+    apetite_leiloes: "Apetite por leilões",
+    reindustrializacao: "Reindustrialização",
+    frota_eletrica: "Frota elétrica",
+    rede_5g: "Rede 5G",
+    cameras_seguranca: "Câmeras de segurança",
+    execucao_infra: "Execução de infraestrutura",
+    eixo_brics: "Eixo BRICS",
+    injecao_dolares_vista: "Injeção de dólares à vista",
+    zero_exigencia_ideologica: "Sem exigência ideológica",
+    financiamento_barato: "Financiamento barato",
+    liquidez_safra: "Liquidez da safra",
+    terminais_privados: "Terminais privados"
+  };
+  EMP.rotuloVariavel = function (k) {
+    if (!k) return "";
+    if (EMP.VAR_LABEL[k]) return EMP.VAR_LABEL[k];
+    return String(k).replace(/_/g, " ").replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  };
+  EMP.CANAL_LABEL = {
+    legal: { titulo: "Caminho legal", desc: "Doação oficial, concessão por edital. Exposição baixa (0–5)." },
+    cinza: { titulo: "Zona cinza", desc: "Jabuti, nomeação, tráfico de influência. Exposição média (10–25)." },
+    caixa2: { titulo: "Por fora (Caixa 2)", desc: "Dinheiro por fora. Exposição alta (20–40) e sobe o IEO." }
+  };
+
+
   /* ---------------------------------------------------------------------------
      4.3 — BLOCOS EMPRESARIAIS (indice de apoio 0-100 por bloco)
      --------------------------------------------------------------------------- */
@@ -27120,8 +27224,8 @@ window.GEO_ABC = GEO_ABC;
           (ofertas.length ? ofertas.map(function (o) {
             return '<label class="emp-opt' + (ofertaSel && o.id === ofertaSel.id ? " sel" : "") + '">' +
               '<input type="radio" name="emp-oferta" value="' + _esc(o.id) + '"' + (ofertaSel && o.id === ofertaSel.id ? " checked" : "") + ">" +
-              "<b>" + _esc(o.variavel) + " " + (o.valor > 0 ? "+" : "") + Math.round(o.valor * 100) + "%</b>" +
-              "<small>" + (o.duracao_meses || 12) + " meses</small></label>";
+              "<b>" + _esc(EMP.rotuloVariavel(o.variavel)) + " " + (o.valor > 0 ? "+" : "") + Math.round(o.valor * 100) + "%</b>" +
+              "<small>Por " + (o.duracao_meses || 12) + " meses</small></label>";
           }).join("") : "<p>Sem ofertas cadastradas.</p>") +
         "</div>" +
         '<div class="emp-troca">⇄</div>' +
@@ -27139,13 +27243,13 @@ window.GEO_ABC = GEO_ABC;
       '<div class="emp-neg-direita">' +
         '<h4>Canal do acordo</h4>' +
         '<div class="emp-canais">' +
-          '<label class="emp-canal sel"><input type="radio" name="emp-canal" value="legal" checked><b>Legal</b><small>Doação oficial, concessão por edital. Exposição 0–5.</small></label>' +
-          '<label class="emp-canal"><input type="radio" name="emp-canal" value="cinza"><b>Cinza</b><small>Jabuti, nomeação, tráfico de influência. Exposição 10–25.</small></label>' +
-          '<label class="emp-canal"><input type="radio" name="emp-canal" value="caixa2"><b>Caixa 2</b><small>Dinheiro por fora. Exposição 20–40, sobe o IEO.</small></label>' +
+          '<label class="emp-canal sel"><input type="radio" name="emp-canal" value="legal" checked><b>' + _esc(EMP.CANAL_LABEL.legal.titulo) + '</b><small>' + _esc(EMP.CANAL_LABEL.legal.desc) + '</small></label>' +
+          '<label class="emp-canal"><input type="radio" name="emp-canal" value="cinza"><b>' + _esc(EMP.CANAL_LABEL.cinza.titulo) + '</b><small>' + _esc(EMP.CANAL_LABEL.cinza.desc) + '</small></label>' +
+          '<label class="emp-canal"><input type="radio" name="emp-canal" value="caixa2"><b>' + _esc(EMP.CANAL_LABEL.caixa2.titulo) + '</b><small>' + _esc(EMP.CANAL_LABEL.caixa2.desc) + '</small></label>' +
         "</div>" +
         '<div class="emp-prev"><h4>Probabilidade</h4>' +
           '<span class="emp-faixa ' + faixa[1] + '">' + faixa[0] + "</span>" +
-          '<p class="emp-custo">Custo do favor: <b>' + _fmt(EMP.custoDoFavor(e.id, 15000)) + "</b> · Papel: <b>" + papel.tipo + (papel.tipo === "emissario" ? " ×" + papel.fator : "") + "</b></p>" +
+          '<p class="emp-custo">Custo do favor: <b>' + _fmt(EMP.custoDoFavor(e.id, 15000)) + "</b> · Papel: <b>" + (papel.tipo === "titular" ? "titular" : papel.tipo === "emissario" ? ("emissário ×" + papel.fator) : _esc(papel.tipo)) + "</b></p>" +
         "</div>" +
         '<div class="emp-risco"><h4>Risco de exposição</h4>' +
           "<p>Canal cinza/caixa2 geram exposição permanente. A chance de vazamento mensal atual é <b>" + Math.round(EMP.chanceVazamento() * 100) + "%</b>.</p>" +
@@ -27174,7 +27278,7 @@ window.GEO_ABC = GEO_ABC;
     var linhas = lista.map(function (c) {
       return '<div class="emp-comp ' + (c.vencido ? "vencido" : "") + '">' +
         '<div class="emp-comp-top"><b>' + _esc(c.empresario) + "</b>" +
-          '<span class="emp-canal ' + _esc(c.canal) + '">' + _esc(c.canal) + "</span></div>" +
+          '<span class="emp-canal ' + _esc(c.canal) + '">' + _esc((EMP.CANAL_LABEL[c.canal] || {}).titulo || c.canal) + "</span></div>" +
         "<p><b>" + _esc(c.pautaLabel) + "</b> — " + _esc(c.descricao) + "</p>" +
         '<div class="emp-comp-meta">' +
           "<span>Gravidade <b>" + c.gravidade + "/5</b></span>" +
@@ -27484,7 +27588,11 @@ window.GEO_ABC = GEO_ABC;
       ".emp-alerta{color:var(--corrige);font-weight:700}",
       ".emp-vazio{font-size:.86rem;color:var(--tinta2);padding:16px 8px;text-align:center;margin:0}",
       /* negociacao */
-      ".emp-neg-cols{display:grid;grid-template-columns:1.1fr 1fr .95fr;gap:12px}",
+      ".emp-modal .mbox{max-width:min(1100px,96vw);width:100%}",
+      ".emp-neg{overflow-wrap:break-word;word-break:normal}",
+      ".emp-neg-cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,.95fr);gap:16px;align-items:start}",
+      ".emp-neg-ficha,.emp-neg-centro,.emp-neg-direita{min-width:0}",
+      ".emp-faixa{max-width:100%;white-space:normal;line-height:1.25;border-radius:8px}",
       ".emp-neg-ficha h3{margin:0 0 2px;font-size:1.05rem}",
       ".emp-alc{color:var(--tinta2);font-size:.78rem;font-style:italic}",
       ".emp-cit{margin:8px 0;padding:6px 11px;border-left:3px solid var(--eu);background:var(--superficie2);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:.8rem;font-style:italic;color:var(--tinta2)}",
@@ -27850,7 +27958,6 @@ window.GEO_ABC = GEO_ABC;
   window.empResumo = EMP.resumo;
 
 })();
-
 
 
 
