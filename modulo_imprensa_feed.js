@@ -1247,19 +1247,16 @@
     if (!st) return "";
     var vids = ["V1", "V2", "V3", "V4"];
     var html = '<div class="card" data-impf-capa="1" style="margin:0 0 12px;padding:12px;border:1px solid var(--linha,#333)">';
-    html += "<div class=\"row\" style=\"margin-bottom:8px\"><b class=\"grow\">Como cada jornal contou</b>";
-    html += '<button type="button" class="b mini branco" data-a="impfToggleNomes">Pele: ' + (st.usar_nomes_reais ? "real" : "paródica") + "</button>";
-    html += '<button type="button" class="b mini branco" data-a="impfInspetor">Inspetor</button></div>';
+    html += "<div class=\"row\" style=\"margin-bottom:8px\"><b class=\"grow\">Como cada jornal contou</b></div>";
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">';
     vids.forEach(function (vid) {
       var v = st.veiculos[vid];
       var pubs = st.publicacoes.filter(function (p) { return p.veiculo_id === vid; }).slice(0, 2);
       html += '<div style="border:1px solid var(--linha,#444);border-radius:10px;padding:10px;background:rgba(0,0,0,.2)">';
-      html += "<div style=\"font-size:11px;opacity:.75;margin-bottom:4px\">" + _esc(IMPF.nomeVeiculo(v)) + " · " + _esc(v.arquetipo) + "</div>";
-      if (!pubs.length) html += "<p class=\"txt\" style=\"opacity:.7\">Sem capa gerada neste ciclo — avance o mês ou force um fato.</p>";
+      html += "<div style=\"font-size:12px;font-weight:800;margin-bottom:6px;letter-spacing:.02em\">" + _esc(IMPF.nomeVeiculo(v)) + "</div>";
+      if (!pubs.length) html += "<p class=\"txt\" style=\"opacity:.65;margin:0;font-size:.85rem\">Sem edição hoje.</p>";
       else pubs.forEach(function (p) {
-        html += "<div style=\"margin-bottom:8px\"><b style=\"font-size:13px;line-height:1.3;display:block\">" + _esc(p.titulo) + "</b>";
-        html += "<small style=\"opacity:.75\">" + _esc(p.frame) + " · " + _esc(p.tom) + " · impacto " + Math.round(p.impacto || 0) + "</small></div>";
+        html += "<div style=\"margin-bottom:8px\"><b style=\"font-size:13px;line-height:1.3;display:block\">" + _esc(p.titulo) + "</b></div>";
       });
       html += "</div>";
     });
@@ -1413,7 +1410,7 @@
     incompetencia: "Incompetência",
     conquista: "Conquista",
     conflito: "Conflito",
-    economia_no_bolso: "Bolso",
+    economia_no_bolso: "Economia no bolso",
     legalidade: "Legalidade",
     humano: "Humano",
     moral: "Moral",
@@ -1421,8 +1418,28 @@
     tecnico: "Técnico"
   };
 
+  var TOM_PT = {
+    neutro: "Neutro",
+    favoravel: "Favorável",
+    critico: "Crítico",
+    alarmista: "Alarmista",
+    ironico: "Irônico",
+    tecnico: "Técnico",
+    elogioso: "Elogioso",
+    firme: "Firme",
+    conciliador: "Conciliador",
+    transacional: "Transacional",
+    desafiador: "Desafiador",
+    evasivo: "Evasivo",
+    solidario: "Solidário"
+  };
+
   IMPF._framePt = function (f) {
-    return FRAME_PT[f] || f || "—";
+    return FRAME_PT[f] || (f ? String(f).replace(/_/g, " ") : "—");
+  };
+
+  IMPF._tomPt = function (t) {
+    return TOM_PT[t] || (t ? String(t).replace(/_/g, " ") : "—");
   };
 
   /** Matérias só do barramento — UI de portal reaproveitada, motor legado desligado. */
@@ -1441,15 +1458,14 @@
     }
     return pubs.slice(0, 8).map(function (p) {
       var framePt = IMPF._framePt(p.frame);
+      var tomPt = IMPF._tomPt(p.tom);
       return {
         portal: portalId,
         cat: framePt.toUpperCase(),
-        hora: "Fato · ciclo " + (p.turno || 0),
+        hora: "Ciclo " + (p.turno || 0),
         tit: p.titulo,
-        lead: p.linha_fina || ("Enquadramento: " + framePt + " · tom " + (p.tom || "neutro")),
-        corpo: (p.linha_fina ? "" : "") + "Este texto nasceu do barramento de fatos (id " + (p.fato_id || "?")
-          + "). Frame " + framePt + ", tom " + (p.tom || "neutro")
-          + ", template " + (p.template_id || "—") + ". Não é lista fixa de manchetes.",
+        lead: p.linha_fina || (framePt + " · " + tomPt),
+        corpo: p.linha_fina || ("Leitura em tom " + tomPt.toLowerCase() + "."),
         _impf: true,
         frame: p.frame,
         tom: p.tom,
@@ -1510,17 +1526,16 @@
     var vid = map[pId];
     var v = vid && st.veiculos[vid];
     var nome = v ? IMPF.nomeVeiculo(v) : pId;
-    var arq = v ? v.arquetipo : "";
     var feed = IMPF.noticiasParaPortal(pId);
     var cor = (typeof PORTAIS_INFO !== "undefined" && PORTAIS_INFO[pId] && PORTAIS_INFO[pId].cor) || "#1d4ed8";
     var html = "";
     html += '<div data-impf-portal="1" style="background:' + cor + ';color:#fff;padding:12px 16px;border-radius:10px;margin-bottom:14px">';
     html += "<div style=\"display:flex;justify-content:space-between;align-items:center\"><div>";
     html += "<span style=\"font-size:1.25rem;font-weight:900\">" + _esc(nome) + "</span>";
-    html += "<small style=\"display:block;opacity:.9;margin-top:2px\">Arquétipo " + _esc(arq) + " · motor IMPF (fatos → capa)</small>";
-    html += "</div><span style=\"font-size:.75rem;background:rgba(0,0,0,.25);padding:4px 8px;border-radius:6px\">barramento</span></div></div>";
+    html += "<small style=\"display:block;opacity:.9;margin-top:2px\">Capa do ciclo</small>";
+    html += "</div></div></div>";
     if (!feed.length) {
-      html += "<p class=\"txt\">Sem publicação deste veículo neste ciclo. Avance o mês ou use o Inspetor para forçar um fato.</p>";
+      html += "<p class=\"txt\" style=\"opacity:.7\">Sem edição hoje.</p>";
       return html;
     }
     feed.forEach(function (art) {

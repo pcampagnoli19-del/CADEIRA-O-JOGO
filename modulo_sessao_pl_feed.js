@@ -631,7 +631,7 @@
     IMPF.postsParaUI._sesf = true;
   }
 
-  /* ---------- P2: pele real como default + label claro ---------- */
+  /* ---------- P2: pele real como default; botão Pele fora da aba do jogador ---------- */
   function patchPeleDefault() {
     try {
       if (typeof IMPF === "undefined" || !IMPF.estado) return;
@@ -648,17 +648,16 @@
         };
         IMPF.toggleNomesReais._sesf = true;
       }
-      if (!IMPF.renderCapaDoDia._sesfLabel) {
+      // Remove botões de debug (Pele / Inspetor) se algum wrap antigo ainda injetar
+      if (!IMPF.renderCapaDoDia._sesfStripDev) {
         var _capa = IMPF.renderCapaDoDia;
         IMPF.renderCapaDoDia = function () {
           var html = _capa.apply(this, arguments);
-          var s = IMPF.estado();
-          var label = s && s.usar_nomes_reais ? "Pele: REAL (CNN/Folha/G1/Estadão)" : "Pele: PARÓDICA (nomes fictícios)";
-          // substitui qualquer variação anterior do botão (evita empilhar no re-boot)
-          html = html.replace(/>Pele:[^<]*/g, ">" + label);
+          html = html.replace(/<button[^>]*data-a="impfToggleNomes"[^>]*>[\s\S]*?<\/button>/gi, "");
+          html = html.replace(/<button[^>]*data-a="impfInspetor"[^>]*>[\s\S]*?<\/button>/gi, "");
           return html;
         };
-        IMPF.renderCapaDoDia._sesfLabel = true;
+        IMPF.renderCapaDoDia._sesfStripDev = true;
       }
     } catch (e) {}
   }
