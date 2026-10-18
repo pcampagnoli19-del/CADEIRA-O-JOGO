@@ -1,0 +1,241 @@
+/* =============================================================================
+   CADEIRA — Tema "House of Cards" (thriller político)
+   Só cor + tipografia + subtabs. NÃO altera position/top/height de .tabs/.lcd/#app.
+   ============================================================================= */
+
+:root {
+  --plastico: #070a0e;
+  --superficie: #10161f;
+  --superficie2: #161d28;
+  --tinta: #e6e8ec;
+  --tinta2: #8b93a0;
+  --linha: rgba(230, 232, 236, 0.1);
+
+  --lcd-bg: linear-gradient(180deg, #0a1018 0%, #0d141e 55%, #111820 100%);
+  --lcd-tx: #e6e8ec;
+  --lcd-dim: #8b93a0;
+  --lcd-border: rgba(230, 232, 236, 0.12);
+
+  /* Um acento só: vermelho sangue seco */
+  --eu: #8b1e2d;
+  --confirma: #6e3a3a;
+  --confirma-tx: #f2eaea;
+  --confirma-hover: #5a2e2e;
+  --corrige: #8b1e2d;
+  --corrige-tx: #f8ecec;
+  --corrige-hover: #6f1823;
+  --branco: #141a22;
+  --branco-tx: #e6e8ec;
+
+  --ok: #5a7a6a;
+  --warn: #9a7a4a;
+  --bad: #8b1e2d;
+
+  --font-display: "Libre Baskerville", "Times New Roman", serif;
+  --font-ui: "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  --font-lcd: "IBM Plex Mono", ui-monospace, monospace;
+
+  --shadow-sm: none;
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --plastico: #e8eaed;
+  --superficie: #f4f5f7;
+  --superficie2: #eceef1;
+  --tinta: #12161c;
+  --tinta2: #5a6270;
+  --linha: rgba(18, 22, 28, 0.12);
+  --lcd-bg: linear-gradient(180deg, #121820 0%, #18202a 100%);
+  --lcd-tx: #e6e8ec;
+  --lcd-dim: #9aa3b0;
+  --eu: #7a1a26;
+  --confirma: #5c3333;
+  --confirma-tx: #fff;
+  --corrige: #7a1a26;
+  --corrige-tx: #fff;
+  --branco: #ffffff;
+  --branco-tx: #12161c;
+  --ok: #3d5c4c;
+  --warn: #7a5c30;
+  --bad: #7a1a26;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --plastico: #070a0e;
+  --superficie: #10161f;
+  --superficie2: #161d28;
+  --tinta: #e6e8ec;
+  --tinta2: #8b93a0;
+  --eu: #8b1e2d;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--plastico);
+  color: var(--tinta);
+  font-family: var(--font-ui);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.inicio .lcd-linha {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #f0f1f3;
+}
+
+.inicio .lcd-sub {
+  color: var(--tinta2);
+  font-family: var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+.lcd-top .who,
+.card h3,
+.mbox h2 {
+  font-family: var(--font-display);
+}
+
+.lcd .cells {
+  font-family: var(--font-lcd);
+}
+
+/* Tab ativo — só cor, sem position/top/margin/height */
+.tab.on {
+  background: rgba(139, 30, 45, 0.22);
+  color: #f0d8dc;
+  border-color: rgba(139, 30, 45, 0.55);
+  box-shadow: none;
+}
+
+.tab {
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.b.confirma, button.b.confirma {
+  background: var(--confirma);
+  color: var(--confirma-tx);
+  border-color: transparent;
+}
+
+.b.corrige, button.b.corrige {
+  background: var(--corrige);
+  color: var(--corrige-tx);
+  border-color: transparent;
+}
+
+.b.branco, button.b.branco {
+  background: transparent;
+  border: 1px solid var(--linha);
+  color: var(--tinta);
+}
+
+.card {
+  box-shadow: var(--shadow-card);
+  border-color: var(--linha);
+}
+
+.arq.on {
+  border-color: var(--eu);
+  background: rgba(139, 30, 45, 0.12);
+}
+
+.f input:focus, .f select:focus, input[type=text]:focus, select:focus, textarea:focus {
+  border-color: rgba(139, 30, 45, 0.6);
+  box-shadow: 0 0 0 2px rgba(139, 30, 45, 0.18);
+}
+
+/* Submenus dos hubs — classe NOVA; não mexe em .tabs sticky */
+.subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 2px 4px;
+  margin: 0 0 4px;
+  border-bottom: 1px solid var(--linha);
+}
+
+.subtab {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--tinta2);
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.subtab:hover {
+  color: var(--tinta);
+  border-color: var(--linha);
+}
+
+.subtab.on {
+  color: #f0d8dc;
+  border-color: rgba(139, 30, 45, 0.5);
+  background: rgba(139, 30, 45, 0.15);
+}
+
+/* Botão de som — canto, óbvio, sem mexer no layout das abas */
+#cadeira-som-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: 12px;
+  z-index: 80;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--linha);
+  background: rgba(16, 22, 31, 0.92);
+  color: var(--tinta);
+  font-size: 1.05rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+}
+
+#cadeira-som-btn[data-muted="1"] {
+  opacity: 0.55;
+}
+
+#cadeira-som-btn:hover {
+  border-color: rgba(139, 30, 45, 0.55);
+}
+
+/* Plenário: acento vermelho contido no lugar do ciano */
+[data-exf-lideres],
+[data-sesf-nego] {
+  border-color: rgba(139, 30, 45, 0.35) !important;
+  background: rgba(139, 30, 45, 0.06) !important;
+}
+
+.lider-dot,
+circle.lider-dot {
+  stroke: #8b1e2d !important;
+}
+
+[data-sesf-legenda-lider] {
+  color: #c47884 !important;
+}
+[data-sesf-legenda-lider] .sessao-legenda-dot {
+  background: #8b1e2d !important;
+  box-shadow: none !important;
+}
