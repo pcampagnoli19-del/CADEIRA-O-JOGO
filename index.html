@@ -35804,9 +35804,16 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     return '<span class="tag bad">Fictício</span>';
   };
 
+  OBRAS._marcarCard = function (html) {
+    if (!html) return "";
+    // Marca estável p/ deduplicar wraps encadeados (DIP/OBRAS no boot)
+    if (html.indexOf("data-obras-card=") >= 0) return html;
+    return String(html).replace(/<(section|details)(\s)/i, '<$1 data-obras-card="1"$2');
+  };
+
   OBRAS.cardCatalogo = function () {
     if (!_ehExec()) {
-      return (
+      return OBRAS._marcarCard(
         (typeof card === "function"
           ? card(
               "Obras e Programas",
@@ -36018,9 +36025,16 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
       "</small></p>" +
       itensHtml;
 
-    return typeof card === "function"
-      ? card("Obras e Programas — " + _esfJogador(), body)
-      : body;
+    // Título curto (= chip da secbar ≤26 chars, sem truncar). Esfera vai no subtítulo.
+    var esfera = _esfJogador() || "Executivo";
+    var bodyComEsfera =
+      "<p class=\"txt\" style=\"margin:0 0 8px\"><b>Obras e Programas — " +
+      _esc(esfera) +
+      "</b></p>" +
+      body;
+    return OBRAS._marcarCard(
+      typeof card === "function" ? card("Obras e Programas", bodyComEsfera) : bodyComEsfera
+    );
   };
 
   OBRAS.cardEditor = function () {
@@ -36059,18 +36073,30 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
 
   /* ---------- Hooks ---------- */
   function wrapPoder() {
-    if (typeof VIEWS === "undefined" || typeof VIEWS.poder !== "function" || VIEWS.poder._obras) return;
+    // Guarda de módulo: DIP também rewrapa VIEWS.poder e apaga _obras → sem isso o card duplica na secbar
+    if (OBRAS._poderWrapped) return;
+    if (typeof VIEWS === "undefined" || typeof VIEWS.poder !== "function") return;
+    if (VIEWS.poder._obras) {
+      OBRAS._poderWrapped = true;
+      return;
+    }
     var _vp = VIEWS.poder;
     VIEWS.poder = function () {
       var h = _vp.apply(this, arguments);
       try {
-        if (_ehExec() || true) h = OBRAS.cardCatalogo() + h;
+        // Um card só — se outro wrap da cadeia já injetou, não repete
+        if (h && h.indexOf('data-obras-card="1"') >= 0) return h;
+        h = OBRAS.cardCatalogo() + h;
       } catch (e) {
         console.warn("OBRAS poder", e);
       }
       return h;
     };
     VIEWS.poder._obras = true;
+    // Preserva flags de outros módulos (DIP / LEGF)
+    if (_vp._dipEntry) VIEWS.poder._dipEntry = true;
+    if (_vp._legfPrep) VIEWS.poder._legfPrep = true;
+    OBRAS._poderWrapped = true;
   }
 
   function wrapTurno() {
