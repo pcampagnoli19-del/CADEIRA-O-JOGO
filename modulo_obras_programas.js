@@ -75,6 +75,45 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     return Math.round((Number(milhoes) || 0) * OBRAS.FATOR_REAIS);
   };
 
+  /** Caixa mensal para obras/manutenção na escala ORC_BASE (não o miúdo de emendas GOVCFG.orc). */
+  OBRAS._resetGastoMes = function () {
+    var sys = typeof M === "function" && M() ? M().obrasSys : null;
+    if (!sys) return;
+    var mes = _agora();
+    if (sys._gastoMesRef !== mes) {
+      sys._gastoMesRef = mes;
+      sys.gastoMes = 0;
+    }
+  };
+
+  OBRAS._caixaObras = function () {
+    OBRAS._resetGastoMes();
+    var sys = M().obrasSys;
+    try {
+      var o = typeof orcInit === "function" ? orcInit() : null;
+      var b = typeof ORC_BASE !== "undefined" ? ORC_BASE[_cid()] : null;
+      if (o && b && b.rec) {
+        var teto = Math.round(b.rec * (b.d || 0.5) * (o.nivel || 1));
+        return Math.max(0, teto - (sys.gastoMes || 0));
+      }
+    } catch (e) {}
+    try {
+      if (typeof orcamentoLivre === "function") {
+        return Math.max(0, orcamentoLivre() - ((M().gab && M().gab.orcamento_gasto) || 0));
+      }
+    } catch (e2) {}
+    return 0;
+  };
+
+  OBRAS._dividaExplosiva = function () {
+    try {
+      var o = typeof orcInit === "function" ? orcInit() : null;
+      return !!(o && (o.ratio || 0) > 1.8);
+    } catch (e) {
+      return false;
+    }
+  };
+
   OBRAS.garantir = function () {
     try {
       if (typeof M !== "function" || !M()) return null;
@@ -328,26 +367,36 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
   OBRAS._enviarLegislativo = function (inst, it) {
     inst.estado = "Aprovada";
     inst.aguardandoPlenario = true;
+    inst.mesAprovada = _agora();
+    inst.mesesAguardandoPlenario = 0;
     try {
       var L = M().leg;
-      if (!L) return;
+      if (!L) {
+        // Sem legislativo carregado: não trava — executa no próximo tick
+        return;
+      }
       L.pauta = L.pauta || [];
-      var pos = OBRAS._posDeEfeitos(it.efeitos);
-      L.pauta.unshift({
-        nome: it.nome,
-        tipo: "PL",
-        descr: (it.descricao || "") + " (obra/programa do Executivo)",
-        pos: pos,
-        casa: APROV_CASA[it.aprovacao_legislativa] || "M",
-        gov: 1,
-        voto: null,
-        res: null,
-        tema: it.area || "Obras",
-        polemica: it.polemica || 2,
-        obraInstId: inst.id,
-        autorNome: typeof J === "function" ? J().nome : "Executivo",
-        autorPartido: typeof J === "function" ? J().partido_atual : ""
+      var ja = L.pauta.some(function (m) {
+        return m && m.obraInstId === inst.id;
       });
+      if (!ja) {
+        var pos = OBRAS._posDeEfeitos(it.efeitos);
+        L.pauta.unshift({
+          nome: it.nome,
+          tipo: "PL",
+          descr: (it.descricao || "") + " (obra/programa do Executivo)",
+          pos: pos,
+          casa: APROV_CASA[it.aprovacao_legislativa] || "M",
+          gov: 1,
+          voto: null,
+          res: null,
+          tema: it.area || "Obras",
+          polemica: it.polemica || 2,
+          obraInstId: inst.id,
+          autorNome: typeof J === "function" ? J().nome : "Executivo",
+          autorPartido: typeof J === "function" ? J().partido_atual : ""
+        });
+      }
       _toast("Encaminhado à " + it.aprovacao_legislativa + " para votação.", "ok");
       try {
         if (typeof manchete === "function")
@@ -355,8 +404,62 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
       } catch (e) {}
     } catch (e2) {
       console.warn("OBRAS legislativo", e2);
-      OBRAS._iniciarExecucao(inst, it);
+      // Não congelar: marca para o tick promover
+      inst.aguardandoPlenario = false;
     }
+  };
+
+  /** Aprovada → Em execução (voto, timeout de 1 mês, ou sem trava). */
+  OBRAS._resolverAprovada = function (inst, it) {
+    if (!inst || inst.estado !== "Aprovada") return false;
+    if (!inst.aguardandoPlenario) {
+      OBRAS._iniciarExecucao(inst, it, true);
+      return true;
+    }
+    var mat = null;
+    try {
+      var L = M().leg;
+      if (L && L.pauta) {
+        mat = L.pauta.find(function (m) {
+          return m && m.obraInstId === inst.id;
+        });
+      }
+    } catch (e) {}
+    if (mat && mat.voto && mat.res) {
+      OBRAS.onVotoPauta(mat);
+      return inst.estado === "Em execução";
+    }
+    if (mat && mat.res && mat.res.ok && !mat.veto) {
+      OBRAS._iniciarExecucao(inst, it, true);
+      return true;
+    }
+    if (mat && mat.res && mat.res.ok === false) {
+      inst.estado = "Recusada";
+      inst.aguardandoPlenario = false;
+      _toast('Legislativo rejeitou "' + (it.nome || "") + '".', "err");
+      return false;
+    }
+    // Ainda na pauta sem voto, ou matéria sumiu (pauta mensal reconstrói): conta mês
+    inst.mesesAguardandoPlenario = (inst.mesesAguardandoPlenario || 0) + 1;
+    var esperou = inst.mesesAguardandoPlenario >= 1;
+    var sumiuDaPauta = !mat;
+    if (esperou || sumiuDaPauta) {
+      try {
+        if (typeof manchete === "function")
+          manchete(
+            '"' +
+              it.nome +
+              '" segue para execução' +
+              (sumiuDaPauta ? " (pauta renovada)" : " após a casa") +
+              ".",
+            "obras"
+          );
+      } catch (e2) {}
+      _toast('"' + (it.nome || "Obra") + '" entra em execução.', "ok");
+      OBRAS._iniciarExecucao(inst, it, true);
+      return true;
+    }
+    return false;
   };
 
   OBRAS._posDeEfeitos = function (ef) {
@@ -371,18 +474,122 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     };
   };
 
-  OBRAS._iniciarExecucao = function (inst, it) {
+  OBRAS._iniciarExecucao = function (inst, it, silencioso) {
+    if (!inst) return;
+    if (inst.estado === "Em execução") return;
     inst.estado = "Em execução";
     inst.aguardandoPlenario = false;
-    inst.mesesDecorridos = 0;
-    inst.progresso = 0;
-    // estouro leve 0–40%
-    var pol = (it && it.polemica) || 2;
-    if (Math.random() < 0.25 + pol * 0.05) {
-      inst.estouro = 0.1 + Math.random() * 0.3;
-      inst.custoTotal = Math.round(inst.custoTotal * (1 + inst.estouro));
+    inst.mesesDecorridos = inst.mesesDecorridos || 0;
+    inst.progresso = inst.progresso || 0;
+    inst.mesInicioExec = _agora();
+    // estouro leve 0–40% (só na 1ª entrada)
+    if (!inst._estouroRolado) {
+      inst._estouroRolado = true;
+      var pol = (it && it.polemica) || 2;
+      if (Math.random() < 0.25 + pol * 0.05) {
+        inst.estouro = 0.1 + Math.random() * 0.3;
+        inst.custoTotal = Math.round(inst.custoTotal * (1 + inst.estouro));
+      }
     }
-    _toast("Obra/programa em execução.", "ok");
+    if (!silencioso) _toast("Obra/programa em execução.", "ok");
+  };
+
+  /** Um mês de obra em execução (barra + custo na escala ORC_BASE). */
+  OBRAS._avancarExecucao = function (inst, it, cid) {
+    if (!inst || inst.estado !== "Em execução") return;
+    var pagaJogador = inst.esferaExec === cid;
+    var parcela = Math.round(inst.custoTotal / Math.max(1, inst.prazoMeses));
+    if (pagaJogador) {
+      try {
+        var livre = OBRAS._caixaObras();
+        var o = null;
+        try {
+          o = typeof orcInit === "function" ? orcInit() : null;
+        } catch (eO) {}
+        // Sem caixa e dívida já explosiva → atrasa com aviso (não congela em Aprovada)
+        if (livre <= 0 && OBRAS._dividaExplosiva()) {
+          inst.estado = "Atrasada";
+          try {
+            if (typeof manchete === "function")
+              manchete('Obra "' + it.nome + '" atrasa: caixa zerado e dívida elevada.', "obras");
+          } catch (e) {}
+          _toast('"' + it.nome + '" atrasada: sem orçamento e dívida alta.', "err");
+          return;
+        }
+        var paga = Math.min(parcela, Math.max(0, livre));
+        var resto = parcela - paga;
+        if (paga > 0) {
+          var sys = M().obrasSys;
+          sys.gastoMes = (sys.gastoMes || 0) + paga;
+          // Espelha no miúdo de emendas só o que couber (UI de gabinete)
+          try {
+            var g = M().gab;
+            if (g && typeof orcamentoLivre === "function") {
+              var el = Math.max(0, orcamentoLivre() - (g.orcamento_gasto || 0));
+              var pe = Math.min(paga, el);
+              if (pe > 0) g.orcamento_gasto = (g.orcamento_gasto || 0) + pe;
+            }
+          } catch (eEm) {}
+        }
+        if (resto > 0) {
+          if (o) o.divida = (o.divida || 0) + resto;
+          if (!inst._avisouDeficit) {
+            inst._avisouDeficit = true;
+            _toast(
+              '"' + it.nome + '": execução segue com déficit/dívida (parcela maior que o caixa).',
+              "warn"
+            );
+          }
+        }
+        inst.custoPago = (inst.custoPago || 0) + parcela;
+      } catch (e2) {
+        inst.custoPago = (inst.custoPago || 0) + parcela;
+      }
+    } else {
+      // Outra esfera / NPC executor: avança sem debitar o jogador
+      inst.custoPago = (inst.custoPago || 0) + parcela;
+    }
+    inst.mesesDecorridos = (inst.mesesDecorridos || 0) + 1;
+    inst.progresso = Math.min(100, Math.round((inst.mesesDecorridos / Math.max(1, inst.prazoMeses)) * 100));
+    if (inst.mesesDecorridos === Math.ceil(inst.prazoMeses / 2) && !inst.meioEfeito) {
+      inst.meioEfeito = true;
+      OBRAS._aplicarEfeitos(inst, 0.45);
+      OBRAS._popularidadeObra(it, false);
+    }
+    if (inst.estado === "Em execução" && Math.random() < 0.04 + (it.efeitos && it.efeitos.meio_ambiente < 0 ? 0.06 : 0)) {
+      inst.estado = "Atrasada";
+      inst.prazoMeses += _R().i(1, 3);
+      try {
+        if (typeof manchete === "function")
+          manchete(
+            (it.efeitos && it.efeitos.meio_ambiente < 0 ? "Embargo ambiental: " : "Atraso: ") +
+              '"' +
+              it.nome +
+              '".',
+            "obras"
+          );
+      } catch (e3) {}
+      _toast('"' + it.nome + '" sofreu atraso.', "warn");
+      return;
+    }
+    if (inst.progresso >= 100) {
+      inst.progresso = 100;
+      var j = typeof J === "function" ? J() : null;
+      inst.inauguradorId = j ? "JOGADOR" : null;
+      inst.inauguradorNome = j ? j.nome : "Executivo";
+      inst.manutencaoPagaMes = _agora();
+      inst.manutencaoNivel = 1;
+      OBRAS._aplicarEfeitos(inst, 1);
+      OBRAS._popularidadeObra(it, true);
+      try {
+        if (typeof manchete === "function")
+          manchete(
+            'Inauguração: "' + it.nome + '" — crédito a ' + (inst.inauguradorNome || "gestão") + ".",
+            "obras"
+          );
+      } catch (e4) {}
+      inst.estado = "Em manutenção";
+    }
   };
 
   OBRAS.onVotoPauta = function (materia) {
@@ -394,12 +601,13 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     var it = OBRAS.item(inst.catalogoId);
     if (materia.res && materia.res.ok && !materia.veto) {
       OBRAS._iniciarExecucao(inst, it);
-    } else if (materia.res && !materia.res.ok) {
+    } else if (materia.res && materia.res.ok === false) {
       inst.estado = "Recusada";
+      inst.aguardandoPlenario = false;
       _toast("Legislativo rejeitou a obra/programa.", "err");
     } else if (materia.veto && !materia.vetoDerrubado) {
-      // aguarda derrubada
       inst.estado = "Paralisada";
+      _toast("Veto do Executivo — obra paralisada até derrubada.", "warn");
     } else if (materia.vetoDerrubado) {
       OBRAS._iniciarExecucao(inst, it);
     }
@@ -452,92 +660,61 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
   OBRAS.tickMensal = function () {
     var sys = OBRAS.garantir();
     if (!sys) return;
+    var mes = _agora();
+    // Evita tick duplo no mesmo mês (vários wraps de iniciarTurno/gestão)
+    if (OBRAS._lastTickMes === mes) return;
+    OBRAS._lastTickMes = mes;
+
     OBRAS._resolverPedidos();
     var cid = _cid();
-    Object.keys(sys.instancias).forEach(function (k) {
+    var keys = Object.keys(sys.instancias);
+
+    // 1) Promove Aprovada → Em execução (não pode congelar)
+    keys.forEach(function (k) {
       var inst = sys.instancias[k];
       var it = OBRAS.item(inst.catalogoId);
       if (!it) return;
+      if (inst.estado === "Aprovada") OBRAS._resolverAprovada(inst, it);
+    });
 
-      if (inst.estado === "Em execução") {
-        // só debita orçamento se o jogador é o executor
-        var pagaJogador = inst.esferaExec === cid;
-        var parcela = Math.round(inst.custoTotal / Math.max(1, inst.prazoMeses));
-        if (pagaJogador && typeof orcamentoLivre === "function") {
-          try {
-            var g = M().gab;
-            var livre = orcamentoLivre() - (g.orcamento_gasto || 0);
-            if (livre < parcela * 0.5) {
-              if (Math.random() < 0.45) {
-                inst.estado = "Atrasada";
-                try {
-                  if (typeof manchete === "function")
-                    manchete('Obra "' + it.nome + '" atrasa por falta de orçamento.', "obras");
-                } catch (e) {}
-                return;
-              }
-            }
-            var paga = Math.min(parcela, Math.max(0, livre));
-            g.orcamento_gasto = (g.orcamento_gasto || 0) + paga;
-            inst.custoPago = (inst.custoPago || 0) + paga;
-          } catch (e2) {
-            inst.custoPago = (inst.custoPago || 0) + parcela;
-          }
-        } else {
-          inst.custoPago = (inst.custoPago || 0) + parcela;
+    // 2) Execução primeiro (antes da manutenção da rede, que também usa o caixa)
+    OBRAS._resetGastoMes();
+    keys.forEach(function (k) {
+      var inst = sys.instancias[k];
+      var it = OBRAS.item(inst.catalogoId);
+      if (!it) return;
+      if (inst.estado === "Em execução") OBRAS._avancarExecucao(inst, it, cid);
+    });
+
+    // 3) Retoma atrasadas se houver caixa (ou dívida ainda sustentável)
+    keys.forEach(function (k) {
+      var inst = sys.instancias[k];
+      var it = OBRAS.item(inst.catalogoId);
+      if (!it || inst.estado !== "Atrasada") return;
+      var podeRetomar = true;
+      try {
+        if (inst.esferaExec === cid) {
+          podeRetomar = OBRAS._caixaObras() > 0 || !OBRAS._dividaExplosiva();
         }
-        inst.mesesDecorridos = (inst.mesesDecorridos || 0) + 1;
-        inst.progresso = Math.min(100, Math.round((inst.mesesDecorridos / inst.prazoMeses) * 100));
-        // efeito parcial
-        if (inst.mesesDecorridos === Math.ceil(inst.prazoMeses / 2) && !inst.meioEfeito) {
-          inst.meioEfeito = true;
-          OBRAS._aplicarEfeitos(inst, 0.45);
-          OBRAS._popularidadeObra(it, false);
-        }
-        // atraso aleatório / embargo ambiental
-        if (inst.estado === "Em execução" && Math.random() < 0.04 + (it.efeitos && it.efeitos.meio_ambiente < 0 ? 0.06 : 0)) {
-          inst.estado = "Atrasada";
-          inst.prazoMeses += _R().i(1, 3);
-          try {
-            if (typeof manchete === "function")
-              manchete(
-                (it.efeitos && it.efeitos.meio_ambiente < 0 ? "Embargo ambiental: " : "Atraso: ") +
-                  '"' +
-                  it.nome +
-                  '".',
-                "obras"
-              );
-          } catch (e3) {}
-        }
-        if (inst.progresso >= 100) {
-          inst.estado = "Concluída";
-          inst.progresso = 100;
-          var j = typeof J === "function" ? J() : null;
-          inst.inauguradorId = j ? "JOGADOR" : null;
-          inst.inauguradorNome = j ? j.nome : "Executivo";
-          inst.manutencaoPagaMes = _agora();
-          inst.manutencaoNivel = 1;
-          OBRAS._aplicarEfeitos(inst, 1);
-          OBRAS._popularidadeObra(it, true);
-          try {
-            if (typeof manchete === "function")
-              manchete(
-                'Inauguração: "' + it.nome + '" — crédito a ' + (inst.inauguradorNome || "gestão") + ".",
-                "obras"
-              );
-          } catch (e4) {}
-          // passa a manutenção no próximo tick
-          inst.estado = "Em manutenção";
-        }
-      } else if (inst.estado === "Atrasada") {
-        if (Math.random() < 0.55) {
-          inst.estado = "Em execução";
-        } else if (Math.random() < 0.08) {
-          inst.estado = "Paralisada";
-        }
-      } else if (inst.estado === "Em manutenção") {
-        OBRAS._tickManutencao(inst, it, cid);
+      } catch (eR) {}
+      if (podeRetomar && Math.random() < 0.7) {
+        inst.estado = "Em execução";
+        _toast('"' + it.nome + '" retomada após atraso.', "ok");
+        OBRAS._avancarExecucao(inst, it, cid);
+      } else if (!podeRetomar && Math.random() < 0.25) {
+        _toast('"' + it.nome + '" segue atrasada: sem orçamento.', "err");
+      } else if (Math.random() < 0.06) {
+        inst.estado = "Paralisada";
+        _toast('"' + it.nome + '" paralisada. Use Retomar.', "err");
       }
+    });
+
+    // 4) Manutenção da rede (depois das obras novas)
+    keys.forEach(function (k) {
+      var inst = sys.instancias[k];
+      var it = OBRAS.item(inst.catalogoId);
+      if (!it) return;
+      if (inst.estado === "Em manutenção") OBRAS._tickManutencao(inst, it, cid);
     });
   };
 
@@ -546,17 +723,25 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     if (anual <= 0) return;
     var mensal = Math.round(anual / 12);
     var pagaJogador = inst.esferaExec === cid;
-    if (pagaJogador && typeof orcamentoLivre === "function") {
+    if (pagaJogador) {
       try {
-        var g = M().gab;
-        var livre = orcamentoLivre() - (g.orcamento_gasto || 0);
+        var livre = OBRAS._caixaObras();
         if (livre >= mensal * 0.4) {
           var paga = Math.min(mensal, livre);
-          g.orcamento_gasto = (g.orcamento_gasto || 0) + paga;
+          var sys = M().obrasSys;
+          sys.gastoMes = (sys.gastoMes || 0) + paga;
+          try {
+            var g = M().gab;
+            if (g && typeof orcamentoLivre === "function") {
+              var el = Math.max(0, orcamentoLivre() - (g.orcamento_gasto || 0));
+              var pe = Math.min(paga, el);
+              if (pe > 0) g.orcamento_gasto = (g.orcamento_gasto || 0) + pe;
+            }
+          } catch (eEm) {}
           inst.manutencaoPagaMes = _agora();
           inst.manutencaoNivel = Math.min(1, (inst.manutencaoNivel || 1) + 0.05);
         } else {
-          // não pagou
+          // não pagou o suficiente
           inst.manutencaoNivel = Math.max(0.2, (inst.manutencaoNivel || 1) - 0.08);
           if (inst.manutencaoNivel < 0.55 && Math.random() < 0.2) {
             try {
@@ -842,6 +1027,9 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
               barHtml +
               "<small>" +
               _esc(inst.estado) +
+              (["Em execução", "Atrasada", "Paralisada"].indexOf(inst.estado) >= 0
+                ? " · progresso " + Math.round(inst.progresso || 0) + "%"
+                : "") +
               (inst.estouro ? " · estouro +" + Math.round(inst.estouro * 100) + "%" : "") +
               (inst.manutencaoNivel != null && inst.estado === "Em manutenção"
                 ? " · manutenção " + Math.round(inst.manutencaoNivel * 100) + "%"
@@ -1013,18 +1201,53 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
   }
 
   function wrapTurno() {
-    if (typeof iniciarTurno !== "function" || iniciarTurno._obras) return;
-    var _it = iniciarTurno;
-    window.iniciarTurno = function () {
-      var r = _it.apply(this, arguments);
+    function attach(nome, getter, setter) {
+      var fn = null;
       try {
-        if (gameState && gameState.fase_do_turno !== "GAME_OVER") OBRAS.tickMensal();
+        fn = getter();
       } catch (e) {
-        console.warn("OBRAS tick", e);
+        fn = null;
       }
-      return r;
-    };
-    iniciarTurno._obras = true;
+      if (typeof fn !== "function") return;
+      if (fn._obrasTick) return;
+      var _orig = fn;
+      var wrapped = function () {
+        var r = _orig.apply(this, arguments);
+        try {
+          if (typeof gameState !== "undefined" && gameState && gameState.fase_do_turno !== "GAME_OVER") {
+            OBRAS.tickMensal();
+          }
+        } catch (e) {
+          console.warn("OBRAS tick", e);
+        }
+        return r;
+      };
+      wrapped._obrasTick = true;
+      try {
+        setter(wrapped);
+      } catch (e2) {}
+      try {
+        window[nome] = wrapped;
+      } catch (e3) {}
+    }
+    attach(
+      "iniciarTurno",
+      function () {
+        return typeof iniciarTurno === "function" ? iniciarTurno : window.iniciarTurno;
+      },
+      function (w) {
+        iniciarTurno = w;
+      }
+    );
+    attach(
+      "processarGestao",
+      function () {
+        return typeof processarGestao === "function" ? processarGestao : window.processarGestao;
+      },
+      function (w) {
+        processarGestao = w;
+      }
+    );
   }
 
   function wrapVotar() {
