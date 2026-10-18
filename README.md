@@ -14,7 +14,7 @@ Tema **House of Cards** (thriller) + menu em 6 hubs em `cadeira-theme.css` (tamb
 
 ## Módulos aditivos (build)
 
-`build_clean_html.ps1` injeta, nesta ordem: geo, lógica ABC, empresários, diplomacia, influenciadores, imprensa/feed, legislativo, sessão/PL/feed, **cheats exec + sessão + voo (`modulo_fix_exec_sessao.js`)**.
+`build_clean_html.ps1` injeta, nesta ordem: geo, lógica ABC, empresários, diplomacia, influenciadores, imprensa/feed, legislativo, sessão/PL/feed, **cheats exec + sessão + voo (`modulo_fix_exec_sessao.js`)**, navegação/áudio HoC, **obras e programas do Executivo (`modulo_obras_programas.js`)**.
 
 ## Trapaças úteis
 
