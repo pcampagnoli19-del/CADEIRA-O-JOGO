@@ -20997,6 +20997,17 @@ function viewPerfilWikipedia() {
             No parlamento, ${esc(j.nome)} registrou <b>${projTotal}</b> propostas legislativas protocoladas de autoria pr\u00F3pria. Dessas mat\u00E9rias, <b>${projSan}</b> j\u00E1 foram plenamente sancionadas e promulgadas, <b>${projApr}</b> foram aprovadas aguardando san\u00E7\u00E3o, <b>${projTram}</b> encontram-se em tramita\u00E7\u00E3o regular nas comiss\u00F5es de m\u00E9rito e <b>${projVet}</b> foram vetadas pelo Poder Executivo.
           </p>
 
+          ${(function () {
+            var leis = proj.filter(function (p) { return p && p.status === "SANCIONADO"; });
+            if (!leis.length) return "";
+            var itens = leis.map(function (p) {
+              var casa = p.casaNome || (p.esfera === "M" ? "Câmara Municipal de Mauá" : p.esfera === "E" ? "Assembleia Legislativa de São Paulo" : p.esfera === "S" ? "Senado Federal" : "Câmara dos Deputados");
+              var cargo = p.cargo || (p.esfera === "M" ? "Vereador de Mauá" : "");
+              return "<li style=\"margin:4px 0\"><b>" + esc(p.nome) + "</b> — lei aprovada e sancionada na <b>" + esc(casa) + "</b>" + (cargo ? ", no mandato de <b>" + esc(cargo) + "</b>" : "") + (p.ano ? " (" + p.ano + ")" : "") + (p.voto != null ? ", com " + p.voto + "% dos votos" : "") + ".</li>";
+            }).join("");
+            return "<ul id=\"wiki-leis-mandato\" style=\"margin:8px 0 14px 18px;line-height:1.45\">" + itens + "</ul>";
+          })()}
+
           ${comissoesList.length > 0 ? `
             <div style="background:#1e293b;border-left:4px solid #38bdf8;padding:8px 12px;margin:10px 0;font-size:12px">
               <b>Presid\u00EAncia e Atua\u00E7\u00E3o em Comiss\u00F5es:</b><br>
@@ -36712,11 +36723,87 @@ document.addEventListener("click", function(e){
     L.pauta = frente.concat(resto);
   }
 
-  function fecharProjeto(pl, aprovado, sim) {
+  function nomeCasa(esfera) {
+    if (esfera === "M") return "Câmara Municipal de Mauá";
+    if (esfera === "E") return "Assembleia Legislativa de São Paulo";
+    if (esfera === "S") return "Senado Federal";
+    if (esfera === "C" || esfera === "F") return "Câmara dos Deputados";
+    return "casa legislativa";
+  }
+
+  function reCargo(esfera) {
+    if (esfera === "M") return /Vereador/;
+    if (esfera === "E") return /Deputado Estadual/;
+    if (esfera === "S") return /Senador/;
+    return /Deputado Federal/;
+  }
+
+  function cargoDaEsfera(esfera) {
+    try {
+      var cargos = (J().carreira && J().carreira.cargos) || [];
+      var hits = cargos.filter(function (x) { return reCargo(esfera).test(x.cargo || ""); });
+      if (hits.length) return hits[hits.length - 1].cargo;
+    } catch (e) {}
+    if (esfera === "M") return "Vereador de Mauá";
+    if (esfera === "E") return "Deputado Estadual (SP)";
+    if (esfera === "S") return "Senador da República";
+    return "Deputado Federal";
+  }
+
+  function anoMandato(pl) {
+    try {
+      var cargos = (J().carreira && J().carreira.cargos) || [];
+      var hits = cargos.filter(function (x) { return reCargo(pl.esfera).test(x.cargo || "") && x.ini; });
+      if (hits.length) return hits[0].ini;
+    } catch (e) {}
+    var m = Number(pl && pl.mes);
+    if (m) {
+      var resto = m % 12;
+      return resto === 0 ? Math.floor(m / 12) - 1 : Math.floor(m / 12);
+    }
+    try { return dt().ano; } catch (e2) { return ""; }
+  }
+
+  function registrarLeiNaCarreira(pl) {
+    var j;
+    try { j = J(); } catch (e) { return; }
+    if (!j) return;
+    if (!j.carreira || j.carreira.v !== 1) {
+      try { if (typeof CAR === "function") CAR(); } catch (e2) {}
+    }
+    if (!j.carreira) return;
+    var c = j.carreira;
+    c.projetos = c.projetos || [];
+    var nome = pl.titulo || pl.nome;
+    var k = String(pl.id) + "@" + pl.mes;
+    var r = null;
+    for (var i = 0; i < c.projetos.length; i++) {
+      var item = c.projetos[i];
+      if (!item) continue;
+      if (item.k === k || item.nome === nome) r = item;
+    }
+    if (!r) {
+      r = { k: k };
+      c.projetos.push(r);
+    }
+    r.k = r.k || k;
+    r.nome = nome;
+    r.tipo = pl.tipo || r.tipo || "PL";
+    r.esfera = pl.esfera || r.esfera || null;
+    r.status = pl.fim || r.status || "TRAMITANDO";
+    r.casaNome = nomeCasa(pl.esfera);
+    r.cargo = cargoDaEsfera(pl.esfera);
+    r.ano = anoMandato(pl) || r.ano;
+    if (pl.voto != null) r.voto = pl.voto;
+  }
+
+  function fecharProjeto(pl, aprovado, sim, casaNome) {
     if (!pl || pl.fim) return;
     pl.voto = sim != null ? sim : pl.voto;
     pl.aguardandoPlenario = false;
-    var casa = typeof casaLegNome === "function" ? casaLegNome() : "Plenário";
+    var casa = casaNome || (typeof casaLegNome === "function" ? casaLegNome() : "Plenário");
+    pl.casaNome = casa;
+    pl.cargoOrigem = cargoDaEsfera(pl.esfera);
     var nome = pl.titulo || pl.nome;
     if (aprovado) {
       pl.estagio = Math.max(Number(pl.estagio) || 0, 3);
@@ -36735,6 +36822,27 @@ document.addEventListener("click", function(e){
       if (typeof mudarAprovTodos === "function") mudarAprovTodos(-0.3);
       if (typeof manchete === "function") manchete(casa + ': "' + nome + '" é rejeitado no plenário' + (sim != null ? " (" + sim + "% a favor)" : "") + ".", "leg");
     }
+    try { registrarLeiNaCarreira(pl); } catch (eReg) {}
+  }
+
+  function votarProjetosForaDaCasa() {
+    var L;
+    try { L = M().leg; } catch (e) { return; }
+    if (!L || !L.pls) return;
+    L.pls.forEach(function (pl) {
+      if (!pl || pl.fim) return;
+      if (!(Number(pl.estagio) >= 2)) return;
+      if (plDaCasa(pl)) return;
+      var yes = 0.55;
+      try {
+        if (typeof votoPL === "function") yes = votoPL(pl);
+      } catch (e2) {}
+      var need = pl.tipo === "PEC" ? 0.6 : 0.5;
+      // Plenário da casa de origem: matéria que já chegou pronta não é derrubada no escuro.
+      if ((Number(pl.polemica) || 2) <= 2) yes = Math.max(yes, need + 0.04);
+      var sim = Math.round(yes * 1000) / 10;
+      fecharProjeto(pl, yes >= need, sim, nomeCasa(pl.esfera));
+    });
   }
 
   function acharPL(m) {
@@ -36841,6 +36949,16 @@ document.addEventListener("click", function(e){
     };
     wrappedRd._plJog = true;
     window.render = wrappedRd;
+  }
+
+  if (typeof avancarMes === "function" && !avancarMes._plOrigem) {
+    var _avMes = avancarMes;
+    var wrappedAv = function () {
+      try { votarProjetosForaDaCasa(); } catch (e) { console.warn("votarProjetosForaDaCasa", e); }
+      return _avMes.apply(this, arguments);
+    };
+    wrappedAv._plOrigem = true;
+    window.avancarMes = avancarMes = wrappedAv;
   }
 })();
 </script>
