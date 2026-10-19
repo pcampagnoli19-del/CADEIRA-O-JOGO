@@ -36613,5 +36613,237 @@ document.addEventListener("click", function(e){
 }, true);
 
 </script>
+
+<script>
+/* Projetos "Pronto para plenário" entram na sessão da casa do mandato e saem de tramitação quando o plenário vota. */
+(function () {
+  if (window._plenarioJogadorFix) return;
+  window._plenarioJogadorFix = true;
+
+  function casaMandato() {
+    var c = typeof cargoAtualId === "function" ? cargoAtualId() : "";
+    if (c === "SEN") return "S";
+    if (c === "DEPF") return "C";
+    if (c === "DEPE") return "E";
+    if (c === "VER") return "M";
+    return typeof casaCodAtual === "function" ? casaCodAtual() : "C";
+  }
+
+  function plDaCasa(pl) {
+    if (!pl) return false;
+    var casa = casaMandato();
+    var e = pl.esfera || casa;
+    if (e === casa) return true;
+    if (e === "F" && (casa === "C" || casa === "S")) return true;
+    return false;
+  }
+
+  function pronto(pl) {
+    if (!pl || pl.fim) return false;
+    if (!(Number(pl.estagio) >= 2)) return false;
+    return plDaCasa(pl);
+  }
+
+  function materiaDoPL(pl) {
+    var j = null;
+    try { j = typeof J === "function" ? J() : null; } catch (e) {}
+    return {
+      nome: pl.titulo || pl.nome,
+      tipo: pl.tipo || "PL",
+      descr: pl.descr || pl.ementa || ("Projeto sobre " + (pl.tema || "a pauta do mandato")),
+      pos: Object.assign({}, pl.pos || {}),
+      casa: typeof casaLegCod === "function" ? casaLegCod() : "F",
+      gov: pl.gov ? 1 : 0,
+      voto: null,
+      res: null,
+      tema: pl.tema || "Legislativo",
+      polemica: pl.polemica || 2,
+      autorJogador: true,
+      plId: pl.id,
+      doJogador: true,
+      autorNome: (j && j.nome) || "Parlamentar",
+      autorPartido: (j && j.partido_atual) || ""
+    };
+  }
+
+  function encaixarProjetosProntos() {
+    if (typeof ehLegislador !== "function" || !ehLegislador()) return;
+    if (typeof preso === "function" && preso()) return;
+    var L;
+    try { L = M().leg; } catch (e) { return; }
+    if (!L || !L.pls) return;
+    L.pauta = L.pauta || [];
+    var prontos = L.pls.filter(pronto);
+    var porId = {};
+    prontos.forEach(function (pl) { porId[String(pl.id)] = pl; });
+
+    L.pauta = L.pauta.filter(function (m) {
+      if (!m || m.plId == null || !(m.doJogador || m.autorJogador)) return true;
+      var pl = porId[String(m.plId)];
+      if (!pl || pl.fim) return false;
+      return true;
+    });
+
+    var frente = [];
+    var usados = {};
+    L.pauta.forEach(function (m) {
+      if (!m || m.plId == null || !porId[String(m.plId)] || m.voto) return;
+      if (usados[String(m.plId)]) return;
+      m.doJogador = true;
+      m.autorJogador = true;
+      usados[String(m.plId)] = true;
+      frente.push(m);
+    });
+    prontos.forEach(function (pl) {
+      if (usados[String(pl.id)]) {
+        pl.naPauta = true;
+        pl.aguardandoPlenario = true;
+        return;
+      }
+      frente.push(materiaDoPL(pl));
+      usados[String(pl.id)] = true;
+      pl.naPauta = true;
+      pl.aguardandoPlenario = true;
+    });
+    var resto = L.pauta.filter(function (m) {
+      if (!m || m.plId == null || !porId[String(m.plId)]) return true;
+      return !!m.voto;
+    });
+    L.pauta = frente.concat(resto);
+  }
+
+  function fecharProjeto(pl, aprovado, sim) {
+    if (!pl || pl.fim) return;
+    pl.voto = sim != null ? sim : pl.voto;
+    pl.aguardandoPlenario = false;
+    var casa = typeof casaLegNome === "function" ? casaLegNome() : "Plenário";
+    var nome = pl.titulo || pl.nome;
+    if (aprovado) {
+      pl.estagio = Math.max(Number(pl.estagio) || 0, 3);
+      pl.aprovadoPlenario = true;
+      pl.fim = "SANCIONADO";
+      if (typeof marcarLeiAprovadaNoMandato === "function") marcarLeiAprovadaNoMandato(pl);
+      try {
+        var j = J();
+        if (j && j.atributos) j.atributos.influencia = Math.min(100, (j.atributos.influencia || 0) + 2);
+      } catch (e) {}
+      if (typeof mudarAprovTodos === "function") mudarAprovTodos(1.2);
+      if (typeof manchete === "function") manchete(casa + ': "' + nome + '" é aprovado' + (sim != null ? " (" + sim + "%)" : "") + " e sancionado.", "leg");
+    } else {
+      pl.aprovadoPlenario = false;
+      pl.fim = "REJEITADO";
+      if (typeof mudarAprovTodos === "function") mudarAprovTodos(-0.3);
+      if (typeof manchete === "function") manchete(casa + ': "' + nome + '" é rejeitado no plenário' + (sim != null ? " (" + sim + "% a favor)" : "") + ".", "leg");
+    }
+  }
+
+  function acharPL(m) {
+    var L;
+    try { L = M().leg; } catch (e) { return null; }
+    if (!L || !L.pls || !m) return null;
+    var achou = null;
+    L.pls.forEach(function (p) {
+      if (achou || !p) return;
+      if (m.plId != null && p.id === m.plId) achou = p;
+      else if ((m.doJogador || m.autorJogador) && (p.titulo || p.nome) === m.nome) achou = p;
+    });
+    return achou;
+  }
+
+  var _syncing = false;
+  function sincronizarVotados() {
+    if (_syncing) return;
+    var L;
+    try { L = M().leg; } catch (e) { return; }
+    if (!L) return;
+    _syncing = true;
+    try {
+      var sl = (typeof S !== "undefined") ? S.sessaoLeg : null;
+      if (sl && sl.concluida && sl.materia && (sl.materia.doJogador || sl.materia.plId != null || sl.materia.autorJogador) && !sl.materia._plSincronizado) {
+        var res = sl.resultado || {};
+        var aprovado = !!(res.ok || res.aprovado || (sl.materia.res && sl.materia.res.ok));
+        var sim = res.sim != null ? res.sim : (sl.materia.res ? sl.materia.res.sim : null);
+        sl.materia.res = sl.materia.res || { ok: aprovado, sim: sim };
+        sl.materia._plSincronizado = true;
+        fecharProjeto(acharPL(sl.materia), aprovado, sim);
+      }
+      var pauta = L.pauta || [];
+      for (var i = 0; i < pauta.length; i++) {
+        var m = pauta[i];
+        if (!m || m._plSincronizado) continue;
+        if (!(m.doJogador || m.plId != null || m.autorJogador)) continue;
+        if (!m.voto || !m.res) continue;
+        m._plSincronizado = true;
+        fecharProjeto(acharPL(m), !!m.res.ok, m.res.sim);
+      }
+    } catch (e2) {
+      console.warn("sincronizarVotados", e2);
+    } finally {
+      _syncing = false;
+    }
+  }
+
+  if (typeof window.ensurePauta === "function" && !window.ensurePauta._plJog) {
+    var _ens = window.ensurePauta;
+    var wrappedEns = function () {
+      var r;
+      try { r = _ens.apply(this, arguments); }
+      catch (e) { console.warn("ensurePauta", e); }
+      try { encaixarProjetosProntos(); }
+      catch (e2) { console.warn("encaixarProjetosProntos", e2); }
+      return r;
+    };
+    wrappedEns._plJog = true;
+    wrappedEns._legfSafe = true;
+    window.ensurePauta = wrappedEns;
+  }
+
+  if (typeof window.iniciarSessaoLegislativa === "function" && !window.iniciarSessaoLegislativa._plJog) {
+    var _ini = window.iniciarSessaoLegislativa;
+    var _abrindo = false;
+    var wrappedIni = function () {
+      if (_abrindo) return _ini.apply(this, arguments);
+      _abrindo = true;
+      try {
+        try { encaixarProjetosProntos(); } catch (e) {}
+        var r = _ini.apply(this, arguments);
+        try {
+          var sl = S.sessaoLeg;
+          var L = M().leg;
+          if (sl && !sl.concluida && L && L.pauta) {
+            var primeiro = null;
+            for (var i = 0; i < L.pauta.length; i++) {
+              var m = L.pauta[i];
+              if (m && m.doJogador && m.plId != null && !m.voto) { primeiro = m; break; }
+            }
+            var atualId = sl.materia && sl.materia.plId;
+            if (primeiro && atualId !== primeiro.plId && !sl.emAndamento && !(sl.proximoIdx > 0)) {
+              sl.materia = primeiro;
+              sl.idxMateria = L.pauta.indexOf(primeiro);
+              if (typeof render === "function") render();
+            }
+          }
+        } catch (e3) {}
+        return r;
+      } finally {
+        _abrindo = false;
+      }
+    };
+    wrappedIni._plJog = true;
+    window.iniciarSessaoLegislativa = wrappedIni;
+  }
+
+  if (typeof window.render === "function" && !window.render._plJog) {
+    var _rd = window.render;
+    var wrappedRd = function () {
+      try { sincronizarVotados(); } catch (e) {}
+      return _rd.apply(this, arguments);
+    };
+    wrappedRd._plJog = true;
+    window.render = wrappedRd;
+  }
+})();
+</script>
+
 </body>
 </html>
