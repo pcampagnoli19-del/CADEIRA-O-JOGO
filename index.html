@@ -39606,5 +39606,744 @@ document.addEventListener("click", function(e){
   }
 })();
 </script>
+<script>
+/* Fase 4 do legislativo: CPI de vários meses, teatro das redes e acabamento.
+   Estende as fases 1 a 3 e a CPI que já existe. Não mexe no executivo. */
+(function () {
+  if (window._fase4Leg) return;
+  window._fase4Leg = true;
+
+  var PALCOS = ["tribuna", "comissao", "ccj"];
+  var NOME_PALCO = { tribuna: "Tribuna", comissao: "Comissão", ccj: "CCJ" };
+  var PAUTAS = [
+    "A oposição cobra assinatura para uma CPI da merenda.",
+    "A comissão marca depoimento e a rede pede corte.",
+    "O relatório pode virar pizza ou cassação.",
+    "A CCJ puxa um corte e o Centrão cobra blindagem."
+  ];
+
+  function vivo() {
+    try { return typeof gameState !== "undefined" && !!gameState && typeof M === "function" && !!M() && typeof J === "function" && !!J(); }
+    catch (e) { return false; }
+  }
+  function legislador() {
+    try { return vivo() && typeof ehLegislador === "function" && ehLegislador(); }
+    catch (e) { return false; }
+  }
+  function mesKey() {
+    try { return typeof agoraM === "function" ? agoraM() : 0; }
+    catch (e) { return 0; }
+  }
+  function cargo() {
+    try { return typeof cargoAtualId === "function" ? cargoAtualId() : ""; }
+    catch (e) { return ""; }
+  }
+  function mesNum() {
+    try { return dt().mes || 1; } catch (e) { return 1; }
+  }
+  function clamp(n, a, b) {
+    n = Math.round(Number(n) || 0);
+    if (n < a) return a;
+    if (n > b) return b;
+    return n;
+  }
+  function E(s) {
+    try { if (typeof esc === "function") return esc(s == null ? "" : String(s)); }
+    catch (e) {}
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function palcoDoMes(mes) {
+    return PALCOS[(Math.max(1, mes || 1) - 1) % 3];
+  }
+  window.fase4Oferta = palcoDoMes;
+
+  function shell() {
+    return {
+      v: 1,
+      mes: null,
+      cpi: null,
+      redes: { mesFeito: null, palco: null, tom: null, seguidores: 0, respeitoMesa: 40, respeitoJud: 40, representacao: false },
+      vinganca: null,
+      alvoAutoMes: null,
+      rastro: [],
+      meses: [],
+      pautaMes: "",
+      _priorizar: 0
+    };
+  }
+  function normalizar(f) {
+    var b = shell();
+    Object.keys(b).forEach(function (k) { if (f[k] == null) f[k] = b[k]; });
+    if (!f.redes || typeof f.redes !== "object") f.redes = shell().redes;
+    ["seguidores", "respeitoMesa", "respeitoJud"].forEach(function (k) {
+      if (f.redes[k] == null) f.redes[k] = shell().redes[k];
+    });
+    if (!Array.isArray(f.rastro)) f.rastro = [];
+    if (!Array.isArray(f.meses)) f.meses = [];
+  }
+  function fase() {
+    if (!legislador()) return null;
+    var L = M().leg = M().leg || {};
+    if (!L.fase4 || typeof L.fase4 !== "object") L.fase4 = shell();
+    normalizar(L.fase4);
+    return L.fase4;
+  }
+  function escala() {
+    var c = cargo();
+    if (c === "VER") return 1;
+    if (c === "DEPE") return 2;
+    return 3;
+  }
+  function precisaAss() {
+    var c = cargo();
+    if (c === "VER") return 3;
+    if (c === "SEN") return 9;
+    return 6;
+  }
+  function gastarAtencao(rotulo) {
+    var f1 = M().leg && M().leg.fase1;
+    if (f1 && typeof f1.pontos === "number" && f1.pontos >= 1) { f1.pontos -= 1; return true; }
+    if (f1 && typeof f1.capital === "number" && f1.capital >= 4) {
+      f1.capital -= 4;
+      if (typeof toast === "function") toast(rotulo + " saiu do capital político (4).", "ok");
+      return true;
+    }
+    if (typeof toast === "function") toast("Sem ponto de ação nem capital para " + rotulo + ".", "err");
+    return false;
+  }
+  function gastarCapital(n, rotulo) {
+    var f1 = M().leg && M().leg.fase1;
+    if (!f1 || (f1.capital || 0) < n) {
+      if (typeof toast === "function") toast(rotulo + " custa " + n + " de capital político.", "err");
+      return false;
+    }
+    f1.capital -= n;
+    return true;
+  }
+  function divida(quem, oque) {
+    var f1 = M().leg && M().leg.fase1;
+    if (!f1) return;
+    if (!Array.isArray(f1.dividas)) f1.dividas = [];
+    f1.seq = (f1.seq || 0) + 1;
+    f1.dividas.push({
+      id: "dv" + f1.seq,
+      quem: quem,
+      oque: oque,
+      prazoMes: mesKey() + 1,
+      valor: 6,
+      tipo: "devo",
+      cobrada: false,
+      paga: false
+    });
+  }
+  function influencia(n) {
+    var f1 = M().leg && M().leg.fase1;
+    if (f1) f1.influencia = clamp((f1.influencia || 0) + n, 0, 100);
+  }
+  function legado(n) {
+    var f1 = M().leg && M().leg.fase1;
+    if (f1) f1.legado = clamp((f1.legado || 0) + n, 0, 100);
+  }
+  function rastro(f, txt) {
+    if (!f.rastro) f.rastro = [];
+    f.rastro.push({ mes: mesKey(), txt: txt });
+    if (f.rastro.length > 16) f.rastro = f.rastro.slice(-16);
+  }
+  function alvoFicticio() {
+    var casa = "Congresso Nacional";
+    try { if (typeof casaDoCargo === "function") casa = casaDoCargo(); } catch (e) {}
+    var mem = [];
+    try { if (typeof membrosCasa === "function") mem = membrosCasa(casa) || []; } catch (e2) {}
+    var lista = [];
+    for (var i = 0; i < mem.length; i++) {
+      var n = mem[i];
+      if (n && n.vivo && !n.real && !n.jogador) lista.push(n);
+    }
+    if (!lista.length) {
+      var banco = (typeof bancoDeNPCs !== "undefined" && bancoDeNPCs) || [];
+      for (var j = 0; j < banco.length; j++) {
+        var x = banco[j];
+        if (x && x.vivo && !x.real && !x.jogador) lista.push(x);
+      }
+    }
+    lista.sort(function (a, b) { return String(a.id).localeCompare(String(b.id)); });
+    return lista[0] || null;
+  }
+  function digital(f) {
+    var mes = mesNum();
+    var pico = "";
+    try { pico = (M().leg.fase3 && M().leg.fase3.pico) || ""; } catch (e) {}
+    var est = f.cpi && !f.cpi.encerrada ? f.cpi.fase : "sem";
+    var tom = f.redes && f.redes.mesFeito === mesKey() ? (f.redes.tom || "") : "";
+    return mes + "|" + palcoDoMes(mes) + "|" + pico + "|" + est + "|" + (f.pautaMes || "") + "|" + tom;
+  }
+
+  function fecharVinculo(c, motivo) {
+    if (!c || !c.cpiId) return;
+    try {
+      var lista = M().cpis || [];
+      for (var i = 0; i < lista.length; i++) {
+        if (lista[i] && lista[i].id === c.cpiId && lista[i].status === "ATIVA") {
+          lista[i].status = "ENCERRADA";
+          lista[i].fimMes = mesKey();
+          if (lista[i].log) lista[i].log.push(motivo);
+        }
+      }
+    } catch (e) {}
+  }
+  function registrarNaCasa(casa, alvoId, motivo) {
+    var aberta = null;
+    try {
+      if (typeof abrirCPI === "function") aberta = abrirCPI({ casa: casa, alvoId: alvoId, motivo: motivo, patrocinio: false });
+    } catch (e) {}
+    if (aberta && aberta.id) return aberta;
+    M().cpis = M().cpis || [];
+    aberta = {
+      id: "CPI4_" + mesKey() + "_" + String(alvoId || "x").slice(0, 12),
+      casa: casa,
+      alvo: alvoId,
+      motivo: motivo,
+      presidente: null,
+      relator: null,
+      aliado_presidente: false,
+      relator_comprado: false,
+      choque: 0,
+      testemunhas: [],
+      sessoes: 4,
+      evidencia: 15,
+      hc: false,
+      dossie_relator: false,
+      suspeito: false,
+      status: "ATIVA",
+      escala: escala(),
+      fase4: true,
+      log: ["CPI instalada na " + casa + ": " + (motivo || "")]
+    };
+    M().cpis.push(aberta);
+    return aberta;
+  }
+  function instalar(f) {
+    var c = f.cpi;
+    if (!c || c.instalada) return;
+    c.instalada = true;
+    c.fase = "instalada";
+    var casa = "Congresso Nacional";
+    try { if (typeof casaDoCargo === "function") casa = casaDoCargo(); } catch (e) {}
+    var aberta = registrarNaCasa(casa, c.alvoId, c.motivo);
+    if (aberta && aberta.id) c.cpiId = aberta.id;
+    var f1 = M().leg && M().leg.fase1;
+    if (f1 && f1.historico) f1.historico.cpis = (f1.historico.cpis || 0) + 1;
+    rastro(f, "CPI instalada contra " + c.alvoNome + ".");
+    f._priorizar = 6;
+    if (typeof manchete === "function") manchete("CPI instalada contra " + c.alvoNome + ". Depoimento, vazamento e relatório ainda levam meses.", "cpi");
+  }
+  function abrirComoAlvo(f, motivo) {
+    f.cpi = {
+      papel: "alvo",
+      fase: "depoimento",
+      instalada: true,
+      encerrada: false,
+      meses: 0,
+      motivo: motivo || "a casa te investiga",
+      alvoId: "JOGADOR",
+      alvoNome: "você",
+      assinaturas: precisaAss(),
+      precisa: precisaAss(),
+      convocados: 1,
+      blindada: false,
+      dossie: false,
+      escolha: null,
+      relatorio: null,
+      evidencia: 20,
+      antecipado: false,
+      cpiId: null
+    };
+    var casa = "Congresso Nacional";
+    try { if (typeof casaDoCargo === "function") casa = casaDoCargo(); } catch (e) {}
+    var abertaAlvo = registrarNaCasa(casa, "JOGADOR", f.cpi.motivo);
+    if (abertaAlvo && abertaAlvo.id) f.cpi.cpiId = abertaAlvo.id;
+    rastro(f, "A CPI te mira: " + f.cpi.motivo + ".");
+    f._priorizar = 6;
+    if (typeof manchete === "function") manchete("CPI contra você: " + f.cpi.motivo + ". Dá para blindar ou depor.", "cpi");
+  }
+  function agendarVinganca(f, motivo) {
+    f.vinganca = { mes: mesKey() + 1, aberta: false, motivo: motivo };
+    rastro(f, "Vingança marcada para o mês que vem: " + motivo);
+  }
+  function encerrar(f, relatorio) {
+    if (!f.cpi) return;
+    f.cpi.relatorio = relatorio;
+    f.cpi.encerrada = true;
+    f.cpi.fase = "encerrada";
+    fecharVinculo(f.cpi, relatorio);
+  }
+
+  function virada(f) {
+    if (f.cpi && !f.cpi.encerrada) {
+      f.cpi.meses = (f.cpi.meses || 0) + 1;
+      if (f.cpi.fase === "assinaturas" && f.cpi.assinaturas >= f.cpi.precisa) instalar(f);
+      else if (f.cpi.fase === "instalada") {
+        f.cpi.fase = "depoimento";
+        if (typeof manchete === "function") manchete("A CPI chega ao depoimento. Lacrar, dossiê ou pizza.", "cpi");
+      } else if (f.cpi.fase === "depoimento") {
+        f.cpi.fase = "relatorio";
+        if (typeof manchete === "function") manchete("O relatório da CPI vence neste mês.", "cpi");
+      } else if (f.cpi.fase === "relatorio" && !f.cpi.relatorio && !f.cpi.escolha && f.cpi.papel === "autor") {
+        encerrar(f, "omisso");
+        legado(-3);
+        try { if (typeof addEscandalo === "function") addEscandalo(2); } catch (e) {}
+        rastro(f, "O relatório passou em branco. A CPI virou pizza por omissão.");
+        if (typeof manchete === "function") manchete("CPI da omissão: o relatório venceu e ninguém assinou.", "cpi");
+      } else if (f.cpi.fase === "relatorio" && !f.cpi.relatorio && f.cpi.escolha && f.cpi.meses >= 3) {
+        encerrar(f, "passou");
+        rastro(f, "A janela da cassação passou. A CPI encerrou sem pedido.");
+        if (typeof manchete === "function") manchete("A CPI encerrou: a cassação passou e ninguém pediu.", "cpi");
+      }
+    }
+    if (f.vinganca && !f.vinganca.aberta && mesKey() >= f.vinganca.mes) {
+      if (!f.cpi || f.cpi.encerrada) abrirComoAlvo(f, f.vinganca.motivo || "a CPI que você conduziu voltou");
+      f.vinganca.aberta = true;
+    }
+    f.redes.palco = null;
+    f.redes.tom = null;
+  }
+  function checarAlvo(f) {
+    if (f.cpi && !f.cpi.encerrada) return;
+    var esc = 0;
+    try { esc = J().escandalo || 0; } catch (e) {}
+    if (esc < 25) return;
+    if (f.alvoAutoMes === mesKey()) return;
+    f.alvoAutoMes = mesKey();
+    abrirComoAlvo(f, "escândalo e quebra de decoro");
+  }
+  function sync() {
+    if (!legislador()) return null;
+    var f = fase();
+    if (!f) return null;
+    var k = mesKey();
+    if (f.mes !== k) {
+      if (f.mes != null) virada(f);
+      f.mes = k;
+      f.pautaMes = PAUTAS[(Math.max(1, mesNum()) - 1) % PAUTAS.length];
+      var dig = digital(f);
+      var ant = f.meses.length ? f.meses[f.meses.length - 1] : "";
+      if (ant && ant === dig) {
+        f.pautaMes = "Reviravolta: o mês repetiu a pauta e a imprensa cobrou outro corte.";
+        dig = digital(f);
+      }
+      f.meses.push(dig);
+      if (f.meses.length > 48) f.meses = f.meses.slice(-48);
+    }
+    checarAlvo(f);
+    return f;
+  }
+  function priorizarFeed() {
+    try {
+      var f = fase();
+      if (!f || !f._priorizar) return;
+      f._priorizar -= 1;
+      var feed = M().feedMes || [];
+      var topo = [];
+      var resto = [];
+      feed.forEach(function (x) {
+        if (x && /CPI|pizza|lacrou|bate-boca|dossiê|cassação|representação|você é o alvo|Teatro das redes/i.test(x.txt || "")) topo.push(x);
+        else resto.push(x);
+      });
+      if (topo.length) M().feedMes = topo.concat(resto);
+    } catch (e) {}
+  }
+
+  A.fase4Abrir = function () {
+    var f = sync();
+    if (!f) return;
+    if (f.cpi && !f.cpi.encerrada) { if (typeof toast === "function") toast("Já existe uma CPI neste mandato.", "err"); return; }
+    if (!gastarAtencao("abrir a CPI")) return;
+    var alvo = alvoFicticio();
+    if (!alvo) { if (typeof toast === "function") toast("Não há adversário fictício para a CPI.", "err"); return; }
+    f.cpi = {
+      papel: "autor",
+      fase: "assinaturas",
+      instalada: false,
+      encerrada: false,
+      meses: 0,
+      motivo: f.pautaMes || "suspeitas no mandato",
+      alvoId: alvo.id,
+      alvoNome: alvo.nome,
+      assinaturas: 0,
+      precisa: precisaAss(),
+      convocados: 0,
+      blindada: false,
+      dossie: false,
+      escolha: null,
+      relatorio: null,
+      evidencia: 15,
+      antecipado: false,
+      cpiId: null
+    };
+    rastro(f, "Abriu CPI contra " + alvo.nome + ". Faltam assinaturas.");
+    if (typeof toast === "function") toast("CPI aberta. Agora as assinaturas.", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase4Assinatura = function () {
+    var f = sync();
+    if (!f || !f.cpi || f.cpi.encerrada || f.cpi.papel !== "autor") return;
+    if (f.cpi.instalada) { if (typeof toast === "function") toast("A CPI já está instalada.", "err"); return; }
+    if (!gastarAtencao("buscar assinatura da CPI")) return;
+    f.cpi.assinaturas += 3;
+    if (f.cpi.assinaturas >= f.cpi.precisa) {
+      instalar(f);
+      if (typeof toast === "function") toast("Assinaturas fechadas. CPI instalada.", "ok");
+    } else if (typeof toast === "function") toast("Assinaturas: " + f.cpi.assinaturas + "/" + f.cpi.precisa + ".", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase4Dossie = function () {
+    var f = sync();
+    if (!f || !f.cpi || f.cpi.encerrada) return;
+    if (f.cpi.dossie) { if (typeof toast === "function") toast("O dossiê já está na gaveta.", "err"); return; }
+    if (!gastarCapital(8, "Montar o dossiê")) return;
+    var j = J();
+    j.gaveta_dossies = j.gaveta_dossies || [];
+    j.gaveta_dossies.push({ id: "dos" + mesKey(), alvo: f.cpi.alvoNome, mes: mesKey(), tipo: "cpi" });
+    f.cpi.dossie = true;
+    rastro(f, "Dossiê de " + f.cpi.alvoNome + " foi para a gaveta.");
+    if (typeof manchete === "function") manchete("Dossiê na gaveta. Sem ele, o depoimento técnico não existe.", "cpi");
+    if (typeof toast === "function") toast("Dossiê guardado. Custa capital e volta como prova.", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase4Convocar = function () {
+    var f = sync();
+    if (!f || !f.cpi || f.cpi.papel !== "autor" || f.cpi.fase !== "instalada") return;
+    if (!gastarAtencao("convocar")) return;
+    f.cpi.convocados = (f.cpi.convocados || 0) + 1;
+    rastro(f, "Convocou depoente. A oitiva fica para o mês que vem.");
+    if (typeof manchete === "function") manchete("Convocação expedida. O depoimento entra no mês que vem.", "cpi");
+    if (typeof toast === "function") toast("Convocado. Sem antecipar, a oitiva é no mês seguinte.", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase4Antecipar = function () {
+    var f = sync();
+    if (!f || !f.cpi || f.cpi.fase !== "instalada") { if (typeof toast === "function") toast("Só dá para antecipar depois de instalar a CPI.", "err"); return; }
+    if (!gastarCapital(6, "Antecipar o depoimento")) return;
+    f.cpi.fase = "depoimento";
+    f.cpi.antecipado = true;
+    f.cpi.convocados = Math.max(1, f.cpi.convocados || 0);
+    rastro(f, "Antecipou o depoimento pagando capital.");
+    if (typeof manchete === "function") manchete("Depoimento antecipado. A CPI queimou um mês de capital.", "cpi");
+    if (typeof toast === "function") toast("Depoimento na mesa. Escolha o tom.", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase4Blindar = function () {
+    var f = sync();
+    if (!f || !f.cpi || f.cpi.papel !== "alvo" || f.cpi.encerrada) return;
+    if (f.cpi.blindada) { if (typeof toast === "function") toast("A convocação já está blindada.", "err"); return; }
+    if (!gastarCapital(8, "Blindar")) return;
+    f.cpi.blindada = true;
+    f.cpi.evidencia = Math.max(0, (f.cpi.evidencia || 0) - 12);
+    try { relPartido(4); } catch (e) {}
+    rastro(f, "Blindou a convocação. A evidência caiu e o Centrão anotou o favor.");
+    divida("Centrão", "a blindagem da CPI");
+    if (typeof manchete === "function") manchete("Blindagem: a convocação esfria e o Centrão cobra depois.", "cpi");
+    if (typeof toast === "function") toast("Convocação blindada. A dívida volta.", "ok");
+    try { render(); } catch (e2) {}
+  };
+
+  A.fase4Depoimento = function (acao) {
+    var f = sync();
+    if (!f || !f.cpi || f.cpi.encerrada) return;
+    if (f.cpi.fase !== "depoimento" && f.cpi.fase !== "relatorio") {
+      if (typeof toast === "function") toast("O depoimento ainda não está na mesa.", "err");
+      return;
+    }
+    if (f.cpi.escolha) { if (typeof toast === "function") toast("Este depoimento já teve escolha.", "err"); return; }
+    var f1 = M().leg && M().leg.fase1;
+    if (acao === "dossie" && !f.cpi.dossie) {
+      if (typeof toast === "function") toast("Apertar com dossiê exige o dossiê na gaveta.", "err");
+      return;
+    }
+    if (!gastarAtencao("o depoimento")) return;
+    if (acao === "lacrar") {
+      f.cpi.escolha = "lacrou";
+      if (f1) {
+        f1.relMovimento = clamp((f1.relMovimento || 50) + 8, 0, 100);
+        f1.relGoverno = clamp((f1.relGoverno || 40) - 6, 0, 100);
+      }
+      try { relPartido(-8); } catch (e) {}
+      f.redes.seguidores = (f.redes.seguidores || 0) + 10 * escala();
+      f.cpi.evidencia = (f.cpi.evidencia || 0) + 8;
+      try { if (typeof addEscandalo === "function") addEscandalo(2); } catch (e2) {}
+      rastro(f, "Lacrou no depoimento. A base radical subiu; Centrão e governo caíram.");
+      if (typeof manchete === "function") manchete(J().nome + " lacra na CPI. A base aplaude e as pontes institucionais esfriam.", "cpi");
+      if (typeof toast === "function") toast("Lacrou. Base sobe, Centrão e governo descem.", "ok");
+    } else if (acao === "dossie") {
+      f.cpi.escolha = "dossie";
+      f.cpi.evidencia = (f.cpi.evidencia || 0) + 22;
+      influencia(4);
+      try { relPartido(-2); } catch (e3) {}
+      rastro(f, "Apertou o depoimento com o dossiê da gaveta.");
+      if (typeof manchete === "function") manchete("Depoimento técnico: o dossiê da gaveta segurou o relatório.", "cpi");
+      if (typeof toast === "function") toast("Dossiê usado. A evidência subiu.", "ok");
+    } else if (acao === "pizza") {
+      f.cpi.escolha = "pizza";
+      if (f1) {
+        f1.capital = clamp((f1.capital || 0) + 5, 0, f1.capitalMax || 100);
+        if (f1.historico) f1.historico.emendas = (f1.historico.emendas || 0) + 1;
+      }
+      legado(-4);
+      try { if (typeof addIEO === "function") addIEO(6); } catch (e4) {}
+      try { if (typeof addEscandalo === "function") addEscandalo(3); } catch (e5) {}
+      divida("Quem comprou o relatório", "o cargo prometido em troca da pizza da CPI");
+      var alvo = null;
+      try { alvo = typeof npcPorId === "function" ? npcPorId(f.cpi.alvoId) : null; } catch (e6) {}
+      if (alvo && alvo.id) { try { relNPC(alvo, -20); addInimigo(alvo.id); } catch (e7) {} }
+      encerrar(f, "pizza");
+      agendarVinganca(f, "venderam o relatório e o alvo devolveu");
+      rastro(f, "Vendeu o relatório. Cargo, emenda e uma vingança no mês que vem.");
+      if (typeof manchete === "function") manchete("CPI da pizza: o relatório foi vendido por cargo e emenda.", "cpi");
+      if (typeof toast === "function") toast("Pizza. Entra emenda e sai reputação.", "err");
+    }
+    f._priorizar = 6;
+    try { render(); } catch (e8) {}
+  };
+
+  A.fase4Cassar = function () {
+    var f = sync();
+    if (!f || !f.cpi || f.cpi.papel !== "autor" || f.cpi.encerrada) return;
+    if (f.cpi.escolha !== "lacrou" && f.cpi.escolha !== "dossie") {
+      if (typeof toast === "function") toast("A cassação só abre se o depoimento não virou pizza.", "err");
+      return;
+    }
+    if (!gastarCapital(6, "Pedir a cassação")) return;
+    var alvo = null;
+    try { alvo = typeof npcPorId === "function" ? npcPorId(f.cpi.alvoId) : null; } catch (e) {}
+    if (alvo && !alvo.real) {
+      alvo.papel = "Cassado(a) pela CPI";
+      alvo.cpiCassado = true;
+      alvo.popularidade = clamp((alvo.popularidade || 40) - 20, 0, 100);
+      try { addInimigo(alvo.id); relNPC(alvo, -30); } catch (e2) {}
+    } else if (alvo) {
+      try { relNPC(alvo, -25); addInimigo(alvo.id); } catch (e3) {}
+    }
+    legado(6);
+    var moral = f.cpi.escolha === "dossie" ? 1 : 4;
+    try { if (typeof addEscandalo === "function") addEscandalo(moral); } catch (e4) {}
+    encerrar(f, "cassou");
+    agendarVinganca(f, "a cassação voltou como vingança");
+    rastro(f, "Pediu a cassação de " + (f.cpi.alvoNome || "o alvo") + ". A vingança volta no mês que vem.");
+    f._priorizar = 6;
+    if (typeof manchete === "function") manchete("A CPI pede a cassação de " + (alvo ? alvo.nome : "o alvo") + ". A moral sobe e a vingança fica marcada.", "cpi");
+    if (typeof toast === "function") toast("Cassação pedida. O legado sobe. O mês que vem cobra.", "ok");
+    try { render(); } catch (e5) {}
+  };
+
+  A.fase4Rede = function (palco, tom) {
+    var f = sync();
+    if (!f) return;
+    if (PALCOS.indexOf(palco) < 0 || (tom !== "polido" && tom !== "bateboca")) return;
+    if (f.redes.mesFeito === mesKey()) { if (typeof toast === "function") toast("Já houve corte neste mês. O próximo muda de palco.", "err"); return; }
+    if (!gastarAtencao("o corte")) return;
+    var daVez = palco === palcoDoMes(mesNum());
+    var extra = daVez ? 2 : 0;
+    f.redes.mesFeito = mesKey();
+    f.redes.palco = palco;
+    f.redes.tom = tom;
+    var f1 = M().leg && M().leg.fase1;
+    if (tom === "polido") {
+      f.redes.respeitoMesa = clamp((f.redes.respeitoMesa || 40) + 6 + (palco === "comissao" ? 3 : 0) + extra, 0, 100);
+      f.redes.respeitoJud = clamp((f.redes.respeitoJud || 40) + 4 + (palco === "ccj" ? 6 : 0) + extra, 0, 100);
+      f.redes.seguidores = (f.redes.seguidores || 0) + 2;
+      influencia(2);
+      rastro(f, "Corte polido na " + NOME_PALCO[palco] + ". A Mesa e o Judiciário respeitam. A rede quase não anda.");
+      if (typeof manchete === "function") manchete("Teatro das redes: corte polido na " + NOME_PALCO[palco] + ". Respeito sobe, tração fica no chão.", "imprensa");
+      if (typeof toast === "function") toast("Polido. Respeito alto, poucos seguidores.", "ok");
+    } else {
+      var seg = (palco === "tribuna" ? 16 : 12) + extra;
+      f.redes.seguidores = (f.redes.seguidores || 0) + seg;
+      f.redes.respeitoMesa = clamp((f.redes.respeitoMesa || 40) - 5, 0, 100);
+      f.redes.respeitoJud = clamp((f.redes.respeitoJud || 40) - (palco === "ccj" ? 8 : 3), 0, 100);
+      var j = J();
+      if (j.financas) j.financas.campanha = (j.financas.campanha || 0) + 12000;
+      f.redes.representacao = true;
+      try { if (typeof addEscandalo === "function") addEscandalo(palco === "ccj" ? 4 : 3); } catch (e) {}
+      if (f1) f1.relMovimento = clamp((f1.relMovimento || 50) + 4, 0, 100);
+      divida("Mesa e corregedoria", "a representação que o bate-boca na " + NOME_PALCO[palco] + " gerou");
+      rastro(f, "Bate-boca na " + NOME_PALCO[palco] + ". Seguidores e doação sobem. A representação fica para o mês que vem.");
+      if (typeof manchete === "function") manchete("Teatro das redes: bate-boca na " + NOME_PALCO[palco] + " vira manchete nacional. A representação vem depois.", "imprensa");
+      if (typeof toast === "function") toast("Bate-boca. Entram seguidor e doação. Sai representação.", "err");
+    }
+    f._priorizar = 5;
+    try { render(); } catch (e2) {}
+  };
+
+  function etapaTag(c, id, nome) {
+    var on = c && c.fase === id;
+    var feito = false;
+    if (c) {
+      var ordem = ["assinaturas", "instalada", "depoimento", "relatorio", "encerrada"];
+      feito = ordem.indexOf(c.fase) > ordem.indexOf(id);
+    }
+    return "<span class=\"tag" + (on ? " ok" : "") + "\">" + nome + (feito ? " · feito" : "") + "</span>";
+  }
+  function htmlCpi(f) {
+    var c = f.cpi;
+    var corpo = "";
+    if (!c || c.encerrada) {
+      var fim = c && c.encerrada ? "<p class=\"txt\">Última CPI: <b>" + E(c.relatorio || "encerrada") + "</b> · alvo " + E(c.alvoNome || "") + ".</p>" : "";
+      corpo = "<p class=\"txt\">Nenhuma CPI aberta. Articular assinatura custa atenção. Ser alvo chega com escândalo alto ou como vingança no mês seguinte.</p>"
+        + fim
+        + "<div class=\"stack\" style=\"gap:6px\">" + btn("Abrir CPI contra um adversário", "fase4Abrir", [], "confirma") + "</div>";
+    } else {
+      var etapas = etapaTag(c, "assinaturas", "Assinaturas") + " " + etapaTag(c, "instalada", "Convocação") + " " + etapaTag(c, "depoimento", "Depoimento") + " " + etapaTag(c, "relatorio", "Relatório");
+      corpo = "<p class=\"txt\">" + etapas + "</p>"
+        + "<p class=\"txt\"><b>" + (c.papel === "alvo" ? "Você é o alvo." : "Alvo: " + E(c.alvoNome)) + "</b> " + E(c.motivo || "") + "</p>"
+        + "<p class=\"txt\">Mês <b>" + (c.meses || 0) + "</b> da CPI"
+        + (c.cpiId ? " · registrada como " + E(c.cpiId) : "")
+        + ". Evidência: <b>" + (c.evidencia || 0) + "</b>."
+        + (c.dossie ? " Dossiê na gaveta." : " Gaveta sem dossiê.")
+        + (c.blindada ? " Convocação blindada." : "")
+        + (c.antecipado ? " Depoimento antecipado com capital." : "")
+        + "</p>";
+      if (c.papel === "autor" && !c.instalada) {
+        corpo += "<p class=\"txt\">Assinaturas <b>" + c.assinaturas + "/" + c.precisa + "</b>. Cada leva custa atenção e traz 3 nomes.</p>"
+          + "<div class=\"stack\" style=\"gap:6px\">" + btn("Buscar assinaturas", "fase4Assinatura", [], "confirma") + "</div>";
+      }
+      if (c.fase === "instalada" && c.papel === "autor") {
+        corpo += "<p class=\"txt\">Instalada. Convocar deixa a oitiva para o mês que vem. Antecipar queima capital e abre o depoimento agora.</p>"
+          + "<div class=\"stack\" style=\"gap:6px\">"
+          + btn("Convocar o depoente", "fase4Convocar", [], "mini")
+          + btn("Antecipar o depoimento (6 de capital)", "fase4Antecipar", [], "confirma")
+          + "</div>";
+      }
+      if (c.papel === "alvo" && !c.blindada && !c.escolha) {
+        corpo += "<div class=\"stack\" style=\"gap:6px\">" + btn("Blindar a convocação (8 de capital)", "fase4Blindar", [], "mini confirma") + "</div>";
+      }
+      if (!c.dossie && !c.escolha) {
+        corpo += "<div class=\"stack\" style=\"gap:6px\">" + btn("Montar dossiê na gaveta (8 de capital)", "fase4Dossie", [], "mini") + "</div>";
+      }
+      if ((c.fase === "depoimento" || c.fase === "relatorio") && !c.escolha) {
+        corpo += "<p class=\"txt\"><b>Depoimento.</b> Nenhuma escolha é de graça. Lacrar sobe a base radical e derruba Centrão e governo. O dossiê só aperta se estiver na gaveta. A pizza troca o relatório por cargo e emenda.</p>"
+          + "<div class=\"stack\" style=\"gap:6px\">"
+          + btn("Lacrar para as redes", "fase4Depoimento", ["lacrar"], "corrige")
+          + btn("Apertar com o dossiê", "fase4Depoimento", ["dossie"], "confirma", !c.dossie)
+          + btn("Vender o relatório (pizza)", "fase4Depoimento", ["pizza"], "mini corrige")
+          + "</div>";
+      }
+      if (c.escolha && !c.relatorio && c.papel === "autor") {
+        corpo += "<p class=\"txt\">Depoimento: <b>" + E(c.escolha) + "</b>. Pedir a cassação custa capital, rende moral e marca vingança para o mês que vem.</p>"
+          + "<div class=\"stack\" style=\"gap:6px\">" + btn("Pedir a cassação (6 de capital)", "fase4Cassar", [], "corrige") + "</div>";
+      }
+      if (c.escolha && c.papel === "alvo") {
+        corpo += "<p class=\"txt\">Você depôs como alvo: <b>" + E(c.escolha) + "</b>.</p>";
+      }
+    }
+    if (f.vinganca && !f.vinganca.aberta) {
+      corpo += "<p class=\"txt\">Vingança marcada: " + E(f.vinganca.motivo) + ".</p>";
+    }
+    var ultimo = f.rastro && f.rastro.length ? f.rastro[f.rastro.length - 1].txt : "";
+    return "<section class=\"card acc\" id=\"fase4-cpi\"><h3>CPI de vários meses</h3>"
+      + "<p class=\"txt\" id=\"fase4-pauta\">" + E(f.pautaMes || "") + "</p>"
+      + corpo
+      + (ultimo ? "<p class=\"txt\">Rastro: " + E(ultimo) + "</p>" : "")
+      + "</section>";
+  }
+
+  function htmlRedes(f) {
+    var vez = palcoDoMes(mesNum());
+    var nomeMes = "";
+    try { nomeMes = (typeof MESES !== "undefined" && MESES && MESES[mesNum()]) || ""; } catch (e) {}
+    var feito = f.redes.mesFeito === mesKey();
+    var botoes = PALCOS.map(function (p) {
+      var marca = p === vez ? " · da vez" : "";
+      return "<div class=\"stack\" style=\"gap:6px\">"
+        + btn(NOME_PALCO[p] + marca + " · polido", "fase4Rede", [p, "polido"], "mini", feito)
+        + btn(NOME_PALCO[p] + marca + " · bate-boca", "fase4Rede", [p, "bateboca"], "mini corrige", feito)
+        + "</div>";
+    }).join("");
+    var resultado = "";
+    if (feito && f.redes.tom) {
+      resultado = "<p class=\"txt\"><b>Corte deste mês:</b> " + E(NOME_PALCO[f.redes.palco] || "") + " · " + (f.redes.tom === "polido" ? "polido" : "bate-boca") + ".</p>";
+    }
+    return "<section class=\"card acc\" id=\"fase4-redes\"><h3>Teatro das redes</h3>"
+      + "<p class=\"txt\">Corte da vez em " + E(nomeMes || "janeiro") + ": <b>" + E(NOME_PALCO[vez]) + "</b>. O palco muda todo mês. Polido rende respeito da Mesa e do Judiciário e perde tração. Bate-boca rende seguidor, doação e manchete, e abre representação.</p>"
+      + "<p class=\"txt\">Seguidores do corte: <b>" + (f.redes.seguidores || 0) + "</b>. Respeito da Mesa: <b>" + (f.redes.respeitoMesa || 0) + "</b>. Respeito do Judiciário: <b>" + (f.redes.respeitoJud || 0) + "</b>."
+      + (f.redes.representacao ? " Há representação em aberto." : "")
+      + "</p>"
+      + botoes
+      + resultado
+      + "</section>";
+  }
+  function html() {
+    var f = sync();
+    if (!f) return "";
+    return htmlCpi(f) + htmlRedes(f);
+  }
+  function injetar(h) {
+    h = h || "";
+    if (String(h).indexOf("fase4-cpi") >= 0) return h;
+    var extra = "";
+    try { extra = html(); } catch (e) { console.warn("fase4", e); }
+    if (!extra) return h;
+    return extra + h;
+  }
+
+  if (typeof VIEWS !== "undefined" && typeof VIEWS.mes === "function" && !VIEWS.mes._fase4) {
+    var _vm = VIEWS.mes;
+    VIEWS.mes = function () { return injetar(_vm.apply(this, arguments) || ""); };
+    VIEWS.mes._fase4 = true;
+    VIEWS.mes._fase3 = true;
+    VIEWS.mes._fase2 = true;
+    VIEWS.mes._fase1 = true;
+    VIEWS.mes._navhGuard = true;
+  }
+  if (typeof VIEWS !== "undefined" && typeof VIEWS.poder === "function" && !VIEWS.poder._fase4) {
+    var _vp = VIEWS.poder;
+    VIEWS.poder = function () { return injetar(_vp.apply(this, arguments) || ""); };
+    VIEWS.poder._fase4 = true;
+    VIEWS.poder._fase3 = true;
+    VIEWS.poder._fase2 = true;
+    if (_vp._obras) VIEWS.poder._obras = true;
+    if (_vp._fase1) VIEWS.poder._fase1 = true;
+  }
+  if (typeof render === "function" && !render._fase4) {
+    var _rd = render;
+    render = function () {
+      try { sync(); } catch (e) {}
+      var out = _rd.apply(this, arguments);
+      try { priorizarFeed(); } catch (e2) {}
+      return out;
+    };
+    render._fase4 = true;
+    window.render = render;
+  }
+  if (typeof avancarMes === "function" && !avancarMes._fase4) {
+    var _av = avancarMes;
+    avancarMes = function () {
+      var r = _av.apply(this, arguments);
+      try { sync(); priorizarFeed(); } catch (e) {}
+      return r;
+    };
+    avancarMes._fase4 = true;
+    avancarMes._fase3 = true;
+    avancarMes._fase2 = true;
+    avancarMes._fase1 = true;
+    if (_av._plOrigem) avancarMes._plOrigem = true;
+    window.avancarMes = avancarMes;
+  }
+  if (typeof carregarStr === "function" && !carregarStr._fase4) {
+    var _cs = carregarStr;
+    carregarStr = function (s) {
+      var ok = _cs.apply(this, arguments);
+      try { if (ok) sync(); } catch (e) {}
+      return ok;
+    };
+    carregarStr._fase4 = true;
+    window.carregarStr = carregarStr;
+  }
+})();
+</script>
 </body>
 </html>
