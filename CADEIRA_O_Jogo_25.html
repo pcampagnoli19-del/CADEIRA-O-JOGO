@@ -38667,5 +38667,944 @@ document.addEventListener("click", function(e){
 })();
 
 </script>
+<script>
+/* Fase 3 do legislativo: bancada, escada, ética, calendário e verbo por cargo.
+   Estende as fases 1 e 2. Não mexe no executivo nem na CPI. */
+(function () {
+  if (window._fase3Leg) return;
+  window._fase3Leg = true;
+
+  var ORDEM = ["votante", "membro", "pres_comissao", "lider_bancada", "lider_partido", "mesa", "presidente"];
+  var NOME_DEGRAU = {
+    votante: "Votante",
+    membro: "Membro de comissão",
+    pres_comissao: "Presidente de comissão",
+    lider_bancada: "Líder de bancada",
+    lider_partido: "Líder de partido",
+    mesa: "Mesa Diretora",
+    presidente: "Presidente da Casa"
+  };
+  var PODER_DEGRAU = {
+    votante: "Vota no plenário. Ainda não manda na pauta.",
+    membro: "Entra na comissão e lê o parecer antes do plenário.",
+    pres_comissao: "Nomeia o relator da comissão.",
+    lider_bancada: "Orienta o voto da bancada.",
+    lider_partido: "Distribui o fundo e as comissões nobres.",
+    mesa: "Mexe no orçamento da Casa.",
+    presidente: "Decide o que vai a voto e o que fica na gaveta, inclusive impeachment."
+  };
+  var TEXTOS_QUESTAO = [
+    "O líder fecha questão: votar com o governo num projeto que a sua base rejeita.",
+    "O líder fecha questão contra o aumento que o movimento de base cobra.",
+    "O líder fecha questão para engavetar a emenda do seu curral."
+  ];
+
+  function vivo() {
+    try { return typeof gameState !== "undefined" && !!gameState && typeof M === "function" && !!M() && typeof J === "function" && !!J(); }
+    catch (e) { return false; }
+  }
+  function legislador() {
+    try { return vivo() && typeof ehLegislador === "function" && ehLegislador(); }
+    catch (e) { return false; }
+  }
+  function mesKey() {
+    try { return typeof agoraM === "function" ? agoraM() : 0; }
+    catch (e) { return 0; }
+  }
+  function cargo() {
+    try { return typeof cargoAtualId === "function" ? cargoAtualId() : ""; }
+    catch (e) { return ""; }
+  }
+  function clamp(n, a, b) {
+    n = Math.round(Number(n) || 0);
+    if (n < a) return a;
+    if (n > b) return b;
+    return n;
+  }
+  function E(s) {
+    try { if (typeof esc === "function") return esc(s == null ? "" : String(s)); }
+    catch (e) {}
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function idxDegrau(id) {
+    var i = ORDEM.indexOf(id);
+    return i < 0 ? 0 : i;
+  }
+  function casaCod() {
+    try { return typeof casaCodDoCargo === "function" ? casaCodDoCargo() : null; }
+    catch (e) { return null; }
+  }
+
+  function shell() {
+    return {
+      v: 1,
+      mes: null,
+      degrau: "votante",
+      assinaturas: 0,
+      assinaturasPrecisa: 5,
+      lideranca: false,
+      questao: null,
+      etica: null,
+      fundoGarantido: true,
+      comissoesNobres: true,
+      corteFundo: 0,
+      pico: null,
+      relatorComissao: null,
+      orcamentoCasa: false,
+      verbaCasa: false,
+      impeachmentPautado: null,
+      travaAte: null,
+      travaAlvo: null,
+      sabatina: null,
+      indicacao: null,
+      verboUltimo: null,
+      verboCargo: null,
+      recessoAcoes: { base: false, empresario: false, articulacao: false },
+      emendaOrcamento: false,
+      pautaEscandaloMes: null,
+      escalaBloqueada: null,
+      rastro: [],
+      _priorizar: 0
+    };
+  }
+  function normalizar(f) {
+    var b = shell();
+    Object.keys(b).forEach(function (k) { if (f[k] == null) f[k] = b[k]; });
+    if (!f.recessoAcoes || typeof f.recessoAcoes !== "object") f.recessoAcoes = { base: false, empresario: false, articulacao: false };
+    if (!Array.isArray(f.rastro)) f.rastro = [];
+    if (ORDEM.indexOf(f.degrau) < 0) f.degrau = "votante";
+  }
+  function fase() {
+    if (!legislador()) return null;
+    var L = M().leg = M().leg || {};
+    if (!L.fase3 || typeof L.fase3 !== "object") L.fase3 = shell();
+    normalizar(L.fase3);
+    return L.fase3;
+  }
+
+  function terrs() {
+    var c = cargo();
+    var grupo = c === "SEN" ? "SP" : (c === "DEPE" || c === "DEPF" ? "ABC" : "Mauá");
+    var lista = (typeof TERRITORIOS !== "undefined" && TERRITORIOS) || [];
+    return lista.filter(function (t) { return t && t.grupo === grupo; });
+  }
+  function terrBase() {
+    var lista = terrs();
+    return lista.length ? lista[0] : null;
+  }
+  function aprovDe(id) {
+    try { return Math.round((J().aprovacao && J().aprovacao[id]) || 0); }
+    catch (e) { return 0; }
+  }
+  function precisaAssinaturas() {
+    var c = cargo();
+    if (c === "VER") return 5;
+    if (c === "SEN") return 8;
+    if (c === "DEPF") return 15;
+    return 11;
+  }
+  function chefeExec() {
+    var c = cargo();
+    if (c === "VER") return "o prefeito de Mauá";
+    if (c === "DEPE") return "o governador de SP";
+    return "o presidente da República";
+  }
+  function cpiAberta() {
+    try {
+      var cs = (M().cpis) || [];
+      for (var i = 0; i < cs.length; i++) if (cs[i] && cs[i].status === "ATIVA") return true;
+    } catch (e) {}
+    return false;
+  }
+  function classificarPico(mes, ano, esc, cpi) {
+    if ((esc || 0) >= 30) return "escandalo";
+    if (mes === 1 || mes === 7) return "recesso";
+    if (mes === 10) return "orcamento";
+    var t = null;
+    try { t = typeof tipoEleicao === "function" ? tipoEleicao(ano) : null; } catch (e) {}
+    if (t && (mes === 3 || mes === 4)) return "janela";
+    if (t && mes >= 8) return "eleicao";
+    if (cpi) return "cpi";
+    return "ordinario";
+  }
+  function picoDoMes() {
+    var d = { mes: 1, ano: 2026 };
+    try { d = dt() || d; } catch (e) {}
+    var esc = 0;
+    try { esc = J().escandalo || 0; } catch (e2) {}
+    return classificarPico(d.mes, d.ano, esc, cpiAberta());
+  }
+  window.fase3Pico = classificarPico;
+
+  function gastarAtencao(rotulo) {
+    var f1 = M().leg && M().leg.fase1;
+    if (f1 && typeof f1.pontos === "number" && f1.pontos >= 1) { f1.pontos -= 1; return true; }
+    if (f1 && typeof f1.capital === "number" && f1.capital >= 4) {
+      f1.capital -= 4;
+      if (typeof toast === "function") toast(rotulo + " saiu do capital político (4).", "ok");
+      return true;
+    }
+    if (typeof toast === "function") toast("Sem ponto de ação nem capital para " + rotulo + ".", "err");
+    return false;
+  }
+  function divida(quem, oque) {
+    var f1 = M().leg && M().leg.fase1;
+    if (!f1) return;
+    if (!Array.isArray(f1.dividas)) f1.dividas = [];
+    f1.seq = (f1.seq || 0) + 1;
+    f1.dividas.push({
+      id: "dv" + f1.seq,
+      quem: quem,
+      oque: oque,
+      prazoMes: mesKey() + 1,
+      valor: 8,
+      tipo: "devo",
+      cobrada: false,
+      paga: false
+    });
+  }
+  function influencia(n) {
+    var f1 = M().leg && M().leg.fase1;
+    if (f1) f1.influencia = clamp((f1.influencia || 0) + n, 0, 100);
+  }
+  function rastro(f, txt) {
+    if (!f.rastro) f.rastro = [];
+    f.rastro.push({ mes: mesKey(), txt: txt });
+    if (f.rastro.length > 12) f.rastro = f.rastro.slice(-12);
+  }
+  function melhorNPC() {
+    var best = null;
+    var lista = (typeof bancoDeNPCs !== "undefined" && bancoDeNPCs) || [];
+    for (var i = 0; i < lista.length; i++) {
+      var n = lista[i];
+      if (!n || !n.vivo || n.jogador) continue;
+      if (!best || (n.relacao_com_jogador || 0) > (best.relacao_com_jogador || 0)) best = n;
+    }
+    return best;
+  }
+  function textoPico(p) {
+    var nomeMes = "";
+    try { nomeMes = (typeof MESES !== "undefined" && MESES && MESES[dt().mes]) || ""; } catch (e) {}
+    if (p === "recesso") return "Pico do calendário: recesso de " + (nomeMes || "janeiro") + ". A Casa para. O mês é da base, do empresário e da articulação.";
+    if (p === "orcamento") return "Pico do calendário: mês de orçamento. A emenda vale o dobro. Esse é o poder do deputado.";
+    if (p === "janela") return "Pico do calendário: janela partidária. Trocar de sigla custa as comissões e rende base nova e fundo novo.";
+    if (p === "eleicao") return "Pico do calendário: ano eleitoral. O mês pesa voto, não pauta miúda.";
+    if (p === "escandalo") return "Pico do calendário: escândalo. A pauta do mês foi reescrita.";
+    if (p === "cpi") return "Pico do calendário: CPI já aberta pesa no mês. Depoimento e relatório ficam para outra fase.";
+    return "Mês ordinário. A questão fechada e a escada continuam na mesa.";
+  }
+  function multOrcamento() {
+    return picoDoMes() === "orcamento" ? 2 : 1;
+  }
+
+  function penalidadeOmissao(f) {
+    try { if (typeof relPartido === "function") relPartido(-4); } catch (e) {}
+    var t = terrBase();
+    if (t) { try { mudarAprov(t.id, -1); } catch (e2) {} }
+    var f1 = M().leg && M().leg.fase1;
+    if (f1) f1.relMovimento = clamp((f1.relMovimento || 50) - 3, 0, 100);
+    if (f.questao) f.questao.resolvida = "omisso";
+    rastro(f, "Não respondeu à questão fechada. Partido e base cobraram a omissão.");
+    if (typeof manchete === "function") manchete("Você não respondeu à questão fechada. Partido e base cobram a omissão.", "partido");
+  }
+  function novaQuestao(f, k) {
+    f.questao = {
+      mes: k,
+      texto: TEXTOS_QUESTAO[Math.abs(k) % TEXTOS_QUESTAO.length],
+      resolvida: null
+    };
+    f._priorizar = Math.max(f._priorizar || 0, 5);
+    if (typeof manchete === "function") manchete("O líder fecha questão contra a sua base.", "partido");
+  }
+  function reescreverPauta(f) {
+    if (f.pico !== "escandalo") return;
+    var k = mesKey();
+    if (f.pautaEscandaloMes === k) return;
+    var f1 = M().leg && M().leg.fase1;
+    if (!f1 || !Array.isArray(f1.agenda)) return;
+    f.pautaEscandaloMes = k;
+    f1.agenda.unshift({
+      id: "esc-" + k,
+      origem: "imprensa",
+      quem: "Imprensa",
+      titulo: "Escândalo reescreve a pauta do mês",
+      detalhe: "O caso tomou a semana. Ignorar a crise custa a pauta inteira.",
+      tipo: "midia",
+      custoPontos: 1,
+      atendida: false,
+      faltou: false
+    });
+    rastro(f, "Escândalo reescreveu a pauta do mês.");
+    if (typeof manchete === "function") manchete("Escândalo reescreve a pauta do mês.", "imprensa");
+  }
+  function checarEtica(f) {
+    if (f.etica && f.etica.aberto) return;
+    var esc = 0;
+    try { esc = J().escandalo || 0; } catch (e) {}
+    if (esc < 20) return;
+    f.etica = { aberto: true, meses: 0, votosComprados: 0, resolvido: null, defesaPaga: false, abertoMes: mesKey() };
+    f._priorizar = Math.max(f._priorizar || 0, 5);
+    if (typeof manchete === "function") manchete("O Conselho de Ética abre processo de cassação por quebra de decoro.", "etica");
+  }
+  function virada(f) {
+    if (f.questao && !f.questao.resolvida) penalidadeOmissao(f);
+    if (f.etica && f.etica.aberto && !f.etica.resolvido) {
+      f.etica.meses = (f.etica.meses || 0) + 1;
+      f.etica.defesaPaga = false;
+      if (f.etica.meses >= 3) {
+        f.etica.resolvido = "cassado";
+        f.etica.aberto = false;
+        rastro(f, "Conselho de Ética cassou o mandato.");
+        try { if (typeof perderCargo === "function") perderCargo("cassação pelo Conselho de Ética"); } catch (e) {}
+      }
+    }
+    f.recessoAcoes = { base: false, empresario: false, articulacao: false };
+    f.emendaOrcamento = false;
+    f.verbaCasa = false;
+    f.relatorComissao = null;
+    f.verboUltimo = null;
+  }
+
+  function sync() {
+    if (!legislador()) return null;
+    var f = fase();
+    if (!f) return null;
+    var k = mesKey();
+    if (f.mes !== k) {
+      if (f.mes != null) virada(f);
+      f.mes = k;
+      if (!f.questao || f.questao.mes !== k) novaQuestao(f, k);
+    }
+    f.pico = picoDoMes();
+    f.assinaturasPrecisa = precisaAssinaturas();
+    reescreverPauta(f);
+    checarEtica(f);
+    return f;
+  }
+
+  function priorizarFeed() {
+    try {
+      var f = fase();
+      if (!f || !f._priorizar) return;
+      f._priorizar -= 1;
+      var feed = M().feedMes || [];
+      var topo = [];
+      var resto = [];
+      feed.forEach(function (x) {
+        if (x && /fecha questão|herói local|vaiado na base|nomeou|recesso|Conselho de Ética|Sabatina|travou|Escândalo reescreve|Janela partidária|reservou verba/i.test(x.txt || "")) topo.push(x);
+        else resto.push(x);
+      });
+      if (topo.length) M().feedMes = topo.concat(resto);
+    } catch (e) {}
+  }
+
+  function efeitoDegrau(f, id) {
+    var j = J();
+    if (id === "membro") j.comissoes = Math.min(5, (j.comissoes || 0) + 1);
+    else if (id === "lider_bancada") { try { relPartido(4); } catch (e) {} }
+    else if (id === "lider_partido") { f.lideranca = true; f.fundoGarantido = true; f.comissoesNobres = true; }
+    else if (id === "mesa") { f.orcamentoCasa = true; influencia(3); }
+    else if (id === "presidente") influencia(2);
+  }
+
+  A.fase3Questao = function (acao) {
+    var f = sync();
+    if (!f || !f.questao || f.questao.resolvida) return;
+    var j = J();
+    var t = terrBase();
+    var f1 = M().leg && M().leg.fase1;
+    if (acao === "traiu") {
+      f.questao.resolvida = "traiu";
+      f.comissoesNobres = false;
+      f.fundoGarantido = false;
+      j.comissoes = Math.max(0, (j.comissoes || 0) - 1);
+      if (f1) f1.capital = Math.max(0, (f1.capital || 0) - 6);
+      var cota = 0;
+      try { cota = typeof cotaFundoPartidario === "function" ? cotaFundoPartidario() : 0; } catch (e) {}
+      var corte = Math.max(8000, Math.round((cota || 0) * 0.35));
+      f.corteFundo = corte;
+      if (j.financas) j.financas.campanha = Math.max(0, (j.financas.campanha || 0) - corte);
+      try { relPartido(-15); } catch (e2) {}
+      if (t) { try { mudarAprov(t.id, 4); } catch (e3) {} }
+      rastro(f, "Traiu o partido, virou herói local e perdeu comissão nobre e fatia do fundo.");
+      if (typeof manchete === "function") manchete(j.nome + " trai o partido e vira herói local. Perde comissão nobre e uma fatia do fundo.", "partido");
+      if (typeof toast === "function") toast("Herói local. O fundo e a comissão nobre ficaram no caminho.", "ok");
+    } else if (acao === "obedeceu") {
+      f.questao.resolvida = "obedeceu";
+      f.fundoGarantido = true;
+      if (f1) {
+        f1.capital = clamp((f1.capital || 0) + 4, 0, f1.capitalMax || 100);
+        f1.relMovimento = clamp((f1.relMovimento || 50) - 8, 0, 100);
+      }
+      if (j.financas) j.financas.campanha = (j.financas.campanha || 0) + 12000;
+      try { relPartido(8); } catch (e4) {}
+      if (t) { try { mudarAprov(t.id, -3); } catch (e5) {} }
+      rastro(f, "Obedeceu o líder, garantiu o fundo e foi vaiado na base.");
+      if (typeof manchete === "function") manchete(j.nome + " obedece o líder, garante o fundo e é vaiado na base.", "partido");
+      if (typeof toast === "function") toast("Fundo garantido. Em casa, vaiaram.", "err");
+    }
+    f._priorizar = 6;
+    try { render(); } catch (e6) {}
+  };
+
+  A.fase3Assinatura = function () {
+    var f = sync();
+    if (!f) return;
+    if (f.lideranca) { if (typeof toast === "function") toast("Você já lidera o partido.", "err"); return; }
+    if (!gastarAtencao("buscar assinatura")) return;
+    f.assinaturas += 1;
+    var precisa = precisaAssinaturas();
+    f.assinaturasPrecisa = precisa;
+    if (f.assinaturas >= precisa) {
+      f.lideranca = true;
+      if (idxDegrau(f.degrau) < idxDegrau("lider_partido")) f.degrau = "lider_partido";
+      f.fundoGarantido = true;
+      f.comissoesNobres = true;
+      efeitoDegrau(f, "lider_partido");
+      rastro(f, "Juntou as assinaturas, derrubou o líder e assumiu a liderança.");
+      if (typeof manchete === "function") manchete(J().nome + " junta as assinaturas, derruba o líder e assume a liderança do partido.", "partido");
+      if (typeof toast === "function") toast("Golpe interno: você é líder do partido.", "ok");
+    } else if (typeof toast === "function") toast("Assinatura " + f.assinaturas + "/" + precisa + ".", "ok");
+    f._priorizar = 4;
+    try { render(); } catch (e) {}
+  };
+
+  A.fase3Recesso = function (qual) {
+    var f = sync();
+    if (!f || f.pico !== "recesso") { if (typeof toast === "function") toast("Isso é coisa de recesso.", "err"); return; }
+    if (f.recessoAcoes[qual]) { if (typeof toast === "function") toast("Você já fez isso neste recesso.", "err"); return; }
+    if (!gastarAtencao("o recesso")) return;
+    var f1 = M().leg && M().leg.fase1;
+    var t = terrBase();
+    if (qual === "base") {
+      if (f1) f1.relMovimento = clamp((f1.relMovimento || 50) + 6, 0, 100);
+      if (t) { try { mudarAprov(t.id, 1.5); } catch (e) {} }
+      rastro(f, "Recesso: cuidou da base.");
+      if (typeof manchete === "function") manchete("Recesso: você cuidou da base em vez de discursar para a casa vazia.", "leg");
+    } else if (qual === "empresario") {
+      if (f1) f1.capital = clamp((f1.capital || 0) + 3, 0, f1.capitalMax || 100);
+      try { if (typeof addIEO === "function") addIEO(1); } catch (e2) {}
+      rastro(f, "Recesso: procurou empresário.");
+      if (typeof manchete === "function") manchete("Recesso: reunião com empresário. O caixa político sobe e o IEO anota.", "leg");
+    } else {
+      influencia(3);
+      try { relPartido(4); } catch (e3) {}
+      rastro(f, "Recesso: costurou articulação.");
+      if (typeof manchete === "function") manchete("Recesso: articulação costurada para o retorno da Casa.", "leg");
+    }
+    f.recessoAcoes[qual] = true;
+    if (typeof toast === "function") toast("Recesso usado.", "ok");
+    try { render(); } catch (e4) {}
+  };
+
+  A.fase3Orcamento = function () {
+    var f = sync();
+    if (!f || f.pico !== "orcamento") { if (typeof toast === "function") toast("A emenda dobra só no mês de orçamento.", "err"); return; }
+    if (f.emendaOrcamento) { if (typeof toast === "function") toast("A emenda do orçamento deste mês já saiu.", "err"); return; }
+    if (!gastarAtencao("a emenda do orçamento")) return;
+    f.emendaOrcamento = true;
+    var t = terrBase();
+    var ganho = 4 * multOrcamento();
+    if (t) { try { mudarAprov(t.id, ganho); } catch (e) {} }
+    var f1 = M().leg && M().leg.fase1;
+    if (f1 && f1.historico) f1.historico.emendas = (f1.historico.emendas || 0) + 1;
+    rastro(f, "Mês de orçamento: emenda em dobro" + (t ? " em " + t.nome : "") + ".");
+    if (typeof manchete === "function") manchete("Mês de orçamento: a emenda vale o dobro" + (t ? " em " + t.nome : "") + ".", "leg");
+    if (typeof toast === "function") toast("Emenda do orçamento aplicada em dobro.", "ok");
+    try { render(); } catch (e2) {}
+  };
+
+  A.fase3Subir = function () {
+    var f = sync();
+    if (!f) return;
+    if (f.escalaBloqueada === mesKey()) { if (typeof toast === "function") toast("A defesa no Conselho de Ética toma este mês. Sem degrau.", "err"); return; }
+    var i = idxDegrau(f.degrau);
+    if (i >= ORDEM.length - 1) { if (typeof toast === "function") toast("Você já está no topo da escada.", "err"); return; }
+    if (!gastarAtencao("subir na escada")) return;
+    f.degrau = ORDEM[i + 1];
+    efeitoDegrau(f, f.degrau);
+    rastro(f, "Subiu para " + NOME_DEGRAU[f.degrau] + ".");
+    if (typeof manchete === "function") manchete("Escada interna: você agora é " + NOME_DEGRAU[f.degrau] + ".", "leg");
+    if (typeof toast === "function") toast(NOME_DEGRAU[f.degrau] + ".", "ok");
+    f._priorizar = 4;
+    try { render(); } catch (e) {}
+  };
+
+  A.fase3Nomear = function () {
+    var f = sync();
+    if (!f) return;
+    if (idxDegrau(f.degrau) < idxDegrau("pres_comissao")) { if (typeof toast === "function") toast("Só o presidente de comissão nomeia o relator.", "err"); return; }
+    if (f.relatorComissao) { if (typeof toast === "function") toast("O relator deste mês já foi nomeado: " + f.relatorComissao + ".", "err"); return; }
+    if (!gastarAtencao("nomear o relator")) return;
+    var n = melhorNPC();
+    var nome = n ? n.nome : "Relator da casa";
+    f.relatorComissao = nome;
+    if (n) { try { relNPC(n, 6); } catch (e) {} }
+    influencia(2);
+    rastro(f, "Nomeou " + nome + " relator da comissão.");
+    if (typeof manchete === "function") manchete("Poder da comissão: você nomeou " + nome + " relator.", "leg");
+    if (typeof toast === "function") toast("Relator nomeado: " + nome + ".", "ok");
+    f._priorizar = 6;
+    try { render(); } catch (e2) {}
+  };
+
+  A.fase3Verba = function () {
+    var f = sync();
+    if (!f) return;
+    var preside = J().mesa && J().mesa === casaCod();
+    if (idxDegrau(f.degrau) < idxDegrau("mesa") && !preside) { if (typeof toast === "function") toast("A verba da Casa abre na Mesa Diretora.", "err"); return; }
+    if (f.verbaCasa) { if (typeof toast === "function") toast("A verba deste mês já foi reservada.", "err"); return; }
+    if (!gastarAtencao("a verba da Casa")) return;
+    f.verbaCasa = true;
+    f.orcamentoCasa = true;
+    influencia(4);
+    var t = terrBase();
+    if (t) { try { mudarAprov(t.id, 2); } catch (e) {} }
+    rastro(f, "Reservou verba da Casa.");
+    if (typeof manchete === "function") manchete("Mesa Diretora: você reservou verba da Casa.", "mesa");
+    if (typeof toast === "function") toast("Verba da Casa reservada.", "ok");
+    try { render(); } catch (e2) {}
+  };
+
+  A.fase3Engavetar = function () {
+    var f = sync();
+    if (!f) return;
+    if (!J().mesa || J().mesa !== casaCod()) { if (typeof toast === "function") toast("Só o presidente da Casa engaveta.", "err"); return; }
+    var titulo = "a pauta do mês";
+    var f2 = M().leg && M().leg.fase2;
+    if (f2 && f2.ancora && ["comissao", "relatoria", "plenario", "sancao"].indexOf(f2.ancora.etapa) >= 0) {
+      titulo = f2.ancora.titulo || titulo;
+      f2.ancora.etapa = "engavetado";
+    } else if (M().leg.pauta && M().leg.pauta.length) {
+      var item = M().leg.pauta.shift();
+      titulo = item.nome || item.titulo || titulo;
+    }
+    rastro(f, "Presidente da Casa engavetou " + titulo + ".");
+    if (typeof manchete === "function") manchete("Presidente da Casa engavetou " + titulo + ".", "mesa");
+    if (typeof toast === "function") toast("Engavetado.", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase3Impeachment = function () {
+    var f = sync();
+    if (!f) return;
+    if (!J().mesa || J().mesa !== casaCod()) { if (typeof toast === "function") toast("Só o presidente da Casa pauta impeachment.", "err"); return; }
+    if (f.impeachmentPautado && f.impeachmentPautado.mes === mesKey()) { if (typeof toast === "function") toast("O impeachment deste mês já está na pauta.", "err"); return; }
+    var chefe = chefeExec();
+    f.impeachmentPautado = { mes: mesKey(), chefe: chefe };
+    M().leg.pauta = M().leg.pauta || [];
+    M().leg.pauta.push({ id: "IMP_" + mesKey(), nome: "Pedido de impeachment de " + chefe, gov: -1, voto: null, res: null, impeachment: true });
+    rastro(f, "Pautou impeachment de " + chefe + ".");
+    if (typeof manchete === "function") manchete("A Mesa pauta o pedido de impeachment contra " + chefe + ".", "mesa");
+    if (typeof toast === "function") toast("Impeachment na pauta.", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase3MesaCand = function () {
+    if (typeof mesaCandidatar === "function") mesaCandidatar();
+    try { render(); } catch (e) {}
+  };
+
+  A.fase3Defesa = function () {
+    var f = sync();
+    if (!f || !f.etica || !f.etica.aberto) return;
+    if (f.etica.defesaPaga) { if (typeof toast === "function") toast("A defesa deste mês já foi paga.", "err"); return; }
+    if (typeof gastar !== "function" || !gastar(30000, 1)) return;
+    f.etica.defesaPaga = true;
+    f.escalaBloqueada = mesKey();
+    try { J().popularidade = Math.max(-100, (J().popularidade || 0) - 4); } catch (e) {}
+    try { relPartido(-4); } catch (e2) {}
+    rastro(f, "Pagou a defesa no Conselho de Ética. Este mês não sobe na escada.");
+    if (typeof manchete === "function") manchete("Defesa no Conselho de Ética: dinheiro, reputação e o mês da escada.", "etica");
+    if (typeof toast === "function") toast("Defesa protocolada. Este mês você não sobe na escada.", "ok");
+    try { render(); } catch (e3) {}
+  };
+
+  A.fase3VotoColega = function () {
+    var f = sync();
+    if (!f || !f.etica || !f.etica.aberto) return;
+    var f1 = M().leg && M().leg.fase1;
+    if (!f1 || (f1.capital || 0) < 8) { if (typeof toast === "function") toast("Trocar voto de colega custa 8 de capital político.", "err"); return; }
+    f1.capital -= 8;
+    f.etica.votosComprados = (f.etica.votosComprados || 0) + 1;
+    divida("Colega da casa", "o voto que segurou a cassação no Conselho de Ética");
+    if (f.etica.defesaPaga && f.etica.votosComprados >= 3) {
+      f.etica.resolvido = "arquivado";
+      f.etica.aberto = false;
+      rastro(f, "Conselho de Ética arquivou o processo. Os favores voltam no mês que vem.");
+      if (typeof manchete === "function") manchete("Conselho de Ética arquiva o processo. Os favores ficam para o mês que vem.", "etica");
+      if (typeof toast === "function") toast("Processo arquivado. Três colegas votaram com você.", "ok");
+    } else if (typeof toast === "function") toast("Voto de colega comprado (" + f.etica.votosComprados + "/3). A dívida volta.", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase3Verbo = function (acao) {
+    var f = sync();
+    if (!f) return;
+    var c = cargo();
+    var f1 = M().leg && M().leg.fase1;
+    var t = terrBase();
+    var n = melhorNPC();
+    function ok(msg, mancheteTxt) {
+      f.verboUltimo = msg;
+      f.verboCargo = c;
+      rastro(f, msg);
+      if (typeof manchete === "function") manchete(mancheteTxt || msg, "leg");
+      if (typeof toast === "function") toast(msg, "ok");
+      f._priorizar = 4;
+      try { render(); } catch (e) {}
+    }
+    if (c === "VER") {
+      if (acao === "confrontar") {
+        if (!gastarAtencao("confrontar o prefeito")) return;
+        if (f1) f1.relPrefeito = clamp((f1.relPrefeito || 48) - 10, 0, 100);
+        if (t) { try { mudarAprov(t.id, 3); } catch (e) {} }
+        ok("Confrontou o prefeito. " + (t ? t.nome : "O bairro") + " subiu.", "Disputa com o prefeito: o bairro aplaude e a prefeitura anota.");
+      } else if (acao === "esquina") {
+        if (!gastarAtencao("a emenda de esquina")) return;
+        if (t) { try { mudarAprov(t.id, 2); } catch (e2) {} }
+        ok("Emenda de esquina em " + (t ? t.nome : "um bairro") + ".", "Emenda de esquina destinada.");
+      } else if (acao === "obra") {
+        if (!gastarAtencao("a obra de esquina")) return;
+        if (t) { try { mudarAprov(t.id, 3); } catch (e3) {} }
+        ok("Obra de esquina em " + (t ? t.nome : "um bairro") + ".", "Obra de esquina anunciada no bairro.");
+      }
+      return;
+    }
+    if (c === "DEPE" || c === "DEPF") {
+      var federal = c === "DEPF";
+      if (acao === "comissao") {
+        if (!gastarAtencao("puxar a comissão")) return;
+        J().comissoes = Math.min(5, (J().comissoes || 0) + 1);
+        influencia(2);
+        ok(federal ? "Puxou a comissão na Câmara." : "Puxou a comissão na ALESP.", federal ? "Comissão da Câmara puxada para o seu texto." : "Comissão da ALESP puxada para o seu texto.");
+      } else if (acao === "lideranca") {
+        if (!gastarAtencao("a liderança")) return;
+        try { relPartido(federal ? 6 : 5); } catch (e4) {}
+        influencia(federal ? 5 : 3);
+        ok(federal ? "Costurou a liderança na Câmara." : "Articulou a liderança na ALESP.", federal ? "Liderança costurada na Câmara dos Deputados." : "Liderança articulada na ALESP.");
+      } else if (acao === "emenda") {
+        if (!gastarAtencao("a emenda")) return;
+        var ganho = (federal ? 4 : 2) * multOrcamento();
+        if (t) { try { mudarAprov(t.id, ganho); } catch (e5) {} }
+        if (f1 && f1.historico) f1.historico.emendas = (f1.historico.emendas || 0) + 1;
+        ok((federal ? "Emenda federal" : "Emenda estadual") + (multOrcamento() === 2 ? " em dobro" : "") + (t ? " em " + t.nome : "") + ".", "Emenda de deputado destinada" + (t ? " a " + t.nome : "") + ".");
+      }
+      return;
+    }
+    if (c === "SEN") {
+      if (acao === "sabatina") {
+        if (!gastarAtencao("a sabatina")) return;
+        var nome = n ? n.nome : "a indicação da Casa";
+        f.sabatina = nome;
+        if (n) { try { relNPC(n, -5); } catch (e6) {} }
+        ok("Sabatina de indicação: " + nome + ".", "Sabatina de indicação: " + nome + " suou na comissão.");
+      } else if (acao === "indicar") {
+        if (!gastarAtencao("a indicação")) return;
+        var nome2 = n ? n.nome : "um nome da bancada";
+        f.indicacao = nome2;
+        if (n) { try { relNPC(n, 8); } catch (e7) {} }
+        try { relPartido(4); } catch (e8) {}
+        ok("Indicou " + nome2 + ".", "Você indicou " + nome2 + ".");
+      } else if (acao === "trava") {
+        if (f.travaAte && mesKey() < f.travaAte) { if (typeof toast === "function") toast("A pauta já está travada.", "err"); return; }
+        if (!gastarAtencao("travar a pauta")) return;
+        var titulo = "a pauta da Casa";
+        var f2 = M().leg && M().leg.fase2;
+        if (f2 && f2.ancora && f2.ancora.titulo && ["comissao", "relatoria", "plenario", "sancao"].indexOf(f2.ancora.etapa) >= 0) {
+          titulo = f2.ancora.titulo;
+          f2.ancora.travadaAte = mesKey() + 1;
+        } else if (M().leg.pauta && M().leg.pauta.length) {
+          titulo = M().leg.pauta[0].nome || M().leg.pauta[0].titulo || titulo;
+          M().leg.pauta[0].travadaAte = mesKey() + 1;
+        }
+        f.travaAte = mesKey() + 1;
+        f.travaAlvo = titulo;
+        ok("Travou a pauta: " + titulo + ".", "Você travou " + titulo + " por um mês.");
+      }
+    }
+  };
+
+  if (typeof A.fase2Empurrar === "function" && !A.fase2Empurrar._fase3) {
+    var _emp = A.fase2Empurrar;
+    A.fase2Empurrar = function () {
+      try {
+        var f = fase();
+        var f2 = M().leg && M().leg.fase2;
+        var travada = (f && f.travaAte && mesKey() < f.travaAte) || (f2 && f2.ancora && f2.ancora.travadaAte && mesKey() < f2.ancora.travadaAte);
+        if (travada) {
+          if (typeof toast === "function") toast("A pauta está travada até o mês que vem.", "err");
+          return;
+        }
+      } catch (e) {}
+      return _emp.apply(this, arguments);
+    };
+    A.fase2Empurrar._fase3 = true;
+  }
+
+  if (typeof trocarPartido === "function" && !trocarPartido._fase3) {
+    var _tp = trocarPartido;
+    var wrappedTp = function (novo) {
+      var antes = "";
+      try { antes = J().partido_atual; } catch (e) {}
+      var r = _tp.apply(this, arguments);
+      try {
+        var j = J();
+        if (legislador() && j && antes && j.partido_atual && j.partido_atual !== antes) {
+          j.comissoes = 0;
+          var f = fase();
+          if (f) {
+            f.comissoesNobres = false;
+            f.fundoGarantido = true;
+            rastro(f, "Trocou " + antes + " por " + j.partido_atual + ": perdeu as comissões e ganhou base e fundo novos.");
+          }
+          var t = terrBase();
+          if (t) { try { mudarAprov(t.id, 3); } catch (e2) {} }
+          if (j.financas) j.financas.campanha = (j.financas.campanha || 0) + 50000;
+          if (typeof manchete === "function") manchete("Janela partidária: " + j.nome + " deixou " + antes + ", perdeu as comissões e abriu fundo e base no " + j.partido_atual + ".", "partido");
+        }
+      } catch (e3) {}
+      return r;
+    };
+    wrappedTp._fase3 = true;
+    trocarPartido = wrappedTp;
+    window.trocarPartido = wrappedTp;
+  }
+
+  function htmlPartido(f) {
+    var j = J();
+    var t = terrBase();
+    var q = f.questao || { texto: "", resolvida: null };
+    var botoesQ = "";
+    if (!q.resolvida) {
+      botoesQ = "<div class=\"stack\" style=\"gap:6px\">"
+        + btn("Trair o partido", "fase3Questao", ["traiu"], "corrige")
+        + btn("Obedecer o líder", "fase3Questao", ["obedeceu"], "confirma")
+        + "</div>";
+    } else if (q.resolvida === "traiu") {
+      botoesQ = "<p class=\"txt\"><b>Você traiu.</b> Herói local. Comissão nobre e fatia do fundo ficaram para trás.</p>";
+    } else if (q.resolvida === "obedeceu") {
+      botoesQ = "<p class=\"txt\"><b>Você obedeceu.</b> Fundo garantido. Na base, vaiaram.</p>";
+    } else {
+      botoesQ = "<p class=\"txt\">A questão do mês passado passou sem resposta.</p>";
+    }
+    var picoBtns = "";
+    if (f.pico === "recesso") {
+      picoBtns = "<div class=\"stack\" style=\"gap:6px\">"
+        + btn("Cuidar da base", "fase3Recesso", ["base"], "mini confirma", !!f.recessoAcoes.base)
+        + btn("Procurar empresário", "fase3Recesso", ["empresario"], "mini", !!f.recessoAcoes.empresario)
+        + btn("Costurar articulação", "fase3Recesso", ["articulacao"], "mini", !!f.recessoAcoes.articulacao)
+        + "</div>";
+    } else if (f.pico === "orcamento") {
+      picoBtns = "<div class=\"stack\" style=\"gap:6px\">" + btn("Emenda do orçamento (vale o dobro)", "fase3Orcamento", [], "confirma", !!f.emendaOrcamento) + "</div>";
+    }
+    var etica = "<p class=\"txt\">Conselho de Ética quieto.</p>";
+    if (f.etica && f.etica.aberto) {
+      etica = "<p class=\"txt\"><b>Conselho de Ética</b> abriu processo de cassação por quebra de decoro. A defesa custa dinheiro, reputação e este mês na escada. Sobreviver pede a defesa e três votos de colegas. Votos comprados: <b>" + (f.etica.votosComprados || 0) + "/3</b>. Meses em aberto: " + (f.etica.meses || 0) + ".</p>"
+        + "<div class=\"stack\" style=\"gap:6px\">"
+        + btn("Pagar a defesa (R$ 30 mil)", "fase3Defesa", [], "mini corrige", !!f.etica.defesaPaga)
+        + btn("Trocar voto de colega (8 de capital)", "fase3VotoColega", [], "mini")
+        + "</div>";
+    } else if (f.etica && f.etica.resolvido === "arquivado") {
+      etica = "<p class=\"txt\">Conselho de Ética arquivou o processo. As dívidas com os colegas voltam.</p>";
+    } else if (f.etica && f.etica.resolvido === "cassado") {
+      etica = "<p class=\"txt\">O Conselho de Ética cassou o mandato.</p>";
+    }
+    var rel = 0;
+    try { rel = Math.round(j.relacao_partido || 0); } catch (e) {}
+    var cap = (M().leg && M().leg.fase1 && M().leg.fase1.capital) || 0;
+    var ultimo = f.rastro && f.rastro.length ? f.rastro[f.rastro.length - 1].txt : "";
+    var cpi = cpiAberta() ? "<p class=\"txt\">CPI já aberta pesa neste mês. Não há depoimento nesta fase.</p>" : "";
+    return "<section class=\"card acc\" id=\"fase3-partido\"><h3>Bancada e partido</h3>"
+      + "<p class=\"txt\" id=\"fase3-pico\">" + E(textoPico(f.pico)) + "</p>"
+      + picoBtns
+      + "<p class=\"txt\"><b>" + E(q.texto || "O líder fecha questão.") + "</b></p>"
+      + botoesQ
+      + "<p class=\"txt\">Golpe interno: <b>" + f.assinaturas + "/" + f.assinaturasPrecisa + "</b> assinaturas para derrubar o líder."
+      + (f.lideranca ? " Você lidera o partido." : "") + "</p>"
+      + (f.lideranca ? "" : "<div class=\"stack\" style=\"gap:6px\">" + btn("Buscar assinatura", "fase3Assinatura", [], "mini branco") + "</div>")
+      + "<p class=\"txt\">Fundo partidário: <b>" + (f.fundoGarantido ? "garantido" : "cortado") + "</b>"
+      + (f.corteFundo ? " · fatia cortada " + f.corteFundo : "")
+      + ". Comissões nobres: <b>" + (f.comissoesNobres ? "com você" : "perdidas") + "</b>."
+      + " Relação com o partido: <b>" + rel + "</b>."
+      + " Capital político: <b>" + cap + "</b>."
+      + (t ? " Aprovação em " + E(t.nome) + ": <b>" + aprovDe(t.id) + "%</b>." : "")
+      + "</p>"
+      + cpi
+      + etica
+      + (ultimo ? "<p class=\"txt\">Rastro: " + E(ultimo) + "</p>" : "<p class=\"txt\">Rastro: nada ainda neste mandato. O que você decidir volta nos meses seguintes.</p>")
+      + "</section>";
+  }
+
+  function htmlEscada(f) {
+    var iAtual = idxDegrau(f.degrau);
+    var lista = ORDEM.map(function (id, i) {
+      var aqui = i === iAtual;
+      return "<li" + (aqui ? " class=\"ok\"" : "") + "><b>" + E(NOME_DEGRAU[id]) + "</b>" + (aqui ? " — você está aqui" : "") + ". " + E(PODER_DEGRAU[id]) + "</li>";
+    }).join("");
+    var poder = "";
+    if (f.relatorComissao) poder = "<p class=\"txt\"><b>Poder usado: você nomeou " + E(f.relatorComissao) + " relator.</b></p>";
+    var nomear = "";
+    if (iAtual >= idxDegrau("pres_comissao")) {
+      nomear = f.relatorComissao ? "" : "<div class=\"stack\" style=\"gap:6px\">" + btn("Nomear o relator da comissão", "fase3Nomear", [], "confirma") + "</div>";
+    }
+    var subir = iAtual < ORDEM.length - 1 ? "<div class=\"stack\" style=\"gap:6px\">" + btn("Subir um degrau", "fase3Subir", [], "mini confirma") + "</div>" : "";
+    var verba = "";
+    if (iAtual >= idxDegrau("mesa") || (J().mesa && J().mesa === casaCod())) {
+      verba = "<div class=\"stack\" style=\"gap:6px\">" + btn("Reservar verba da Casa", "fase3Verba", [], "mini", !!f.verbaCasa) + "</div>";
+    }
+    var mesa = "<p class=\"txt\">Eleição da Mesa em fevereiro de anos ímpares. Candidaturas em dezembro e janeiro, com cargo prometido, gabinete e aliança.</p>";
+    var janela = false;
+    try { janela = typeof mesaCandJanela === "function" && mesaCandJanela(); } catch (e) {}
+    if (J().mesa && J().mesa === casaCod()) {
+      mesa += "<p class=\"txt\"><b>Você preside a Casa.</b> Decide o que vota e o que engaveta, inclusive impeachment contra " + E(chefeExec()) + ".</p>"
+        + "<div class=\"stack\" style=\"gap:6px\">"
+        + btn("Engavetar", "fase3Engavetar", [], "mini corrige")
+        + btn("Pautar impeachment do chefe do Executivo", "fase3Impeachment", [], "mini")
+        + "</div>";
+    } else if (janela) {
+      mesa += "<div class=\"stack\" style=\"gap:6px\">" + btn("Lançar candidatura à Mesa", "fase3MesaCand", [], "confirma") + "</div>";
+    }
+    if (f.verbaCasa) mesa += "<p class=\"txt\">Poder usado: verba da Casa reservada neste mês.</p>";
+    if (f.impeachmentPautado && f.impeachmentPautado.mes === mesKey()) mesa += "<p class=\"txt\">Poder usado: impeachment de " + E(f.impeachmentPautado.chefe) + " está na pauta.</p>";
+    return "<section class=\"card acc\" id=\"fase3-escada\"><h3>Escada interna e Mesa Diretora</h3>"
+      + "<p class=\"txt\">Poder deste degrau: <b>" + E(PODER_DEGRAU[f.degrau] || "") + "</b></p>"
+      + poder
+      + nomear
+      + subir
+      + verba
+      + "<ol>" + lista + "</ol>"
+      + mesa
+      + "</section>";
+  }
+
+  function htmlVer(f) {
+    var t = terrBase();
+    return "<section class=\"card acc\" id=\"fase3-cargo\"><h3>Verbo: disputar o prefeito</h3>"
+      + "<p class=\"txt\">Vereador trabalha o bairro e a briga com o prefeito. Emenda pequena e obra de esquina.</p>"
+      + "<div class=\"stack\" style=\"gap:6px\">"
+      + btn("Confrontar o prefeito", "fase3Verbo", ["confrontar"], "corrige")
+      + btn("Emenda de esquina", "fase3Verbo", ["esquina"], "mini")
+      + btn("Obra de esquina", "fase3Verbo", ["obra"], "mini confirma")
+      + "</div>"
+      + (t ? "<p class=\"txt\">Território deste cargo: <b>" + E(t.nome) + "</b>, " + aprovDe(t.id) + "%.</p>" : "")
+      + (f.verboCargo === "VER" && f.verboUltimo ? "<p class=\"txt\">" + E(f.verboUltimo) + "</p>" : "")
+      + "</section>";
+  }
+  function htmlDepe(f) {
+    var t = terrBase();
+    return "<section class=\"card acc\" id=\"fase3-cargo\"><h3>Verbo: comissão e liderança na ALESP</h3>"
+      + "<p class=\"txt\">Deputado estadual puxa comissão, articula liderança e destina emenda ao município. CPI, se já estiver aberta, só pesa no calendário.</p>"
+      + "<div class=\"stack\" style=\"gap:6px\">"
+      + btn("Puxar a comissão", "fase3Verbo", ["comissao"], "confirma")
+      + btn("Articular liderança", "fase3Verbo", ["lideranca"], "mini")
+      + btn("Emenda estadual", "fase3Verbo", ["emenda"], "mini confirma")
+      + "</div>"
+      + (t ? "<p class=\"txt\">Curral: <b>" + E(t.nome) + "</b>.</p>" : "")
+      + (f.verboCargo === "DEPE" && f.verboUltimo ? "<p class=\"txt\">" + E(f.verboUltimo) + "</p>" : "")
+      + "</section>";
+  }
+  function htmlDepf(f) {
+    var t = terrBase();
+    var dobro = multOrcamento() === 2 ? " No mês de orçamento a emenda federal vale o dobro." : "";
+    return "<section class=\"card acc\" id=\"fase3-cargo\"><h3>Verbo: comissão, emenda e liderança na Câmara</h3>"
+      + "<p class=\"txt\">Deputado federal costura liderança e destina emenda mais pesada." + dobro + " CPI aberta encurta o mês; o jogo da CPI não é esta fase.</p>"
+      + "<div class=\"stack\" style=\"gap:6px\">"
+      + btn("Puxar a comissão da Câmara", "fase3Verbo", ["comissao"], "confirma")
+      + btn("Costurar liderança", "fase3Verbo", ["lideranca"], "mini")
+      + btn("Emenda federal", "fase3Verbo", ["emenda"], "mini confirma")
+      + "</div>"
+      + (t ? "<p class=\"txt\">Curral: <b>" + E(t.nome) + "</b>.</p>" : "")
+      + (f.verboCargo === "DEPF" && f.verboUltimo ? "<p class=\"txt\">" + E(f.verboUltimo) + "</p>" : "")
+      + "</section>";
+  }
+  function htmlSen(f) {
+    return "<section class=\"card acc\" id=\"fase3-cargo\"><h3>Verbo: sabatina, indicação e trava</h3>"
+      + "<p class=\"txt\">Senador faz a sabatina da indicação, indica um nome e trava a pauta da Casa por um mês.</p>"
+      + "<div class=\"stack\" style=\"gap:6px\">"
+      + btn("Sabatina de indicação", "fase3Verbo", ["sabatina"], "confirma")
+      + btn("Indicar um nome", "fase3Verbo", ["indicar"], "mini")
+      + btn("Travar a pauta", "fase3Verbo", ["trava"], "corrige")
+      + "</div>"
+      + (f.sabatina ? "<p class=\"txt\">Sabatina: <b>" + E(f.sabatina) + "</b>.</p>" : "")
+      + (f.indicacao ? "<p class=\"txt\">Indicação: <b>" + E(f.indicacao) + "</b>.</p>" : "")
+      + (f.travaAlvo ? "<p class=\"txt\">Trava: <b>" + E(f.travaAlvo) + "</b> até o mês que vem.</p>" : "")
+      + (f.verboCargo === "SEN" && f.verboUltimo ? "<p class=\"txt\">" + E(f.verboUltimo) + "</p>" : "")
+      + "</section>";
+  }
+  function htmlCargo(f) {
+    var c = cargo();
+    if (c === "VER") return htmlVer(f);
+    if (c === "DEPE") return htmlDepe(f);
+    if (c === "DEPF") return htmlDepf(f);
+    if (c === "SEN") return htmlSen(f);
+    return "";
+  }
+  function html() {
+    var f = sync();
+    if (!f) return "";
+    return htmlPartido(f) + htmlEscada(f) + htmlCargo(f);
+  }
+  function injetar(h) {
+    h = h || "";
+    if (String(h).indexOf("fase3-partido") >= 0) return h;
+    var extra = "";
+    try { extra = html(); } catch (e) { console.warn("fase3", e); }
+    if (!extra) return h;
+    return extra + h;
+  }
+
+  if (typeof VIEWS !== "undefined" && typeof VIEWS.mes === "function" && !VIEWS.mes._fase3) {
+    var _vm = VIEWS.mes;
+    VIEWS.mes = function () { return injetar(_vm.apply(this, arguments) || ""); };
+    VIEWS.mes._fase3 = true;
+    VIEWS.mes._fase2 = true;
+    VIEWS.mes._fase1 = true;
+    VIEWS.mes._navhGuard = true;
+  }
+  if (typeof VIEWS !== "undefined" && typeof VIEWS.poder === "function" && !VIEWS.poder._fase3) {
+    var _vp = VIEWS.poder;
+    VIEWS.poder = function () { return injetar(_vp.apply(this, arguments) || ""); };
+    VIEWS.poder._fase3 = true;
+    VIEWS.poder._fase2 = true;
+    if (_vp._obras) VIEWS.poder._obras = true;
+    if (_vp._fase1) VIEWS.poder._fase1 = true;
+  }
+  if (typeof render === "function" && !render._fase3) {
+    var _rd = render;
+    render = function () {
+      try { sync(); } catch (e) {}
+      var out = _rd.apply(this, arguments);
+      try { priorizarFeed(); } catch (e2) {}
+      return out;
+    };
+    render._fase3 = true;
+    window.render = render;
+  }
+  if (typeof avancarMes === "function" && !avancarMes._fase3) {
+    var _av = avancarMes;
+    avancarMes = function () {
+      var r = _av.apply(this, arguments);
+      try { sync(); priorizarFeed(); } catch (e) {}
+      return r;
+    };
+    avancarMes._fase3 = true;
+    avancarMes._fase2 = true;
+    avancarMes._fase1 = true;
+    if (_av._plOrigem) avancarMes._plOrigem = true;
+    window.avancarMes = avancarMes;
+  }
+  if (typeof carregarStr === "function" && !carregarStr._fase3) {
+    var _cs = carregarStr;
+    carregarStr = function (s) {
+      var ok = _cs.apply(this, arguments);
+      try { if (ok) sync(); } catch (e) {}
+      return ok;
+    };
+    carregarStr._fase3 = true;
+    window.carregarStr = carregarStr;
+  }
+})();
+</script>
 </body>
 </html>
