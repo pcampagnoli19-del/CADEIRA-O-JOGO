@@ -39621,6 +39621,7 @@ document.addEventListener("click", function(e){
     "O relatório pode virar pizza ou cassação.",
     "A CCJ puxa um corte e o Centrão cobra blindagem."
   ];
+  var NOMES_CPI = ["CPI da merenda", "CPI do depoimento", "CPI do relatório", "CPI da blindagem"];
 
   function vivo() {
     try { return typeof gameState !== "undefined" && !!gameState && typeof M === "function" && !!M() && typeof J === "function" && !!J(); }
@@ -39654,6 +39655,32 @@ document.addEventListener("click", function(e){
   }
   function palcoDoMes(mes) {
     return PALCOS[(Math.max(1, mes || 1) - 1) % 3];
+  }
+  function nomeDaPauta(mes) {
+    return NOMES_CPI[(Math.max(1, mes || 1) - 1) % NOMES_CPI.length];
+  }
+  function nomeCpi(c) {
+    if (c && c.nome) return c.nome;
+    var m = (c && c.motivo) || "";
+    if (/merenda/i.test(m)) return "CPI da merenda";
+    if (/depoimento/i.test(m)) return "CPI do depoimento";
+    if (/relatório|relatorio|pizza|cassação|cassacao/i.test(m)) return "CPI do relatório";
+    if (/CCJ|blindagem|centrão|centrao/i.test(m)) return "CPI da blindagem";
+    if (c && c.papel === "alvo") return "CPI contra o seu mandato";
+    return "CPI da casa";
+  }
+  function nomeEscolha(id) {
+    if (id === "lacrou") return "lacrou para as redes";
+    if (id === "dossie") return "apertou com o dossiê";
+    if (id === "pizza") return "vendeu o relatório";
+    return "depoimento feito";
+  }
+  function nomeRelatorio(id) {
+    if (id === "pizza") return "relatório vendido";
+    if (id === "cassou") return "pedido de cassação";
+    if (id === "omisso") return "encerrada sem relatório";
+    if (id === "passou") return "cassação não pedida";
+    return "encerrada";
   }
   window.fase4Oferta = palcoDoMes;
 
@@ -39844,6 +39871,7 @@ document.addEventListener("click", function(e){
       instalada: true,
       encerrada: false,
       meses: 0,
+      nome: "CPI contra o seu mandato",
       motivo: motivo || "a casa te investiga",
       alvoId: "JOGADOR",
       alvoNome: "você",
@@ -39966,6 +39994,7 @@ document.addEventListener("click", function(e){
       instalada: false,
       encerrada: false,
       meses: 0,
+      nome: nomeDaPauta(mesNum()),
       motivo: f.pautaMes || "suspeitas no mandato",
       alvoId: alvo.id,
       alvoNome: alvo.nome,
@@ -40192,17 +40221,19 @@ document.addEventListener("click", function(e){
     var c = f.cpi;
     var corpo = "";
     if (!c || c.encerrada) {
-      var fim = c && c.encerrada ? "<p class=\"txt\">Última CPI: <b>" + E(c.relatorio || "encerrada") + "</b> · alvo " + E(c.alvoNome || "") + ".</p>" : "";
+      var fim = c && c.encerrada
+        ? "<p class=\"txt\"><b>" + E(nomeCpi(c)) + "</b></p><p class=\"txt\">Alvo: <b>" + E(c.papel === "alvo" ? "você" : (c.alvoNome || "")) + "</b></p><p class=\"txt\">" + E(nomeRelatorio(c.relatorio)) + ".</p>"
+        : "";
       corpo = "<p class=\"txt\">Nenhuma CPI aberta. Articular assinatura custa atenção. Ser alvo chega com escândalo alto ou como vingança no mês seguinte.</p>"
         + fim
         + "<div class=\"stack\" style=\"gap:6px\">" + btn("Abrir CPI contra um adversário", "fase4Abrir", [], "confirma") + "</div>";
     } else {
       var etapas = etapaTag(c, "assinaturas", "Assinaturas") + " " + etapaTag(c, "instalada", "Convocação") + " " + etapaTag(c, "depoimento", "Depoimento") + " " + etapaTag(c, "relatorio", "Relatório");
       corpo = "<p class=\"txt\">" + etapas + "</p>"
-        + "<p class=\"txt\"><b>" + (c.papel === "alvo" ? "Você é o alvo." : "Alvo: " + E(c.alvoNome)) + "</b> " + E(c.motivo || "") + "</p>"
-        + "<p class=\"txt\">Mês <b>" + (c.meses || 0) + "</b> da CPI"
-        + (c.cpiId ? " · registrada como " + E(c.cpiId) : "")
-        + ". Evidência: <b>" + (c.evidencia || 0) + "</b>."
+        + "<p class=\"txt\"><b>" + E(nomeCpi(c)) + "</b></p>"
+        + "<p class=\"txt\">Alvo: <b>" + E(c.papel === "alvo" ? "você" : (c.alvoNome || "")) + "</b></p>"
+        + (c.motivo ? "<p class=\"txt\">" + E(c.motivo) + "</p>" : "")
+        + "<p class=\"txt\">Mês <b>" + (c.meses || 0) + "</b> da CPI. Evidência: <b>" + (c.evidencia || 0) + "</b>."
         + (c.dossie ? " Dossiê na gaveta." : " Gaveta sem dossiê.")
         + (c.blindada ? " Convocação blindada." : "")
         + (c.antecipado ? " Depoimento antecipado com capital." : "")
@@ -40233,11 +40264,11 @@ document.addEventListener("click", function(e){
           + "</div>";
       }
       if (c.escolha && !c.relatorio && c.papel === "autor") {
-        corpo += "<p class=\"txt\">Depoimento: <b>" + E(c.escolha) + "</b>. Pedir a cassação custa capital, rende moral e marca vingança para o mês que vem.</p>"
+        corpo += "<p class=\"txt\">Depoimento: <b>" + E(nomeEscolha(c.escolha)) + "</b>. Pedir a cassação custa capital, rende moral e marca vingança para o mês que vem.</p>"
           + "<div class=\"stack\" style=\"gap:6px\">" + btn("Pedir a cassação (6 de capital)", "fase4Cassar", [], "corrige") + "</div>";
       }
       if (c.escolha && c.papel === "alvo") {
-        corpo += "<p class=\"txt\">Você depôs como alvo: <b>" + E(c.escolha) + "</b>.</p>";
+        corpo += "<p class=\"txt\">Você depôs como alvo: <b>" + E(nomeEscolha(c.escolha)) + "</b>.</p>";
       }
     }
     if (f.vinganca && !f.vinganca.aberta) {
