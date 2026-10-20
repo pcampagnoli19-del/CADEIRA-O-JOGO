@@ -36963,5 +36963,756 @@ document.addEventListener("click", function(e){
 })();
 </script>
 
+
+<script>
+/* Fase 1 do legislativo: pontos de ação, capital e dívidas, plenário sem placar decidido, feedback do mandato.
+   Não substitui Congresso, plenário, imprensa nem save — só acrescenta. */
+(function () {
+  if (window._fase1Leg) return;
+  window._fase1Leg = true;
+
+  function vivo() {
+    try {
+      return typeof gameState !== "undefined" && !!gameState && typeof M === "function" && !!M() && typeof J === "function" && !!J();
+    } catch (e) {
+      return false;
+    }
+  }
+  function legislador() {
+    try { return vivo() && typeof ehLegislador === "function" && ehLegislador(); }
+    catch (e) { return false; }
+  }
+  function mesKey() {
+    try { return typeof agoraM === "function" ? agoraM() : 0; }
+    catch (e) { return 0; }
+  }
+  function clamp(n, a, b) {
+    n = Math.round(Number(n) || 0);
+    if (n < a) return a;
+    if (n > b) return b;
+    return n;
+  }
+  function rel(f, k, d) { f[k] = clamp((f[k] || 0) + d, 0, 100); }
+  function rotMes(k) {
+    var mes = k % 12;
+    var ano = Math.floor(k / 12);
+    if (mes === 0) { mes = 12; ano -= 1; }
+    var nome = (typeof MESES !== "undefined" && MESES[mes]) || String(mes);
+    return nome + "/" + ano;
+  }
+  function E(s) {
+    try { if (typeof esc === "function") return esc(s == null ? "" : String(s)); }
+    catch (e) {}
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function nomeMov() {
+    try {
+      var mb = typeof movimentoBaseDoJogador === "function" ? movimentoBaseDoJogador() : null;
+      if (mb && mb.nome) return mb.nome;
+    } catch (e) {}
+    return "seu movimento de base";
+  }
+
+  function shell() {
+    return {
+      v: 1,
+      pontos: 3,
+      pontosMax: 3,
+      capital: 42,
+      capitalMax: 100,
+      influencia: 18,
+      legado: 4,
+      mes: null,
+      agenda: [],
+      dividas: [],
+      seq: 0,
+      historico: { aprovados: [], comissoes: 0, cpis: 0, emendas: 0, dividasPagas: 0 },
+      filaExames: 87,
+      dengue: 64,
+      relPrefeito: 48,
+      relGoverno: 46,
+      relOposicao: 40,
+      relMovimento: 62,
+      vistos: {},
+      efeitoMes: "",
+      ferramentasMes: 0
+    };
+  }
+  function normalizar(f) {
+    if (!f || typeof f !== "object") return;
+    var base = shell();
+    Object.keys(base).forEach(function (k) {
+      if (f[k] == null) f[k] = base[k];
+    });
+    if (!f.historico || typeof f.historico !== "object") f.historico = shell().historico;
+    ["aprovados"].forEach(function (k) {
+      if (!Array.isArray(f.historico[k])) f.historico[k] = [];
+    });
+    ["comissoes", "cpis", "emendas", "dividasPagas"].forEach(function (k) {
+      if (f.historico[k] == null) f.historico[k] = 0;
+    });
+    if (!Array.isArray(f.agenda)) f.agenda = [];
+    if (!Array.isArray(f.dividas)) f.dividas = [];
+    if (!f.vistos || typeof f.vistos !== "object") f.vistos = {};
+    f.pontosMax = 3;
+    f.capitalMax = 100;
+  }
+
+  function leg() {
+    var m = M();
+    m.leg = m.leg || {};
+    return m.leg;
+  }
+  function fase() {
+    if (!legislador()) return null;
+    var L = leg();
+    if (!L.fase1 || typeof L.fase1 !== "object") L.fase1 = shell();
+    normalizar(L.fase1);
+    return L.fase1;
+  }
+
+  function montarAgenda() {
+    var mov = nomeMov();
+    return [
+      { id: "gov-mp", origem: "governo", quem: "Governo", titulo: "MP do governo — prazo neste mês", detalhe: "A medida provisória tranca a pauta. Engolir custa com a oposição e pode virar manchete. Ignorar custa com quem governa.", tipo: "articular", custoPontos: 1, atendida: false, faltou: false },
+      { id: "op-bomba", origem: "oposicao", quem: "Oposição", titulo: "Pauta-bomba da oposição", detalhe: "Projeto para constranger o governo. Topar é escolher um lado. Deixar passar esfria quem protocolou.", tipo: "negociar", custoPontos: 1, atendida: false, faltou: false },
+      { id: "mov-base", origem: "movimento", quem: mov, titulo: "Pauta do movimento de base", detalhe: "Quem te formou (" + mov + ") pôs a bandeira na mesa. Faltar aqui esfria a base.", tipo: "base", custoPontos: 1, atendida: false, faltou: false },
+      { id: "emenda", origem: "comissao", quem: "Relator da comissão", titulo: "Emenda de comissão", detalhe: "Um parágrafo seu destrava ou segura o parecer. A bancada anota o favor.", tipo: "emenda", custoPontos: 1, atendida: false, faltou: false },
+      { id: "midia", origem: "imprensa", quem: "Imprensa", titulo: "Pedido de entrevista sobre o plenário", detalhe: "A pauta do mês está na rua. Recusar vira nota de que a cadeira ficou vazia.", tipo: "midia", custoPontos: 1, atendida: false, faltou: false }
+    ];
+  }
+
+  function marcarVistos(f) {
+    try {
+      (M().leg.pls || []).forEach(function (pl) {
+        if (pl && pl.fim === "SANCIONADO") f.vistos[pl.id || pl.nome || ""] = true;
+      });
+    } catch (e) {}
+  }
+
+  function cobrarFaltas(f) {
+    var nomes = [];
+    (f.agenda || []).forEach(function (it) {
+      if (!it || it.atendida || it.faltou) return;
+      it.faltou = true;
+      if (it.origem === "governo") { rel(f, "relGoverno", -8); rel(f, "relOposicao", 2); nomes.push("o governo"); }
+      else if (it.origem === "oposicao") { rel(f, "relOposicao", -7); nomes.push("a oposição"); }
+      else if (it.origem === "movimento") { rel(f, "relMovimento", -10); nomes.push("o movimento de base"); }
+      else if (it.origem === "imprensa") { f.influencia = clamp(f.influencia - 2, 0, 100); nomes.push("a imprensa"); }
+      else if (it.origem === "comissao") { f.legado = clamp(f.legado - 1, 0, 100); nomes.push("a comissão"); }
+      else if (it.origem === "cobranca") {
+        var d = (f.dividas || []).filter(function (x) { return x && x.id === it.dividaId; })[0];
+        if (d && d.tipo === "devo" && !d.paga) {
+          try { if (typeof addEscandalo === "function") addEscandalo(3); } catch (e) {}
+          rel(f, "relGoverno", -4);
+          nomes.push(d.quem);
+        }
+      }
+    });
+    if (nomes.length && typeof manchete === "function") {
+      manchete("Agenda do mês: você não atendeu " + nomes.join(", ") + ". Quem cobrava anotou a ausência.", "leg");
+    }
+    return nomes;
+  }
+
+  function cobrarDividas(f) {
+    var k = mesKey();
+    var saiu = [];
+    (f.dividas || []).forEach(function (d) {
+      if (!d || d.paga || d.cobrada) return;
+      if (d.prazoMes == null || d.prazoMes > k) return;
+      d.cobrada = true;
+      saiu.push(d);
+      if (typeof manchete === "function") {
+        if (d.tipo === "podem") {
+          manchete("Favor a receber: " + d.quem + " te deve " + d.oque + ". Dá para cobrar neste mês.", "leg");
+        } else {
+          manchete("Cobrança política: " + d.quem + " exige " + d.oque + ". A dívida de " + (d.valor || 0) + " de capital venceu.", "leg");
+        }
+      }
+    });
+    return saiu;
+  }
+
+  function feedbackLeis(f) {
+    var linhas = [];
+    try {
+      (M().leg.pls || []).forEach(function (pl) {
+        if (!pl || pl.fim !== "SANCIONADO") return;
+        var id = String(pl.id || pl.nome || "");
+        if (!id || f.vistos[id]) return;
+        f.vistos[id] = true;
+        var nome = pl.titulo || pl.nome || "projeto";
+        f.historico.aprovados.push({ nome: nome, casa: pl.casaNome || "", mes: mesKey() });
+        f.legado = clamp(f.legado + 8, 0, 100);
+        f.influencia = clamp(f.influencia + 3, 0, 100);
+        if (/dengue/i.test(nome)) {
+          var d0 = f.dengue;
+          f.dengue = Math.max(8, f.dengue - 11);
+          linhas.push("Dengue: " + d0 + " → " + f.dengue + " por 10 mil");
+          if (typeof manchete === "function") manchete("Lei sancionada (“" + nome + "”): a dengue caiu de " + d0 + " para " + f.dengue + " casos por 10 mil habitantes.", "leg");
+        } else if (/exame|saúde|saude|enferm|ubs|fila/i.test(nome)) {
+          var a0 = f.filaExames;
+          f.filaExames = Math.max(12, f.filaExames - 14);
+          linhas.push("Fila de exames: " + a0 + "% → " + f.filaExames + "%");
+          if (typeof manchete === "function") manchete("Lei sancionada (“" + nome + "”): a fila de exames caiu de " + a0 + "% para " + f.filaExames + "%.", "leg");
+        } else {
+          rel(f, "relPrefeito", 4);
+          linhas.push("Relação com o prefeito: " + f.relPrefeito);
+          if (typeof manchete === "function") manchete("Efeito da lei “" + nome + "”: o legado do mandato subiu e a relação com o prefeito foi a " + f.relPrefeito + ".", "leg");
+        }
+      });
+    } catch (e) {}
+    return linhas;
+  }
+
+  function itemCobranca(d) {
+    var cobrar = d.tipo === "podem";
+    return {
+      id: "cob-" + d.id,
+      origem: "cobranca",
+      quem: d.quem,
+      titulo: (cobrar ? "Você pode cobrar: " : "Dívida vencida: ") + d.quem,
+      detalhe: d.oque + " — prazo " + rotMes(d.prazoMes) + ".",
+      tipo: cobrar ? "cobrar" : "pagar",
+      dividaId: d.id,
+      custoPontos: 0,
+      atendida: false,
+      faltou: false
+    };
+  }
+
+  function syncMes() {
+    var f = fase();
+    if (!f) return null;
+    var k = mesKey();
+    if (f.mes == null) {
+      marcarVistos(f);
+      f.mes = k;
+      f.pontos = f.pontosMax;
+      f.agenda = montarAgenda();
+      if (!f.efeitoMes) f.efeitoMes = "Mandato em curso. Nada cobrado ainda.";
+      return f;
+    }
+    if (f.mes === k) {
+      if (!f.agenda || !f.agenda.length) f.agenda = montarAgenda();
+      return f;
+    }
+    var capAntes = f.capital;
+    var filaAntes = f.filaExames;
+    var movAntes = f.relMovimento;
+    cobrarFaltas(f);
+    var cobrancas = cobrarDividas(f);
+    var leis = feedbackLeis(f);
+    f.capital = clamp(f.capital + 6, 0, f.capitalMax);
+    f.pontos = f.pontosMax;
+    f.mes = k;
+    f.agenda = montarAgenda();
+    cobrancas.slice().reverse().forEach(function (d) { f.agenda.unshift(itemCobranca(d)); });
+    var pedacos = [];
+    cobrancas.forEach(function (d) {
+      pedacos.push((d.tipo === "podem" ? "Favor de " : "Cobrança de ") + d.quem);
+    });
+    pedacos.push("Capital político: " + capAntes + " → " + f.capital);
+    if (f.relMovimento !== movAntes) pedacos.push("Base: " + movAntes + " → " + f.relMovimento);
+    if (f.filaExames !== filaAntes) pedacos.push("Fila de exames: " + filaAntes + "% → " + f.filaExames + "%");
+    leis.forEach(function (l) { pedacos.push(l); });
+    f.efeitoMes = pedacos.join(" · ");
+    f._priorizar = 8;
+    return f;
+  }
+
+  function priorizarFeed() {
+    try {
+      var f = fase();
+      if (!f || !f._priorizar) return;
+      f._priorizar -= 1;
+      var feed = M().feedMes || [];
+      var topo = [];
+      var resto = [];
+      feed.forEach(function (x) {
+        if (x && /Cobrança política|você não atendeu|Lei sancionada|fila de exames caiu|dengue caiu|Efeito da lei/.test(x.txt || "")) topo.push(x);
+        else resto.push(x);
+      });
+      if (topo.length) M().feedMes = topo.concat(resto);
+    } catch (e) {}
+  }
+
+  function novaDivida(f, quem, oque, valor, tipo) {
+    f.seq = (f.seq || 0) + 1;
+    var d = {
+      id: "dv" + f.seq,
+      quem: quem,
+      oque: oque,
+      prazoMes: mesKey() + 1,
+      valor: valor || 0,
+      tipo: tipo || "devo",
+      cobrada: false,
+      paga: false
+    };
+    f.dividas.push(d);
+    return d;
+  }
+
+  function acharDivida(f, id) {
+    return (f.dividas || []).filter(function (d) { return d && d.id === id; })[0] || null;
+  }
+
+  A.fase1Atender = function (id) {
+    var f = syncMes();
+    if (!f) { toast("Isso é da cadeira legislativa.", "err"); return; }
+    var it = (f.agenda || []).filter(function (x) { return x && x.id === id; })[0];
+    if (!it || it.atendida) return;
+    if (it.origem === "cobranca") { toast("Use pagar ou cobrar nesta dívida.", "err"); return; }
+    if (f.pontos < 1) { toast("Sem pontos de ação neste mês. Você escolhe onde falta.", "err"); return; }
+    f.pontos -= 1;
+    it.atendida = true;
+    if (it.origem === "governo") {
+      rel(f, "relGoverno", 8);
+      rel(f, "relOposicao", -5);
+      if (typeof manchete === "function") manchete("Você encampou a MP do governo. A oposição anota o voto e a imprensa chama de alinhamento.", "leg");
+    } else if (it.origem === "oposicao") {
+      rel(f, "relOposicao", 8);
+      rel(f, "relGoverno", -6);
+      if (typeof manchete === "function") manchete("Você topou a pauta-bomba da oposição. O governo registra o desaforo.", "leg");
+    } else if (it.origem === "movimento") {
+      rel(f, "relMovimento", 8);
+      f.filaExames = Math.max(15, f.filaExames - 4);
+      novaDivida(f, nomeMov(), "apoio público na próxima votação da base", 6, "podem");
+      if (typeof manchete === "function") manchete(nomeMov() + " viu você na pauta da base. O favor fica registrado para cobrança.", "leg");
+    } else if (it.origem === "comissao") {
+      f.historico.emendas += 1;
+      f.influencia = clamp(f.influencia + 3, 0, 100);
+      novaDivida(f, "Relator da comissão", "devolver o apoio na emenda", 4, "devo");
+    } else {
+      f.influencia = clamp(f.influencia + 2, 0, 100);
+      if (typeof manchete === "function") manchete("Entrevista dada. A cadeira apareceu no noticiário do mês.", "imprensa");
+    }
+    toast("1 ponto de ação em: " + it.titulo + ". Restam " + f.pontos + ".", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase1Capital = function () {
+    var f = syncMes();
+    if (!f) { toast("Capital político é de quem tem mandato legislativo.", "err"); return; }
+    if (f.capital < 8) { toast("Capital político insuficiente (precisa 8).", "err"); return; }
+    f.capital -= 8;
+    var d = novaDivida(f, "Líder do governo na casa", "voto favorável na matéria do governo", 8, "devo");
+    toast("Capital gasto. Dívida com " + d.quem + " vence em " + rotMes(d.prazoMes) + ".", "ok");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase1Pagar = function (id) {
+    var f = syncMes();
+    if (!f) return;
+    var d = acharDivida(f, id);
+    if (!d || d.paga) return;
+    if (f.capital < 6) { toast("Faltam 6 de capital político para quitar.", "err"); return; }
+    f.capital -= 6;
+    d.paga = true;
+    d.cobrada = true;
+    f.historico.dividasPagas += 1;
+    rel(f, "relGoverno", 5);
+    (f.agenda || []).forEach(function (it) { if (it && it.dividaId === id) it.atendida = true; });
+    toast("Dívida paga com " + d.quem + ".", "ok");
+    if (typeof manchete === "function") manchete("Você quitou a dívida com " + d.quem + ": " + d.oque + ".", "leg");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase1Cobrar = function (id) {
+    var f = syncMes();
+    if (!f) return;
+    var d = acharDivida(f, id);
+    if (!d || d.paga || d.tipo !== "podem") return;
+    if (!d.cobrada && d.prazoMes > mesKey()) { toast("Esse favor só vence em " + rotMes(d.prazoMes) + ".", "err"); return; }
+    d.paga = true;
+    d.cobrada = true;
+    f.capital = clamp(f.capital + 6, 0, f.capitalMax);
+    f.historico.dividasPagas += 1;
+    (f.agenda || []).forEach(function (it) { if (it && it.dividaId === id) it.atendida = true; });
+    toast("Você cobrou " + d.quem + ". +6 de capital político.", "ok");
+    if (typeof manchete === "function") manchete("Favor cobrado: " + d.quem + " devolveu " + d.oque + ".", "leg");
+    try { render(); } catch (e) {}
+  };
+
+  A.fase1Plenario = function () {
+    if (!legislador()) { toast("O plenário abre para vereador, deputado ou senador.", "err"); return; }
+    try { syncMes(); } catch (e) {}
+    if (typeof iniciarSessaoLegislativa === "function") iniciarSessaoLegislativa(0, false);
+  };
+
+  function membro(sl, id) {
+    return (sl.membros || []).filter(function (m) { return m && m.id === id; })[0] || null;
+  }
+  function recount(sl) {
+    var s = 0, n = 0, a = 0;
+    Object.keys(sl.votos || {}).forEach(function (k) {
+      var v = sl.votos[k];
+      if (v === "S") s++;
+      else if (v === "N") n++;
+      else if (v === "A") a++;
+    });
+    sl.placar = { sim: s, nao: n, abst: a, total: s + n + a };
+  }
+  function refreshProj(p) {
+    p.sim = p.simIds.length;
+    p.nao = p.naoIds.length;
+    p.indecisos = p.indecisosIds.length;
+  }
+  function projetar(sl) {
+    if (!sl || sl.fase1Proj) return sl && sl.fase1Proj;
+    var membros = (sl.membros || []).filter(function (m) { return m && !m.jogador && m.id !== "JOGADOR"; });
+    var npc = membros.length;
+    var indN = Math.max(15, Math.round(npc * 0.38));
+    if (indN > npc - 2) indN = Math.max(1, npc - 2);
+    var ind = membros.slice(0, indN);
+    var resto = membros.slice(indN);
+    var simN = Math.round(resto.length * 0.55);
+    var p = {
+      simIds: resto.slice(0, simN).map(function (m) { return m.id; }),
+      naoIds: resto.slice(simN).map(function (m) { return m.id; }),
+      indecisosIds: ind.map(function (m) { return m.id; }),
+      forcados: {},
+      usadas: {},
+      abertura: null,
+      ultimoCusto: "",
+      virados: 0
+    };
+    refreshProj(p);
+    p.abertura = { sim: p.sim, nao: p.nao, indecisos: p.indecisos };
+    sl.fase1Proj = p;
+    return p;
+  }
+  function aplicarVoto(sl, p, id, voto) {
+    sl.votos = sl.votos || {};
+    if (voto) {
+      sl.votos[id] = voto;
+      p.forcados[id] = voto;
+      var m = membro(sl, id);
+      if (m) m._biasSessao = voto === "S" ? 1.4 : (voto === "N" ? -1.4 : 0);
+    } else {
+      delete sl.votos[id];
+      delete p.forcados[id];
+    }
+  }
+  function mover(sl, p, de, para, n, voto) {
+    var src = p[de];
+    var dst = p[para];
+    var pegos = src.splice(0, Math.max(0, n));
+    pegos.forEach(function (id) {
+      dst.push(id);
+      aplicarVoto(sl, p, id, voto);
+    });
+    refreshProj(p);
+    recount(sl);
+    return pegos.length;
+  }
+  function sorte(min, max, teto) {
+    var n = min + Math.floor(Math.random() * (max - min + 1));
+    if (teto != null && n > teto) n = teto;
+    return n;
+  }
+
+  A.fase1Ferramenta = function (qual) {
+    var sl = (typeof S !== "undefined") ? S.sessaoLeg : null;
+    if (!sl || sl.concluida) { toast("Não há votação aberta.", "err"); return; }
+    var f = syncMes();
+    if (!f) return;
+    var p = projetar(sl);
+    if (p.usadas[qual]) { toast("Essa ferramenta já foi usada nesta sessão.", "err"); return; }
+    var n = 0;
+    var custo = "";
+    if (qual === "indecisos") {
+      if (f.capital < 4) { toast("Conversar com indecisos custa 4 de capital político.", "err"); return; }
+      n = sorte(15, 22, p.indecisosIds.length);
+      if (n < 1) { toast("Não há indecisos para conversar.", "err"); return; }
+      f.capital -= 4;
+      n = mover(sl, p, "indecisosIds", "simIds", n, "S");
+      p.virados += n;
+      novaDivida(f, "Líder dos indecisos", "o corredor que você pediu no plenário", 4, "devo");
+      custo = "Custo: 4 de capital político. O líder dos indecisos anotou a dívida para o mês que vem. " + n + " votos foram para o sim.";
+    } else if (qual === "caixa2") {
+      var j = J();
+      j.financas = j.financas || {};
+      var saldo = Number(j.financas.caixa2) || 0;
+      if (saldo < 50000) { toast("Caixa 2 insuficiente (R$ 50 mil).", "err"); return; }
+      j.financas.caixa2 = saldo - 50000;
+      n = sorte(20, 30, p.indecisosIds.length);
+      if (n < 1) { toast("Não há indecisos para comprar.", "err"); return; }
+      n = mover(sl, p, "indecisosIds", "simIds", n, "S");
+      p.virados += n;
+      try { if (typeof addEscandalo === "function") addEscandalo(4); } catch (e) {}
+      if (typeof manchete === "function") manchete("Bastidor: caixa 2 no plenário pode ter vazado. A imprensa pergunta de onde saiu o dinheiro.", "imprensa");
+      custo = "Custo: R$ 50 mil de caixa 2 e risco de vazamento. " + n + " votos viraram para o sim.";
+    } else if (qual === "lideres") {
+      n = sorte(15, 25, p.indecisosIds.length + p.naoIds.length);
+      var daInd = Math.min(n, p.indecisosIds.length);
+      var a = mover(sl, p, "indecisosIds", "simIds", daInd, "S");
+      var b = mover(sl, p, "naoIds", "simIds", n - a, "S");
+      n = a + b;
+      if (!n) { toast("As bancadas já estão contadas.", "err"); return; }
+      p.virados += n;
+      novaDivida(f, "Líder de bancada", "o apoio que você colou no plenário", 6, "devo");
+      custo = "Custo: o líder cobra depois. Dívida registrada. " + n + " votos colaram no sim.";
+    } else if (qual === "quorum") {
+      if (f.pontos < 1) { toast("Verificação de quórum custa 1 ponto de ação.", "err"); return; }
+      f.pontos -= 1;
+      n = Math.min(12, p.naoIds.length);
+      n = mover(sl, p, "naoIds", "indecisosIds", n, "A");
+      rel(f, "relGoverno", -3);
+      custo = "Custo: 1 ponto de ação e desgaste com o governo. " + n + " votos contrários saíram do quórum.";
+    } else if (qual === "obstrucao") {
+      n = Math.min(20, p.simIds.length);
+      if (!n) { toast("Não há votos de sim para segurar.", "err"); return; }
+      p.simIds.splice(0, n).forEach(function (id) {
+        p.indecisosIds.push(id);
+        aplicarVoto(sl, p, id, null);
+      });
+      refreshProj(p);
+      recount(sl);
+      rel(f, "relMovimento", -8);
+      if (typeof manchete === "function") manchete("O movimento de base estranhou o discurso de obstrução. A base esfriou.", "leg");
+      custo = "Custo: o movimento de base se ofendeu (relação " + f.relMovimento + "). O discurso segurou " + n + " votos e o prazo estoura.";
+      sl.fase1PrazoEstourado = true;
+    } else if (qual === "destaque") {
+      n = sorte(15, 30, p.simIds.length + p.indecisosIds.length);
+      var ds = Math.min(n, p.simIds.length);
+      var x = mover(sl, p, "simIds", "naoIds", ds, "N");
+      var y = mover(sl, p, "indecisosIds", "naoIds", n - x, "N");
+      n = x + y;
+      if (!n) { toast("Não há texto para destacar.", "err"); return; }
+      p.virados += n;
+      rel(f, "relGoverno", -6);
+      if (typeof manchete === "function") manchete("Destaque supressivo de surpresa. O governo não esperava perder esse trecho.", "leg");
+      custo = "Custo: o governo se ofendeu. " + n + " votos mudaram com o destaque.";
+    } else {
+      toast("Ferramenta desconhecida.", "err");
+      return;
+    }
+    p.usadas[qual] = true;
+    p.ultimoCusto = custo;
+    f.ferramentasMes = (f.ferramentasMes || 0) + 1;
+    toast(custo, "ok");
+    try { render(); } catch (e) {}
+  };
+
+  function reaplicarSessao() {
+    var sl = (typeof S !== "undefined") ? S.sessaoLeg : null;
+    if (!sl || !sl.fase1Proj || !sl.fase1Proj.forcados) return;
+    var p = sl.fase1Proj;
+    sl.votos = sl.votos || {};
+    Object.keys(p.forcados).forEach(function (id) {
+      sl.votos[id] = p.forcados[id];
+    });
+    recount(sl);
+    if (sl.concluida && !p.resultadoAjustado && sl.resultado) {
+      var plc = sl.placar || { sim: 0, nao: 0 };
+      var need = sl.materia && sl.materia.tipo === "PEC" ? 0.6 : 0.5;
+      var base = (plc.sim + plc.nao) || 1;
+      var pct = sl.materia && sl.materia.tipo === "PEC" ? (plc.sim / (sl.cap || 1)) : (plc.sim / base);
+      sl.resultado.ok = pct >= need;
+      sl.resultado.sim = Math.round(pct * 1000) / 10;
+      sl.resultado.votosSim = plc.sim;
+      sl.resultado.votosNao = plc.nao;
+      sl.resultado.votosAbst = plc.abst;
+      if (sl.materia) sl.materia.res = { ok: sl.resultado.ok, sim: sl.resultado.sim };
+      p.resultadoAjustado = true;
+    }
+  }
+
+  function chip(rot, n, cor) {
+    return '<div style="min-width:88px;padding:8px 10px;border-radius:8px;background:' + cor + ';text-align:center"><div style="font-size:11px;letter-spacing:.06em;opacity:.8">' + rot + '</div><b style="font-size:1.35rem;display:block">' + n + '</b></div>';
+  }
+  function painelPlenario() {
+    var sl = S.sessaoLeg;
+    if (!sl) return "";
+    var p = projetar(sl);
+    var ab = p.abertura || { sim: p.sim, nao: p.nao, indecisos: p.indecisos };
+    var ferramentas = "";
+    if (!sl.concluida) {
+      ferramentas = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">'
+        + btn("Conversar com indecisos", "fase1Ferramenta", ["indecisos"], "mini confirma", !!p.usadas.indecisos)
+        + btn("Caixa 2", "fase1Ferramenta", ["caixa2"], "mini corrige", !!p.usadas.caixa2)
+        + btn("Colar em líderes", "fase1Ferramenta", ["lideres"], "mini", !!p.usadas.lideres)
+        + btn("Verificar quórum", "fase1Ferramenta", ["quorum"], "mini branco", !!p.usadas.quorum)
+        + btn("Obstrução", "fase1Ferramenta", ["obstrucao"], "mini branco", !!p.usadas.obstrucao)
+        + btn("Destaque supressivo", "fase1Ferramenta", ["destaque"], "mini corrige", !!p.usadas.destaque)
+        + "</div>";
+    }
+    var depois = "";
+    if (p.ultimoCusto) {
+      depois = '<p id="fase1-custo" class="txt" style="margin:8px 0 0"><b>Depois da ferramenta:</b> SIM ' + p.sim + ' · NÃO ' + p.nao + ' · INDECISOS ' + p.indecisos + '. ' + E(p.ultimoCusto) + '</p>';
+    }
+    return '<div id="fase1-placar" data-fase1-sim="' + ab.sim + '" data-fase1-nao="' + ab.nao + '" data-fase1-ind="' + ab.indecisos + '" data-fase1-sim-agora="' + p.sim + '" data-fase1-nao-agora="' + p.nao + '" data-fase1-ind-agora="' + p.indecisos + '" style="margin:8px 12px;padding:12px 14px;border:1px solid rgba(212,175,55,.5);border-radius:10px;background:rgba(0,0,0,.38)">'
+      + '<div style="font-weight:800">Placar provável — o plenário ainda não decidiu</div>'
+      + '<p class="txt" style="margin:4px 0 8px">Antes do voto: SIM ' + ab.sim + ', NÃO ' + ab.nao + ', INDECISOS ' + ab.indecisos + '. Dá para virar de 15 a 30 votos. Também dá para perder.</p>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      + chip("SIM", ab.sim, "rgba(46,204,113,.18)")
+      + chip("NÃO", ab.nao, "rgba(231,76,60,.18)")
+      + chip("INDECISOS", ab.indecisos, "rgba(255,255,255,.08)")
+      + "</div>"
+      + ferramentas
+      + depois
+      + "</div>";
+  }
+
+  function barra(rot, val, id) {
+    var v = clamp(val, 0, 100);
+    return '<div class="row"><span class="grow">' + rot + '</span><b id="' + id + '">' + v + '</b></div>' + (typeof bar === "function" ? bar(v) : "");
+  }
+  function htmlAgenda() {
+    var f = syncMes();
+    if (!f) return "";
+    var itens = (f.agenda || []).map(function (it) {
+      var selo = it.origem === "governo" ? "Governo" : it.origem === "oposicao" ? "Oposição" : it.origem === "movimento" ? "Movimento" : it.origem === "cobranca" ? "Dívida" : it.origem === "imprensa" ? "Imprensa" : "Comissão";
+      var botao = "";
+      if (it.atendida) botao = '<p class="done">Atendido neste mês.</p>';
+      else if (it.origem === "cobranca" && it.tipo === "pagar") botao = btn("Pagar dívida (6 de capital)", "fase1Pagar", [it.dividaId], "mini confirma");
+      else if (it.origem === "cobranca") botao = btn("Cobrar o favor", "fase1Cobrar", [it.dividaId], "mini confirma");
+      else botao = btn("Atender (1 ponto)", "fase1Atender", [it.id], "mini confirma", f.pontos < 1);
+      return '<div style="border:1px solid var(--linha);border-radius:8px;padding:8px 10px;margin:6px 0">'
+        + '<div class="row"><b class="grow">' + E(it.titulo) + '</b><span class="tag">' + selo + '</span></div>'
+        + '<p class="txt" style="margin:4px 0">' + E(it.detalhe) + '</p>'
+        + '<p class="txt" style="margin:0"><small>Quem cobra se você faltar: ' + E(it.quem) + '</small></p>'
+        + botao
+        + "</div>";
+    }).join("");
+    var abertas = (f.dividas || []).filter(function (d) { return d && !d.paga; });
+    var dividas = abertas.length
+      ? abertas.map(function (d) {
+          return "<li>" + E(d.quem) + " — " + E(d.oque) + " · " + (d.tipo === "podem" ? "a receber" : "a pagar") + " · " + E(rotMes(d.prazoMes)) + (d.cobrada ? " · vencida" : "") + "</li>";
+        }).join("")
+      : "<li>Nenhuma dívida aberta. Gastar capital político abre uma.</li>";
+    var leis = [];
+    var vistoLei = {};
+    (f.historico.aprovados || []).forEach(function (p) {
+      if (p && p.nome && !vistoLei[p.nome]) { vistoLei[p.nome] = true; leis.push(p.nome); }
+    });
+    try {
+      (M().leg.pls || []).forEach(function (pl) {
+        if (pl && pl.fim === "SANCIONADO") {
+          var n = pl.titulo || pl.nome;
+          if (n && !vistoLei[n]) { vistoLei[n] = true; leis.push(n); }
+        }
+      });
+    } catch (e) {}
+    var j = J();
+    var coms = (j && j.comissoes) || 0;
+    return '<section class="card acc" id="fase1-agenda">'
+      + "<h3>Agenda do mês e capital político</h3>"
+      + '<p class="txt">Três pontos de ação. A pauta não é só sua: governo, oposição e o movimento de base também colocam matéria na mesa. O que você não atender cobra depois.</p>'
+      + '<p class="txt"><b id="fase1-pontos">' + f.pontos + "</b> de " + f.pontosMax + " pontos de ação · capital político <b id=\"fase1-capital\">" + f.capital + "</b>/" + f.capitalMax + "</p>"
+      + barra("Capital político", f.capital, "fase1-capital-bar")
+      + barra("Influência legislativa", f.influencia, "fase1-influencia")
+      + barra("Legado do mandato", f.legado, "fase1-legado")
+      + '<div class="grid2">'
+      + '<div class="row"><span class="grow">Fila de exames</span><b id="fase1-fila">' + f.filaExames + "%</b></div>"
+      + '<div class="row"><span class="grow">Dengue (por 10 mil)</span><b id="fase1-dengue">' + f.dengue + "</b></div>"
+      + '<div class="row"><span class="grow">Relação com o prefeito</span><b id="fase1-prefeito">' + f.relPrefeito + "</b></div>"
+      + '<div class="row"><span class="grow">Base do movimento</span><b id="fase1-base">' + f.relMovimento + "</b></div>"
+      + "</div>"
+      + (f.efeitoMes ? '<p class="txt" id="fase1-efeito"><b>Ao avançar:</b> ' + E(f.efeitoMes) + "</p>" : "")
+      + '<div class="stack" style="margin:8px 0">' + btn("Gastar 8 de capital para negociar um voto", "fase1Capital", [], "confirma", f.capital < 8) + btn("Abrir o plenário", "fase1Plenario", [], "branco") + "</div>"
+      + itens
+      + '<h4 id="fase1-dividas">Dívidas políticas</h4><ul>' + dividas + "</ul>"
+      + '<details id="fase1-mandato"><summary><b>O que fiz no mandato</b></summary>'
+      + "<ul>"
+      + "<li>Projetos aprovados: " + (leis.length ? leis.map(E).join("; ") : "nenhum ainda") + "</li>"
+      + "<li>Comissões presididas: " + coms + "</li>"
+      + "<li>CPIs: " + (f.historico.cpis || 0) + "</li>"
+      + "<li>Emendas: " + (f.historico.emendas || 0) + "</li>"
+      + "<li>Dívidas abertas: " + abertas.length + " · pagas ou cobradas: " + (f.historico.dividasPagas || 0) + "</li>"
+      + "</ul></details>"
+      + "</section>";
+  }
+
+  if (typeof VIEWS !== "undefined" && typeof VIEWS.mes === "function" && !VIEWS.mes._fase1) {
+    var _vm = VIEWS.mes;
+    VIEWS.mes = function () {
+      var h = _vm.apply(this, arguments) || "";
+      try {
+        var card = htmlAgenda();
+        if (card && String(h).indexOf("fase1-agenda") < 0) h = card + h;
+      } catch (e2) { console.warn("fase1 mes", e2); }
+      return h;
+    };
+    VIEWS.mes._fase1 = true;
+    VIEWS.mes._navhGuard = true;
+  }
+  if (typeof VIEWS !== "undefined" && typeof VIEWS.poder === "function" && !VIEWS.poder._fase1) {
+    var _vp = VIEWS.poder;
+    VIEWS.poder = function () {
+      var h = _vp.apply(this, arguments) || "";
+      try {
+        var card = htmlAgenda();
+        if (card && String(h).indexOf("fase1-agenda") < 0) h = card + h;
+      } catch (e2) { console.warn("fase1 poder", e2); }
+      return h;
+    };
+    VIEWS.poder._fase1 = true;
+    if (_vp._obras) VIEWS.poder._obras = true;
+  }
+
+  if (typeof modais === "function" && !modais._fase1) {
+    var _md = modais;
+    modais = function () {
+      var h = _md.apply(this, arguments) || "";
+      try {
+        if (S && S.modal && S.modal.tipo === "sessao_leg" && String(h).indexOf("fase1-placar") < 0 && String(h).indexOf("sessao-painel-led") >= 0) {
+          h = String(h).replace('<div class="sessao-painel-led">', painelPlenario() + '<div class="sessao-painel-led">');
+        }
+      } catch (e) { console.warn("fase1 plenario", e); }
+      return h;
+    };
+    modais._fase1 = true;
+  }
+
+  if (typeof render === "function" && !render._fase1) {
+    var _rd = render;
+    render = function () {
+      try { syncMes(); } catch (e) {}
+      try { reaplicarSessao(); } catch (e2) {}
+      var out = _rd.apply(this, arguments);
+      try { priorizarFeed(); } catch (e3) {}
+      return out;
+    };
+    render._fase1 = true;
+    window.render = render;
+  }
+
+  if (typeof avancarMes === "function" && !avancarMes._fase1) {
+    var _av = avancarMes;
+    avancarMes = function () {
+      var r = _av.apply(this, arguments);
+      try { syncMes(); priorizarFeed(); } catch (e) { console.warn("fase1 avancar", e); }
+      return r;
+    };
+    avancarMes._fase1 = true;
+    window.avancarMes = avancarMes;
+  }
+
+  if (typeof carregarStr === "function" && !carregarStr._fase1) {
+    var _cs = carregarStr;
+    carregarStr = function (s) {
+      var ok = _cs.apply(this, arguments);
+      try { if (ok) syncMes(); } catch (e) {}
+      return ok;
+    };
+    carregarStr._fase1 = true;
+    window.carregarStr = carregarStr;
+  }
+
+  if (typeof A.avancar === "function" && !A.avancar._fase1) {
+    var _aa = A.avancar;
+    A.avancar = function () {
+      var r = _aa.apply(this, arguments);
+      try { priorizarFeed(); } catch (e) {}
+      return r;
+    };
+    A.avancar._fase1 = true;
+    A.avancar._dip = true;
+  }
+})();
+</script>
 </body>
 </html>
