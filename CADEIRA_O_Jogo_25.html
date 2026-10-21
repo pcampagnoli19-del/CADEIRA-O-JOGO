@@ -3739,7 +3739,7 @@ function gerarPoliticoProcedural(cargoAlvo, esfera, partidoForcado=null, opt={})
   const uf = opt.uf || (/Mauá|Estadual|Vereador/.test(cargoAlvo) ? "SP" : R.p(UFS));
   const mun = /Mauá/.test(cargoAlvo) ? "Mauá" : (uf==="SP"?R.p(["Mauá","Santo André","São Bernardo do Campo","Diadema","Guarulhos","Campinas","Ribeirão Preto","Santos","Sorocaba","Osasco","São Paulo"]):"Capital ("+uf+")");
   const n = {
-    id: `PROC_${cargoAlvo.substring(0,3).toUpperCase()}_${Math.floor(10000 + Math.random() * 90000)}`,
+    id: `PROC_${cargoAlvo.substring(0,3).toUpperCase()}_${Date.now().toString(36)}_${(window.__procSeq = (window.__procSeq || 0) + 1)}_${Math.floor(10000 + Math.random() * 90000)}`,
     nome, real:false, vivo:true, idade, saude, sexo, cargo:cargoAlvo, papel:cargoAlvo, base:arq.id, esfera, partido, partidoBase:partido,
     uf, municipio_domicilio:mun, arquetipo:arq.id,
     bancadas: arq.bancada ? [arq.bancada].concat(R.chance(.35)?[R.p(BANCADAS)].filter(b=>b!==arq.bancada):[]) : sortearBancadas(),
@@ -40404,6 +40404,35 @@ document.addEventListener("click", function(e){
   function prioridadeReaisAtiva() {
     try { return dt().ano <= 2036; } catch (e) { return true; }
   }
+  // Chave de agremiação para o limite constitucional do Senado:
+  // federação conta como um só partido; senão, vale a legenda.
+  function chavePartidoFed(n) {
+    if (!n) return "";
+    var p = n.partidoBase || n.partido || "";
+    if (!p) return "";
+    try {
+      var f = (typeof fedDe === "function") ? fedDe(p) : null;
+      if (f && f.id) return "FED:" + f.id;
+    } catch (e) {}
+    return "P:" + p;
+  }
+  // IDs de quem já está na disputa presidencial deste ano (exclusividade entre cargos).
+  function idsPresidenciais() {
+    try {
+      var E = M().eleicao;
+      if (E._presIds && E._presIdsAno === dt().ano) return E._presIds;
+      var lista = [];
+      try {
+        var base = (typeof _cm === "function") ? _cm("PRES") : [];
+        lista = (base || []).filter(function (x) {
+          return x && x.npc && !conflitoCargoCandidato(x.npc, "PRES");
+        }).map(function (x) { return x.npc.id; });
+      } catch (e2) {}
+      E._presIds = lista;
+      E._presIdsAno = dt().ano;
+      return lista;
+    } catch (e) { return []; }
+  }
   function alvoSenado(uf) { return 12 + (hashStr(uf + "|" + dt().ano + "|n") % 5); }
   function geralAgora() { try { return tipoEleicao(dt().ano) === "GERAL"; } catch (e) { return false; } }
   function vagasAgora() { return dt().ano % 8 === 2 ? 2 : 1; }
@@ -40566,6 +40595,18 @@ document.addEventListener("click", function(e){
     var alvo = alvoSenado(uf);
     var ids = {};
     var govIds = {};
+    // Limite do Senado: no máximo 2 candidatos por partido/federação.
+    var contagemSenado = {};
+    var presIds = idsPresidenciais();
+    function cabeSenado(n) {
+      if (!n) return false;
+      if (presIds.length && presIds.indexOf(n.id) >= 0) return false;
+      var ch = chavePartidoFed(n);
+      if (!ch) return true;
+      if ((contagemSenado[ch] || 0) >= 2) return false;
+      contagemSenado[ch] = (contagemSenado[ch] || 0) + 1;
+      return true;
+    }
     try {
       var est = M().eleicao.est && M().eleicao.est[uf];
       ((est && est.gov) || []).forEach(function (c) { if (c.id) govIds[c.id] = 1; });
@@ -40575,6 +40616,16 @@ document.addEventListener("click", function(e){
     var fica = {};
     bancoDeNPCs.forEach(function (n) {
       if (n.vivo && n.cargo === "Senador da República" && n.uf === uf && n.mandato_fim !== ano) fica[n.id] = 1;
+    });
+
+    // Corta a lista de entrada pelo limite partidário e por conflito de cargo.
+    lista = lista.filter(function (c) {
+      var n = c && (c.npc || (c.id && npcPorId(c.id)));
+      if (!n) return false;
+      if (uf && n.uf && n.uf !== uf) return false;
+      if (govIds[n.id]) return false;
+      if (conflitoCargoCandidato(n, "SEN", uf)) return false;
+      return cabeSenado(n);
     });
 
     // Ajustar scores dos que já vieram na lista (reais sempre acima dos fictícios nas primeiras eleições)
@@ -40604,9 +40655,12 @@ document.addEventListener("click", function(e){
     // Garante que todos os reais do estado entrem antes de qualquer corte
     pool.forEach(function (n) {
       if (lista.length >= alvo && !n.real) return;
+      if (!cabeSenado(n)) return;
       ids[n.id] = 1;
       var inc = !!(n.cargo === "Senador da República" && n.mandato_fim === ano && (n.real || !prio));
       var baseSc = (typeof scoreCand === "function") ? scoreCand(n, inc) : (n.popularidade + (inc ? 8 : 0));
+      // Designados ao Senado (ex.: Marina, Tebet) entram com prioridade na urna.
+      if (prio && CAND_CARGO_DESIGNADO[n.nome] === "SEN") baseSc += 45;
       lista.push({id: n.id, score: scoreComPrioridadeReal(n, baseSc, inc), inc: inc, npc: n});
     });
 
@@ -40620,13 +40674,15 @@ document.addEventListener("click", function(e){
         if (lista.length >= alvo || ids[id]) return;
         var n = npcPorId(id);
         if (!n || !n.vivo) return;
+        if (!cabeSenado(n)) return;
         ids[id] = 1;
         var sc2 = scoreComPrioridadeReal(n, (typeof scoreCand === "function") ? Math.min(scoreCand(n, false), 28) : n.popularidade, false);
         lista.push({id: id, score: sc2, inc: false, npc: n});
       });
       var guard = 0;
-      while (lista.length < alvo && guard++ < 24) {
+      while (lista.length < alvo && guard++ < 60) {
         var t = gerarNovoPoliticoProcedural("Liderança / Ex-Titular", "ESTADUAL", null, {uf: uf, idade: R.i(36, 72)});
+        if (!cabeSenado(t)) continue;
         t.ambicao_alta = true;
         t.popularidade = R.c(14 + (hashStr(t.id) % 18), 8, 34);
         ids[t.id] = 1;
@@ -40683,7 +40739,7 @@ document.addEventListener("click", function(e){
     "Ciro Gomes": "PRES"
   };
 
-  function conflitoCargoCandidato(n, cargoId) {
+  function conflitoCargoCandidato(n, cargoId, uf) {
     if (!n) return false;
     var nome = n.nome || "";
     var desig = CAND_CARGO_DESIGNADO[nome];
@@ -40694,16 +40750,24 @@ document.addEventListener("click", function(e){
       else if (kn === "tarcisiodefreitas" || kn === "fernandohaddad") desig = "GOV";
     }
     if (desig && desig !== cargoId) return true;
-    if (cargoId === "SEN" && n.cargo === "Senador da RepÃºblica" && (n.mandato_fim || 0) > dt().ano) return true;
-    if (cargoId === "SEN" && (n.cargo === "Governador de SP" || n.cargo === "Presidente da RepÃºblica")) return true;
-    if (cargoId === "GOV" && (n.cargo === "Governador" && n.uf && n.uf !== "SP")) return true;
+    // UF do pleito: por padrão SP (único estado com disputa simulada no núcleo do jogo).
+    var pleitoUF = uf || "SP";
+    if (cargoId === "SEN" && n.cargo === "Senador da República" && (n.mandato_fim || 0) > dt().ano) return true;
+    if (cargoId === "SEN" && (n.cargo === "Governador de SP" || n.cargo === "Presidente da República")) return true;
+    if (cargoId === "GOV" && n.cargo === "Governador" && n.uf && n.uf !== pleitoUF) return true;
     return false;
   }
 
   var _cm = candidatosMajoritarios;
   candidatosMajoritarios = function (cargoId) {
+    var presIds = (cargoId !== "PRES") ? idsPresidenciais() : [];
     var base = (_cm.apply(this, arguments) || []).filter(function (x) {
-      return x && x.npc && !ehSemPartido(x.npc) && !conflitoCargoCandidato(x.npc, cargoId);
+      if (!x || !x.npc || ehSemPartido(x.npc) || conflitoCargoCandidato(x.npc, cargoId)) return false;
+      if (presIds.length && presIds.indexOf(x.npc.id) >= 0) return false;
+      // GOV/SEN são disputas estaduais: nomes de outras UFs não entram na urna de SP.
+      if ((cargoId === "GOV" || cargoId === "SEN") && x.npc.uf && x.npc.uf !== "SP") return false;
+      if (cargoId === "PREF" && x.npc.municipio_domicilio && x.npc.municipio_domicilio !== "Mauá") return false;
+      return true;
     });
     var prio = prioridadeReaisAtiva();
     try {
@@ -40713,6 +40777,7 @@ document.addEventListener("click", function(e){
         var reaisExtras = bancoDeNPCs.filter(function (n) {
           if (!n.real || !n.vivo || n.jogador || n.inelegivel || n.status_judicial === "CONDENADO") return false;
           if (idsAtuais[n.id] || conflitoCargoCandidato(n, cargoId)) return false;
+          if (presIds.length && presIds.indexOf(n.id) >= 0) return false;
           try { if (typeof isFiguraPublica === "function" && isFiguraPublica(n)) return false; } catch (e) {}
           try { if (typeof ehSemPartido === "function" && ehSemPartido(n)) return false; } catch (e) {}
           if (cargoId === "PREF") return n.municipio_domicilio === "Mauá" && n.idade >= 21 && n.idade <= 80;
@@ -40748,7 +40813,11 @@ document.addEventListener("click", function(e){
       var lista = (base || []).map(function (x) {
         return {id: x.npc && x.npc.id, score: x.score, inc: !!(x.npc && x.npc.cargo === "Senador da República" && (x.npc.real || !prio)), npc: x.npc};
       });
-      var full = garantirLista("SP", lista, vagasAgora());
+      var govSkip = [];
+      try {
+        govSkip = (candidatosMajoritarios("GOV") || []).map(function (x) { return x && x.npc && x.npc.id; }).filter(Boolean);
+      } catch (e3) {}
+      var full = garantirLista("SP", lista, vagasAgora(), govSkip);
       return full.map(function (c) {
         var n = c.npc || npcPorId(c.id);
         return n ? {npc: n, score: c.score} : null;
@@ -40765,16 +40834,38 @@ document.addEventListener("click", function(e){
       if (d && d.gov && prio) {
         var govIds = {};
         d.gov.forEach(function (c) { if (c && c.id) govIds[c.id] = 1; });
+        var presIdsGov = idsPresidenciais();
         var reaisUF = bancoDeNPCs.filter(function (n) {
           if (!n.real || !n.vivo || n.jogador || n.uf !== uf || govIds[n.id] || n.inelegivel || n.status_judicial === "CONDENADO" || ehSemPartido(n)) return false;
+          if (presIdsGov.length && presIdsGov.indexOf(n.id) >= 0) return false;
           if (n.idade < 30 || n.idade > 78 || /Ministro do STF|Presidente/.test(n.cargo || "")) return false;
           if (CAND_CARGO_DESIGNADO[n.nome] && CAND_CARGO_DESIGNADO[n.nome] !== "GOV") return false;
+          if (conflitoCargoCandidato(n, "GOV", uf)) return false;
           return true;
         }).sort(function (a, b) { return (b.popularidade || 0) - (a.popularidade || 0); });
-        reaisUF.slice(0, 4).forEach(function (n) {
-          var isInc = n.cargo === "Governador" && n.uf === uf;
-          d.gov.push({id: n.id, score: scoreCand(n, isInc), inc: isInc});
+        // Um nome real por partido/federação; incumbente/designado tem prioridade.
+        function prioridadeNomeGov(n) {
+          if (!n) return 0;
+          if (/^Governador/.test(n.cargo || "")) return 3;
+          if (CAND_CARGO_DESIGNADO[n.nome] === "GOV") return 2;
+          return 0;
+        }
+        var porChaveGov = {};
+        reaisUF.forEach(function (n) {
+          var ch = chavePartidoFed(n);
+          if (!ch) return;
+          var atual = porChaveGov[ch];
+          var pn = prioridadeNomeGov(n), pa = prioridadeNomeGov(atual);
+          if (!atual || pn > pa || (pn === pa && (n.popularidade || 0) > (atual.popularidade || 0))) porChaveGov[ch] = n;
         });
+        Object.keys(porChaveGov).map(function (k) { return porChaveGov[k]; })
+          .sort(function (a, b) { return (b.popularidade || 0) - (a.popularidade || 0); })
+          .slice(0, 6)
+          .forEach(function (n) {
+            if (govIds[n.id]) return;
+            var isInc = n.cargo === "Governador" && n.uf === uf;
+            d.gov.push({id: n.id, score: scoreCand(n, isInc), inc: isInc});
+          });
         d.gov.forEach(function (c) {
           var n = npcPorId(c.id);
           if (n) c.score = scoreComPrioridadeReal(n, c.score, !!(c.inc && n.real));
@@ -40789,16 +40880,28 @@ document.addEventListener("click", function(e){
         d.gov = d.gov.filter(function (c) {
           var n = npcPorId(c.id);
           if (!n || ehSemPartido(n)) return false;
-          if (conflitoCargoCandidato(n, "GOV")) return false;
-          var p = n.partidoBase || n.partido;
-          var f = typeof fedDe === "function" ? fedDe(p) : null;
-          var chave = f ? f.id : p;
+          if (presIdsGov.length && presIdsGov.indexOf(n.id) >= 0) return false;
+          if (conflitoCargoCandidato(n, "GOV", uf)) return false;
+          var chave = chavePartidoFed(n);
           if (chave && partidosGovVistos[chave]) return false;
           if (chave) partidosGovVistos[chave] = true;
           return true;
         });
+        // Garante disputa minimamente plural: pelo menos 5 candidatos.
+        var guardGov = 0;
+        while (d.gov.length < 5 && guardGov++ < 60) {
+          var tg = gerarNovoPoliticoProcedural("Liderança / Ex-Titular", "ESTADUAL", null, {uf: uf, idade: R.i(38, 70)});
+          var chg = chavePartidoFed(tg);
+          if (!chg || partidosGovVistos[chg]) continue;
+          if (conflitoCargoCandidato(tg, "GOV", uf)) continue;
+          partidosGovVistos[chg] = true;
+          tg.ambicao_alta = true;
+          d.gov.push({id: tg.id, score: scoreComPrioridadeReal(tg, scoreCand(tg, false), false), inc: false});
+        }
       }
-      if (d && d.sen && d.sen.vagas > 0) {
+      if (d && d.sen) {
+        // O Senado renova 1/3 ou 2/3 em todo pleito geral; nunca há urna vazia.
+        if (!d.sen.vagas || d.sen.vagas < 1) d.sen.vagas = vagasAgora();
         var skip = (d.gov || []).map(function (c) { return c.id; });
         d.sen.lista = garantirLista(uf, d.sen.lista, d.sen.vagas, skip);
       }
