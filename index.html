@@ -40367,13 +40367,20 @@ document.addEventListener("click", function(e){
   var TURNO = 0.78;
   var LEG_NOME = {DEPF:"Deputados federais",DEPE:"Deputados estaduais",VER:"Vereadores"};
   var LEG_SUB = {DEPF:"São Paulo · Câmara dos Deputados",DEPE:"São Paulo · Assembleia Legislativa",VER:"Mauá · Câmara Municipal"};
-  var AP = {tab:"pres", uf:null, cargo:"DEPF", verEleitos:false, aberto:{}};
+  var AP = {
+    tab:"pres", uf:null, cargo:"DEPF", verEleitos:false, aberto:{}, ordem:"votos",
+    pct:0, play:true, vel:1, timer:null, last:0, _fotosUsadas:{}, _candFotoMap:{}
+  };
+  var DURACAO_AP = 36000; // 36s em 1x (18s em 2x, 9s em 4x)
 
   function hashStr(s) {
     var h = 2166136261;
     s = String(s || "");
     for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
     return h >>> 0;
+  }
+  function prioridadeReaisAtiva() {
+    try { return dt().ano <= 2036; } catch (e) { return true; }
   }
   function alvoSenado(uf) { return 12 + (hashStr(uf + "|" + dt().ano + "|n") % 5); }
   function geralAgora() { try { return tipoEleicao(dt().ano) === "GERAL"; } catch (e) { return false; } }
@@ -40428,7 +40435,7 @@ document.addEventListener("click", function(e){
     var gasto = c.gasto != null ? c.gasto : gastoDe(c.nome, c.id, cargo, pop);
     return {
       id: c.id || null, nome: c.nome, partido: c.partido || "", share: c.share || 0,
-      jogador: !!c.jogador, pop: pop, eleito: !!c.eleito, votos: votos, gasto: gasto,
+      jogador: !!c.jogador, real: !!c.real, pop: pop, eleito: !!c.eleito, votos: votos, gasto: gasto,
       pv: votos ? gasto / votos : 0
     };
   }
@@ -40439,7 +40446,7 @@ document.addEventListener("click", function(e){
     nomes.forEach(function (nm) {
       if (!nm || lista.some(function (c) { return c.nome === nm; })) return;
       var n = bancoDeNPCs.find(function (x) { return x.nome === nm; });
-      lista.push({id: n && n.id, nome: nm, partido: (n && (n.partido || n.partidoBase)) || "", score: 0, pop: n && n.popularidade || 40, share: 0});
+      lista.push({id: n && n.id, nome: nm, partido: (n && (n.partido || n.partidoBase)) || "", real: !!(n && n.real), score: 0, pop: n && n.popularidade || 40, share: 0});
     });
     var shares = lista.map(function (c) { return c.share || 0; }).sort(function (a, b) { return b - a; });
     var pri = lista.filter(function (c) { return set[c.nome]; });
@@ -40449,10 +40456,64 @@ document.addEventListener("click", function(e){
     ordered.forEach(function (c, i) { c.share = shares[i] || 0; });
     return ordered;
   }
+
+  /* ---------- FOTOS SEM REPETIÇÃO PARA CANDIDATOS FICTÍCIOS ---------- */
+  var POOL_FOTOS_M = [];
+  var POOL_FOTOS_F = [];
+  (function initPoolsFotos() {
+    for (var i = 0; i < 100; i++) {
+      POOL_FOTOS_M.push("https://randomuser.me/api/portraits/men/" + i + ".jpg");
+      POOL_FOTOS_F.push("https://randomuser.me/api/portraits/women/" + i + ".jpg");
+    }
+  })();
+
+  function ehNomeFeminino(nome, nObj) {
+    if (nObj && nObj.sexo === "F") return true;
+    if (nObj && nObj.sexo === "M") return false;
+    var p = String(nome || "").trim().split(/\s+/)[0] || "";
+    try { if (typeof FEM !== "undefined" && Array.isArray(FEM) && FEM.indexOf(p) >= 0) return true; } catch (e) {}
+    return /a$|ane$|ene$|ine$|isa$|yse$/i.test(p) && !/^(Luca|Josu|Batista|Moreira|Pereira|Oliveira|Ferreira|Teixeira|Siqueira)$/i.test(p);
+  }
+
+  function fotoUnicaFicticio(c, n) {
+    var candKey = String((c && c.id) || (n && n.id) || (c && c.nome) || (n && n.nome) || "anon");
+    if (AP._candFotoMap[candKey]) return AP._candFotoMap[candKey];
+    var fem = ehNomeFeminino((c && c.nome) || (n && n.nome), n);
+    var pool = fem ? POOL_FOTOS_F : POOL_FOTOS_M;
+    var h = hashStr(candKey + "|foto_unq");
+    var atual = (n && n._fotoProc) || "";
+    // Se a foto atual existe no pool e ainda não foi usada por outro candidato na apuração, mantém
+    if (atual && (!AP._fotosUsadas[atual] || AP._fotosUsadas[atual] === candKey)) {
+      AP._fotosUsadas[atual] = candKey;
+      AP._candFotoMap[candKey] = atual;
+      return atual;
+    }
+    for (var step = 0; step < pool.length; step++) {
+      var idx = (h + step * 7) % pool.length;
+      var url = pool[idx];
+      if (!AP._fotosUsadas[url] || AP._fotosUsadas[url] === candKey) {
+        AP._fotosUsadas[url] = candKey;
+        AP._candFotoMap[candKey] = url;
+        if (n && !n.real) n._fotoProc = url;
+        return url;
+      }
+    }
+    var fbUrl = pool[h % pool.length];
+    AP._candFotoMap[candKey] = fbUrl;
+    return fbUrl;
+  }
+
   function foto(c, w, h) {
     try {
       if (c.jogador) return fotoTag(J(), w, h);
-      var n = (c.id && c.id !== "JOGADOR" && npcPorId(c.id)) || bancoDeNPCs.find(function (x) { return x.nome === c.nome; }) || {nome: c.nome};
+      var n = (c.id && c.id !== "JOGADOR" && npcPorId(c.id)) || bancoDeNPCs.find(function (x) { return x.nome === c.nome; }) || {id: c.id || c.nome, nome: c.nome, real: !!c.real};
+      if (!n.real && !n.foto) {
+        var u = fotoUnicaFicticio(c, n);
+        if (u) {
+          var copy = Object.assign({}, n, {foto: u, _fotoProc: u});
+          return fotoTag(copy, w, h);
+        }
+      }
       return fotoTag(n, w, h);
     } catch (e) {
       return '<span class="ap-ini">' + esc((c.nome || "?")[0]) + "</span>";
@@ -40460,18 +40521,27 @@ document.addEventListener("click", function(e){
   }
   function partidoCurto(p) { return p || "—"; }
 
-  /* ---------- urna do Senado: 12 a 16 nomes de verdade ---------- */
+  /* ---------- PRIORIDADE ABSOLUTA PARA POLÍTICOS REAIS NAS 3 PRIMEIRAS ELEIÇÕES ---------- */
+  function scoreComPrioridadeReal(n, baseScore, isInc) {
+    if (!n) return baseScore || 0;
+    var prio = prioridadeReaisAtiva();
+    if (n.real) {
+      return (baseScore || n.popularidade || 50) + (prio ? 32 : 8) + (isInc ? 6 : 0);
+    }
+    // Se fictício em eleição prioritária (2026–2036), fica estritamente como figurante de urna
+    if (prio) {
+      return Math.min(20, 7 + (hashStr(n.id || n.nome) % 13));
+    }
+    return baseScore || n.popularidade || 25;
+  }
+
+  /* ---------- urna do Senado: 12 a 16 nomes, com prioridade absoluta aos reais ---------- */
   function garantirLista(uf, lista, vagas, extraSkip) {
     lista = (lista || []).slice();
     if (!vagas || vagas < 1) return lista;
+    var prio = prioridadeReaisAtiva();
     var alvo = alvoSenado(uf);
-    if (lista.length >= alvo) {
-      var inc0 = lista.filter(function (c) { return c.inc; });
-      var oth0 = lista.filter(function (c) { return !c.inc; });
-      return inc0.concat(oth0).slice(0, 16);
-    }
     var ids = {};
-    lista.forEach(function (c) { if (c && c.id) ids[c.id] = 1; });
     var govIds = {};
     try {
       var est = M().eleicao.est && M().eleicao.est[uf];
@@ -40483,22 +40553,40 @@ document.addEventListener("click", function(e){
     bancoDeNPCs.forEach(function (n) {
       if (n.vivo && n.cargo === "Senador da República" && n.uf === uf && n.mandato_fim !== ano) fica[n.id] = 1;
     });
+
+    // Ajustar scores dos que já vieram na lista (reais sempre acima dos fictícios nas primeiras eleições)
+    lista.forEach(function (c) {
+      if (c && c.id) ids[c.id] = 1;
+      var n = (c && c.npc) || (c && c.id && npcPorId(c.id));
+      if (n) {
+        if (prio && !n.real) c.inc = false;
+        c.score = scoreComPrioridadeReal(n, c.score, !!c.inc);
+      }
+    });
+
+    // Buscar TODOS os políticos reais elegíveis do estado primeiro
     var pool = bancoDeNPCs.filter(function (n) {
       if (!n.vivo || n.jogador || n.uf !== uf || ids[n.id] || govIds[n.id] || fica[n.id]) return false;
       if (n.inelegivel || n.status_judicial === "CONDENADO") return false;
-      if (n.idade < 35 || n.idade > 76) return false;
+      if (n.idade < 35 || n.idade > 78) return false;
       if (/Presidente|Vice-Presidente|Ministro do STF|Governador/.test(n.cargo || "")) return false;
       try { if (typeof isFiguraPublica === "function" && isFiguraPublica(n)) return false; } catch (e) {}
       try { if (typeof partidoDoCacique === "function" && partidoDoCacique(n)) return false; } catch (e) {}
       return true;
-    }).sort(function (a, b) { return b.popularidade - a.popularidade; });
-    pool.forEach(function (n) {
-      if (lista.length >= alvo) return;
-      ids[n.id] = 1;
-      var inc = n.cargo === "Senador da República" && n.mandato_fim === ano;
-      var sc = (typeof scoreCand === "function") ? scoreCand(n, inc) : (n.popularidade + (inc ? 8 : 0));
-      lista.push({id: n.id, score: sc, inc: inc});
+    }).sort(function (a, b) {
+      if (!!b.real !== !!a.real) return (b.real ? 1 : 0) - (a.real ? 1 : 0);
+      return (b.popularidade || 0) - (a.popularidade || 0);
     });
+
+    // Garante que todos os reais do estado entrem antes de qualquer corte
+    pool.forEach(function (n) {
+      if (lista.length >= alvo && !n.real) return;
+      ids[n.id] = 1;
+      var inc = !!(n.cargo === "Senador da República" && n.mandato_fim === ano && (n.real || !prio));
+      var baseSc = (typeof scoreCand === "function") ? scoreCand(n, inc) : (n.popularidade + (inc ? 8 : 0));
+      lista.push({id: n.id, score: scoreComPrioridadeReal(n, baseSc, inc), inc: inc, npc: n});
+    });
+
     if (lista.length < alvo) {
       var E = M().eleicao;
       E._senExtra = E._senExtra || {};
@@ -40510,33 +40598,81 @@ document.addEventListener("click", function(e){
         var n = npcPorId(id);
         if (!n || !n.vivo) return;
         ids[id] = 1;
-        var sc2 = (typeof scoreCand === "function") ? Math.min(scoreCand(n, false), 32) : n.popularidade;
-        lista.push({id: id, score: sc2, inc: false});
+        var sc2 = scoreComPrioridadeReal(n, (typeof scoreCand === "function") ? Math.min(scoreCand(n, false), 28) : n.popularidade, false);
+        lista.push({id: id, score: sc2, inc: false, npc: n});
       });
       var guard = 0;
       while (lista.length < alvo && guard++ < 24) {
         var t = gerarNovoPoliticoProcedural("Liderança / Ex-Titular", "ESTADUAL", null, {uf: uf, idade: R.i(36, 72)});
         t.ambicao_alta = true;
-        t.popularidade = R.c(14 + (hashStr(t.id) % 22), 8, 42);
+        t.popularidade = R.c(14 + (hashStr(t.id) % 18), 8, 34);
         ids[t.id] = 1;
-        var sc3 = (typeof scoreCand === "function") ? Math.min(scoreCand(t, false), 30) : t.popularidade;
-        lista.push({id: t.id, score: sc3, inc: false});
+        var sc3 = scoreComPrioridadeReal(t, t.popularidade, false);
+        lista.push({id: t.id, score: sc3, inc: false, npc: t});
         extras.push(t.id);
       }
       E._senExtra[key] = extras;
     }
-    var inc = lista.filter(function (c) { return c.inc; });
-    var oth = lista.filter(function (c) { return !c.inc; });
-    return inc.concat(oth).slice(0, 16);
+
+    // Ordenar: Reais e maior score sempre no topo
+    lista.sort(function (a, b) {
+      var na = a.npc || (a.id && npcPorId(a.id));
+      var nb = b.npc || (b.id && npcPorId(b.id));
+      var ra = !!(na && na.real);
+      var rb = !!(nb && nb.real);
+      if (prio && ra !== rb) return (rb ? 1 : 0) - (ra ? 1 : 0);
+      return (b.score || 0) - (a.score || 0);
+    });
+    return lista.slice(0, Math.max(alvo, 16));
   }
 
   var _cm = candidatosMajoritarios;
   candidatosMajoritarios = function (cargoId) {
-    var base = _cm.apply(this, arguments);
-    if (cargoId !== "SEN" || !geralAgora()) return base;
+    var base = _cm.apply(this, arguments) || [];
+    var prio = prioridadeReaisAtiva();
     try {
+      if (prio && ["PRES", "GOV", "SEN", "PREF"].indexOf(cargoId) >= 0) {
+        // Garantir que candidatos reais elegíveis tenham prioridade absoluta sobre fictícios
+        var ufAlvo = cargoId === "PRES" ? null : "SP";
+        var idsAtuais = {};
+        base.forEach(function (x) { if (x && x.npc && x.npc.id) idsAtuais[x.npc.id] = 1; });
+        var reaisExtras = bancoDeNPCs.filter(function (n) {
+          if (!n.real || !n.vivo || n.jogador || n.inelegivel || n.status_judicial === "CONDENADO") return false;
+          if (idsAtuais[n.id]) return false;
+          try { if (typeof isFiguraPublica === "function" && isFiguraPublica(n)) return false; } catch (e) {}
+          try { if (typeof ehSemPartido === "function" && ehSemPartido(n)) return false; } catch (e) {}
+          if (cargoId === "PREF") return n.municipio_domicilio === "Mauá" && n.idade >= 21 && n.idade <= 80;
+          if (cargoId === "GOV") return n.uf === "SP" && n.idade >= 30 && n.idade <= 78 && (CARGO_NIVEL[n.cargo] || 2) >= 3;
+          if (cargoId === "SEN") return n.uf === "SP" && n.idade >= 35 && n.idade <= 78 && (CARGO_NIVEL[n.cargo] || 2) >= 3;
+          if (cargoId === "PRES") return n.idade >= 35 && n.idade <= 80 && (CARGO_NIVEL[n.cargo] || 2) >= 4;
+          return false;
+        }).sort(function (a, b) { return (b.popularidade || 0) - (a.popularidade || 0); });
+
+        var qtdReaisNaBase = base.filter(function (x) { return x && x.npc && x.npc.real; }).length;
+        var minReais = cargoId === "SEN" ? 6 : 4;
+        reaisExtras.slice(0, Math.max(0, minReais - qtdReaisNaBase)).forEach(function (n) {
+          base.push({npc: n, score: (n.popularidade || 50) + ((n.carisma || 50) - 50) / 6 + 6});
+        });
+
+        base.forEach(function (x) {
+          if (x && x.npc) {
+            var isInc = (cargoId === "PRES" && x.npc.cargo === "Presidente da República") ||
+                        (cargoId === "GOV" && x.npc.cargo === "Governador de SP") ||
+                        (cargoId === "SEN" && x.npc.cargo === "Senador da República" && x.npc.real) ||
+                        (cargoId === "PREF" && x.npc.cargo === "Prefeito de Mauá");
+            x.score = scoreComPrioridadeReal(x.npc, x.score, isInc);
+          }
+        });
+        base.sort(function (a, b) {
+          var ra = !!(a && a.npc && a.npc.real);
+          var rb = !!(b && b.npc && b.npc.real);
+          if (ra !== rb) return (rb ? 1 : 0) - (ra ? 1 : 0);
+          return (b.score || 0) - (a.score || 0);
+        });
+      }
+      if (cargoId !== "SEN" || !geralAgora()) return base;
       var lista = (base || []).map(function (x) {
-        return {id: x.npc && x.npc.id, score: x.score, inc: !!(x.npc && x.npc.cargo === "Senador da República"), npc: x.npc};
+        return {id: x.npc && x.npc.id, score: x.score, inc: !!(x.npc && x.npc.cargo === "Senador da República" && (x.npc.real || !prio)), npc: x.npc};
       });
       var full = garantirLista("SP", lista, vagasAgora());
       return full.map(function (c) {
@@ -40545,18 +40681,42 @@ document.addEventListener("click", function(e){
       }).filter(Boolean);
     } catch (e) { console.error("apuracao senado SP", e); return base; }
   };
+  window.candidatosMajoritarios = candidatosMajoritarios;
 
   var _md = montarDisputaUF;
   montarDisputaUF = function (uf) {
     var d = _md.apply(this, arguments);
+    var prio = prioridadeReaisAtiva();
     try {
+      if (d && d.gov && prio) {
+        var govIds = {};
+        d.gov.forEach(function (c) { if (c && c.id) govIds[c.id] = 1; });
+        var reaisUF = bancoDeNPCs.filter(function (n) {
+          return n.real && n.vivo && !n.jogador && n.uf === uf && !govIds[n.id] && !n.inelegivel && n.status_judicial !== "CONDENADO" && n.idade >= 30 && n.idade <= 78 && !/Ministro do STF|Presidente/.test(n.cargo || "");
+        }).sort(function (a, b) { return (b.popularidade || 0) - (a.popularidade || 0); });
+        reaisUF.slice(0, 4).forEach(function (n) {
+          var isInc = n.cargo === "Governador" && n.uf === uf;
+          d.gov.push({id: n.id, score: scoreCand(n, isInc), inc: isInc});
+        });
+        d.gov.forEach(function (c) {
+          var n = npcPorId(c.id);
+          if (n) c.score = scoreComPrioridadeReal(n, c.score, !!(c.inc && n.real));
+        });
+        d.gov.sort(function (a, b) {
+          var na = npcPorId(a.id), nb = npcPorId(b.id);
+          var ra = !!(na && na.real), rb = !!(nb && nb.real);
+          if (ra !== rb) return (rb ? 1 : 0) - (ra ? 1 : 0);
+          return (b.score || 0) - (a.score || 0);
+        });
+      }
       if (d && d.sen && d.sen.vagas > 0) {
-        var skip = (d.gov || []).map(function (c) { return c.id; });
+        var skip = (d.gov || []).slice(0, 3).map(function (c) { return c.id; });
         d.sen.lista = garantirLista(uf, d.sen.lista, d.sen.vagas, skip);
       }
     } catch (e) { console.error("apuracao senado uf", e); }
     return d;
   };
+  window.montarDisputaUF = montarDisputaUF;
 
   var _pesq = pesqUF;
   pesqUF = function (uf) {
@@ -40569,6 +40729,7 @@ document.addEventListener("click", function(e){
     } catch (e) {}
     return _pesq.apply(this, arguments);
   };
+  window.pesqUF = pesqUF;
 
   function ficaDe(uf, eleitosIds, ano) {
     return bancoDeNPCs.filter(function (n) {
@@ -40584,22 +40745,55 @@ document.addEventListener("click", function(e){
     var el = eleitoresUF(uf);
     function pack(arr) {
       return (arr || []).map(function (c) {
-        var n = c.n || (c.id && npcPorId(c.id)) || {};
-        return {id: c.id, nome: n.nome || c.nome || "?", partido: n.partido || n.partidoBase || c.partido || "", score: c.score || 0, inc: !!c.inc, pop: n.popularidade || 30};
+        var n = c.n || (c.id && npcPorId(c.id)) || bancoDeNPCs.find(function (x) { return x.nome === c.nome; }) || {};
+        return {id: c.id || n.id, nome: n.nome || c.nome || "?", partido: n.partido || n.partidoBase || c.partido || "", real: !!n.real, score: c.score || 0, share: c.share || 0, inc: !!c.inc, pop: n.popularidade || 30};
       }).filter(function (c) { return c.nome && c.nome !== "?"; });
     }
-    var gov = pack(d.gov);
-    var gsh = softmax(gov);
-    gov.forEach(function (c, i) { c.share = gsh[i]; });
-    var nomeGov = r && r.gov && r.gov.nome;
-    gov = alinhar(gov, nomeGov ? [nomeGov] : []);
-    gov = gov.map(function (c) { return comDinheiro(c, "GOV", el); });
-    gov.forEach(function (c) { c.eleito = !!(nomeGov && c.nome === nomeGov); });
-    var govRun = false;
-    if (gov[0] && !gov.some(function (c) { return c.eleito; })) {
-      if (!gov[1] || gov[0].share > 50) gov[0].eleito = true;
-      else govRun = true;
+
+    // Usar os percentuais reais do 1º turno salvos em r.lista por eleicaoEstado
+    var gov = [];
+    if (r && Array.isArray(r.lista) && r.lista.length) {
+      gov = r.lista.map(function (item) {
+        var n = bancoDeNPCs.find(function (x) { return x.nome === item.nome && x.uf === uf; }) ||
+                bancoDeNPCs.find(function (x) { return x.nome === item.nome; }) || {};
+        return {
+          id: n.id || null,
+          nome: item.nome,
+          partido: item.partido || n.partido || n.partidoBase || "",
+          real: !!n.real,
+          score: item.share || 0,
+          share: item.share || 0,
+          pop: n.popularidade || 40
+        };
+      });
+      // Incluir demais candidatos da chapa d.gov que ficaram após o top 4
+      var jaNomes = {};
+      gov.forEach(function (gItem) { jaNomes[gItem.nome] = 1; });
+      pack(d.gov).forEach(function (extra) {
+        if (!jaNomes[extra.nome]) {
+          jaNomes[extra.nome] = 1;
+          gov.push({id: extra.id, nome: extra.nome, partido: extra.partido, real: extra.real, score: 0, share: 0.2, pop: extra.pop});
+        }
+      });
+      var somaG = gov.reduce(function (s, x) { return s + (x.share || 0); }, 0) || 100;
+      gov.forEach(function (x) { x.share = (x.share || 0) / somaG * 100; });
+      gov.sort(function (a, b) { return b.share - a.share; });
+    } else {
+      gov = pack(d.gov);
+      var gsh = softmax(gov);
+      gov.forEach(function (c, i) { c.share = gsh[i]; });
+      var nomeGov = r && r.gov && r.gov.nome;
+      gov = alinhar(gov, nomeGov ? [nomeGov] : []);
     }
+
+    gov = gov.map(function (c) { return comDinheiro(c, "GOV", el); });
+
+    // Regra constitucional estrita: 50% + 1 voto para vencer no 1º turno; caso contrário, 2º turno!
+    var foiSegundoTurno = !!(r && r.gov && r.gov.turno2) || (gov.length > 1 && (gov[0].share || 0) <= 50);
+    var govRun = foiSegundoTurno;
+    gov.forEach(function (c, idx) {
+      c.eleito = !govRun && idx === 0;
+    });
 
     var sen = pack(d.sen && d.sen.lista);
     var ssh = softmax(sen);
@@ -40609,7 +40803,7 @@ document.addEventListener("click", function(e){
     sen = sen.map(function (c) { return comDinheiro(c, "SEN", el); });
     var marca = {};
     nomes.forEach(function (n) { marca[n] = 1; });
-    sen.forEach(function (c) { c.eleito = !!marca[c.nome]; });
+    sen.forEach(function (c, idx) { c.eleito = nomes.length ? !!marca[c.nome] : (idx < vagas); });
     var ids = {};
     sen.forEach(function (c) { if (c.eleito && c.id) ids[c.id] = 1; });
     return {uf: uf, vagas: vagas, gov: gov, sen: sen, fica: ficaDe(uf, ids, ano), govRun: govRun};
@@ -40621,15 +40815,23 @@ document.addEventListener("click", function(e){
       var E0 = M().eleicao;
       if (!E0.est) E0.est = {};
       if (!E0.est[uf]) E0.est[uf] = montarDisputaUF(uf);
-      else if (E0.est[uf].sen && E0.est[uf].sen.vagas > 0 && (E0.est[uf].sen.lista || []).length < alvoSenado(uf)) {
-        var skip = (E0.est[uf].gov || []).map(function (c) { return c.id; });
-        E0.est[uf].sen.lista = garantirLista(uf, E0.est[uf].sen.lista, E0.est[uf].sen.vagas, skip);
+      else {
+        if (prioridadeReaisAtiva() && E0.est[uf].gov) {
+          E0.est[uf].gov.forEach(function (c) {
+            var n = npcPorId(c.id);
+            if (n) c.score = scoreComPrioridadeReal(n, c.score, !!(c.inc && n.real));
+          });
+        }
+        if (E0.est[uf].sen && E0.est[uf].sen.vagas > 0 && (E0.est[uf].sen.lista || []).length < alvoSenado(uf)) {
+          var skip = (E0.est[uf].gov || []).map(function (c) { return c.id; });
+          E0.est[uf].sen.lista = garantirLista(uf, E0.est[uf].sen.lista, E0.est[uf].sen.vagas, skip);
+        }
       }
     } catch (e) {}
     var r = _ee.apply(this, arguments);
     try {
       var E = M().eleicao;
-      var d = E.est && E.est[uf];
+      var d = (E.est && E.est[uf]) || montarDisputaUF(uf);
       if (d) {
         var ap = materializarUF(uf, d, r);
         E._mapaAp = E._mapaAp || {};
@@ -40639,6 +40841,7 @@ document.addEventListener("click", function(e){
     } catch (e) { console.error("apuracao estado", e); }
     return r;
   };
+  window.eleicaoEstado = eleicaoEstado;
 
   function gravarNacional() {
     var E = M().eleicao;
@@ -40651,7 +40854,7 @@ document.addEventListener("click", function(e){
       return (lista || []).map(function (c) {
         var n = c.id && c.id !== "JOGADOR" ? npcPorId(c.id) : null;
         var pop = n ? n.popularidade : (c.jogador ? (J().popularidade || 30) : 30);
-        return comDinheiro({id: c.id, nome: c.nome, partido: c.partido || "", share: c.share || 0, jogador: !!c.jogador, pop: pop}, cargo, el);
+        return comDinheiro({id: c.id, nome: c.nome, partido: c.partido || "", share: c.share || 0, jogador: !!c.jogador, real: !!(n && n.real), pop: pop}, cargo, el);
       });
     }
     var pres = conv(U.PRES, "PRES", elBR);
@@ -40661,13 +40864,79 @@ document.addEventListener("click", function(e){
     var sts = E.segundos || (E.segundo_turno ? [E.segundo_turno] : []);
     var presRun = sts.some(function (s) { return s.cargo === "PRES"; }) || !!(pres[0] && pres.length > 1 && pres[0].share <= 50);
     var govRun = sts.some(function (s) { return s.cargo === "GOV"; }) || !!(spGov[0] && spGov.length > 1 && spGov[0].share <= 50);
-    if (pres[0] && !presRun) pres[0].eleito = true;
-    if (spGov[0] && !govRun) spGov[0].eleito = true;
+    pres.forEach(function (c, idx) { c.eleito = !presRun && idx === 0; });
+    spGov.forEach(function (c, idx) { c.eleito = !govRun && idx === 0; });
     var ids = {};
     spSen.forEach(function (c) { if (c.eleito && c.id) ids[c.id] = 1; });
     E._mapaNac = {pres: pres, spGov: spGov, spSen: spSen, vagas: vagas, fica: ficaDe("SP", ids, ano), presRun: presRun, govRun: govRun, elBR: elBR, elSP: elSP};
     E._mapaAp = E._mapaAp || {};
     E._mapaAp.SP = {uf: "SP", vagas: vagas, gov: spGov, sen: spSen, fica: E._mapaNac.fica, govRun: govRun};
+  }
+
+  function gravarSegundoTurno(lstAntes) {
+    try {
+      var E = M().eleicao;
+      var r2 = E._r2res || {};
+      var elBR = eleitoresBR();
+      var elSP = eleitoresUF("SP");
+      // Atualizar PRES se teve 2º turno
+      var stPres = (lstAntes || []).find(function (s) { return s && s.cargo === "PRES"; });
+      if (stPres && stPres.candidatos && stPres.candidatos.length >= 2 && E._mapaNac) {
+        var resP = r2.PRES;
+        var candsP = stPres.candidatos.map(function (c) {
+          var n = c.id && c.id !== "JOGADOR" ? npcPorId(c.id) : null;
+          var venceu = resP ? (c.nome === resP.nome || (c.jogador && resP.jog)) : false;
+          var sh = resP ? (venceu ? resP.share : (100 - resP.share)) : (c.share || 50);
+          return comDinheiro({id: c.id, nome: c.nome, partido: c.partido || (n && (n.partido || n.partidoBase)) || (c.jogador ? J().partido_atual : ""), share: sh, jogador: !!c.jogador, real: !!(n && n.real), eleito: venceu, pop: n ? n.popularidade : 50}, "PRES", elBR);
+        }).sort(function (a, b) { return b.share - a.share; });
+        candsP.forEach(function (c, idx) { c.eleito = idx === 0; });
+        E._mapaNac.pres = candsP;
+        E._mapaNac.presRun = false;
+      }
+      // Atualizar GOV SP se teve 2º turno
+      var stGov = (lstAntes || []).find(function (s) { return s && s.cargo === "GOV"; });
+      if (stGov && stGov.candidatos && stGov.candidatos.length >= 2 && E._mapaNac) {
+        var resG = r2.GOV;
+        var candsG = stGov.candidatos.map(function (c) {
+          var n = c.id && c.id !== "JOGADOR" ? npcPorId(c.id) : null;
+          var venceu = resG ? (c.nome === resG.nome || (c.jogador && resG.jog)) : false;
+          var sh = resG ? (venceu ? resG.share : (100 - resG.share)) : (c.share || 50);
+          return comDinheiro({id: c.id, nome: c.nome, partido: c.partido || (n && (n.partido || n.partidoBase)) || (c.jogador ? J().partido_atual : ""), share: sh, jogador: !!c.jogador, real: !!(n && n.real), eleito: venceu, pop: n ? n.popularidade : 50}, "GOV", elSP);
+        }).sort(function (a, b) { return b.share - a.share; });
+        candsG.forEach(function (c, idx) { c.eleito = idx === 0; });
+        E._mapaNac.spGov = candsG;
+        E._mapaNac.govRun = false;
+        if (E._mapaAp && E._mapaAp.SP) {
+          E._mapaAp.SP.gov = candsG;
+          E._mapaAp.SP.govRun = false;
+        }
+      }
+      // Atualizar os outros estados que tiveram 2º turno (E.runoffs)
+      (E.runoffs || []).forEach(function (rf) {
+        if (!rf || !rf.uf || !E._mapaAp || !E._mapaAp[rf.uf]) return;
+        var p = E._mapaAp[rf.uf];
+        var el = eleitoresUF(rf.uf);
+        var shWin = Math.max(50.1, Math.min(99, rf.share || 54));
+        var nomes2T = [rf.venceu, rf.venceu === rf.a ? rf.b : rf.a];
+        var shares2T = [shWin, 100 - shWin];
+        var gov2 = nomes2T.map(function (nm, idx) {
+          var ant = (p.gov || []).find(function (x) { return x.nome === nm; }) || {};
+          var n = bancoDeNPCs.find(function (x) { return x.nome === nm; }) || {};
+          return comDinheiro({
+            id: ant.id || n.id || null,
+            nome: nm,
+            partido: ant.partido || n.partido || n.partidoBase || "",
+            share: shares2T[idx],
+            jogador: false,
+            real: !!(ant.real || n.real),
+            eleito: idx === 0,
+            pop: n.popularidade || ant.pop || 45
+          }, "GOV", el);
+        });
+        p.gov = gov2;
+        p.govRun = false;
+      });
+    } catch (e) { console.error("apuracao 2o turno", e); }
   }
 
   var _ap = apurarEleicao;
@@ -40676,6 +40945,18 @@ document.addEventListener("click", function(e){
     try { gravarNacional(); } catch (e) { console.error("apuracao nacional", e); }
     return r;
   };
+  window.apurarEleicao = apurarEleicao;
+
+  var _ap2 = apurarSegundoTurno;
+  apurarSegundoTurno = function () {
+    var E = M().eleicao;
+    var lst0 = (E && E.segundos && E.segundos.length) ? E.segundos.slice() : (E && E.segundo_turno ? [E.segundo_turno] : []);
+    var lstCopy = JSON.parse(JSON.stringify(lst0));
+    var r = _ap2.apply(this, arguments);
+    try { gravarSegundoTurno(lstCopy); } catch (e) { console.error("apuracao 2o turno hook", e); }
+    return r;
+  };
+  window.apurarSegundoTurno = apurarSegundoTurno;
 
   var _ar = aplicarResultadoLegislativo;
   aplicarResultadoLegislativo = function (cargoId, lista, jogadorVence) {
@@ -40722,6 +41003,7 @@ document.addEventListener("click", function(e){
     } catch (e) { console.error("apuracao lista", e); }
     return r;
   };
+  window.aplicarResultadoLegislativo = aplicarResultadoLegislativo;
 
   var _card = cardDisputas;
   cardDisputas = function () {
@@ -40734,19 +41016,77 @@ document.addEventListener("click", function(e){
       return card("Disputas em " + uf, sel + "<h4>Governo</h4>" + (p.gov || []).map(linhaCand).join("") + "<h4>Senado (" + vg + " vaga" + (vg > 1 ? "s" : "") + " · " + p.sen.length + " candidatos)</h4>" + p.sen.map(linhaCand).join("") + '<p class="txt"><small>A disputa do Senado nasce com a chapa inteira, não com dois ou três nomes. Apoio sobe a pesquisa; quem vence com o seu apoio fica devendo favor.</small></p>');
     } catch (e) { return _card.apply(this, arguments); }
   };
+  window.cardDisputas = cardDisputas;
 
-  /* ---------- tela ---------- */
+  /* ---------- LINHA DO TEMPO (0% A 100%) POR ESTADO E NACIONAL ---------- */
+  function fracUF(uf) {
+    var g = Math.max(0, Math.min(100, AP.pct || 0)) / 100;
+    if (g >= 1) return 1;
+    if (g <= 0) return 0;
+    var atraso = ((hashStr((uf || "BR") + "|atraso") % 28) / 100); // 0.00 a 0.27
+    var dur = 0.72 + (0.28 - atraso);
+    var x = (g - atraso * 0.45) / Math.max(0.45, dur);
+    if (x <= 0) return Math.min(0.03, g * 0.25);
+    if (x >= 1) return 1;
+    return 1 - Math.pow(1 - x, 1.85);
+  }
+
+  function fracAtual() {
+    if (AP.uf) return fracUF(AP.uf);
+    return Math.max(0, Math.min(100, AP.pct || 0)) / 100;
+  }
+
+  function horaApuracao() {
+    var f = Math.max(0, Math.min(100, AP.pct || 0)) / 100;
+    var mins = Math.round(17 * 60 + f * 240); // 17h00 às 21h00
+    var hh = Math.floor(mins / 60);
+    var mm = mins % 60;
+    return (hh < 10 ? "0" + hh : hh) + "h" + (mm < 10 ? "0" + mm : mm);
+  }
+
+  function parcialCands(cands, f) {
+    if (!cands || !cands.length) return [];
+    if (f >= 0.995) return cands;
+    var fEf = Math.max(0.008, f);
+    // Oscilação leve nas primeiras urnas que converge exatamente para o resultado oficial em 100%
+    var osc = (1 - fEf) * 0.22;
+    var raw = cands.map(function (c, i) {
+      var s = ((hashStr((c.nome || "") + "|" + i) % 200) - 100) / 100; // -1 a +1
+      return Math.max(0.05, (c.share || 0.1) * (1 + s * osc));
+    });
+    var tot = raw.reduce(function (a, b) { return a + b; }, 0) || 1;
+    return cands.map(function (c, i) {
+      var sh = raw[i] / tot * 100;
+      var vt = Math.max(0, Math.round((c.votos || 0) * fEf * (sh / Math.max(0.1, c.share || sh))));
+      return Object.assign({}, c, {
+        share: sh,
+        votos: vt
+      });
+    });
+  }
+
+  /* ---------- ESTILOS RESPONSIVOS SEM COLISÃO NO CELULAR ---------- */
   var CSS = [
-    "#apurMapa{position:fixed;inset:0;z-index:100000;background:#070d18;color:#eef3fb;font-family:system-ui,Segoe UI,sans-serif;display:flex;flex-direction:column;overflow:auto}",
+    "#apurMapa{position:fixed;inset:0;z-index:100000;background:#070d18;color:#eef3fb;font-family:system-ui,Segoe UI,sans-serif;display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top,0px)}",
     "#apurMapa *{box-sizing:border-box}",
-    "#apurMapa .ap-top{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#10192b;border-bottom:1px solid #243656;position:sticky;top:0;z-index:2}",
-    "#apurMapa .ap-pill{background:#143524;color:#b6f5cf;font-weight:800;font-size:11px;letter-spacing:.08em;padding:4px 8px;border-radius:4px}",
-    "#apurMapa .ap-top b{display:block;font-size:16px}",
-    "#apurMapa .ap-top small{color:#9eb0ce;font-size:12px}",
-    "#apurMapa .ap-tabs{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;background:#070d18;position:sticky;top:58px;z-index:2}",
-    "#apurMapa .ap-tab{flex:none;border:1px solid #2a3d66;background:#121c30;color:#d5e0f2;border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer}",
+    "#apurMapa .ap-top{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#10192b;border-bottom:1px solid #243656;position:relative;z-index:3;flex-wrap:wrap}",
+    "#apurMapa .ap-top-left{display:flex;align-items:center;gap:10px;min-width:0}",
+    "#apurMapa .ap-pill{background:#143524;color:#b6f5cf;font-weight:800;font-size:11px;letter-spacing:.08em;padding:4px 8px;border-radius:4px;white-space:nowrap}",
+    "#apurMapa .ap-pill.live{background:#c62828;color:#fff;animation:ap-pulse 1.3s infinite}",
+    "@keyframes ap-pulse{50%{opacity:.55}}",
+    "#apurMapa .ap-top b{display:block;font-size:15px;line-height:1.15}",
+    "#apurMapa .ap-top small{color:#9eb0ce;font-size:11.5px}",
+    "#apurMapa .ap-tline{display:flex;align-items:center;gap:5px;flex-wrap:wrap}",
+    "#apurMapa .ap-tbtn{border:1px solid #2a3d66;background:#17274a;color:#e9eefb;border-radius:6px;padding:5px 9px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}",
+    "#apurMapa .ap-tbtn.on{background:#2f6fe0;border-color:#2f6fe0;color:#fff}",
+    "#apurMapa .ap-tbtn.ok{background:#1f7a45;border-color:#1f7a45;color:#fff}",
+    "#apurMapa .ap-tabs{flex-shrink:0;display:flex;gap:6px;padding:8px 12px;overflow-x:auto;background:#0a1222;border-bottom:1px solid #1c2b45;position:relative;z-index:3;-webkit-overflow-scrolling:touch;align-items:center;min-height:48px}",
+    "#apurMapa .ap-tab{flex:none;border:1px solid #2a3d66;background:#121c30;color:#d5e0f2;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}",
     "#apurMapa .ap-tab.on{background:#2f6fe0;border-color:#2f6fe0;color:#fff}",
-    "#apurMapa .ap-corpo{padding:8px 14px 24px;max-width:1100px;margin:0 auto;width:100%}",
+    "#apurMapa .ap-locbar{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:7px 14px;background:#0d172a;border-bottom:1px solid #243656;position:relative;z-index:3}",
+    "#apurMapa .ap-locbar label{font-size:12px;color:#9eb0ce;font-weight:700;white-space:nowrap}",
+    "#apurMapa .ap-locbar select{flex:1;min-width:0;background:#121c30;color:#eef3fb;border:1px solid #2a3d66;border-radius:8px;padding:6px 10px;font-size:13.5px;font-weight:700}",
+    "#apurMapa .ap-corpo{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px 28px;max-width:1100px;margin:0 auto;width:100%}",
     "#apurMapa .ap-grid{display:grid;grid-template-columns:minmax(260px,380px) 1fr;gap:16px;align-items:start}",
     "#apurMapa h2{margin:0 0 4px;font-size:22px}",
     "#apurMapa h3{margin:16px 0 8px;font-size:16px;font-weight:800;color:#eef3fb}",
@@ -40758,17 +41098,19 @@ document.addEventListener("click", function(e){
     "#apurMapa .ap-uf b{width:28px}",
     "#apurMapa .ap-uf .g{flex:1;min-width:0}",
     "#apurMapa .ap-uf .g small{display:block;color:#9eb0ce;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
-    "#apurMapa .ap-back{background:transparent;border:0;color:#9ec1ff;font-weight:700;cursor:pointer;padding:4px 0 8px}",
+    "#apurMapa .ap-back{background:#17274a;border:1px solid #2a3d66;border-radius:8px;color:#9ec1ff;font-weight:700;cursor:pointer;padding:6px 12px;margin-bottom:8px;display:inline-flex;align-items:center;gap:4px}",
     "#apurMapa .ap-head{display:flex;gap:12px;align-items:center;margin-bottom:8px}",
     "#apurMapa .ap-shape{width:92px;height:92px;flex:none}",
     "#apurMapa .ap-el{color:#c5d4ea;font-size:14px}",
     "#apurMapa .ap-pct{display:flex;align-items:center;gap:10px;margin:6px 0 4px}",
-    "#apurMapa .ap-pct b{color:#3dce7a;font-size:40px;line-height:.9;font-weight:800}",
+    "#apurMapa .ap-pct b{color:#3dce7a;font-size:38px;line-height:.95;font-weight:800;font-variant-numeric:tabular-nums}",
     "#apurMapa .ap-pct span{font-weight:700}",
     "#apurMapa .ap-pct small{display:block;color:#9eb0ce;font-weight:500}",
     "#apurMapa .ap-prog{height:10px;background:#163024;border-radius:6px;overflow:hidden;margin:6px 0 10px}",
-    "#apurMapa .ap-prog i{display:block;height:100%;width:100%;background:#3dce7a}",
-    "#apurMapa .ap-run{font-size:20px;font-weight:800;margin:8px 0}",
+    "#apurMapa .ap-prog i{display:block;height:100%;width:0%;background:#3dce7a;transition:width .25s linear}",
+    "#apurMapa .ap-run{font-size:19px;font-weight:800;margin:8px 0 10px;padding:8px 12px;background:#101c33;border-left:4px solid #3dce7a;border-radius:6px;line-height:1.3}",
+    "#apurMapa .ap-run.t2{border-left-color:#f5c542}",
+    "#apurMapa .ap-run.live{border-left-color:#38bdf8;font-size:16px}",
     "#apurMapa .ap-big{font-size:28px;line-height:1.1;font-weight:800;font-variant-numeric:tabular-nums}",
     "#apurMapa .ap-diff{display:flex;justify-content:space-between;gap:12px;color:#9eb0ce;font-size:13px;margin:2px 0 8px}",
     "#apurMapa .ap-diff b{color:#eef3fb}",
@@ -40776,15 +41118,15 @@ document.addEventListener("click", function(e){
     "#apurMapa .ap-rowh h3{margin:0}",
     "#apurMapa .ap-sec{color:#9eb0ce;font-size:12px}",
     "#apurMapa .ap-duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center}",
-    "#apurMapa .ap-who{display:flex;gap:8px;align-items:center}",
+    "#apurMapa .ap-who{display:flex;gap:8px;align-items:center;min-width:0}",
     "#apurMapa .ap-who.dir{flex-direction:row-reverse;text-align:right}",
-    "#apurMapa .ap-who .nm{font-weight:800}",
+    "#apurMapa .ap-who .nm{font-weight:800;line-height:1.2}",
     "#apurMapa .ap-who small{color:#9eb0ce}",
     "#apurMapa .ap-split{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:8px 0}",
     "#apurMapa .ap-card{display:flex;gap:10px;align-items:center;background:#121c30;border:1px solid #243656;border-radius:12px;padding:8px 10px;margin:6px 0}",
     "#apurMapa .ap-card .nm{font-weight:800}",
     "#apurMapa .ap-card .sub{color:#9eb0ce;font-size:13px}",
-    "#apurMapa .ap-badge{background:#1f7a45;color:#fff;font-size:11px;font-weight:800;border-radius:4px;padding:2px 6px}",
+    "#apurMapa .ap-badge{background:#1f7a45;color:#fff;font-size:11px;font-weight:800;border-radius:4px;padding:2px 6px;display:inline-block;vertical-align:middle}",
     "#apurMapa .ap-badge.t2{background:#f5c542;color:#1b1c1e}",
     "#apurMapa .ap-fica{background:#121c30;border-left:3px solid #f5c542;padding:8px 10px;margin:6px 0;color:#d5e0f2;font-size:14px}",
     "#apurMapa .ap-mini{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #1c2b45}",
@@ -40801,15 +41143,16 @@ document.addEventListener("click", function(e){
     "#apurMapa .ap-leg .l1{font-weight:800}",
     "#apurMapa .ap-leg .l2{color:#9eb0ce;font-size:12px}",
     "#apurMapa .ap-subtabs{display:flex;gap:6px;margin:6px 0 10px;flex-wrap:wrap}",
-    "#apurMapa .ap-foot{position:sticky;bottom:0;background:#10192b;border-top:1px solid #243656;padding:10px 14px}",
-    "#apurMapa .ap-foot button{width:100%;background:#1f7a45;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:800;cursor:pointer}",
+    "#apurMapa .ap-foot{flex-shrink:0;position:relative;z-index:3;background:#10192b;border-top:1px solid #243656;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}",
+    "#apurMapa .ap-foot button{width:100%;background:#1f7a45;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:800;cursor:pointer;font-size:15px}",
     "#apurMapa .ap-ini{width:40px;height:48px;border-radius:6px;background:#1f3257;display:flex;align-items:center;justify-content:center;font-weight:800}",
     "#apurMapa img,#apurMapa .pv-foto{border-radius:6px;object-fit:cover}",
-    "@media(max-width:800px){#apurMapa .ap-grid{grid-template-columns:1fr}#apurMapa .ap-tabs{top:64px}#apurMapa .ap-grow{grid-template-columns:18px 1fr auto;font-size:12px}#apurMapa .ap-grow .ap-hide{display:none}}"
+    "@media(max-width:800px){#apurMapa .ap-grid{grid-template-columns:1fr}#apurMapa .ap-grow{grid-template-columns:18px 1fr auto;font-size:12px}#apurMapa .ap-grow .ap-hide{display:none}#apurMapa .ap-big{font-size:23px}#apurMapa .ap-pct b{font-size:32px}}"
   ].join("");
 
   function estilo() {
-    if (document.getElementById("apurMapa-css")) return;
+    var old = document.getElementById("apurMapa-css");
+    if (old) old.remove();
     var st = document.createElement("style");
     st.id = "apurMapa-css";
     st.textContent = CSS;
@@ -40831,7 +41174,7 @@ document.addEventListener("click", function(e){
     var el = eleitoresUF(uf);
     return base.map(function (c, i) {
       var votos = Math.max(1, Math.round(raw[i] / t * el * TURNO));
-      return {id: c.id, nome: c.nome, partido: c.partido, share: raw[i] / t * 100, jogador: c.jogador, eleito: false, votos: votos, gasto: c.gasto, pv: c.pv, pop: c.pop};
+      return {id: c.id, nome: c.nome, partido: c.partido, share: raw[i] / t * 100, jogador: c.jogador, real: !!c.real, eleito: false, votos: votos, gasto: c.gasto, pv: c.pv, pop: c.pop};
     }).sort(function (a, b) { return b.share - a.share; });
   }
   function lider(tab, uf) {
@@ -40846,10 +41189,12 @@ document.addEventListener("click", function(e){
     if (typeof GEO === "undefined" || !GEO.br) return "<p>Mapa indisponível.</p>";
     var g = GEO.br;
     var paths = Object.keys(g.p).map(function (uf) {
-      var ld = lider(tab, uf);
+      var f = fracUF(uf);
+      var ld = f > 0.03 ? lider(tab, uf) : null;
       var cor = ld ? corDe(ld.partido, 0) : "#1c2c4a";
+      var op = ld ? (0.45 + 0.55 * f).toFixed(2) : "1";
       var on = AP.uf === uf ? " on" : "";
-      return '<path class="' + on.trim() + '" data-ap="uf" data-u="' + uf + '" d="' + g.p[uf] + '" fill="' + cor + '"></path>';
+      return '<path class="' + on.trim() + '" data-ap="uf" data-u="' + uf + '" d="' + g.p[uf] + '" fill="' + cor + '" fill-opacity="' + op + '"></path>';
     }).join("");
     var labels = Object.keys(g.c || {}).map(function (uf) {
       var c = g.c[uf];
@@ -40860,9 +41205,11 @@ document.addEventListener("click", function(e){
   function listaEstados(tab) {
     var ufs = UFS.slice().sort(function (a, b) { return UF_NOME[a].localeCompare(UF_NOME[b], "pt"); });
     return ufs.map(function (uf) {
-      var ld = lider(tab, uf);
+      var f = fracUF(uf);
+      var ld = f > 0.02 ? lider(tab, uf) : null;
       var cor = ld ? corDe(ld.partido, 0) : "#1c2c4a";
-      return '<button class="ap-uf" data-ap="uf" data-u="' + uf + '"><b>' + uf + '</b><span class="g">' + esc(UF_NOME[uf]) + (ld ? "<small>" + esc(ld.nome) + " · " + esc(partidoCurto(ld.partido)) + "</small>" : "<small>sem apuração</small>") + '</span><i style="width:10px;height:10px;border-radius:50%;background:' + cor + '"></i></button>';
+      var pTxt = pct(f * 100);
+      return '<button class="ap-uf" data-ap="uf" data-u="' + uf + '"><b>' + uf + '</b><span class="g">' + esc(UF_NOME[uf]) + (ld ? "<small>" + esc(ld.nome) + " · " + esc(partidoCurto(ld.partido)) + " (" + pTxt + " apurado)</small>" : "<small>aguardando abertura das urnas…</small>") + '</span><i style="width:10px;height:10px;border-radius:50%;background:' + cor + '"></i></button>';
     }).join("");
   }
   function shapeUF(uf, cor) {
@@ -40878,15 +41225,18 @@ document.addEventListener("click", function(e){
     var vb = (minx - pad) + " " + (miny - pad) + " " + (maxx - minx + pad * 2) + " " + (maxy - miny + pad * 2);
     return '<svg class="ap-shape" viewBox="' + vb + '"><path d="' + d + '" fill="' + cor + '" stroke="#070d18" stroke-width="1.2"></path></svg>';
   }
-  function barraSecoes() {
-    return '<div class="ap-pct"><b>100%</b><span>seções apuradas<small>nada a apurar</small></span></div><div class="ap-prog"><i></i></div>';
+  function barraSecoes(fLocal) {
+    var f = fLocal != null ? fLocal : fracAtual();
+    var p = Math.max(0, Math.min(100, f * 100));
+    var sub = p >= 99.95 ? "nada a apurar · resultado oficial" : ("restam " + pct(100 - p) + " das seções · " + horaApuracao());
+    return '<div class="ap-pct"><b>' + pct(p) + '</b><span>seções apuradas<small>' + sub + '</small></span></div><div class="ap-prog"><i style="width:' + p.toFixed(1) + '%"></i></div>';
   }
-  function fmtDiff(a, b) {
+  function fmtDiff(a, b, definido) {
     if (!a || !b) return "";
     var pts = Math.abs((a.share || 0) - (b.share || 0));
     var votos = Math.abs((a.votos || 0) - (b.votos || 0));
     var p = pts.toLocaleString("pt-BR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
-    var rot = (a.eleito || b.eleito) ? "Vantagem" : "Diferença";
+    var rot = (definido && (a.eleito || b.eleito)) ? "Vantagem" : "Diferença";
     return '<div class="ap-diff"><span>' + rot + "</span><b>" + p + " pontos · " + fmtV(votos) + " de votos</b></div>";
   }
   function restoLinha(cands, aPartir) {
@@ -40901,46 +41251,67 @@ document.addEventListener("click", function(e){
       return '<div class="ap-mini"><span class="foto">' + foto(c, 36, 44) + '</span><span class="g"><b>' + esc(c.nome) + '</b><br><small style="color:' + cor + '">' + esc(partidoCurto(c.partido)) + '</small></span><span class="pc"><b style="color:' + cor + '">' + pct(c.share) + "</b><small>" + fmtV(c.votos) + " votos</small></span></div>";
     }).join("");
   }
-  function duo(cands, run) {
-    if (!cands || !cands.length) return "<p>Sem candidatos.</p>";
+  function duo(candsOrig, run, cargoLabel, fLocal, ocultarMancheteEleito) {
+    if (!candsOrig || !candsOrig.length) return "<p>Sem candidatos.</p>";
+    var f = fLocal != null ? fLocal : fracAtual();
+    var definido = f >= 0.96 || AP.pct >= 100;
+    var cands = parcialCands(candsOrig, f);
     var a = cands[0], b = cands[1];
     var sa = a.share, sb = b ? b.share : 0;
     var tot = sa + sb || 1;
+    // Regra: se run === true (ninguém > 50%), ambos recebem "2º turno". Se run === false, SOMENTE o 1º colocado (c === a) recebe "Eleito"!
     function lado(c, dir) {
       if (!c) return "<div></div>";
       var badge = "";
-      if (run && (c === a || c === b)) badge = ' <span class="ap-badge t2">2º turno</span>';
-      else if (c.eleito) badge = ' <span class="ap-badge">Eleito</span>';
+      if (definido && !ocultarMancheteEleito) {
+        if (run && (c === a || c === b)) badge = ' <span class="ap-badge t2">2º turno</span>';
+        else if (!run && c === a) badge = ' <span class="ap-badge">Eleito</span>';
+      }
       var cor = corDe(c.partido, 0);
       return '<div class="ap-who ' + (dir || "") + '"><span class="foto">' + foto(c, 52, 64) + '</span><div><div class="nm">' + esc(c.nome) + badge + '</div><small style="color:' + cor + '">' + esc(partidoCurto(c.partido)) + '</small><div class="ap-big" style="color:' + cor + '">' + pct(c.share) + "</div><small>" + fmtV(c.votos) + " votos</small></div></div>";
     }
     var titulo = "";
-    if (run && b) titulo = '<div class="ap-run"><span style="color:' + corDe(a.partido, 0) + '">' + esc(a.nome) + '</span> e <span style="color:' + corDe(b.partido, 1) + '">' + esc(b.nome) + "</span> vão ao 2º turno</div>";
+    if (!ocultarMancheteEleito) {
+      if (!definido) {
+        titulo = '<div class="ap-run live">Em apuração: <span style="color:' + corDe(a.partido, 0) + '">' + esc(a.nome) + "</span> lidera com " + pct(a.share) + (b ? (" contra " + pct(b.share) + " de " + esc(b.nome)) : "") + "</div>";
+      } else if (run && b) {
+        titulo = '<div class="ap-run t2"><span style="color:' + corDe(a.partido, 0) + '">' + esc(a.nome) + '</span> e <span style="color:' + corDe(b.partido, 1) + '">' + esc(b.nome) + "</span> vão ao 2º turno</div>";
+      } else if (a) {
+        titulo = '<div class="ap-run"><span style="color:' + corDe(a.partido, 0) + '">' + esc(a.nome) + "</span> é eleito(a)" + (cargoLabel ? " " + esc(cargoLabel) : "") + " com " + pct(a.share) + "</div>";
+      }
+    }
     var split = b ? '<div class="ap-split"><i style="width:' + (sa / tot * 100) + "%;background:" + corDe(a.partido, 0) + '"></i><i style="width:' + (sb / tot * 100) + "%;background:" + corDe(b.partido, 1) + '"></i></div>' : "";
-    return titulo + '<div class="ap-duo">' + lado(a, "") + lado(b, "dir") + "</div>" + split + (b ? fmtDiff(a, b) : "");
+    return titulo + '<div class="ap-duo">' + lado(a, "") + lado(b, "dir") + "</div>" + split + (b ? fmtDiff(a, b, definido) : "");
   }
   function blocoSenado(p) {
     if (!p || !(p.sen || []).length) return "<p>Sem disputa de Senado neste estado.</p>";
+    var f = fracUF(p.uf);
+    var definido = f >= 0.96 || AP.pct >= 100;
+    var senParcial = parcialCands(p.sen, f);
     var vagas = p.vagas || 1;
-    var eleitos = p.sen.filter(function (c) { return c.eleito; });
-    if (!eleitos.length) eleitos = p.sen.slice(0, vagas);
+    var eleitos = senParcial.filter(function (c) { return c.eleito; });
+    if (!eleitos.length) eleitos = senParcial.slice(0, vagas);
     var titulo = "Senado · " + (vagas > 1 ? "duas vagas" : "uma vaga");
+    var mancheteSen = definido
+      ? ('<div class="ap-run">' + eleitos.map(function (c) { return '<span style="color:' + corDe(c.partido, 0) + '">' + esc(c.nome) + "</span>"; }).join(" e ") + (eleitos.length > 1 ? " são eleitos(as) ao Senado" : " é eleito(a) ao Senado") + "</div>")
+      : ('<div class="ap-run live">Em apuração para o Senado (' + vagas + (vagas > 1 ? " vagas" : " vaga") + ")</div>");
     var cards = eleitos.map(function (c) {
       var cor = corDe(c.partido, 0);
-      return '<div class="ap-card"><span class="foto">' + foto(c, 48, 58) + '</span><div style="flex:1"><div class="nm">' + esc(c.nome) + '</div><div class="sub" style="color:' + cor + '">' + esc(partidoCurto(c.partido)) + "</div></div><span class=\"ap-badge\">Eleito</span></div>";
+      var bdg = definido ? '<span class="ap-badge">Eleito</span>' : '<span class="ap-badge t2">Liderando</span>';
+      return '<div class="ap-card"><span class="foto">' + foto(c, 48, 58) + '</span><div style="flex:1"><div class="nm">' + esc(c.nome) + '</div><div class="sub" style="color:' + cor + '">' + esc(partidoCurto(c.partido)) + " · " + pct(c.share) + " (" + fmtV(c.votos) + ' votos)</div></div>' + bdg + "</div>";
     }).join("");
-    var fica = (p.fica || []).map(function (f) {
-      return '<p class="ap-fica">No cargo até ' + f.ano + ": " + esc(f.nome) + " (" + esc(f.partido || "—") + ")</p>";
+    var fica = (p.fica || []).map(function (fItem) {
+      return '<p class="ap-fica">No cargo até ' + fItem.ano + ": " + esc(fItem.nome) + " (" + esc(fItem.partido || "—") + ")</p>";
     }).join("");
     var aberto = AP.aberto[p.uf];
-    var btn = '<button class="ap-btn" data-ap="todos" data-u="' + p.uf + '">' + (aberto ? "Ocultar a lista" : "Ver todos os " + p.sen.length + " candidatos") + "</button>";
+    var btn = '<button class="ap-btn" data-ap="todos" data-u="' + p.uf + '">' + (aberto ? "Ocultar a lista" : "Ver todos os " + senParcial.length + " candidatos") + "</button>";
     var lista = "";
     if (aberto) {
-      lista = p.sen.map(function (c, i) {
-        return '<div class="ap-mini ap-sen-row"><span>' + (i + 1) + '</span><span class="foto">' + foto(c, 32, 40) + '</span><span class="g"><b>' + esc(c.nome) + "</b><br><small>" + esc(partidoCurto(c.partido)) + (c.eleito ? " · Eleito" : "") + '</small></span><span class="pc"><b>' + pct(c.share) + "</b><small>" + fmtV(c.votos) + " votos</small></span></div>";
+      lista = senParcial.map(function (c, i) {
+        return '<div class="ap-mini ap-sen-row"><span>' + (i + 1) + '</span><span class="foto">' + foto(c, 32, 40) + '</span><span class="g"><b>' + esc(c.nome) + "</b><br><small>" + esc(partidoCurto(c.partido)) + (definido && c.eleito ? " · Eleito" : "") + '</small></span><span class="pc"><b>' + pct(c.share) + "</b><small>" + fmtV(c.votos) + " votos</small></span></div>";
       }).join("");
     }
-    return '<div data-sen-n="' + p.sen.length + '" data-sen-vagas="' + vagas + '"><div class="ap-rowh"><h3>' + titulo + '</h3><span class="ap-sec">' + (vagas > 1 ? "Eleitos" : "Eleito") + "</span></div>" + cards + fica + btn + lista + htmlGasto(p.sen) + "</div>";
+    return '<div data-sen-n="' + senParcial.length + '" data-sen-vagas="' + vagas + '"><div class="ap-rowh"><h3>' + titulo + '</h3></div>' + mancheteSen + cards + fica + btn + lista + htmlGasto(p.sen) + "</div>";
   }
   function htmlGasto(cands) {
     var rows = (cands || []).filter(function (c) { return c && c.nome; }).slice().sort(function (a, b) { return (b.gasto || 0) - (a.gasto || 0); });
@@ -40952,22 +41323,27 @@ document.addEventListener("click", function(e){
   }
   function blocoGov(p) {
     if (!p || !(p.gov || []).length) return "";
-    var run = !!p.govRun;
-    var ele = (p.gov || []).some(function (c) { return c.eleito; });
+    var f = fracUF(p.uf);
+    var govParcial = parcialCands(p.gov, f);
+    // Verifica se há 2º turno (nenhum candidato atingiu > 50% no 1º turno)
+    var turno2Ativo = (M().eleicao.noite && M().eleicao.noite.turno === 2);
+    var run = !turno2Ativo && (!!p.govRun || (p.gov.length > 1 && (p.gov[0].share || 0) <= 50));
     var key = "gov-" + p.uf;
     var extra = "";
-    if (p.gov.length > 2) {
-      if (AP.aberto[key]) extra = miniLista(p.gov, 2, p.gov.length);
-      else extra = miniLista(p.gov, 2, 5) + restoLinha(p.gov, 5);
-      extra += '<button class="ap-btn" data-ap="todos" data-u="' + key + '">' + (AP.aberto[key] ? "Ocultar a lista" : "Ver todos os " + p.gov.length + " candidatos") + "</button>";
+    if (govParcial.length > 2) {
+      if (AP.aberto[key]) extra = miniLista(govParcial, 2, govParcial.length);
+      else extra = miniLista(govParcial, 2, 5) + restoLinha(govParcial, 5);
+      extra += '<button class="ap-btn" data-ap="todos" data-u="' + key + '">' + (AP.aberto[key] ? "Ocultar a lista" : "Ver todos os " + govParcial.length + " candidatos") + "</button>";
     }
-    return '<div class="ap-rowh"><h3>Governador</h3>' + (ele && !run ? '<span class="ap-badge">Eleito</span>' : "") + "</div>" + duo(p.gov, run) + extra + htmlGasto(p.gov);
+    // Sem badge duplicado na direita de .ap-rowh para não ficar em cima da foto do 2º colocado!
+    return '<div class="ap-rowh"><h3>Governador</h3></div>' + duo(p.gov, run, "Governador(a) de " + (UF_NOME[p.uf] || p.uf), f, false) + extra + htmlGasto(p.gov);
   }
   function cabecaUF(uf, cor) {
-    return '<button class="ap-back" data-ap="voltar">← Brasil</button><div class="ap-head">' + shapeUF(uf, cor || "#2f6fe0") + "<div><h2>" + esc(UF_NOME[uf] || uf) + '</h2><div class="ap-el">' + uf + " · " + fmtMilhoes(eleitoresUF(uf)) + " de eleitores</div></div></div>" + barraSecoes();
+    var f = fracUF(uf);
+    return '<button class="ap-back" data-ap="voltar">← Voltar ao Mapa do Brasil</button><div class="ap-head">' + shapeUF(uf, cor || "#2f6fe0") + "<div><h2>" + esc(UF_NOME[uf] || uf) + '</h2><div class="ap-el">' + uf + " · " + fmtMilhoes(eleitoresUF(uf)) + " de eleitores</div></div></div>" + barraSecoes(f);
   }
   function blocoPresUF(uf) {
-    var loc = presLocal(uf);
+    var loc = parcialCands(presLocal(uf), fracUF(uf));
     if (!loc.length) return "";
     return "<h3>Presidente em " + esc(UF_NOME[uf] || uf) + "</h3>" + miniLista(loc, 0, 4);
   }
@@ -40975,23 +41351,27 @@ document.addEventListener("click", function(e){
     var N = nac();
     var pres = N.pres || [];
     if (AP.uf) {
+      var f = fracUF(AP.uf);
       var loc = presLocal(AP.uf);
       var ld = loc[0];
-      return cabecaUF(AP.uf, ld ? corDe(ld.partido, 0) : "#2f6fe0") + "<h3>Presidente no estado</h3>" + duo(loc, !!N.presRun) + '<div class="ap-sec">Votos deste estado. O gasto da campanha é o nacional.</div>';
+      return cabecaUF(AP.uf, ld ? corDe(ld.partido, 0) : "#2f6fe0") + "<h3>Presidente no estado</h3>" + duo(loc, false, null, f, true) + '<div class="ap-sec">Votação neste estado. O resultado oficial da Presidência é nacional.</div>';
     }
-    var run = !!N.presRun;
+    var fNac = fracAtual();
+    var presParcial = parcialCands(pres, fNac);
+    var turno2Ativo = (M().eleicao.noite && M().eleicao.noite.turno === 2);
+    var run = !turno2Ativo && (!!N.presRun || (pres.length > 1 && (pres[0].share || 0) <= 50));
     var mais = "";
-    if (pres.length > 2) {
-      mais = AP.aberto.pres ? miniLista(pres, 2, pres.length) : miniLista(pres, 2, 5) + restoLinha(pres, 5);
-      mais += '<button class="ap-btn" data-ap="todos-pres">' + (AP.aberto.pres ? "Ocultar a lista" : "Ver todos os " + pres.length + " candidatos") + "</button>";
+    if (presParcial.length > 2) {
+      mais = AP.aberto.pres ? miniLista(presParcial, 2, presParcial.length) : miniLista(presParcial, 2, 5) + restoLinha(presParcial, 5);
+      mais += '<button class="ap-btn" data-ap="todos-pres">' + (AP.aberto.pres ? "Ocultar a lista" : "Ver todos os " + presParcial.length + " candidatos") + "</button>";
     }
-    return '<h2>Brasil</h2><p class="ap-el">' + fmtMilhoes(N.elBR || eleitoresBR()) + " de eleitores" + (run ? " · 2º turno" : "") + "</p>" + barraSecoes() + duo(pres, run) + mais +
+    return '<h2>Brasil</h2><p class="ap-el">' + fmtMilhoes(N.elBR || eleitoresBR()) + " de eleitores" + (run && fNac >= 0.96 ? " · 2º turno" : "") + "</p>" + barraSecoes(fNac) + duo(pres, run, "Presidente da República", fNac, false) + mais +
       htmlGasto(pres) + '<div class="ap-grid" style="margin-top:16px"><div>' + mapaHTML("pres") + '</div><div>' + listaEstados("pres") + "</div></div>";
   }
   function telaEstado(tab) {
     if (!AP.uf) {
       var tit = tab === "sen" ? "Senado" : "Governadores";
-      return "<h2>" + tit + "</h2><p class=\"ap-sec\">Toque num estado. O painel abre com eleitores, seções e a disputa.</p><div class=\"ap-grid\"><div>" + mapaHTML(tab) + "</div><div>" + listaEstados(tab) + "</div></div>";
+      return "<h2>" + tit + '</h2><p class="ap-sec">Selecione um estado na barra acima ou toque no mapa abaixo para abrir a apuração completa.</p>' + barraSecoes(fracAtual()) + '<div class="ap-grid"><div>' + mapaHTML(tab) + "</div><div>" + listaEstados(tab) + "</div></div>";
     }
     var p = painelUF(AP.uf);
     var ld = lider(tab, AP.uf);
@@ -41015,7 +41395,9 @@ document.addEventListener("click", function(e){
     });
   }
   function linhaLeg(c, i, cls) {
-    return '<div class="' + cls + '"><span>' + (i + 1) + '</span><span class="foto">' + foto(c, 36, 44) + '</span><div class="mid"><div class="l1">' + esc(c.nome) + (c.jogador ? " (você)" : "") + '</div><div class="l2"><span style="color:' + corDe(c.partido, i) + '">●</span> ' + esc(partidoCurto(c.partido)) + " · " + fmtV(c.votos) + " votos · " + fmtK(c.gasto) + " · " + fmtPreco(c.pv) + "/voto</div></div></div>";
+    var f = Math.max(0.01, fracUF("SP"));
+    var vt = Math.round((c.votos || 0) * f);
+    return '<div class="' + cls + '"><span>' + (i + 1) + '</span><span class="foto">' + foto(c, 36, 44) + '</span><div class="mid"><div class="l1">' + esc(c.nome) + (c.jogador ? " (você)" : "") + '</div><div class="l2"><span style="color:' + corDe(c.partido, i) + '">●</span> ' + esc(partidoCurto(c.partido)) + " · " + fmtV(vt) + " votos · " + fmtK(c.gasto) + " · " + fmtPreco(c.pv) + "/voto</div></div></div>";
   }
   function telaDep() {
     var E = M().eleicao;
@@ -41034,27 +41416,100 @@ document.addEventListener("click", function(e){
       var ord = AP.ordem === "gasto" ? todos.slice().sort(function (a, b) { return b.gasto - a.gasto; }) : todos;
       full = '<div data-leg-full="' + ord.length + '">' + ord.map(function (c, i) { return linhaLeg(c, i, "ap-leg ap-eleito"); }).join("") + "</div>";
     }
-    return "<h2>" + esc(LEG_NOME[AP.cargo]) + "</h2><p class=\"ap-sec\">" + esc(LEG_SUB[AP.cargo]) + ". Os 15 mais votados. Sem mapa de caras: com tanta gente, ninguém se lê.</p><div class=\"ap-subtabs\">" + subs + "</div>" +
+    return "<h2>" + esc(LEG_NOME[AP.cargo]) + "</h2><p class=\"ap-sec\">" + esc(LEG_SUB[AP.cargo]) + ". Os 15 mais votados.</p>" + barraSecoes(fracUF("SP")) + "<div class=\"ap-subtabs\">" + subs + "</div>" +
       '<div data-leg-top="' + top.length + '">' + top.map(function (c, i) { return linhaLeg(c, i, "ap-leg ap-quinze"); }).join("") + "</div>" +
       '<button class="ap-btn" data-ap="eleitos">' + (AP.verEleitos ? "Ocultar a lista completa" : "Ver os " + N + " eleitos") + "</button>" +
       (AP.verEleitos ? '<div class="ap-subtabs"><button class="ap-tab ' + (AP.ordem !== "gasto" ? "on" : "") + '" data-ap="ordem" data-u="votos">Por votos</button><button class="ap-tab ' + (AP.ordem === "gasto" ? "on" : "") + '" data-ap="ordem" data-u="gasto">Por gasto</button></div>' + full : "") +
       htmlGasto(rank);
   }
+
+  function atualizarTopoELocalidade() {
+    var topEl = document.getElementById("ap-top");
+    if (topEl) {
+      var ano = dt().ano;
+      var turno = (M().eleicao.noite && M().eleicao.noite.turno === 2) ? "2º turno" : "1º turno";
+      var fim = AP.pct >= 100;
+      var pill = fim
+        ? '<span class="ap-pill">100%</span>'
+        : '<span class="ap-pill live">AO VIVO · ' + horaApuracao() + '</span>';
+      var tit = fim ? "Apuração encerrada" : ("Apuração em andamento · " + pct(AP.pct));
+      var sub = turno + " de " + ano + (fim ? " · todas as urnas apuradas" : " · linha do tempo 0% → 100%");
+      var botoes = fim
+        ? '<button type="button" class="ap-tbtn" data-ap="reiniciar-tl">↺ Rever 0%–100%</button>'
+        : ('<button type="button" class="ap-tbtn" data-ap="pausa">' + (AP.play ? "⏸ Pausar" : "▶ Continuar") + "</button>" +
+           [1, 2, 4].map(function (v) { return '<button type="button" class="ap-tbtn ' + (AP.vel === v ? "on" : "") + '" data-ap="vel" data-u="' + v + '">' + v + "×</button>"; }).join("") +
+           '<button type="button" class="ap-tbtn ok" data-ap="tudo">⏩ 100%</button>');
+      topEl.innerHTML = '<div class="ap-top-left">' + pill + "<div><b>" + tit + "</b><small>" + sub + '</small></div></div><div class="ap-tline">' + botoes + "</div>";
+    }
+    var locEl = document.getElementById("ap-locbar");
+    if (locEl) {
+      var locKey = AP.tab + "|" + (AP.uf || "");
+      if (AP.tab === "dep") {
+        locEl.style.display = "none";
+        locEl.setAttribute("data-key", locKey);
+      } else {
+        locEl.style.display = "flex";
+        if (locEl.getAttribute("data-key") !== locKey) {
+          locEl.setAttribute("data-key", locKey);
+          var ufsOrd = UFS.slice().sort(function (a, b) { return UF_NOME[a].localeCompare(UF_NOME[b], "pt"); });
+          var opts = '<option value="" ' + (!AP.uf ? "selected" : "") + ">🇧🇷 Brasil (Visão Nacional / Mapa)</option>" +
+            ufsOrd.map(function (u) {
+              return '<option value="' + u + '" ' + (AP.uf === u ? "selected" : "") + ">" + u + " — " + esc(UF_NOME[u]) + "</option>";
+            }).join("");
+          locEl.innerHTML = '<label for="ap-uf-sel">📍 Localidade:</label><select id="ap-uf-sel">' + opts + "</select>" +
+            (AP.uf ? '<button type="button" class="ap-tbtn" data-ap="voltar">Mapa BR</button>' : "");
+          var sel = document.getElementById("ap-uf-sel");
+          if (sel) {
+            sel.onchange = function () {
+              AP.uf = this.value || null;
+              desenhar();
+            };
+          }
+        }
+      }
+    }
+  }
+
   function desenhar() {
     var corpo = document.getElementById("ap-corpo");
     if (!corpo) return;
+    atualizarTopoELocalidade();
     var tabs = document.getElementById("ap-tabs");
-    var nomes = [["pres", "Presidente"], ["gov", "Governadores"], ["sen", "Senado"], ["dep", "Deputados"]];
-    if (tabs) tabs.innerHTML = nomes.map(function (t) { return '<button class="ap-tab ' + (AP.tab === t[0] ? "on" : "") + '" data-ap="tab" data-u="' + t[0] + '">' + t[1] + "</button>"; }).join("");
+    if (tabs && tabs.getAttribute("data-tab") !== AP.tab) {
+      tabs.setAttribute("data-tab", AP.tab);
+      var nomes = [["pres", "Presidente"], ["gov", "Governadores"], ["sen", "Senado"], ["dep", "Deputados"]];
+      tabs.innerHTML = nomes.map(function (t) { return '<button class="ap-tab ' + (AP.tab === t[0] ? "on" : "") + '" data-ap="tab" data-u="' + t[0] + '">' + t[1] + "</button>"; }).join("");
+    }
     var html = "";
     try {
       if (AP.tab === "pres") html = telaPres();
       else if (AP.tab === "dep") html = telaDep();
       else html = telaEstado(AP.tab);
     } catch (e) { console.error(e); html = "<p>Não foi possível montar esta aba.</p>"; }
+    var prevScroll = corpo.scrollTop;
     corpo.innerHTML = html;
+    corpo.scrollTop = prevScroll;
     document.querySelectorAll("button.fab").forEach(function (b) { b.style.display = "none"; });
   }
+
+  function tickApuracao() {
+    if (!document.getElementById("apurMapa")) {
+      if (AP.timer) { clearInterval(AP.timer); AP.timer = null; }
+      return;
+    }
+    var agora = performance.now();
+    var dtMs = Math.max(0, agora - (AP.last || agora));
+    AP.last = agora;
+    if (AP.play && AP.pct < 100) {
+      AP.pct = Math.min(100, AP.pct + (dtMs * (AP.vel || 1) / DURACAO_AP) * 100);
+      if (AP.pct >= 100) {
+        AP.pct = 100;
+        AP.play = false;
+      }
+      desenhar();
+    }
+  }
+
   function clique(ev) {
     var b = ev.target.closest("[data-ap]");
     if (!b || !document.getElementById("apurMapa").contains(b)) return;
@@ -41070,10 +41525,15 @@ document.addEventListener("click", function(e){
     else if (a === "cargo") { AP.cargo = u; AP.verEleitos = false; }
     else if (a === "eleitos") AP.verEleitos = !AP.verEleitos;
     else if (a === "ordem") AP.ordem = u;
+    else if (a === "pausa") { AP.play = !AP.play; AP.last = performance.now(); }
+    else if (a === "vel") { AP.vel = Number(u) || 1; AP.play = true; AP.last = performance.now(); }
+    else if (a === "tudo") { AP.pct = 100; AP.play = false; }
+    else if (a === "reiniciar-tl") { AP.pct = 0; AP.play = true; AP.last = performance.now(); }
     else if (a === "fechar") { fechar(); return; }
     desenhar();
   }
   function fechar() {
+    if (AP.timer) { clearInterval(AP.timer); AP.timer = null; }
     var el = document.getElementById("apurMapa");
     if (el) el.remove();
     try { var E = M().eleicao; E.noiteVista = true; E.pendenteModal = false; } catch (e) {}
@@ -41085,17 +41545,23 @@ document.addEventListener("click", function(e){
     if (!gameState) return "";
     if (document.getElementById("apurMapa")) return "";
     estilo();
-    AP.tab = "pres"; AP.uf = null; AP.cargo = "DEPF"; AP.verEleitos = false; AP.aberto = {}; AP.ordem = "votos";
+    var isR2 = !!(M().eleicao && M().eleicao.noite && M().eleicao.noite.turno === 2);
+    var N = nac();
+    var tabInicial = "pres";
+    if (isR2 && (!N.pres || N.pres.length < 2) && N.spGov && N.spGov.length >= 2) tabInicial = "gov";
+    AP.tab = tabInicial; AP.uf = null; AP.cargo = "DEPF"; AP.verEleitos = false; AP.aberto = {}; AP.ordem = "votos";
+    AP.pct = 0; AP.play = true; AP.vel = 1; AP.last = performance.now();
+    AP._fotosUsadas = {}; AP._candFotoMap = {};
     var el = document.createElement("div");
     el.id = "apurMapa";
     el.setAttribute("role", "dialog");
     el.setAttribute("aria-label", "Apuração");
-    var ano = dt().ano;
-    var turno = (M().eleicao.noite && M().eleicao.noite.turno === 2) ? "2º turno" : "1º turno";
-    el.innerHTML = '<div class="ap-top"><span class="ap-pill">100%</span><div><b>Apuração encerrada</b><small>' + turno + " de " + ano + " · urnas apuradas</small></div></div><div class=\"ap-tabs\" id=\"ap-tabs\"></div><div class=\"ap-corpo\" id=\"ap-corpo\"></div><div class=\"ap-foot\"><button type=\"button\" data-ap=\"fechar\">Concluir</button></div>";
+    el.innerHTML = '<div class="ap-top" id="ap-top"></div><div class="ap-tabs" id="ap-tabs"></div><div class="ap-locbar" id="ap-locbar"></div><div class="ap-corpo" id="ap-corpo"></div><div class="ap-foot"><button type="button" data-ap="fechar">Concluir apuração</button></div>';
     el.addEventListener("pointerdown", clique, true);
     document.body.appendChild(el);
     desenhar();
+    if (AP.timer) clearInterval(AP.timer);
+    AP.timer = setInterval(tickApuracao, 240);
     return "";
   }
 
@@ -41104,6 +41570,7 @@ document.addEventListener("click", function(e){
     try { return abrir(); }
     catch (e) { console.error("apuracao-mapa", e); try { return _modal.apply(this, arguments); } catch (e2) { return ""; } }
   };
+  window.modalNoite = modalNoite;
   var _render = render;
   render = function () {
     var out = _render.apply(this, arguments);
@@ -41111,18 +41578,20 @@ document.addEventListener("click", function(e){
       var E = gameState && M() && M().eleicao;
       if (E && E.noite && E.noite.v2 && !E.noiteVista && E.pendenteModal) abrir();
       var el = document.getElementById("apurMapa");
-      if (el && (!E || !E.noite || E.noiteVista)) el.remove();
+      if (el && (!E || !E.noite || E.noiteVista)) {
+        if (AP.timer) { clearInterval(AP.timer); AP.timer = null; }
+        el.remove();
+      }
       if (document.getElementById("apurMapa")) document.querySelectorAll("button.fab").forEach(function (b) { b.style.display = "none"; });
     } catch (e) {}
     return out;
   };
+  window.render = render;
 
   window._apMapa = {gastoDe: gastoDe, alvoSenado: alvoSenado, abrir: abrir, painel: painelUF};
   window._apuracaoMapa = true;
 })();
 /* APURACAO MAPA FIM */
-/* APURACAO MAPA FIM */
-
 </script>
 <script>
 /* ============================================================================
