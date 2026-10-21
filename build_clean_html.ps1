@@ -1,4 +1,105 @@
+﻿param(
+  [switch]$Force,
+  [switch]$Legacy
+)
+
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$ErrorActionPreference = 'Stop'
+
+# =============================================================================
+# CADEIRA — build / sincronização
+#
+# IMPORTANTE (a partir de 21/10/2026):
+#   O HTML COMPILADO passou a ser a FONTE DE VERDADE. O Cursor e o mantenedor
+#   editam index.html / CADEIRA_O_Jogo_25.html diretamente.
+#
+#   A base antiga (CADEIRA_O_Jogo_25.html.bak_abc) ficou ~9.200 linhas defasada:
+#   falta o tema escuro (House of Cards), as fontes, a apuração no mapa e as
+#   fases do legislativo. Rodar o pipeline antigo APAGA essas mudanças.
+#
+#   Por isso o modo PADRÃO deste script NÃO reconstrói nada: ele apenas garante
+#   que os dois HTML sejam idênticos. Se divergirem, ABORTA para não destruir
+#   trabalho.
+#
+#   Uso:
+#     .\build_clean_html.ps1            -> modo seguro (sincroniza / verifica)
+#     .\build_clean_html.ps1 -Force     -> adota o arquivo MAIS RECENTE como
+#                                          fonte e sobrescreve o outro
+#     .\build_clean_html.ps1 -Legacy -Force
+#                                        -> roda o pipeline antigo (base + módulos).
+#                                           PERIGOSO e defasado. Só para referência.
+# =============================================================================
+
+$OUT1 = 'index.html'
+$OUT2 = 'CADEIRA_O_Jogo_25.html'
+
+function Get-HashOf([string]$p) {
+  if (-not (Test-Path -LiteralPath $p)) { return $null }
+  return (Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash
+}
+
+# --------------------------- MODO SEGURO (padrão) ---------------------------
+if (-not $Legacy) {
+  Write-Host "CADEIRA — modo seguro (sincronização dos HTML compilados)"
+
+  $e1 = Test-Path -LiteralPath $OUT1
+  $e2 = Test-Path -LiteralPath $OUT2
+
+  if (-not $e1 -and -not $e2) {
+    Write-Host "ERRO: nenhum dos dois HTML existe ($OUT1 / $OUT2)." -ForegroundColor Red
+    exit 1
+  }
+
+  if ($e1 -and -not $e2) {
+    Copy-Item -LiteralPath $OUT1 -Destination $OUT2 -Force
+    Write-Host "Criado $OUT2 a partir de $OUT1."
+    exit 0
+  }
+  if ($e2 -and -not $e1) {
+    Copy-Item -LiteralPath $OUT2 -Destination $OUT1 -Force
+    Write-Host "Criado $OUT1 a partir de $OUT2."
+    exit 0
+  }
+
+  $h1 = Get-HashOf $OUT1
+  $h2 = Get-HashOf $OUT2
+
+  if ($h1 -eq $h2) {
+    Write-Host ("OK: os dois HTML já são idênticos (hash {0}...). Nada a fazer." -f $h1.Substring(0,16))
+    exit 0
+  }
+
+  $i1 = Get-Item -LiteralPath $OUT1
+  $i2 = Get-Item -LiteralPath $OUT2
+  Write-Host "DIVERGÊNCIA DETECTADA:" -ForegroundColor Yellow
+  Write-Host ("  {0}: {1:N0} bytes  {2}  hash={3}" -f $OUT1, $i1.Length, $i1.LastWriteTime, $h1.Substring(0,16))
+  Write-Host ("  {0}: {1:N0} bytes  {2}  hash={3}" -f $OUT2, $i2.Length, $i2.LastWriteTime, $h2.Substring(0,16))
+
+  if (-not $Force) {
+    Write-Host ""
+    Write-Host "ABORTADO para não destruir trabalho." -ForegroundColor Yellow
+    Write-Host "O HTML compilado é a fonte de verdade. Escolha uma opção:"
+    Write-Host "  1) Adotar o mais recente como fonte:  .\build_clean_html.ps1 -Force"
+    Write-Host "  2) Reconstruir pelo pipeline antigo:  .\build_clean_html.ps1 -Legacy -Force"
+    Write-Host "     (atenção: a base .bak_abc está defasada e isso perde mudanças recentes)"
+    exit 2
+  }
+
+  if ($i1.LastWriteTimeUtc -ge $i2.LastWriteTimeUtc) { $novo = $OUT1 } else { $novo = $OUT2 }
+  if ($novo -eq $OUT1) { $velho = $OUT2 } else { $velho = $OUT1 }
+  Copy-Item -LiteralPath $novo -Destination $velho -Force
+  Write-Host "Sincronizado: $velho recebeu o conteúdo de $novo (mais recente)."
+  exit 0
+}
+
+# ----------------------------- PIPELINE ANTIGO ------------------------------
+Write-Host "AVISO: modo -Legacy. A base .bak_abc está defasada." -ForegroundColor Yellow
+Write-Host "       O resultado pode perder tema, fontes, apuração no mapa e" -ForegroundColor Yellow
+Write-Host "       as fases do legislativo. Use apenas se souber o que está fazendo." -ForegroundColor Yellow
+if (-not $Force) {
+  Write-Host "Para confirmar, rode novamente com: -Legacy -Force" -ForegroundColor Yellow
+  exit 2
+}
 
 Write-Host "Iniciando compilação limpa de CADEIRA_O_Jogo_25.html..."
 Write-Host "Nota: cadeira-theme.css deve permanecer ao lado do HTML (ou embutido no head)."
@@ -78,7 +179,6 @@ if (Test-Path "modulo_audio_hoc.js") {
 } else {
   Write-Host "AVISO: modulo_audio_hoc.js ausente - build sem áudio."
 }
-
 
 # Modulo Obras e Programas do Executivo (aditivo).
 $obrasData = ""
