@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="utf-8">
@@ -1973,7 +1973,7 @@ const REAIS = [
 ["POL_DF_09","Camilo Santana",57,90,"PT","Ministro","Ministro da Educação","Nordeste / Máquina Ceará","DF"],
 ["POL_DF_10","Renan Filho",46,95,"MDB","Ministro","Ministro dos Transportes","Clã Calheiros / Obras Federais","DF"],
 ["POL_DF_11","Carlos Fávaro",56,90,"PSD","Ministro","Ministro da Agricultura","Agro Centro-Oeste / Grãos","DF"],
-["POL_DF_12","Simone Tebet",55,90,"MDB","Ministro","Ministra do Planejamento","Centro Democrático / Faria Lima","DF"],
+["POL_DF_12","Simone Tebet",55,90,"PSB","Ministro","Ministra do Planejamento","Centro Democrático / Faria Lima","DF"],
 ["POL_DF_13","Jader Filho",49,90,"MDB","Ministro","Ministro das Cidades","Clã Barbalho / Pará / Norte","DF"],
 ["POL_DF_14","Luciana Santos",60,85,"PCdoB","Ministro","Ministra Ciência e Tecnologia","PCdoB Nacional / Pernambuco","DF"],
 ["POL_DF_15","Silvio Costa Filho",44,95,"Republicanos","Ministro","Ministro Portos e Aeroportos","Centrão Portuário / Nordeste","DF"],
@@ -2513,7 +2513,10 @@ function normKey(s){
     "ubiratansanderson": "sanderson",
     "sanderson": "sanderson",
     "evairvieirademelo": "evairdemelo",
-    "evairdemelo": "evairdemelo"
+    "evairdemelo": "evairdemelo",
+    "drhiran": "hirangoncalves",
+    "hiran": "hirangoncalves",
+    "hirangoncalves": "hirangoncalves"
   };
 
   if (aliases[clean]) return aliases[clean];
@@ -2728,7 +2731,7 @@ Coronel Armando|60|PL|SC|Segurança catarinense
 Ricardo Guidi|59|PL|SC|Catarinense
 Gilson Marques|44|Novo|SC|Liberal / Novo
 Rafael Prudente|45|MDB|DF|Centrão do DF
-Julio Cesar Ribeiro|50|Republicanos|DF|Centrão do DF
+Gilvan Máximo|55|Republicanos|DF|Empresariado e Comunicação no DF
 Alberto Fraga|66|PL|DF|Segurança / DF
 Fred Linhares|46|Republicanos|DF|DF
 Reginaldo Veras|52|PV|DF|DF
@@ -2755,7 +2758,7 @@ Giacobo|46|PL|PR|Bolsonarismo paranaense
 Reinhold Stephanes Junior|57|PSD|PR|Paranaense
 Toninho Wandscheer|59|PP|PR|Paranaense
 Ricardo Barros|66|PP|PR|Centrão paranaense
-Evair de Melo|58|PP|ES|Capixaba
+Amaro Neto|48|Republicanos|ES|Comunicação / Mais Votado do ES
 Helder Salomão|56|PT|ES|PT capixaba
 Gilvan da Federal|55|PL|ES|Segurança / Capixaba
 Messias Donato|55|Republicanos|ES|Capixaba
@@ -2851,7 +2854,7 @@ Benes Leocádio|60|União Brasil|RN|Potiguar
 Carla Dickson|54|União Brasil|RN|Potiguar
 Fernando Mineiro|58|PT|RN|PT potiguar
 Albuquerque|58|Republicanos|RR|Roraimense
-Dr. Hiran|64|PP|RR|Roraimense
+Duda Ramos|45|MDB|RR|Roraimense
 Zé Haroldo Cathedral|62|PSD|RR|Roraimense
 Joenia Wapichana|52|Rede|RR|Indígena
 Gabriel Mota|45|Republicanos|RR|Roraimense
@@ -3065,13 +3068,13 @@ Alexandre Kalil|66|PDT|MG|Belo Horizonte
 Orlando Morando|50|PSDB|SP|São Bernardo do Campo
 Paulo Serra|58|PSDB|SP|Santo André
 Marcelo Oliveira|42|PT|SP|Mauá
-Auricchio|55|PL|SP|São Caetano do Sul
+José Auricchio Júnior|62|PSD|SP|São Caetano do Sul
 Guti|45|PL|SP|Guarulhos
 Edinho Silva|57|PT|SP|Araraquara
 Edinho Araújo|63|MDB|SP|São José do Rio Preto
 #LIDER
 Fernando Haddad|63|PT|SP|Ministro da Fazenda / Pré-candidato|PT paulista / Fazenda|São Paulo
-Simone Tebet|56|MDB|MS|Ministra do Planejamento|MDB / Centro|Campo Grande
+Simone Tebet|56|PSB|MS|Ministra do Planejamento|PSB / Centro|Campo Grande
 Marina Silva|68|Rede|AC|Ministra do Meio Ambiente|Ambientalismo / Rede|Brasília
 Geraldo Alckmin|73|PSB|SP|Vice-presidente da República|Centro / Indústria|São Paulo
 Michel Temer|86|MDB|SP|Ex-presidente da República|MDB histórico|São Paulo
@@ -3133,7 +3136,7 @@ Demétrio Magnoli|67|Sem Partido|SP|Sociólogo e comentarista político|GloboNew
 Joel Pinheiro da Fonseca|39|Sem Partido|SP|Economista e filósofo|Folha de S.Paulo / Liberalismo social|São Paulo
 Guilherme Fiuza|60|Sem Partido|RJ|Escritor e jornalista|Conservadorismo e sátira política|Rio de Janeiro
 Paulo Mathias|35|Sem Partido|SP|Apresentador de TV e rádio|SBT / Jovem Pan / Comunicação política|São Paulo
-Cristina Graeml|55|Sem Partido|PR|Jornalista e pré-candidata|Comentarista conservadora / Curitiba|Curitiba
+Cristina Graeml|55|PMB|PR|Jornalista e pré-candidata|Comentarista conservadora / Curitiba|Curitiba
 Fernando Rocha|58|Sem Partido|MG|Apresentador e jornalista|Comunicação e saúde popular|Belo Horizonte
 Luciano Huck|54|Sem Partido|SP|Apresentador de TV e empresário|TV Globo / Terceiro setor e Renovação política|São Paulo
 José Luiz Datena|68|PSDB|SP|Apresentador de TV e político|Policialesco / Segurança e eleições de SP|São Paulo
@@ -3408,10 +3411,10 @@ Ana Carolina Oliveira|50|Podemos|SP|Vereadora de São Paulo (Podemos)|Segurança
 Rubinho Nunes|33|União Brasil|SP|Vereador de São Paulo (União)|MBL / Direita digital|São Paulo
 Ricardo Teixeira|53|União Brasil|SP|Vereador de São Paulo (União)|Centrão paulistano|São Paulo
 Adilson Amadeu|60|União Brasil|SP|Vereador de São Paulo (União)|Centrão paulistano|São Paulo
-Geraldo Rufino|66|Sem Partido|SP|Empresário / Pré-candidato ao Senado (SP)|Empreendedorismo|São Paulo
+Geraldo Rufino|66|PRD|SP|Empresário / Pré-candidato ao Senado (SP)|Empreendedorismo|São Paulo
 Mateus Simões|42|PSD|MG|Vice-governador de Minas Gerais|Máquina estadual de MG|Belo Horizonte
 Daniel Vilela|44|MDB|GO|Vice-governador de Goiás|Máquina estadual de Goiás|Goiânia
-Alexandre Kalil|66|Sem Partido|MG|Ex-prefeito de Belo Horizonte|Centro mineiro|Belo Horizonte
+Alexandre Kalil|66|PDT|MG|Ex-prefeito de Belo Horizonte|Centro mineiro|Belo Horizonte
 Marconi Perillo|63|PSDB|GO|Ex-governador de Goiás|PSDB goiano|Goiânia
 Rodrigo Bacellar|41|União Brasil|RJ|Presidente da Alerj|Centrão fluminense|Rio de Janeiro
 Anthony Garotinho|66|Republicanos|RJ|Ex-governador do Rio de Janeiro|Bíblia / Fluminense|Campos dos Goytacazes
@@ -4995,6 +4998,15 @@ function scoreJogadorMaj(cargoId){
   const pad=npcPorId(j.padrinho_id); if(pad) s+=pad.popularidade*.04; if(j.vans.transporte_eleitor&&cargoId==="PREF") s+=1.2;
   return s;
 }
+function ehSemPartido(n) {
+  if (!n) return true;
+  var p = n.partidoBase || n.partido;
+  if (!p || typeof p !== "string") return true;
+  var s = p.trim().toLowerCase();
+  return s === "" || s === "?" || s === "sem partido" || s.indexOf("sem part") >= 0 || s.indexOf("sem-part") >= 0 || s.indexOf("stf") >= 0 || s.indexOf("independente") >= 0 || s.indexOf("avulso") >= 0;
+}
+window.ehSemPartido = ehSemPartido;
+
 function isFiguraPublica(param) {
   if (!param) return false;
   if (typeof param === "object") {
@@ -5024,7 +5036,7 @@ function isFiguraPublica(param) {
 window.isFiguraPublica = isFiguraPublica;
 
 function candidatosMajoritarios(cargoId){
-  let pool=[]; const alive=n=>n.vivo&&!n.inelegivel&&!n.jogador&&n.status_judicial!=="CONDENADO"&&!isFiguraPublica(n);
+  let pool=[]; const alive=n=>n.vivo&&!n.inelegivel&&!n.jogador&&n.status_judicial!=="CONDENADO"&&!isFiguraPublica(n)&&!ehSemPartido(n);
   if(cargoId==="PREF"){ const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Prefeito de Mauá"); pool=bancoDeNPCs.filter(n=>alive(n)&&n.municipio_domicilio==="Mauá"&&n.idade>=25&&n.idade<=80&&n.cargo!=="Falecido(a)"&&n!==inc&&n.status_judicial!=="CONDENADO"&&(n.real||n.cargo.includes("Vereador")||n.cargo==="Liderança / Ex-Titular")).sort((a,b)=>b.popularidade-a.popularidade).slice(0,3); if(inc) pool.unshift(inc); }
   else if(cargoId==="GOV"){ const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador de SP"); pool=bancoDeNPCs.filter(n=>alive(n)&&n.uf==="SP"&&(CARGO_NIVEL[n.cargo]||2)>=3&&n!==inc&&n.idade<=76&&(n.real||n.ambicao_alta)).sort((a,b)=>b.popularidade-a.popularidade+R.i(-6,6)).slice(0,4); if(inc) pool.unshift(inc); }
   else if(cargoId==="SEN"){ const inc=bancoDeNPCs.filter(n=>n.vivo&&n.cargo==="Senador da República"&&n.uf==="SP"&&n.mandato_fim===dt().ano); pool=bancoDeNPCs.filter(n=>alive(n)&&n.uf==="SP"&&(CARGO_NIVEL[n.cargo]||2)>=3&&!inc.includes(n)&&n.idade<=76&&n.cargo!=="Senador da República"&&(n.real||n.ambicao_alta)).sort((a,b)=>b.popularidade-a.popularidade+R.i(-8,8)).slice(0,4); pool=inc.concat(pool); }
@@ -5041,7 +5053,7 @@ function projetarMajoritaria(cargoId,ruido=0){
 }
 function projetarLegislativo(cargoId){
   const N=CADEIRAS[cargoId]; const pred=cargoId==="VER"?(n=>n.cargo.includes("Vereador")):cargoId==="DEPE"?(n=>n.cargo.includes("Deputado Estadual")):(n=>n.cargo.includes("Deputado Federal")&&n.uf==="SP");
-  const inc=bancoDeNPCs.filter(n=>n.vivo&&!n.jogador&&pred(n)); const ch=bancoDeNPCs.filter(n=>n.vivo&&n.cargo==="Liderança / Ex-Titular"&&n.base_votos>0&&(cargoId==="VER"?n.municipio_domicilio==="Mauá":n.uf==="SP")&&n.idade>=25&&n.idade<=75&&n.status_judicial!=="CONDENADO"&&!isFiguraPublica(n));
+  const inc=bancoDeNPCs.filter(n=>n.vivo&&!n.jogador&&pred(n)&&!ehSemPartido(n)); const ch=bancoDeNPCs.filter(n=>n.vivo&&n.cargo==="Liderança / Ex-Titular"&&n.base_votos>0&&(cargoId==="VER"?n.municipio_domicilio==="Mauá":n.uf==="SP")&&n.idade>=25&&n.idade<=75&&n.status_judicial!=="CONDENADO"&&!isFiguraPublica(n)&&!ehSemPartido(n));
   const votos=n=>Math.round(n.base_votos*R.f(.72,1.28)*(.85+n.popularidade/180)*(n.status_judicial==="INDICIADO"?.6:1)*(cargoId==="DEPF"?.9:1));
   const lista=inc.map(n=>({npc:n,votos:votos(n),inc:true})).concat(ch.map(n=>({npc:n,votos:Math.round(votos(n)*.55),inc:false})));
   const med=cargoId==="VER"?1100:cargoId==="DEPE"?12000:20000; const nExtra=Math.round(N*1.6);
@@ -5575,7 +5587,7 @@ function finalizarMaj(c,vencedor,jog){
   if(jog) manchete(`${j.nome} perde a disputa por ${nome} (${jog.share.toFixed(1)}%).`,"eleicao");
 }
 function eleicaoEstado(uf){
-  const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf);
+  const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n));
   let cands=bancoDeNPCs.filter(n=>n.vivo&&!n.jogador&&n.uf===uf&&n!==inc&&n.idade>=32&&n.idade<=75&&(n.ambicao_alta||/Senador|Deputado Federal|Prefeito|Ministro|Liderança/.test(n.cargo))&&n.cargo!=="Governador de SP"&&n.id.length>0&&!partidoDoCacique(n)).sort((a,b)=>b.popularidade-a.popularidade+R.i(-8,8)).slice(0,3);
   while(cands.length<2){ const t=gerarNovoPoliticoProcedural("Liderança / Ex-Titular","ESTADUAL",null,{uf,idade:R.i(40,66)}); t.popularidade=R.c(t.popularidade+10,10,80); cands.push(t); }
   const lista=(inc?[inc]:[]).concat(cands).map(n=>({n,score:n.popularidade+(n.carisma-50)/6+(n===inc?5:0)+R.f(-6,6)}));
@@ -6193,7 +6205,7 @@ const regUF=uf=>Object.keys(REGIAO_UF).find(r=>REGIAO_UF[r].includes(uf))||null;
 function popularParlamentoCompleto(){
   let m=contarCadeiras(n=>n.cargo.includes("Vereador")); while(m<23){ bancoDeNPCs.push(gerarPoliticoProcedural("Vereador de Mauá","MUNICIPAL",null,{uf:"SP",mandato_fim:2028})); m++; }
   let a=contarCadeiras(n=>n.cargo.includes("Deputado Estadual")); while(a<94){ bancoDeNPCs.push(gerarPoliticoProcedural("Deputado Estadual (SP)","ESTADUAL",null,{uf:"SP"})); a++; }
-  for(const uf of UFS){ let k=contarCadeiras(n=>n.cargo.includes("Deputado Federal")&&n.uf===uf); while(k<UF_SEATS[uf]){ bancoDeNPCs.push(gerarPoliticoProcedural("Deputado Federal","FEDERAL",null,{uf})); k++; } }
+  for(const uf of UFS){ let k=contarCadeiras(n=>n.cargo.includes("Deputado Federal")&&n.uf===uf&&!ehSemPartido(n)); while(k<UF_SEATS[uf]){ bancoDeNPCs.push(gerarPoliticoProcedural("Deputado Federal","FEDERAL",null,{uf})); k++; } }
   for(const uf of UFS){ let k=contarCadeiras(n=>n.cargo.includes("Senador")&&n.uf===uf); while(k<3){ bancoDeNPCs.push(gerarPoliticoProcedural("Senador da República","FEDERAL",null,{uf,idade:R.i(45,72)})); k++; } }
   for(const uf of UFS){ if(uf==="SP") continue; if(!bancoDeNPCs.some(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf)){ const g=gerarPoliticoProcedural("Governador","ESTADUAL",null,{uf,idade:R.i(46,68)}); g.papel=`Governador(a) de ${uf}`; g.base_votos=R.i(1e6,4e6); g.mandato_fim=2026; bancoDeNPCs.push(g); } }
   atribuirMandatosSenado();
@@ -7382,12 +7394,12 @@ function legislativoMensal(){
 /* ---------- Eleições vivas nos outros estados ---------- */
 function scoreCand(n,isInc){ const pb=PARTIDOS[n.partidoBase]||{fundo:0}; return n.popularidade+(n.carisma-50)/6+(isInc?5:0)+pb.fundo*.25+R.f(-3,3); }
 function montarDisputaUF(uf){
-  const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf);
-  const ok=n=>n.vivo&&!n.jogador&&n.uf===uf&&n.idade>=32&&n.idade<=76&&n!==inc&&n.cargo!=="Governador"&&n.cargo!=="Ministro do STF"&&!partidoDoCacique(n)&&n.status_judicial!=="CONDENADO"&&!n.inelegivel;
+  const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n));
+  const ok=n=>n.vivo&&!n.jogador&&n.uf===uf&&n.idade>=32&&n.idade<=76&&n!==inc&&n.cargo!=="Governador"&&n.cargo!=="Ministro do STF"&&!partidoDoCacique(n)&&n.status_judicial!=="CONDENADO"&&!n.inelegivel&&!ehSemPartido(n)&&!(typeof conflitoCargoCandidato==="function"&&conflitoCargoCandidato(n,"GOV"));
   const pool=bancoDeNPCs.filter(n=>ok(n)&&(n.ambicao_alta||/Senador|Deputado Federal|Prefeito|Ministro|Liderança/.test(n.cargo))).sort((a,b)=>(b.popularidade+(b.ambicao_alta?6:0))-(a.popularidade+(a.ambicao_alta?6:0)));
   const gc=pool.slice(0,3); while(gc.length<2){ const t=gerarNovoPoliticoProcedural("Liderança / Ex-Titular","ESTADUAL",null,{uf,idade:R.i(40,66)}); t.popularidade=R.c(t.popularidade+10,10,80); gc.push(t); }
   const gov=(inc?[inc]:[]).concat(gc).map(n=>({id:n.id,score:scoreCand(n,n===inc),inc:n===inc}));
-  const up=bancoDeNPCs.filter(n=>n.vivo&&n.cargo==="Senador da República"&&n.uf===uf&&n.mandato_fim===dt().ano); const vagas=up.length; let lista=[];
+  const up=bancoDeNPCs.filter(n=>n.vivo&&n.cargo==="Senador da República"&&n.uf===uf&&n.mandato_fim===dt().ano&&!ehSemPartido(n)); const vagas=up.length; let lista=[];
   if(vagas>0){ const ids=new Set(gc.map(x=>x.id)); const sc=pool.filter(n=>!ids.has(n.id)).slice(0,vagas+1); while(sc.length<vagas+1){ const t=gerarNovoPoliticoProcedural("Liderança / Ex-Titular","ESTADUAL",null,{uf,idade:R.i(42,68)}); sc.push(t); }
     lista=up.map(n=>({id:n.id,score:scoreCand(n,true),inc:true})).concat(sc.map(n=>({id:n.id,score:scoreCand(n,false),inc:false}))); }
   return {gov,sen:{vagas,lista}};
@@ -7409,20 +7421,20 @@ function pesqUF(uf){
   return {gov:sm(d.gov),sen:sm(d.sen.lista),vagas:d.sen.vagas};
 }
 function eleicaoEstado(uf){
-  const E=M().eleicao; const d=(E.est&&E.est[uf])||montarDisputaUF(uf); const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf);
-  const g=d.gov.map(c=>({...c,n:npcPorId(c.id),s:c.score+R.f(-3,3)})).filter(c=>c.n&&c.n.vivo); const w8=g.map(x=>Math.exp(x.s/16)),tot=w8.reduce((s,x)=>s+x,0); g.forEach((x,i)=>x.share=w8[i]/tot*100); g.sort((a,b)=>b.share-a.share);
+  const E=M().eleicao; const d=(E.est&&E.est[uf])||montarDisputaUF(uf); const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n));
+  const g=d.gov.map(c=>({...c,n:npcPorId(c.id),s:c.score+R.f(-3,3)})).filter(c=>c.n&&c.n.vivo&&!ehSemPartido(c.n)); const w8=g.map(x=>Math.exp(x.s/16)),tot=w8.reduce((s,x)=>s+x,0); g.forEach((x,i)=>x.share=w8[i]/tot*100); g.sort((a,b)=>b.share-a.share);
   const win=g[0], w=win.n; const mudou=!!inc&&w!==inc;
   if(inc&&w!==inc){ inc.cargo="Liderança / Ex-Titular"; inc.papel="Ex-governador(a)"; } if(w!==inc) assumirCargoEleito(w,"Governador","ESTADUAL"); w.mandato_fim=dt().ano+4;
   const favor=(J().apoiados||[]).includes(w.id); if(favor){ J().favores=J().favores||[]; J().favores.push({id:w.id,ano:dt().ano}); relNPC(w,15); manchete(`${w.nome}, que você apoiou, é eleito(a) governador(a) de ${uf}.`,"apoio"); }
   const sen=[]; const up=bancoDeNPCs.filter(n=>n.vivo&&n.cargo==="Senador da República"&&n.uf===uf&&n.mandato_fim===dt().ano);
-  if(up.length>0){ const pool=d.sen.lista.map(c=>({...c,n:npcPorId(c.id),s:c.score+R.f(-3,3)})).filter(c=>c.n&&c.n.vivo&&c.n!==w).sort((a,b)=>b.s-a.s); const eleitos=pool.slice(0,up.length);
+  if(up.length>0){ const pool=d.sen.lista.map(c=>({...c,n:npcPorId(c.id),s:c.score+R.f(-3,3)})).filter(c=>c.n&&c.n.vivo&&c.n!==w&&!ehSemPartido(c.n)).sort((a,b)=>b.s-a.s); const eleitos=pool.slice(0,up.length);
     up.forEach(n=>{ if(!eleitos.find(x=>x.n===n)){ n.cargo="Liderança / Ex-Titular"; n.papel="Ex-senador(a)"; } });
     eleitos.forEach(x=>{ if(!x.inc) assumirCargoEleito(x.n,"Senador da República","FEDERAL"); x.n.mandato_fim=dt().ano+8; sen.push({nome:x.n.nome,partido:x.n.partido,reeleito:x.inc,apoiado:(J().apoiados||[]).includes(x.n.id)}); if((J().apoiados||[]).includes(x.n.id)){ J().favores=J().favores||[]; J().favores.push({id:x.n.id,ano:dt().ano}); relNPC(x.n,15); } }); }
   return {uf,gov:{nome:w.nome,partido:w.partido,share:win.share,mudou,anterior:inc?inc.nome:null,real:w.real,apoiado:favor},sen,lista:g.slice(0,4).map(x=>({nome:x.n.nome,partido:x.n.partido,share:x.share}))};
 }
 function eleicaoDepFed(uf){
-  const seats=UF_SEATS[uf]; const inc=bancoDeNPCs.filter(n=>n.vivo&&!n.jogador&&n.cargo.includes("Deputado Federal")&&n.uf===uf);
-  const ch=bancoDeNPCs.filter(n=>n.vivo&&n.cargo==="Liderança / Ex-Titular"&&n.uf===uf&&n.idade>=25&&n.idade<=74&&n.base_votos>0&&n.status_judicial!=="CONDENADO"&&!partidoDoCacique(n));
+  const seats=UF_SEATS[uf]; const inc=bancoDeNPCs.filter(n=>n.vivo&&!n.jogador&&n.cargo.includes("Deputado Federal")&&n.uf===uf&&!ehSemPartido(n));
+  const ch=bancoDeNPCs.filter(n=>n.vivo&&n.cargo==="Liderança / Ex-Titular"&&n.uf===uf&&n.idade>=25&&n.idade<=74&&n.base_votos>0&&n.status_judicial!=="CONDENADO"&&!partidoDoCacique(n)&&!ehSemPartido(n));
   const ap=n=>1+Math.min(.12,((J().apoiados||[]).includes(n.id)?.06:0));
   const vt=(n,m)=>Math.round(n.base_votos*R.f(.72,1.28)*(.85+n.popularidade/180)*m*ap(n)*(n.status_judicial==="INDICIADO"?.6:1));
   const lista=inc.map(n=>({n,v:vt(n,1-antipolDelta()),inc:true})).concat(ch.map(n=>({n,v:vt(n,.5),inc:false})));
@@ -7435,7 +7447,7 @@ function eleicaoDepFed(uf){
 }
 function assembleiaUF(uf){
   if(uf==="SP"){ const p={}; bancoDeNPCs.filter(n=>n.vivo&&n.cargo.includes("Deputado Estadual")).forEach(n=>p[n.partidoBase]=(p[n.partidoBase]||0)+1); return {uf,seats:94,part:p,real:true}; }
-  const gov=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf); const ps=PARTIDOS_JOGAVEIS.map(p=>({p,w:(PARTIDOS[p].fundo+.8)*R.f(.6,1.5)*(gov&&gov.partidoBase===p?1.6:1)})); const tot=ps.reduce((s,x)=>s+x.w,0); const seats=UF_ALESP[uf]; const part={}; let rest=seats;
+  const gov=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n)); const ps=PARTIDOS_JOGAVEIS.map(p=>({p,w:(PARTIDOS[p].fundo+.8)*R.f(.6,1.5)*(gov&&gov.partidoBase===p?1.6:1)})); const tot=ps.reduce((s,x)=>s+x.w,0); const seats=UF_ALESP[uf]; const part={}; let rest=seats;
   ps.sort((a,b)=>b.w-a.w).forEach((x,i)=>{ const k=i===ps.length-1?rest:Math.min(rest,Math.round(x.w/tot*seats)); if(k>0){ part[x.p]=k; rest-=k; } }); return {uf,seats,part};
 }
 function reeleicaoSimplificada(){
@@ -7518,7 +7530,7 @@ function aplicarAjustes2026(){
 function listaPret(cargoId){
   const d=dt(); const L=d.ano===2026&&M().cenario!==2022?PRET_2026:(M().cenario===2022&&d.ano===2022?PRET_2022:null); if(!L) return null;
   const nomes=cargoId==="PRES"?L.PRES:cargoId==="GOV"?L.GOV_SP:cargoId==="SEN"?L.SEN_SP:null; if(!nomes) return null;
-  return nomes.map(npcPorNome).filter(n=>n&&!n.inelegivel);
+  return nomes.map(npcPorNome).filter(n=>n&&!n.inelegivel&&!ehSemPartido(n));
 }
 { const _cm=candidatosMajoritarios; candidatosMajoritarios=function(c){
     const l=listaPret(c); if(l&&l.length>=2){ const out=l.map(n=>({npc:n,score:n.popularidade+(n.carisma-50)/6+6+((n.cargo==="Presidente da República"||n.cargo==="Governador de SP")?4:0)+(PARTIDOS[n.partidoBase]||{fundo:0}).fundo*.25}));
@@ -8104,7 +8116,7 @@ const limiteExec=n=>(n.mandatosSeguidos||1)>=2;
 { const _cm3=candidatosMajoritarios; candidatosMajoritarios=function(c){ return _cm3(c).filter(x=>!(x.npc&&x.npc.cargo===NOME_CARGO[c]&&["PREF","GOV","PRES"].includes(c)&&limiteExec(x.npc))); };
   const _md2=montarDisputaUF; montarDisputaUF=function(uf){ const d=_md2(uf); d.gov=d.gov.filter(c=>{ const n=npcPorId(c.id); return !(n&&n.cargo==="Governador"&&limiteExec(n)); }); while(d.gov.length<2){ const t=gerarNovoPoliticoProcedural("Liderança / Ex-Titular","ESTADUAL",null,{uf,idade:R.i(40,66)}); t.popularidade=R.c(t.popularidade+10,10,80); d.gov.push({id:t.id,score:scoreCand(t,false),inc:false}); } return d; };
   const _fm=finalizarMaj; finalizarMaj=function(c,v,jog){ const antes=bancoDeNPCs.find(x=>x.vivo&&x.cargo===NOME_CARGO[c]&&!x.jogador); _fm(c,v,jog); const novo=bancoDeNPCs.find(x=>x.vivo&&x.cargo===NOME_CARGO[c]&&!x.jogador); if(novo&&["PREF","GOV","PRES"].includes(c)){ novo.mandatosSeguidos=(antes&&novo===antes)?(novo.mandatosSeguidos||1)+1:1; } };
-  const _ee=eleicaoEstado; eleicaoEstado=function(uf){ const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf); const r=_ee(uf); const novo=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf); if(novo) novo.mandatosSeguidos=(inc&&novo===inc)?(novo.mandatosSeguidos||1)+1:1; return r; };
+  const _ee=eleicaoEstado; eleicaoEstado=function(uf){ const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n)); const r=_ee(uf); const novo=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n)); if(novo) novo.mandatosSeguidos=(inc&&novo===inc)?(novo.mandatosSeguidos||1)+1:1; return r; };
   const _pc2=podeCandidatar; podeCandidatar=function(){ const r=_pc2(); if(!r.ok) return r; const j=J(); const alvo=cargoIdPorNome(j.campanha.cargo_alvo);
     if(["PREF","GOV","PRES"].includes(alvo)&&cargoAtualId()===alvo&&j.reeleicoes>=1) return {ok:false,motivo:`Limite de reeleição: o ${NOME_CARGO[alvo]} só pode ficar dois mandatos seguidos.`};
     if(j.pasta&&tipoEleicao(dt().ano)&&dt().mes>4) return {ok:false,motivo:"Desincompatibilização: secretários e ministros precisam deixar a pasta até abril do ano da eleição."};
@@ -8794,7 +8806,7 @@ function corTerr(tid){
   if(m==="traf") return declTraf(Math.max(0,Math.min(100,Math.log10(1+(c.trafego[tid]||0)/1000)/4*100)));
   const t=TERRITORIOS.find(x=>x.id===tid); return declEl(Math.max(8,Math.min(100,Math.log10(1+t.el)/4.6*100)));
 }
-function govDeUF(uf){ return uf==="SP"?bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador de SP"):bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf); }
+function govDeUF(uf){ return uf==="SP"?bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador de SP"):bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n)); }
 function valorBR(uf){ const j=J(); if(uf==="SP"){ const a=["capital","interior","litoral"].map(t=>j.aprovacao[t]); return a.reduce((s,x)=>s+x,0)/3; } const r=regDeUF(uf); return r?j.aprovacao[r]:0; }
 function elUF(uf){ if(uf==="SP") return 24500; const r=regDeUF(uf); const t=TERRITORIOS.find(x=>x.id===r); return t?t.el/REG_UF[r].length:3000; }
 function trafUF(uf){ const c=J().campanha.trafego; if(uf==="SP") return (c.capital||0)+(c.interior||0)+(c.litoral||0); return c[regDeUF(uf)]||0; }
@@ -9199,6 +9211,15 @@ const SET_NOMES_FIGURAS_PUBLICAS = new Set([
   "Andr\u00E9ia Sadi", "Andreia Sadi", "Caio Coppola", "Glenn Greenwald", "Gabriela Prioli", "Vera Magalh\u00E3es", "Vera Magalhaes",
   "Danilo Gentili", "Jones Manoel"
 ]);
+
+function ehSemPartido(n) {
+  if (!n) return true;
+  var p = n.partidoBase || n.partido;
+  if (!p || typeof p !== "string") return true;
+  var s = p.trim().toLowerCase();
+  return s === "" || s === "?" || s === "sem partido" || s.indexOf("sem part") >= 0 || s.indexOf("sem-part") >= 0 || s.indexOf("stf") >= 0 || s.indexOf("independente") >= 0 || s.indexOf("avulso") >= 0;
+}
+window.ehSemPartido = ehSemPartido;
 
 function isFiguraPublica(param) {
   if (!param) return false;
@@ -10768,7 +10789,7 @@ function podeReeleger(n){ return (n.mandatosSeguidos||1)<CFG_ELEICAO.maxMandatos
 function hist(n,de,para,via){ n.hist_pol=n.hist_pol||[]; n.hist_pol.push({ano:dt().ano,mes:dt().mes,de,para,via}); if(n.hist_pol.length>30) n.hist_pol.shift(); }
 
 /* --- 1 candidato por ciclo; 1 por partido nos majoritários --- */
-function tentarRegistrar(n,c){
+function tentarRegistrar(n,c){ if(ehSemPartido(n)) return {ok:false,motivo:Candidatura avulsa Ã© vedada pela CF/88 (art. 14, Â§ 3Âº, V). Filie-se a um partido.};
   const r=regE(); const o=r.npc[n.id];
   if(o&&o!==c) return {ok:false,motivo:`Este candidato já está concorrendo a ${NOMEC(o)}. Não é possível registrar outra candidatura no mesmo ciclo eleitoral.`};
   const pb=n.partidoBase||n.partido||"?", k=c+"|"+pb, lim=c==="SEN"?vagasSen():1; r.part[k]=r.part[k]||[];
@@ -10793,7 +10814,7 @@ function liberarRegistro(id){ const r=regE(); delete r.npc[id]; Object.keys(r.pa
     return (r.lista[c]||[]).map(id=>{ const n=npcPorId(id); if(!n||!n.vivo||n.inelegivel) return null; const f=fresh.find(x=>x.npc===n); return {npc:n,score:(f?f.score:n.popularidade+(n.carisma-50)/6+6)+bonusLegadoNpc(n,c)}; }).filter(Boolean);
   };
 }
-function podeCand(n,k){ if(n.status_judicial==="CONDENADO"||n.inelegivel) return false; const atual={PRES:"Presidente da República",GOV:"Governador de SP",PREF:"Prefeito de Mauá"}[k]; return !(atual&&n.cargo===atual&&!podeReeleger(n)); }
+function podeCand(n,k){ if(ehSemPartido(n)||n.status_judicial==="CONDENADO"||n.inelegivel) return false; const atual={PRES:"Presidente da República",GOV:"Governador de SP",PREF:"Prefeito de Mauá"}[k]; return !(atual&&n.cargo===atual&&!podeReeleger(n)); }
 
 /* --- proporcionais: sem duplicar com majoritários e com teto por partido --- */
 { const _pl=projetarLegislativo;
@@ -10808,7 +10829,7 @@ function podeCand(n,k){ if(n.status_judicial==="CONDENADO"||n.inelegivel) return
 /* --- governos dos outros estados: maioria absoluta ou 2º turno --- */
 { const _ee=eleicaoEstado;
   eleicaoEstado=function(uf){
-    const E=M().eleicao; const d=(E.est&&E.est[uf])||montarDisputaUF(uf); const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf);
+    const E=M().eleicao; const d=(E.est&&E.est[uf])||montarDisputaUF(uf); const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n));
     let g=d.gov.map(c=>({c,n:npcPorId(c.id),s:c.score+R.f(-3,3)})).filter(x=>x.n&&x.n.vivo&&!x.n.jogador&&!x.n.inelegivel&&!(x.n===inc&&!podeReeleger(x.n)));
     const mp={}; g.forEach(x=>{ const p=x.n.partidoBase; if(!mp[p]||mp[p].s<x.s) mp[p]=x; }); g=Object.values(mp);
     while(g.length<2){ const t=gerarNovoPoliticoProcedural(LIVRE,"ESTADUAL",null,{uf,idade:R.i(40,66)}); g.push({c:{id:t.id,score:t.popularidade},n:t,s:t.popularidade}); }
@@ -11167,7 +11188,7 @@ function cargosAno(){ const t=tipoEleicao(dt().ano); if(!t) return []; try{ retu
 const alvoJ=()=>cargoIdPorNome(J().campanha.cargo_alvo);
 
 function poolCargo(c){
-  const alive=n=>n&&n.vivo&&!n.inelegivel&&!n.jogador&&n.status_judicial!=="CONDENADO"; const niv=n=>CARGO_NIVEL[n.cargo]||2;
+  const alive=n=>n&&n.vivo&&!n.inelegivel&&!n.jogador&&n.status_judicial!=="CONDENADO"&&!ehSemPartido(n); const niv=n=>CARGO_NIVEL[n.cargo]||2;
   const pret=new Set(); try{ (listaPret(c)||[]).forEach(n=>pret.add(n.id)); }catch(e){}
   const out=[]; const ano=dt().ano;
   bancoDeNPCs.forEach(n=>{ if(!alive(n)) return; let q=false;
@@ -11190,7 +11211,7 @@ const sc=(x,c)=>x==="JOGADOR"?scoreJ():scoreNPC(x,c,PV().atual);
 
 function formar(){ const P=PV().atual; if(P.formado) return P; const cs=cargosAno(); if(!cs.length) return P;
   const usados=new Set();
-  cs.slice().sort((a,b)=>MAJP.indexOf(a)-MAJP.indexOf(b)).forEach(c=>{ const por={}; poolCargo(c).forEach(n=>{ if(usados.has(n.id)||partOf(n)==="Sem Partido") return; (por[partOf(n)]=por[partOf(n)]||[]).push(n); });
+  cs.slice().sort((a,b)=>MAJP.indexOf(a)-MAJP.indexOf(b)).forEach(c=>{ const por={}; poolCargo(c).forEach(n=>{ if(usados.has(n.id)||ehSemPartido(n)||partOf(n)==="Sem Partido") return; (por[partOf(n)]=por[partOf(n)]||[]).push(n); });
     P.grupos[c]={};
     Object.keys(por).forEach(p=>{ const arr=por[p].map(n=>({n,s:scoreNPC(n,c,P)})).sort((a,b)=>b.s-a.s); arr.forEach(x=>usados.add(x.n.id)); P.grupos[c][p]={ids:arr.slice(0,4).map(x=>x.n.id),ret:[],venc:null,votos:null,final:null}; }); });
   P.formado=true; return P; }
@@ -12471,7 +12492,7 @@ construirNoite=function(turno){ try{ E_()._noiteReq=turno; }catch(e){} };
       (E._leg2=E._leg2||{})[cargoId]={N,named,anon,mudou:{perderam:perderam.slice(0,40),nPerd:perderam.length,novos:novos.slice(0,40),novosAnon}};
     }catch(e){ console.error("captura legislativo",e); }
     return _ar.apply(this,arguments); }; }
-{ const _ed=eleicaoDepFed; eleicaoDepFed=function(uf){ const inc=bancoDeNPCs.filter(n=>n.vivo&&!n.jogador&&n.cargo.includes("Deputado Federal")&&n.uf===uf); const r=_ed.apply(this,arguments);
+{ const _ed=eleicaoDepFed; eleicaoDepFed=function(uf){ const inc=bancoDeNPCs.filter(n=>n.vivo&&!n.jogador&&n.cargo.includes("Deputado Federal")&&n.uf===uf&&!ehSemPartido(n)); const r=_ed.apply(this,arguments);
     try{ const perd=inc.filter(n=>!n.cargo.includes("Deputado Federal")); (E_()._dep2=E_()._dep2||{})[uf]={perdeu:perd.filter(n=>n.real).slice(0,5).map(n=>n.nome),nPerd:perd.length}; }catch(e){} return r; }; }
 function publicar(turno,lst){
   const E=E_(); const v2=construirV2(turno,lst);
@@ -12592,7 +12613,7 @@ window.EXE = window.EXE || ["PRES","GOV","PREF"];
 window.MINID = window.MINID || {PRES:35,GOV:30,PREF:21};
 const chM=()=>{ const m=M(); const t=tipoEleicao(dt().ano); if(!m.chapas) m.chapas={ano:dt().ano,vice:{},sup:{},manual:{}}; else if(t&&m.chapas.ano!==dt().ano&&dt().mes<=10) m.chapas={ano:dt().ano,vice:{},sup:{},manual:{}}; return m.chapas; };
 const regs=()=>{ const r=(M().eleicao||{}).reg; return r&&r.npc?r.npc:{}; };
-const okBase=n=>n&&n.vivo&&!n.jogador&&n.cargo!=="Falecido(a)"&&n.cargo!=="Ministro do STF"&&!n.inelegivel&&n.status_judicial!=="CONDENADO";
+const okBase=n=>n&&n.vivo&&!n.jogador&&n.cargo!=="Falecido(a)"&&n.cargo!=="Ministro do STF"&&!n.inelegivel&&!ehSemPartido(n)&&n.status_judicial!=="CONDENADO";
 const ocup=exc=>{ const ch=chM(), s=new Set(); Object.entries(ch.vice).forEach(([k,v])=>{ if(k!==exc) s.add(v); }); Object.entries(ch.sup).forEach(([k,a])=>{ if(k!==exc) a.forEach(x=>s.add(x)); }); return s; };
 const marca=(id,tag)=>{ const r=regs(); if(r&&!r[id]) r[id]=tag; };
 function viceOK(id,key){ const n=npcPorId(id); if(!okBase(n)) return false; if(ocup(key).has(id)) return false; const r=regs()[id]; if(r&&r!=="VICE:"+key&&["PRES","GOV","PREF","SEN"].includes(r)) return false; return true; }
@@ -17170,6 +17191,7 @@ function processarJanelaPartidariaDinamica() {
   let trocasDesteMes = 0;
 
   for (const n of candidatas) {
+      if (typeof CAND_CARGO_DESIGNADO !== "undefined" && CAND_CARGO_DESIGNADO[n.nome]) continue;
     const fid = n.fidelidade_partidaria != null ? n.fidelidade_partidaria : (n.lealdade_base || 50);
     // Probabilidade base de 35% durante a janela para quem tem fidelidade baixa/média
     const chance = Math.max(0.15, (75 - fid) / 100);
@@ -18213,11 +18235,11 @@ if (typeof carregarStr === "function") {
 
 // 6. VEDAÇÃO TOTAL A CANDIDATURAS AVULSAS ("SEM PARTIDO")
 // Em conformidade com o art. 14, § 3º, V da Constituição Federal de 1988
-const ehSemPartido = n => {
-  if (!n) return true;
-  const p = n.partidoBase || n.partido;
-  return !p || p === "Sem Partido" || p === "?" || p === "STF (Ex-PSB)" || p === "PTB/Sem Part";
-};
+function ehSemPartido(n) { if (!n) return true; var p = n.partidoBase || n.partido; if (!p || typeof p !== 'string') return true; var s = p.trim().toLowerCase(); return s === '' || s === '?' || s === 'sem partido' || s.indexOf('sem part') >= 0 || s.indexOf('sem-part') >= 0 || s.indexOf('stf') >= 0 || s.indexOf('independente') >= 0 || s.indexOf('avulso') >= 0; } window.ehSemPartido = ehSemPartido;
+
+
+
+
 
 // Interceptar podeCand
 if (typeof podeCand === "function") {
@@ -40567,7 +40589,7 @@ document.addEventListener("click", function(e){
     // Buscar TODOS os políticos reais elegíveis do estado primeiro
     var pool = bancoDeNPCs.filter(function (n) {
       if (!n.vivo || n.jogador || n.uf !== uf || ids[n.id] || govIds[n.id] || fica[n.id]) return false;
-      if (n.inelegivel || n.status_judicial === "CONDENADO") return false;
+      if (n.inelegivel || n.status_judicial === "CONDENADO") return false; if (ehSemPartido(n)) return false;
       if (n.idade < 35 || n.idade > 78) return false;
       if (/Presidente|Vice-Presidente|Ministro do STF|Governador/.test(n.cargo || "")) return false;
       try { if (typeof isFiguraPublica === "function" && isFiguraPublica(n)) return false; } catch (e) {}
@@ -40623,22 +40645,73 @@ document.addEventListener("click", function(e){
       if (prio && ra !== rb) return (rb ? 1 : 0) - (ra ? 1 : 0);
       return (b.score || 0) - (a.score || 0);
     });
+    lista = lista.filter(function (c) { var n = c.npc || (c.id && npcPorId(c.id)); return n && !ehSemPartido(n); });
+
+
+
+
+
+
+
+
+
+
+
     return lista.slice(0, Math.max(alvo, 16));
+  }
+
+  /* ---------- EXCLUSIVIDADE DE CANDIDATURAS E PRIORIDADE ABSOLUTA PARA POLÍTICOS REAIS ---------- */
+  var CAND_CARGO_DESIGNADO = {
+    // Senado SP
+    "Marina Silva": "SEN",
+    "Simone Tebet": "SEN",
+    "Guilherme Derrite": "SEN",
+    "André do Prado": "SEN",
+    "Geraldo Rufino": "SEN",
+    "Delegado Palumbo": "SEN",
+    // Governo SP
+    "Tarcísio de Freitas": "GOV",
+    "Fernando Haddad": "GOV",
+    // Presidência da República
+    "Luiz Inácio Lula da Silva": "PRES",
+    "Flávio Bolsonaro": "PRES",
+    "Sergio Moro": "PRES",
+    "Cleitinho Azevedo": "PRES",
+    "Ronaldo Caiado": "PRES",
+    "Romeu Zema": "PRES",
+    "Ciro Gomes": "PRES"
+  };
+
+  function conflitoCargoCandidato(n, cargoId) {
+    if (!n) return false;
+    var nome = n.nome || "";
+    var desig = CAND_CARGO_DESIGNADO[nome];
+    if (!desig && typeof normKey === "function") {
+      var kn = normKey(nome);
+      if (kn === "flaviobolsonaro" || kn === "ronaldocaiado" || kn === "romeuzema" || kn === "sergiomoro" || kn === "cirogomes" || kn === "luizinacioluladasilva") desig = "PRES";
+      else if (kn === "marinasilva" || kn === "simonetebet" || kn === "guilhermederrite") desig = "SEN";
+      else if (kn === "tarcisiodefreitas" || kn === "fernandohaddad") desig = "GOV";
+    }
+    if (desig && desig !== cargoId) return true;
+    if (cargoId === "SEN" && n.cargo === "Senador da RepÃºblica" && (n.mandato_fim || 0) > dt().ano) return true;
+    if (cargoId === "SEN" && (n.cargo === "Governador de SP" || n.cargo === "Presidente da RepÃºblica")) return true;
+    if (cargoId === "GOV" && (n.cargo === "Governador" && n.uf && n.uf !== "SP")) return true;
+    return false;
   }
 
   var _cm = candidatosMajoritarios;
   candidatosMajoritarios = function (cargoId) {
-    var base = _cm.apply(this, arguments) || [];
+    var base = (_cm.apply(this, arguments) || []).filter(function (x) {
+      return x && x.npc && !ehSemPartido(x.npc) && !conflitoCargoCandidato(x.npc, cargoId);
+    });
     var prio = prioridadeReaisAtiva();
     try {
       if (prio && ["PRES", "GOV", "SEN", "PREF"].indexOf(cargoId) >= 0) {
-        // Garantir que candidatos reais elegíveis tenham prioridade absoluta sobre fictícios
-        var ufAlvo = cargoId === "PRES" ? null : "SP";
         var idsAtuais = {};
         base.forEach(function (x) { if (x && x.npc && x.npc.id) idsAtuais[x.npc.id] = 1; });
         var reaisExtras = bancoDeNPCs.filter(function (n) {
           if (!n.real || !n.vivo || n.jogador || n.inelegivel || n.status_judicial === "CONDENADO") return false;
-          if (idsAtuais[n.id]) return false;
+          if (idsAtuais[n.id] || conflitoCargoCandidato(n, cargoId)) return false;
           try { if (typeof isFiguraPublica === "function" && isFiguraPublica(n)) return false; } catch (e) {}
           try { if (typeof ehSemPartido === "function" && ehSemPartido(n)) return false; } catch (e) {}
           if (cargoId === "PREF") return n.municipio_domicilio === "Mauá" && n.idade >= 21 && n.idade <= 80;
@@ -40692,7 +40765,10 @@ document.addEventListener("click", function(e){
         var govIds = {};
         d.gov.forEach(function (c) { if (c && c.id) govIds[c.id] = 1; });
         var reaisUF = bancoDeNPCs.filter(function (n) {
-          return n.real && n.vivo && !n.jogador && n.uf === uf && !govIds[n.id] && !n.inelegivel && n.status_judicial !== "CONDENADO" && n.idade >= 30 && n.idade <= 78 && !/Ministro do STF|Presidente/.test(n.cargo || "");
+          if (!n.real || !n.vivo || n.jogador || n.uf !== uf || govIds[n.id] || n.inelegivel || n.status_judicial === "CONDENADO" || ehSemPartido(n)) return false;
+          if (n.idade < 30 || n.idade > 78 || /Ministro do STF|Presidente/.test(n.cargo || "")) return false;
+          if (CAND_CARGO_DESIGNADO[n.nome] && CAND_CARGO_DESIGNADO[n.nome] !== "GOV") return false;
+          return true;
         }).sort(function (a, b) { return (b.popularidade || 0) - (a.popularidade || 0); });
         reaisUF.slice(0, 4).forEach(function (n) {
           var isInc = n.cargo === "Governador" && n.uf === uf;
@@ -40708,9 +40784,21 @@ document.addEventListener("click", function(e){
           if (ra !== rb) return (rb ? 1 : 0) - (ra ? 1 : 0);
           return (b.score || 0) - (a.score || 0);
         });
+        var partidosGovVistos = {};
+        d.gov = d.gov.filter(function (c) {
+          var n = npcPorId(c.id);
+          if (!n || ehSemPartido(n)) return false;
+          if (conflitoCargoCandidato(n, "GOV")) return false;
+          var p = n.partidoBase || n.partido;
+          var f = typeof fedDe === "function" ? fedDe(p) : null;
+          var chave = f ? f.id : p;
+          if (chave && partidosGovVistos[chave]) return false;
+          if (chave) partidosGovVistos[chave] = true;
+          return true;
+        });
       }
       if (d && d.sen && d.sen.vagas > 0) {
-        var skip = (d.gov || []).slice(0, 3).map(function (c) { return c.id; });
+        var skip = (d.gov || []).map(function (c) { return c.id; });
         d.sen.lista = garantirLista(uf, d.sen.lista, d.sen.vagas, skip);
       }
     } catch (e) { console.error("apuracao senado uf", e); }
@@ -40747,13 +40835,13 @@ document.addEventListener("click", function(e){
       return (arr || []).map(function (c) {
         var n = c.n || (c.id && npcPorId(c.id)) || bancoDeNPCs.find(function (x) { return x.nome === c.nome; }) || {};
         return {id: c.id || n.id, nome: n.nome || c.nome || "?", partido: n.partido || n.partidoBase || c.partido || "", real: !!n.real, score: c.score || 0, share: c.share || 0, inc: !!c.inc, pop: n.popularidade || 30};
-      }).filter(function (c) { return c.nome && c.nome !== "?"; });
+      }).filter(function (c) { if (!c.nome || c.nome === "?") return false; var n = (c.id && npcPorId(c.id)) || bancoDeNPCs.find(function (x) { return x.nome === c.nome; }); if (ehSemPartido(n) || ehSemPartido(c)) return false; return true; });
     }
 
     // Usar os percentuais reais do 1º turno salvos em r.lista por eleicaoEstado
     var gov = [];
     if (r && Array.isArray(r.lista) && r.lista.length) {
-      gov = r.lista.map(function (item) {
+      gov = r.lista.filter(function (item) { var n = bancoDeNPCs.find(function (x) { return x.nome === item.nome && x.uf === uf; }) || bancoDeNPCs.find(function (x) { return x.nome === item.nome; }) || {}; return !ehSemPartido(n) && !ehSemPartido(item); }).map(function (item) {
         var n = bancoDeNPCs.find(function (x) { return x.nome === item.nome && x.uf === uf; }) ||
                 bancoDeNPCs.find(function (x) { return x.nome === item.nome; }) || {};
         return {
@@ -40769,9 +40857,12 @@ document.addEventListener("click", function(e){
       // Incluir demais candidatos da chapa d.gov que ficaram após o top 4
       var jaNomes = {};
       gov.forEach(function (gItem) { jaNomes[gItem.nome] = 1; });
+      var jaPartidosGov = {};
+      gov.forEach(function (gItem) { if (gItem.partido) jaPartidosGov[gItem.partido] = 1; });
       pack(d.gov).forEach(function (extra) {
-        if (!jaNomes[extra.nome]) {
+        if (!jaNomes[extra.nome] && (!extra.partido || !jaPartidosGov[extra.partido]) && !ehSemPartido(extra)) {
           jaNomes[extra.nome] = 1;
+          if (extra.partido) jaPartidosGov[extra.partido] = 1;
           gov.push({id: extra.id, nome: extra.nome, partido: extra.partido, real: extra.real, score: 0, share: 0.2, pop: extra.pop});
         }
       });
@@ -41046,23 +41137,40 @@ document.addEventListener("click", function(e){
 
   function parcialCands(cands, f) {
     if (!cands || !cands.length) return [];
-    if (f >= 0.995) return cands;
-    var fEf = Math.max(0.008, f);
-    // Oscilação leve nas primeiras urnas que converge exatamente para o resultado oficial em 100%
-    var osc = (1 - fEf) * 0.22;
-    var raw = cands.map(function (c, i) {
-      var s = ((hashStr((c.nome || "") + "|" + i) % 200) - 100) / 100; // -1 a +1
+    if (cands._isParcial && cands._pct === AP.pct) return cands;
+    var fEf = Math.max(0, Math.min(1, f != null ? f : fracAtual()));
+    if (fEf >= 0.995) {
+      var fim = cands.slice().sort(function (a, b) {
+        return (b.votos || 0) - (a.votos || 0) || (b.share || 0) - (a.share || 0);
+      });
+      fim._isParcial = true;
+      fim._pct = AP.pct;
+      return fim;
+    }
+    var fAtiva = Math.max(0.008, fEf);
+    // Dinâmica de apuração real: oscilação regional determinística que se fecha rumo a 100%
+    var osc = Math.pow(1 - fAtiva, 1.25) * 0.28;
+    var raw = cands.map(function (c) {
+      var candId = c.id || c.nome || "?";
+      var s = ((hashStr(candId + "|parcial_v3") % 200) - 100) / 100; // -1.00 a +1.00 determinístico por candidato
       return Math.max(0.05, (c.share || 0.1) * (1 + s * osc));
     });
     var tot = raw.reduce(function (a, b) { return a + b; }, 0) || 1;
-    return cands.map(function (c, i) {
+    var lista = cands.map(function (c, i) {
       var sh = raw[i] / tot * 100;
-      var vt = Math.max(0, Math.round((c.votos || 0) * fEf * (sh / Math.max(0.1, c.share || sh))));
+      var vt = Math.max(0, Math.round((c.votos || 0) * fAtiva * (sh / Math.max(0.1, c.share || sh))));
       return Object.assign({}, c, {
         share: sh,
         votos: vt
       });
     });
+    // REORDENAÇÃO RIGOROSA: a colocação é estritamente baseada nos votos apurados no momento!
+    lista.sort(function (a, b) {
+      return (b.votos || 0) - (a.votos || 0) || (b.share || 0) - (a.share || 0);
+    });
+    lista._isParcial = true;
+    lista._pct = AP.pct;
+    return lista;
   }
 
   /* ---------- ESTILOS RESPONSIVOS SEM COLISÃO NO CELULAR ---------- */
@@ -41178,11 +41286,13 @@ document.addEventListener("click", function(e){
     }).sort(function (a, b) { return b.share - a.share; });
   }
   function lider(tab, uf) {
-    if (tab === "pres") { var l = presLocal(uf); return l[0] || null; }
+    var f = fracUF(uf);
+    if (tab === "pres") { var l = parcialCands(presLocal(uf), f); return l[0] || null; }
     var p = painelUF(uf);
     if (!p) return null;
-    if (tab === "sen") return (p.sen || []).filter(function (c) { return c.eleito; })[0] || (p.sen || [])[0] || null;
-    return (p.gov || []).filter(function (c) { return c.eleito; })[0] || (p.gov || [])[0] || null;
+    if (tab === "sen") { var ls = parcialCands(p.sen || [], f); return ls[0] || null; }
+    var lg = parcialCands(p.gov || [], f);
+    return lg[0] || null;
   }
 
   function mapaHTML(tab) {
@@ -41255,9 +41365,9 @@ document.addEventListener("click", function(e){
     if (!candsOrig || !candsOrig.length) return "<p>Sem candidatos.</p>";
     var f = fLocal != null ? fLocal : fracAtual();
     var definido = f >= 0.96 || AP.pct >= 100;
-    var cands = parcialCands(candsOrig, f);
+    var cands = (candsOrig && candsOrig._isParcial) ? candsOrig : parcialCands(candsOrig, f);
     var a = cands[0], b = cands[1];
-    var sa = a.share, sb = b ? b.share : 0;
+    var sa = a ? a.share : 0, sb = b ? b.share : 0;
     var tot = sa + sb || 1;
     // Regra: se run === true (ninguém > 50%), ambos recebem "2º turno". Se run === false, SOMENTE o 1º colocado (c === a) recebe "Eleito"!
     function lado(c, dir) {
@@ -41267,8 +41377,8 @@ document.addEventListener("click", function(e){
         if (run && (c === a || c === b)) badge = ' <span class="ap-badge t2">2º turno</span>';
         else if (!run && c === a) badge = ' <span class="ap-badge">Eleito</span>';
       }
-      var cor = corDe(c.partido, 0);
-      return '<div class="ap-who ' + (dir || "") + '"><span class="foto">' + foto(c, 52, 64) + '</span><div><div class="nm">' + esc(c.nome) + badge + '</div><small style="color:' + cor + '">' + esc(partidoCurto(c.partido)) + '</small><div class="ap-big" style="color:' + cor + '">' + pct(c.share) + "</div><small>" + fmtV(c.votos) + " votos</small></div></div>";
+      var cor = corDe(c.partido, dir ? 1 : 0);
+      return '<div class="ap-who ' + (dir || "") + '"><span class="foto">' + foto(c, 52, 64) + '</span><div><div class="nm">' + esc(c.nome) + badge + '</div><small style="color:' + cor + '">' + esc(partidoCurto(c.partido)) + '</small><div class="ap-big" style="color:' + cor + '">' + pct(c.share) + "</div><small>" + fmtV(c.votos) + " votos</small></div></div>';
     }
     var titulo = "";
     if (!ocultarMancheteEleito) {
@@ -41289,7 +41399,9 @@ document.addEventListener("click", function(e){
     var definido = f >= 0.96 || AP.pct >= 100;
     var senParcial = parcialCands(p.sen, f);
     var vagas = p.vagas || 1;
-    var eleitos = senParcial.filter(function (c) { return c.eleito; });
+    var eleitos = definido
+      ? senParcial.filter(function (c) { return c.eleito; })
+      : senParcial.slice(0, vagas);
     if (!eleitos.length) eleitos = senParcial.slice(0, vagas);
     var titulo = "Senado · " + (vagas > 1 ? "duas vagas" : "uma vaga");
     var mancheteSen = definido
@@ -41308,7 +41420,8 @@ document.addEventListener("click", function(e){
     var lista = "";
     if (aberto) {
       lista = senParcial.map(function (c, i) {
-        return '<div class="ap-mini ap-sen-row"><span>' + (i + 1) + '</span><span class="foto">' + foto(c, 32, 40) + '</span><span class="g"><b>' + esc(c.nome) + "</b><br><small>" + esc(partidoCurto(c.partido)) + (definido && c.eleito ? " · Eleito" : "") + '</small></span><span class="pc"><b>' + pct(c.share) + "</b><small>" + fmtV(c.votos) + " votos</small></span></div>";
+        var statusTxt = definido ? (c.eleito ? " · Eleito" : "") : (i < vagas ? " · Na zona de eleição" : "");
+        return '<div class="ap-mini ap-sen-row"><span>' + (i + 1) + '</span><span class="foto">' + foto(c, 32, 40) + '</span><span class="g"><b>' + esc(c.nome) + "</b><br><small>" + esc(partidoCurto(c.partido)) + statusTxt + '</small></span><span class="pc"><b>' + pct(c.share) + "</b><small>" + fmtV(c.votos) + " votos</small></span></div>";
       }).join("");
     }
     return '<div data-sen-n="' + senParcial.length + '" data-sen-vagas="' + vagas + '"><div class="ap-rowh"><h3>' + titulo + '</h3></div>' + mancheteSen + cards + fica + btn + lista + htmlGasto(p.sen) + "</div>";
@@ -41336,11 +41449,13 @@ document.addEventListener("click", function(e){
       extra += '<button class="ap-btn" data-ap="todos" data-u="' + key + '">' + (AP.aberto[key] ? "Ocultar a lista" : "Ver todos os " + govParcial.length + " candidatos") + "</button>";
     }
     // Sem badge duplicado na direita de .ap-rowh para não ficar em cima da foto do 2º colocado!
-    return '<div class="ap-rowh"><h3>Governador</h3></div>' + duo(p.gov, run, "Governador(a) de " + (UF_NOME[p.uf] || p.uf), f, false) + extra + htmlGasto(p.gov);
+    return '<div class="ap-rowh"><h3>Governador</h3></div>' + duo(govParcial, run, "Governador(a) de " + (UF_NOME[p.uf] || p.uf), f, false) + extra + htmlGasto(p.gov);
   }
   function cabecaUF(uf, cor) {
     var f = fracUF(uf);
-    return '<button class="ap-back" data-ap="voltar">← Voltar ao Mapa do Brasil</button><div class="ap-head">' + shapeUF(uf, cor || "#2f6fe0") + "<div><h2>" + esc(UF_NOME[uf] || uf) + '</h2><div class="ap-el">' + uf + " · " + fmtMilhoes(eleitoresUF(uf)) + " de eleitores</div></div></div>" + barraSecoes(f);
+    var locP = (AP.tab === "pres") ? parcialCands(presLocal(uf), f) : null;
+    var ld = locP ? locP[0] : lider(AP.tab, uf);
+    return '<button class="ap-back" data-ap="voltar">← Voltar ao Mapa do Brasil</button><div class="ap-head">' + shapeUF(uf, ld ? corDe(ld.partido, 0) : (cor || "#2f6fe0")) + "<div><h2>" + esc(UF_NOME[uf] || uf) + '</h2><div class="ap-el">' + uf + " · " + fmtMilhoes(eleitoresUF(uf)) + " de eleitores</div></div></div>" + barraSecoes(f);
   }
   function blocoPresUF(uf) {
     var loc = parcialCands(presLocal(uf), fracUF(uf));
@@ -41353,8 +41468,10 @@ document.addEventListener("click", function(e){
     if (AP.uf) {
       var f = fracUF(AP.uf);
       var loc = presLocal(AP.uf);
-      var ld = loc[0];
-      return cabecaUF(AP.uf, ld ? corDe(ld.partido, 0) : "#2f6fe0") + "<h3>Presidente no estado</h3>" + duo(loc, false, null, f, true) + '<div class="ap-sec">Votação neste estado. O resultado oficial da Presidência é nacional.</div>';
+      var locParcial = parcialCands(loc, f);
+      var ld = locParcial[0];
+      var maisLoc = locParcial.length > 2 ? miniLista(locParcial, 2, locParcial.length) : "";
+      return cabecaUF(AP.uf, ld ? corDe(ld.partido, 0) : "#2f6fe0") + "<h3>Presidente no estado</h3>" + duo(locParcial, false, null, f, true) + maisLoc + '<div class="ap-sec" style="margin-top:8px">Votação neste estado. O resultado oficial da Presidência é nacional.</div>';
     }
     var fNac = fracAtual();
     var presParcial = parcialCands(pres, fNac);
@@ -41365,8 +41482,8 @@ document.addEventListener("click", function(e){
       mais = AP.aberto.pres ? miniLista(presParcial, 2, presParcial.length) : miniLista(presParcial, 2, 5) + restoLinha(presParcial, 5);
       mais += '<button class="ap-btn" data-ap="todos-pres">' + (AP.aberto.pres ? "Ocultar a lista" : "Ver todos os " + presParcial.length + " candidatos") + "</button>";
     }
-    return '<h2>Brasil</h2><p class="ap-el">' + fmtMilhoes(N.elBR || eleitoresBR()) + " de eleitores" + (run && fNac >= 0.96 ? " · 2º turno" : "") + "</p>" + barraSecoes(fNac) + duo(pres, run, "Presidente da República", fNac, false) + mais +
-      htmlGasto(pres) + '<div class="ap-grid" style="margin-top:16px"><div>' + mapaHTML("pres") + '</div><div>' + listaEstados("pres") + "</div></div>";
+    return '<h2>Brasil</h2><p class="ap-el">' + fmtMilhoes(N.elBR || eleitoresBR()) + " de eleitores" + (run && fNac >= 0.96 ? " · 2º turno" : "") + "</p>" + barraSecoes(fNac) + duo(presParcial, run, "Presidente da República", fNac, false) + mais +
+      htmlGasto(presParcial) + '<div class="ap-grid" style="margin-top:16px"><div>' + mapaHTML("pres") + '</div><div>' + listaEstados("pres") + "</div></div>";
   }
   function telaEstado(tab) {
     if (!AP.uf) {
