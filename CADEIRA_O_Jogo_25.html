@@ -5046,7 +5046,7 @@ function candidatosMajoritarios(cargoId){
 function projetarMajoritaria(cargoId,ruido=0){
   const cands=candidatosMajoritarios(cargoId); const ativo=J().campanha.candidatura_ativa&&cargoIdPorNome(J().campanha.cargo_alvo)===cargoId;
   const lista=cands.map(c=>({id:c.npc.id,nome:c.npc.nome,real:c.npc.real,partido:c.npc.partido,score:c.score+(ruido?R.f(-ruido,ruido):0),npc:c.npc}));
-  if(ativo||ruido===0&&cargoIdPorNome(J().campanha.cargo_alvo)===cargoId) lista.push({id:"JOGADOR",nome:J().nome,partido:J().partido_atual,score:scoreJogadorMaj(cargoId)+(ruido?R.f(-ruido,ruido):0),jogador:true});
+  if((ativo||ruido===0&&cargoIdPorNome(J().campanha.cargo_alvo)===cargoId)&&!lista.some(x=>x.id==="JOGADOR"||x.jogador)) lista.push({id:"JOGADOR",nome:J().nome,partido:J().partido_atual,score:scoreJogadorMaj(cargoId)+(ruido?R.f(-ruido,ruido):0),jogador:true});
   if(J().campanha.ataque&&ativo){ lista.forEach(x=>{ if(!x.jogador) x.score*=1-J().campanha.ataque/160; }); }
   const w=lista.map(x=>Math.exp(x.score/16)); const tot=w.reduce((s,x)=>s+x,0);
   lista.forEach((x,i)=>x.share=w[i]/tot*100); lista.sort((a,b)=>b.share-a.share); return lista;
@@ -10803,7 +10803,7 @@ function liberarRegistro(id){ const r=regE(); delete r.npc[id]; Object.keys(r.pa
     const r=regE(), j=J(); const key=(j.campanha.candidatura_ativa?1:0)+"|"+j.campanha.cargo_alvo+"|"+j.partido_atual;
     if(!r.lista||r.key!==key){
       r.key=key; r.npc={}; r.part={}; r.lista={}; MAJ_.forEach(k=>r.lista[k]=[]);
-      if(j.campanha.candidatura_ativa){ const a=cargoIdPorNome(j.campanha.cargo_alvo); if(a){ r.npc.JOGADOR=a; (r.part[a+"|"+j.partido_atual]=[ "JOGADOR" ]); } }
+      if(j.campanha.candidatura_ativa){ const a=cargoIdPorNome(j.campanha.cargo_alvo); if(a){ r.npc.JOGADOR=a; } }
       try{ const sc=M().sucessao; if(sc&&sc.ano===dt().ano&&!sc.resolvido&&MAJ_.includes(sc.cargo)){ const sn=npcPorId(sc.npcId); if(sn&&sn.vivo&&!sn.jogador&&podeCand(sn,sc.cargo)&&tentarRegistrar(sn,sc.cargo).ok) r.lista[sc.cargo].push(sn.id); } }catch(e){ console.error("sucessor",e); }
       const pret=k=>{ try{ return (typeof listaPret==="function"&&listaPret(k))||[]; }catch(e){ return []; } };
       MAJ_.forEach(k=>pret(k).forEach(n=>{ if(n&&n.vivo&&!n.jogador&&podeCand(n,k)&&tentarRegistrar(n,k).ok) r.lista[k].push(n.id); }));
@@ -40546,6 +40546,7 @@ document.addEventListener("click", function(e){
   /* ---------- PRIORIDADE ABSOLUTA PARA POLÍTICOS REAIS NAS 3 PRIMEIRAS ELEIÇÕES ---------- */
   function scoreComPrioridadeReal(n, baseScore, isInc) {
     if (!n) return baseScore || 0;
+    if (n.jogador || n.id === "JOGADOR") return baseScore || n.popularidade || 25;
     var prio = prioridadeReaisAtiva();
     if (n.real) {
       return (baseScore || n.popularidade || 50) + (prio ? 32 : 8) + (isInc ? 6 : 0);
@@ -40934,6 +40935,160 @@ document.addEventListener("click", function(e){
   };
   window.eleicaoEstado = eleicaoEstado;
 
+
+  function nomeUrna(n) {
+    return String(n || "").replace(/\s*\((vice|suplentes):[^)]*\)\s*$/i, "").trim();
+  }
+  function jogadorCandDo(cargo) {
+    try {
+      var j = J();
+      if (!j || !j.campanha || !j.campanha.candidatura_ativa) return null;
+      if (cargoIdPorNome(j.campanha.cargo_alvo) !== cargo) return null;
+      return j;
+    } catch (e) { return null; }
+  }
+  function garantirJogador(lista, cargo, el) {
+    var j = jogadorCandDo(cargo);
+    lista = (lista || []).slice();
+    if (!j) return lista;
+    var i = -1;
+    for (var k = 0; k < lista.length; k++) {
+      var c = lista[k];
+      if (c && (c.jogador || c.id === "JOGADOR" || nomeUrna(c.nome) === j.nome)) { i = k; break; }
+    }
+    if (i >= 0) {
+      lista[i].jogador = true;
+      lista[i].id = "JOGADOR";
+      lista[i].nome = j.nome;
+      if (!lista[i].partido) lista[i].partido = j.partido_atual || "";
+      return lista;
+    }
+    var sj = 30;
+    try { sj = scoreJogadorMaj(cargo); } catch (e2) {}
+    var wJ = Math.exp((sj || 0) / 16);
+    var lider = lista[0] ? (lista[0].share || 20) : 20;
+    var z = Math.exp(72 / 16) / Math.max(0.05, lider / 100);
+    var pShare = wJ / (z + wJ) * 100;
+    var fator = z / (z + wJ);
+    var out = lista.map(function (c) {
+      return comDinheiro(Object.assign({}, c, {share: (c.share || 0) * fator, nome: nomeUrna(c.nome)}), cargo, el);
+    });
+    out.push(comDinheiro({id: "JOGADOR", nome: j.nome, partido: j.partido_atual || "", share: pShare, jogador: true, real: false, pop: j.popularidade || 30}, cargo, el));
+    var tot = out.reduce(function (s, c) { return s + (c.share || 0); }, 0) || 1;
+    out.forEach(function (c) {
+      c.share = (c.share || 0) / tot * 100;
+      c.votos = Math.max(1, Math.round(c.share / 100 * el * TURNO));
+      c.pv = c.votos ? (c.gasto || 0) / c.votos : 0;
+    });
+    out.sort(function (a, b) { return (b.share || 0) - (a.share || 0); });
+    return out;
+  }
+  function fichaFinal(c) {
+    return {id: c.id || null, nome: nomeUrna(c.nome), partido: c.partido || "", share: c.share || 0, jogador: !!(c.jogador || c.id === "JOGADOR"), real: !!c.real};
+  }
+  function acharNaLista(lista, ref) {
+    if (!ref) return null;
+    var nome = nomeUrna(ref.nome);
+    for (var i = 0; i < (lista || []).length; i++) {
+      var c = lista[i];
+      if (!c) continue;
+      if (ref.id && c.id === ref.id) return c;
+      if ((ref.jogador || ref.id === "JOGADOR") && (c.jogador || c.id === "JOGADOR")) return c;
+      if (nome && nomeUrna(c.nome) === nome) return c;
+    }
+    return {id: ref.id || null, nome: nome, partido: ref.partido || "", share: ref.share || 0, jogador: !!(ref.jogador || ref.id === "JOGADOR"), real: !!ref.real, pop: 40};
+  }
+  function fecharPar(lista, cargo, el, res, par) {
+    if (!lista || lista.length < 2) return lista;
+    if (lista.length === 2 && (lista[0].share || 0) > 50) {
+      lista.forEach(function (c, idx) { c.eleito = idx === 0; c.nome = nomeUrna(c.nome); });
+      return lista;
+    }
+    var a = acharNaLista(lista, (par && par[0]) || lista[0]);
+    var b = acharNaLista(lista, (par && par[1]) || lista[1]);
+    if (!b || nomeUrna(a.nome) === nomeUrna(b.nome)) {
+      var ord = lista.slice().sort(function (x, y) { return (y.share || 0) - (x.share || 0); });
+      a = ord[0]; b = ord[1];
+    }
+    var shA, shB;
+    if (res && res.share > 50) {
+      var win = nomeUrna(res.nome);
+      var aWin = (win && win === nomeUrna(a.nome)) || (res.jog && (a.jogador || a.id === "JOGADOR"));
+      var winSh = Math.max(50.1, Math.min(99, res.share));
+      shA = aWin ? winSh : (100 - winSh);
+      shB = 100 - shA;
+    } else {
+      var sa = a.share || 0, sb = b.share || 0, t = (sa + sb) || 1;
+      shA = sa / t * 100;
+      shB = 100 - shA;
+      if (shA <= 50 && shB <= 50) {
+        if (sa >= sb) { shA = 50.1; shB = 49.9; }
+        else { shA = 49.9; shB = 50.1; }
+      }
+    }
+    function pack(src, sh) {
+      return comDinheiro(Object.assign({}, src, {
+        nome: nomeUrna(src.nome), share: sh, eleito: false,
+        jogador: !!(src.jogador || src.id === "JOGADOR")
+      }), cargo, el);
+    }
+    var out = [pack(a, shA), pack(b, shB)].sort(function (x, y) { return (y.share || 0) - (x.share || 0); });
+    out.forEach(function (c, idx) { c.eleito = idx === 0 && c.share > 50; });
+    return out;
+  }
+  function turno2Agora() {
+    try { return !!(M().eleicao && M().eleicao.noite && M().eleicao.noite.turno === 2); }
+    catch (e) { return false; }
+  }
+  function aplicarSegundoTurnoVisual() {
+    if (!turno2Agora()) return;
+    var E = M().eleicao;
+    if (!E || !E._mapaNac) return;
+    var N = E._mapaNac;
+    var fin = E._finais || {};
+    var r2 = E._r2res || {};
+    function precisa(lista, corre, chave) {
+      if (!lista || lista.length < 2) return false;
+      if (lista.length === 2 && (lista[0].share || 0) > 50) return false;
+      if (corre) return true;
+      if (fin[chave] && fin[chave].length >= 2) return true;
+      return (lista[0].share || 0) <= 50;
+    }
+    if (precisa(N.pres, N.presRun || r2.PRES, "PRES")) {
+      N.pres = fecharPar(N.pres, "PRES", N.elBR || eleitoresBR(), r2.PRES, fin.PRES);
+      N.presRun = false;
+    }
+    if (precisa(N.spGov, N.govRun || r2.GOV, "GOV")) {
+      N.spGov = fecharPar(N.spGov, "GOV", N.elSP || eleitoresUF("SP"), r2.GOV, fin.GOV);
+      N.govRun = false;
+      if (E._mapaAp && E._mapaAp.SP) {
+        E._mapaAp.SP.gov = N.spGov;
+        E._mapaAp.SP.govRun = false;
+      }
+    }
+    var ap = E._mapaAp || {};
+    Object.keys(ap).forEach(function (uf) {
+      if (uf === "SP") return;
+      var p = ap[uf];
+      if (!p || !p.gov || p.gov.length < 2) return;
+      var rf = (E.runoffs || []).find(function (r) { return r && r.uf === uf; });
+      var chave = "GOV:" + uf;
+      if (!precisa(p.gov, !!p.govRun || !!rf, chave)) return;
+      var resUF = null;
+      var parUF = fin[chave];
+      if (rf) {
+        resUF = {nome: rf.venceu, share: Math.max(50.1, Math.min(99, rf.share || 54)), jog: false};
+        if (!parUF) parUF = [{nome: rf.venceu}, {nome: rf.venceu === rf.a ? rf.b : rf.a}];
+      }
+      p.gov = fecharPar(p.gov, "GOV", eleitoresUF(uf), resUF, parUF);
+      p.govRun = false;
+    });
+    if (r2.SEN && fin.SEN && fin.SEN.length >= 2 && N.spSen && N.spSen.length > 2) {
+      N.spSen = fecharPar(N.spSen, "SEN", N.elSP || eleitoresUF("SP"), r2.SEN, fin.SEN);
+      if (E._mapaAp && E._mapaAp.SP) E._mapaAp.SP.sen = N.spSen;
+    }
+  }
+
   function gravarNacional() {
     var E = M().eleicao;
     var U = E._ult2 || {};
@@ -40948,9 +41103,10 @@ document.addEventListener("click", function(e){
         return comDinheiro({id: c.id, nome: c.nome, partido: c.partido || "", share: c.share || 0, jogador: !!c.jogador, real: !!(n && n.real), pop: pop}, cargo, el);
       });
     }
-    var pres = conv(U.PRES, "PRES", elBR);
-    var spGov = conv(U.GOV, "GOV", elSP);
+    var pres = garantirJogador(conv(U.PRES, "PRES", elBR), "PRES", elBR);
+    var spGov = garantirJogador(conv(U.GOV, "GOV", elSP), "GOV", elSP);
     var spSen = conv(U.SEN, "SEN", elSP);
+    if (jogadorCandDo("SEN")) spSen = garantirJogador(spSen, "SEN", elSP);
     spSen.forEach(function (c, i) { c.eleito = i < vagas; });
     var sts = E.segundos || (E.segundo_turno ? [E.segundo_turno] : []);
     var presRun = sts.some(function (s) { return s.cargo === "PRES"; }) || !!(pres[0] && pres.length > 1 && pres[0].share <= 50);
@@ -40962,6 +41118,21 @@ document.addEventListener("click", function(e){
     E._mapaNac = {pres: pres, spGov: spGov, spSen: spSen, vagas: vagas, fica: ficaDe("SP", ids, ano), presRun: presRun, govRun: govRun, elBR: elBR, elSP: elSP};
     E._mapaAp = E._mapaAp || {};
     E._mapaAp.SP = {uf: "SP", vagas: vagas, gov: spGov, sen: spSen, fica: E._mapaNac.fica, govRun: govRun};
+    var fin = {};
+    function guardar(chave, lista, corre) {
+      if (corre && lista && lista.length >= 2) fin[chave] = lista.slice(0, 2).map(fichaFinal);
+    }
+    guardar("PRES", pres, presRun);
+    guardar("GOV", spGov, govRun);
+    sts.forEach(function (s) {
+      if (s && s.cargo && s.candidatos && s.candidatos.length >= 2) fin[s.cargo] = s.candidatos.slice(0, 2).map(fichaFinal);
+    });
+    Object.keys(E._mapaAp).forEach(function (uf) {
+      var p = E._mapaAp[uf];
+      if (!p || uf === "SP" || !p.gov) return;
+      guardar("GOV:" + uf, p.gov, !!p.govRun || !!(p.gov[0] && p.gov[0].share <= 50));
+    });
+    E._finais = fin;
   }
 
   function gravarSegundoTurno(lstAntes) {
@@ -40978,7 +41149,7 @@ document.addEventListener("click", function(e){
           var n = c.id && c.id !== "JOGADOR" ? npcPorId(c.id) : null;
           var venceu = resP ? (c.nome === resP.nome || (c.jogador && resP.jog)) : false;
           var sh = resP ? (venceu ? resP.share : (100 - resP.share)) : (c.share || 50);
-          return comDinheiro({id: c.id, nome: c.nome, partido: c.partido || (n && (n.partido || n.partidoBase)) || (c.jogador ? J().partido_atual : ""), share: sh, jogador: !!c.jogador, real: !!(n && n.real), eleito: venceu, pop: n ? n.popularidade : 50}, "PRES", elBR);
+          return comDinheiro({id: c.id, nome: nomeUrna(c.nome), partido: c.partido || (n && (n.partido || n.partidoBase)) || (c.jogador ? J().partido_atual : ""), share: sh, jogador: !!c.jogador, real: !!(n && n.real), eleito: venceu, pop: n ? n.popularidade : 50}, "PRES", elBR);
         }).sort(function (a, b) { return b.share - a.share; });
         candsP.forEach(function (c, idx) { c.eleito = idx === 0; });
         E._mapaNac.pres = candsP;
@@ -40992,7 +41163,7 @@ document.addEventListener("click", function(e){
           var n = c.id && c.id !== "JOGADOR" ? npcPorId(c.id) : null;
           var venceu = resG ? (c.nome === resG.nome || (c.jogador && resG.jog)) : false;
           var sh = resG ? (venceu ? resG.share : (100 - resG.share)) : (c.share || 50);
-          return comDinheiro({id: c.id, nome: c.nome, partido: c.partido || (n && (n.partido || n.partidoBase)) || (c.jogador ? J().partido_atual : ""), share: sh, jogador: !!c.jogador, real: !!(n && n.real), eleito: venceu, pop: n ? n.popularidade : 50}, "GOV", elSP);
+          return comDinheiro({id: c.id, nome: nomeUrna(c.nome), partido: c.partido || (n && (n.partido || n.partidoBase)) || (c.jogador ? J().partido_atual : ""), share: sh, jogador: !!c.jogador, real: !!(n && n.real), eleito: venceu, pop: n ? n.popularidade : 50}, "GOV", elSP);
         }).sort(function (a, b) { return b.share - a.share; });
         candsG.forEach(function (c, idx) { c.eleito = idx === 0; });
         E._mapaNac.spGov = candsG;
@@ -41032,8 +41203,9 @@ document.addEventListener("click", function(e){
 
   var _ap = apurarEleicao;
   apurarEleicao = function () {
+    var bloqueado = !!window.__blkApur;
     var r = _ap.apply(this, arguments);
-    try { gravarNacional(); } catch (e) { console.error("apuracao nacional", e); }
+    if (!bloqueado) { try { gravarNacional(); } catch (e) { console.error("apuracao nacional", e); } }
     return r;
   };
   window.apurarEleicao = apurarEleicao;
@@ -41375,7 +41547,7 @@ document.addEventListener("click", function(e){
       var badge = "";
       if (definido && !ocultarMancheteEleito) {
         if (run && (c === a || c === b)) badge = ' <span class="ap-badge t2">2º turno</span>';
-        else if (!run && c === a) badge = ' <span class="ap-badge">Eleito</span>';
+        else if (!run && c === a && (a.share || 0) > 50) badge = ' <span class="ap-badge">Eleito</span>';
       }
       var cor = corDe(c.partido, dir ? 1 : 0);
       return '<div class="ap-who ' + (dir || "") + '"><span class="foto">' + foto(c, 52, 64) + '</span><div><div class="nm">' + esc(c.nome) + badge + '</div><small style="color:' + cor + '">' + esc(partidoCurto(c.partido)) + '</small><div class="ap-big" style="color:' + cor + '">' + pct(c.share) + "</div><small>" + fmtV(c.votos) + " votos</small></div></div>";
@@ -41386,8 +41558,10 @@ document.addEventListener("click", function(e){
         titulo = '<div class="ap-run live">Em apuração: <span style="color:' + corDe(a.partido, 0) + '">' + esc(a.nome) + "</span> lidera com " + pct(a.share) + (b ? (" contra " + pct(b.share) + " de " + esc(b.nome)) : "") + "</div>";
       } else if (run && b) {
         titulo = '<div class="ap-run t2"><span style="color:' + corDe(a.partido, 0) + '">' + esc(a.nome) + '</span> e <span style="color:' + corDe(b.partido, 1) + '">' + esc(b.nome) + "</span> vão ao 2º turno</div>";
-      } else if (a) {
+      } else if (a && (a.share || 0) > 50) {
         titulo = '<div class="ap-run"><span style="color:' + corDe(a.partido, 0) + '">' + esc(a.nome) + "</span> é eleito(a)" + (cargoLabel ? " " + esc(cargoLabel) : "") + " com " + pct(a.share) + "</div>";
+      } else if (a) {
+        titulo = '<div class="ap-run live">Em apuração: <span style="color:' + corDe(a.partido, 0) + '">' + esc(a.nome) + "</span> lidera com " + pct(a.share) + (b ? (" contra " + pct(b.share) + " de " + esc(b.nome)) : "") + "</div>";
       }
     }
     var split = b ? '<div class="ap-split"><i style="width:' + (sa / tot * 100) + "%;background:" + corDe(a.partido, 0) + '"></i><i style="width:' + (sb / tot * 100) + "%;background:" + corDe(b.partido, 1) + '"></i></div>' : "";
@@ -41440,7 +41614,7 @@ document.addEventListener("click", function(e){
     var govParcial = parcialCands(p.gov, f);
     // Verifica se há 2º turno (nenhum candidato atingiu > 50% no 1º turno)
     var turno2Ativo = (M().eleicao.noite && M().eleicao.noite.turno === 2);
-    var run = !turno2Ativo && (!!p.govRun || (p.gov.length > 1 && (p.gov[0].share || 0) <= 50));
+    var run = p.gov.length > 1 && (p.gov[0].share || 0) <= 50;
     var key = "gov-" + p.uf;
     var extra = "";
     if (govParcial.length > 2) {
@@ -41476,7 +41650,7 @@ document.addEventListener("click", function(e){
     var fNac = fracAtual();
     var presParcial = parcialCands(pres, fNac);
     var turno2Ativo = (M().eleicao.noite && M().eleicao.noite.turno === 2);
-    var run = !turno2Ativo && (!!N.presRun || (pres.length > 1 && (pres[0].share || 0) <= 50));
+    var run = pres.length > 1 && (pres[0].share || 0) <= 50;
     var mais = "";
     if (presParcial.length > 2) {
       mais = AP.aberto.pres ? miniLista(presParcial, 2, presParcial.length) : miniLista(presParcial, 2, 5) + restoLinha(presParcial, 5);
@@ -41588,6 +41762,7 @@ document.addEventListener("click", function(e){
   }
 
   function desenhar() {
+    try { aplicarSegundoTurnoVisual(); } catch (e) { console.error("2o turno visual", e); }
     var corpo = document.getElementById("ap-corpo");
     if (!corpo) return;
     atualizarTopoELocalidade();
