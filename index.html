@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="utf-8">
@@ -8277,7 +8277,7 @@ Object.assign(window.cheats,{
 const $=(s,r=document)=>r.querySelector(s);
 const S={tab:"mes",cong:{casa:"Todos",partido:"",bancada:"",q:"",pg:0,real:false},modal:null,nomear:null,cfg:null,toasts:[],verTodas:false,cpiSel:{},lavar:{},pacto:{terr:"zaira",preco:"terceirizados"},cheat:{v1:"1000000",v2:"1000000",cidade:"Mauá",id:"",gabinete:"casacivil",lar:"Laranja Fictício"},exportTxt:"",importTxt:""};
 const A={};
-const TABS=[["mes","Mês"],["camp","Campanha"],["partido","Partido"],["poder","Poder"],["ele","Eleições"],["cong","Congresso"],["jur","Jurídico"],["inf","Influência"],["imp","Imprensa"],["sub","Submundo"],["cela","Cela"],["mang","Manchetes"],["eu","Perfil"]];
+const TABS=[["mes","Mês"],["camp","Campanha"],["marqueteiro","Marqueteiro"],["partido","Partido"],["poder","Poder"],["ele","Eleições"],["cong","Congresso"],["jur","Jurídico"],["inf","Influência"],["imp","Imprensa"],["sub","Submundo"],["cela","Cela"],["mang","Manchetes"],["eu","Perfil"]];
 const btn=(label,act,params=[],cls="",dis=false)=>`<button class="b ${cls}" data-a="${act}" data-p="${esc(JSON.stringify(params))}" ${dis?"disabled":""}>${label}</button>`;
 const bar=(v,max=100,cls="")=>{const p=Math.max(0,Math.min(100,v/max*100));return `<span class="bar ${cls}"><i style="width:${p}%"></i></span>`;};
 const tag=(t,c="")=>`<span class="tag ${c}">${esc(t)}</span>`;
@@ -8424,8 +8424,9 @@ function vCamp(){
   let dob=""; const alvoP=["VER","DEPE","DEPF"].includes(alvo);
   if(alvoP){ const cd=c.dobradinha?npcPorId(c.dobradinha.id):null; dob=card("Dobradinha e santinho conjunto",cd?`<p class="txt">Parceiro: <b>${nome$(cd)}</b> (${esc(cd.papel||cd.cargo)}). Custos meio a meio e impacto de votos compartilhado no colégio de ${esc((TERRITORIOS.find(t=>t.id===c.dobradinha.terr)||{}).nome||"")}.</p>${btn("Desfazer dobradinha","dobrompe","","branco mini")}`:(c.candidatura_ativa?candidatosDobradinha().map(n=>`<div class="row"><span class="grow">${nome$(n)} <small>${esc(n.papel||n.cargo)} — ${esc(n.partido)}</small></span>${btn("Selar","dob",[n.id],"mini confirma")}</div>`).join("")||"<p class='txt'>Sem parceiros viáveis agora.</p>":"<p class='txt'>Disponível depois que a candidatura for registrada.</p>")+"<p class='txt'>Cargos proporcionais podem dividir material e votos com candidatos federais ou majoritários da coligação.</p>"); }
   const fin=card("Fontes legítimas de dinheiro",`<div class="grid2">${kv("Salário oficial",fmt(j.financas.salario_oficial))}${kv("Cota do fundo partidário",fmt(j.cota_mes||cotaFundoPartidario()))}${kv("Doações de campanha (mês)",fmt(j.doacao_mes||0))}${kv("Fundo eleitoral recebido",fmt(c.fundo_recebido||0))}</div><div class="stack">${btn("Fazer vaquinha virtual (dentro do limite legal)","vaq","","confirma")}</div><p class="txt">Doações crescem na campanha, proporcionais à sua popularidade e ao seu carisma.</p>`);
+  const mkt=typeof window.renderTelaMarqueteiros==="function"?card("Marqueteiro",window.renderTelaMarqueteiros(),"wide"):"";
   const hist=(M().pesqHist||[]).filter(x=>x).slice(-12); const histH=hist.length>1?card("Pesquisas ao longo da campanha",spark(hist.map(x=>x.v))+`<p class="txt">${hist.map(x=>x.t+": "+x.v+(x.tipo==="MAJ"?"%":"")).join(" · ")}</p>`):"";
-  return alvos+cardUrna()+cardCofres()+cardDiag()+cardPesquisas()+cardPerfil()+corr+pesq+histH+dob+apr+pau+fin+ag+suja+padH+jan;
+  return alvos+cardUrna()+cardCofres()+cardDiag()+cardPesquisas()+cardPerfil()+corr+pesq+histH+dob+apr+pau+fin+mkt+ag+suja+padH+jan;
 }
 
 /* ===================== CADEIRA — INTERFACE 2 ===================== */
@@ -8662,7 +8663,7 @@ function vEle(){
   return h;
 }
 /* ---------- Render ---------- */
-const VIEWS={mes:vMes,camp:vCamp,partido:vPartido,poder:vPoder,ele:vEle,cong:vCong,jur:vJur,imp:vImp,sub:vSub,cela:vCela,mang:vMang,eu:vEu};
+const VIEWS={mes:vMes,camp:vCamp,marqueteiro:()=>typeof window.renderTelaMarqueteiros==="function"?card("Marqueteiro",window.renderTelaMarqueteiros(),"wide"):"",partido:vPartido,poder:vPoder,ele:vEle,cong:vCong,jur:vJur,imp:vImp,sub:vSub,cela:vCela,mang:vMang,eu:vEu};
 function render(){
   const root=$("#app"); if(!root) return; const y=window.scrollY;
   if(!gameState){ root.innerHTML=telaInicial()+`<div id="toasts">${toastsHtml()}</div>`; window.scrollTo(0,S._top?0:y); S._top=false; return; }
@@ -10927,16 +10928,13 @@ A.edAudit=()=>{ const l=auditoriaEleitoral(); toast(l.length?`${l.length} incons
     h=h.replace(/<span class="chip2[^"]*"><small>Pessoal<\/small><b>[^<]*<\/b><\/span>/,tri).replace(/<div class="cell[^"]*"><small>(?:Campanha|Caixa 2)<\/small><b>[^<]*<\/b><\/div>/g,"");
     return h; }; }
 
-/* --- Menus colapsáveis (accordion) --- */
+/* --- Cards de seção (sempre abertos, sem transformar em menu suspenso/sanfona) --- */
 S.acc=S.acc||{};
-{ const st=document.createElement("style"); st.textContent=`details.card.acc{padding:0}details.card.acc>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px;margin:0;font-weight:750;font-size:1.02rem;color:var(--tinta);cursor:pointer}details.card.acc>summary::-webkit-details-marker{display:none}details.card.acc>summary::after{content:"▾";transition:transform .15s;color:var(--tinta2)}details.card.acc[open]>summary::after{transform:rotate(180deg)}details.card.acc>.acc-body{padding:0 12px 11px}.chips2{flex-wrap:wrap}`; document.head.appendChild(st); }
+{ const st=document.createElement("style"); st.textContent=`.chips2{flex-wrap:wrap}`; document.head.appendChild(st); }
 { const _r=render;
-  render=function(){ _r(); try{ const main=document.getElementById("main"); if(!main) return; let i=0;
-    [...main.children].forEach(sec=>{ if(!sec.matches||!sec.matches("section.card")||sec.classList.contains("acc")) return; const h3=sec.querySelector(":scope>h3"); if(!h3) return;
-      const key=S.tab+"|"+chaveAcc(h3.textContent); const aberto=key in S.acc?S.acc[key]:(i===0||/diag|pasta/.test(sec.className)); i++;
-      const d=document.createElement("details"); d.className=sec.className+" acc"; d.dataset.k=key; if(aberto) d.open=true;
-      const sm=document.createElement("summary"); sm.innerHTML=h3.innerHTML; h3.remove(); const body=document.createElement("div"); body.className="acc-body"; while(sec.firstChild) body.appendChild(sec.firstChild);
-      d.appendChild(sm); d.appendChild(body); d.addEventListener("toggle",()=>{ S.acc[d.dataset.k]=d.open; }); sec.replaceWith(d); }); }catch(e){ console.error("acc",e); } };
+  render=function(){ _r(); try{ const main=document.getElementById("main"); if(!main) return;
+    [...main.children].forEach(sec=>{ if(!sec.matches||!sec.matches("section.card")) return; const h3=sec.querySelector(":scope>h3"); if(!h3) return;
+      const key=S.tab+"|"+chaveAcc(h3.textContent); sec.classList.add("acc"); sec.dataset.k=key; }); }catch(e){ console.error("acc",e); } };
 }
 }
 
@@ -11591,7 +11589,7 @@ function seletor(pid){ const f=S.nomf, g=M().gab; let l=pool();
 function formPasta(){ const f=S.npasta; const bs=BANCADAS.map(b=>`<option value="${esc(b)}" ${(f.band||BANCADAS[0])===b?"selected":""}>${esc(BANCADA_CURTA[b]||b)}</option>`).join("");
   return `<h4>➕ Criar nova pasta</h4><label class="f">Nome <input type="text" data-i="npasta" data-k="nome" value="${esc(f.nome)}" placeholder="ex.: Ministério da Saúde"></label><label class="f">O que ela faz <input type="text" data-i="npasta" data-k="efeito" value="${esc(f.efeito)}"></label><label class="f">Peso na governabilidade (1–20) <input type="number" min="1" max="20" data-i="npasta" data-k="peso" value="${f.peso}"></label><label class="f">Bancada que ela agrada <select data-i="npasta" data-k="band">${bs}</select></label>${btn("Criar pasta","pastaCriar",[],"corrige")}`; }
 { const _r=render; render=function(){ syncPastas(); _r(); try{ if(!gameState) return; const cid=cargoAtualId(); if(!emExecutivo()||!PASTAS[cid]) return;
-    const det=[...document.querySelectorAll("#main details.acc")].find(d=>d.querySelector(":scope>summary")&&d.querySelector(":scope>summary").textContent.trim()==="Painel do Diário Oficial"); if(!det) return;
+    const det=[...document.querySelectorAll("#main section.card,#main details.acc")].find(d=>{ const h=d.querySelector(":scope>h3,:scope>summary"); return h&&h.textContent.trim()==="Painel do Diário Oficial"; }); if(!det) return;
     const body=det.querySelector(".acc-body")||det; const blocos=[...body.querySelectorAll(".pasta")], ps=PASTAS[cid];
     blocos.forEach((b,i)=>{ const p=ps[i]; if(!p) return; const sel=b.querySelector(".sel"); if(sel&&S.nomear===p.id) sel.innerHTML=seletor(p.id);
       if(p.custom){ const row=b.querySelector(".row:last-of-type, .row"); const d=document.createElement("div"); d.className="row"; d.innerHTML=`<small class="grow">Pasta personalizada</small>${btn("Excluir pasta","pastaExcluir",[p.id],"mini branco")}`; b.insertBefore(d,b.querySelector(".sel")||null); } });
@@ -11796,7 +11794,7 @@ window.mesaCargosGarantir=mesaCargosGarantir; window.mesaValidar=mesaValidar;
 { const _em=eleicaoMesa; eleicaoMesa=function(cod){ _em(cod); try{ mesaValidar(); mesaCargosRefazer(cod); }catch(e){ console.error(e); } }; }
 { const _ec=eventosDeCalendario; eventosDeCalendario=function(){ _ec(); try{ mesaValidar(); }catch(e){ console.error(e); } }; }
 { const _cs=carregarStr; carregarStr=function(x){ const ok=_cs(x); if(ok){ try{ mesaValidar(); limparDisputasExistentes(); }catch(e){ console.error(e); } } return ok; }; }
-{ const _r=render; render=function(){ _r(); try{ if(!gameState) return; document.querySelectorAll("#main details.acc").forEach(det=>{ const sm=det.querySelector(":scope>summary"); if(!sm||!/^Mesa Diretora/.test(sm.textContent.trim())) return;
+{ const _r=render; render=function(){ _r(); try{ if(!gameState) return; document.querySelectorAll("#main section.card,#main details.acc").forEach(det=>{ const sm=det.querySelector(":scope>h3,:scope>summary"); if(!sm||!/^Mesa Diretora/.test(sm.textContent.trim())) return;
       const cod=Object.keys(CASA_NOME).find(k=>sm.textContent.includes(CASA_NOME[k])); if(!cod) return; mesaCargosGarantir(cod); const mc=M().mesaCargos[cod]||{};
       const p=det.querySelector(".txt small"); if(p&&/O jogo só registra/.test(p.textContent)) p.textContent="Presidente e demais cargos da Mesa preenchidos entre os parlamentares da Casa e renovados na eleição da Mesa, em fevereiro.";
       det.querySelectorAll(".pv-tile").forEach(t=>{ const b=t.querySelector("b"); if(!b||!/Sem dados registrados/.test(b.textContent)) return; const role=(t.querySelector("small")||{}).textContent||""; const n=npcPorId(mc[role]); if(!n) return;
@@ -11813,29 +11811,33 @@ A.edNome=(id,val)=>{ const n=npcPorId(id||S.ed.id); const inp=document.querySele
     return card("✏️ Nome de "+esc(n.nome),`<label class="f">Novo nome <input type="text" maxlength="60" data-i="ednome" value="${esc(n.nome)}"></label>${btn("Salvar nome","edNome",[],"corrige")}<p class="txt"><small>Vale em todo o jogo (listas, fichas, Congresso, STF). Depois, toque em Salvar para gravar no save.</small></p>`)+h; }; }
 { const _mf=modalFicha; modalFicha=function(id){ const h=_mf(id); const n=npcPorId(id); if(!n) return h; return h.replace(/(<button[^>]*data-a="edFoto"[^>]*>[^<]*<\/button>)/,`$1${btn("✏️ Nome","edFoto",[n.id],"mini branco")}`); }; }
 
-/* --- navegação por seções + colunas + visual --- */
+/* --- navegação por seções + colunas + visual (cards abertos, sem menus suspensos) --- */
 S.sec=S.sec||{}; let COLS=true; try{ COLS=localStorage.getItem("cadeira_ui_cols")!=="0"; }catch(e){}
 const st=document.createElement("style"); st.textContent=`
-.secbar{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin:0 0 6px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
-.secbar button{flex:none;white-space:nowrap;font-size:.8rem;padding:6px 10px;border-radius:999px}
-.secbar .sep{flex:none;width:1px;background:var(--linha);margin:2px 2px}
-details.card.acc{border-radius:12px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset;margin-bottom:10px}
-details.card.acc>summary{padding:10px 12px;font-size:.98rem;border-radius:12px}
-details.card.acc>summary:hover{background:rgba(255,255,255,.035)}
-details.card.acc[open]>summary{border-bottom:1px solid var(--linha);border-bottom-left-radius:0;border-bottom-right-radius:0}
-details.card.acc>.acc-body{padding:10px 12px 12px}
-details.card.acc>.acc-body>h4{margin:12px 0 6px;font-size:.85rem;opacity:.85;text-transform:uppercase;letter-spacing:.04em}
+.secbar{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;margin:0 0 14px;background:var(--superficie);border:1px solid var(--linha);border-radius:12px;align-items:center;box-shadow:var(--shadow-sm)}
+.secbar::-webkit-scrollbar{display:none}
+.secbar button{flex:none;white-space:nowrap;font-size:.78rem;padding:5px 12px;min-height:30px;border-radius:999px;font-weight:600}
+.secbar .sep{flex:none;width:1px;height:18px;background:var(--linha);margin:0 4px}
+section.card.acc,details.card.acc{border-radius:12px;box-shadow:var(--shadow-card);margin-bottom:14px;background:var(--superficie);border:1px solid var(--linha);padding:16px 18px}
+section.card.acc>h3{margin:-16px -18px 14px;padding:12px 18px;font-size:1.02rem;font-weight:700;border-bottom:1px solid var(--linha);background:rgba(255,255,255,.02);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;gap:8px}
+section.card.acc>h4,details.card.acc>.acc-body>h4{margin:14px 0 6px;font-size:.8rem;opacity:.88;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta2)}
 @media(min-width:980px){ #main.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;align-items:start}
- #main.cols>*:not(details.acc){grid-column:1/-1} #main.cols>details.acc.wide{grid-column:1/-1} }`; document.head.appendChild(st);
+ #main.cols>*:not(.acc){grid-column:1/-1} #main.cols>.acc.wide{grid-column:1/-1} }`; document.head.appendChild(st);
 A.secao=k=>{ S.sec[S.tab]=(S.sec[S.tab]===k||!k)?"":k; };
-A.secTodos=ab=>{ document.querySelectorAll("#main>details.acc").forEach(d=>{ S.acc[d.dataset.k]=!!ab; }); S.sec[S.tab]=""; };
+A.secTodos=ab=>{ S.sec[S.tab]=""; };
 A.secCols=()=>{ COLS=!COLS; try{ localStorage.setItem("cadeira_ui_cols",COLS?"1":"0"); }catch(e){} };
-{ const _r=render; render=function(){ _r(); try{ const main=document.getElementById("main"); if(!main) return; const cards=[...main.querySelectorAll(":scope>details.acc")]; main.classList.toggle("cols",COLS&&cards.length>2);
-    cards.forEach(d=>{ const b=d.querySelector(":scope>.acc-body"); d.classList.toggle("wide",!!(b&&(b.querySelector("svg,canvas,table,.pv-hemi,.mapa,iframe")||b.innerHTML.length>7000))); });
-    if(cards.length<4) return; const keys=cards.map(d=>d.dataset.k), nomes=cards.map(d=>d.querySelector(":scope>summary").textContent.trim()), sel=S.sec[S.tab]||"";
-    if(sel&&keys.includes(sel)) cards.forEach(d=>{ if(d.dataset.k===sel){ d.open=true; d.classList.add("wide"); } else d.style.display="none"; });
+{ const _r=render; render=function(){ _r(); try{ const main=document.getElementById("main"); if(!main) return;
+    [...main.querySelectorAll(":scope>section.card,:scope>details.card")].forEach(sec=>{ const h3=sec.querySelector(":scope>h3,:scope>summary"); if(!h3) return;
+      const key=S.tab+"|"+chaveAcc(h3.textContent); sec.classList.add("acc"); sec.dataset.k=key; if(sec.tagName==="DETAILS") sec.open=true; });
+    const cards=[...main.querySelectorAll(":scope>.acc")]; main.classList.toggle("cols",COLS&&cards.length>2);
+    cards.forEach(d=>{ d.classList.toggle("wide",!!(d.querySelector("svg,canvas,table,.pv-hemi,.mapa,iframe")||d.innerHTML.length>7000)); });
+    if(cards.length<3) return; const keys=cards.map(d=>d.dataset.k), nomes=cards.map(d=>{ const s=d.querySelector(":scope>h3,:scope>summary"); return s?s.textContent.replace(/\s+/g," ").trim():"Seção"; }), sel=S.sec[S.tab]||"";
+    if(sel&&keys.includes(sel)){
+      cards.forEach(d=>{ if(d.dataset.k===sel){ d.classList.add("wide"); d.style.display=""; } else d.style.display="none"; });
+      [...main.children].forEach(el=>{ if(!el.classList.contains("secbar")&&el.dataset.k!==sel) el.style.display="none"; });
+    }
     const chip=(label,act,p,on)=>btn(label,act,p,"mini "+(on?"confirma":"branco"));
-    const bar=document.createElement("div"); bar.className="secbar"; bar.innerHTML=chip("Tudo","secao",[""],!sel)+cards.map((d,i)=>chip(nomes[i].length>26?nomes[i].slice(0,25)+"…":nomes[i],"secao",[keys[i]],sel===keys[i])).join("")+`<span class="sep"></span>`+btn("Abrir todos","secTodos",[1],"mini branco")+btn("Fechar todos","secTodos",[0],"mini branco")+(window.innerWidth>=980?btn(COLS?"Colunas: sim":"Colunas: não","secCols",[],"mini branco"):"");
+    const bar=document.createElement("div"); bar.className="secbar"; bar.innerHTML=chip("Tudo","secao",[""],!sel)+cards.map((d,i)=>chip(nomes[i].length>24?nomes[i].slice(0,23)+"…":nomes[i],"secao",[keys[i]],sel===keys[i])).join("")+`<span class="sep"></span>`+(window.innerWidth>=980?btn(COLS?"2 colunas":"1 coluna","secCols",[],"mini branco"):"");
     main.insertBefore(bar,main.firstChild); }catch(e){ console.error("secoes",e); } }; }
 }
 
@@ -14594,6 +14596,10 @@ window.v24Relatorio=relHTML;
      3. MÓDULO CAMPANHA
      ------------------------------------------------------------- */
   const CAMP_SUBS = [
+    { id: "marqueteiro", nome: "Marqueteiro", ico: "🎬", desc: "Contratação de marqueteiro eleitoral (34 profissionais), atributos, exigências, riscos e histórico.", badge: () => {
+      const m = (window.getMarqueteiroAtivo && window.getMarqueteiroAtivo());
+      return m ? `${m.nome} (OVR ${m.overall})` : "Sem marqueteiro";
+    }},
     { id: "estrategia", nome: "Cargo-Alvo, Chapa & Padrinho", ico: "🎯", desc: "Definição do cargo, vice/suplentes da chapa, janela partidária e bênção de caciques.", badge: () => J().campanha.cargo_alvo || "Não disputar" },
     { id: "pesquisas", nome: "Pesquisas Eleitorais", ico: "📊", desc: "Intenção de votos, corte de vagas legislativas e adversários.", badge: () => {
       const p = M().pesquisaAtual; return p ? (p.tipo === "LEG" ? `${p.pos}º de ${p.N}` : `${Math.round(p.lista.find(x=>x.jogador)?.share||0)}%`) : "Sem pesquisa";
@@ -14610,21 +14616,29 @@ window.v24Relatorio=relHTML;
     const sub = (S.subtab && S.subtab.camp) || "hub";
 
     if (sub === "hub") {
+      const mktAtivo = (window.getMarqueteiroAtivo && window.getMarqueteiroAtivo());
       const hero = `
         <div class="grid2">
           ${kv("Cargo Pretendido", c.cargo_alvo ? esc(c.cargo_alvo) : "Não disputar")}
           ${kv("Fase Eleitoral", esc(faseCalendario().t))}
           ${kv("Aprovação Geral", Math.round(j.popularidade) + "%")}
           ${kv("Caixa de Campanha", fmt(j.financas.campanha || 0))}
+          ${kv("Marqueteiro Ativo", mktAtivo ? esc(mktAtivo.nome + " (OVR " + mktAtivo.overall + ")") : "Nenhum contratado")}
+          ${kv("Caixa 1 Pessoal", fmt(j.financas.caixa1 || 0))}
         </div>
-        <p class="txt" style="margin-top:6px">A campanha é decidida em três pilares: base territorial com tráfego pago, reputação em pesquisas e sustentação financeira.</p>
+        <p class="txt" style="margin-top:6px">A campanha é decidida em quatro pilares: marqueteiro eleitoral, base territorial com tráfego pago, reputação em pesquisas e sustentação financeira.</p>
       `;
-      return renderHub("camp", "Quartel-General de Campanha", "📢", "Estratégia de candidatura, pesquisas de opinião, marketing político e ativações.", hero, CAMP_SUBS);
+      return renderHub("camp", "Quartel-General de Campanha", "📢", "Estratégia de candidatura, marqueteiros eleitorais, pesquisas de opinião, marketing político e ativações.", hero, CAMP_SUBS);
     }
 
     let body = renderSubHeader("camp", sub, CAMP_SUBS, "Campanha", "📢");
 
-    if (sub === "estrategia") {
+    if (sub === "marqueteiro") {
+      if (typeof window.renderTelaMarqueteiros === "function") {
+        body += window.renderTelaMarqueteiros();
+      }
+      return body;
+    } else if (sub === "estrategia") {
       body += card("Cargo-alvo", `<div class="chips">${ALVOS.map(id => `<button class="chip ${alvo === id ? "on" : ""}" data-a="alvo" data-p='["${id}"]'>${NOME_CARGO[id]}<small>eleição ${proximaEleicaoAno(id)}, mín. ${IDADE_MIN[id]} anos</small></button>`).join("")}<button class="chip ${!cargoIdPorNome(c.cargo_alvo) ? "on" : ""}" data-a="alvoNenhum">Não disputar<small>Articular o poder, estilo Kassab</small></button></div>${pc.ok ? "" : `<p class="warn-txt">${esc(pc.motivo)}</p>`}`);
       body += cardUrna();
       if (typeof cardChapaJogador === "function") body += cardChapaJogador();
@@ -21883,7 +21897,7 @@ window.GEO_ABC = GEO_ABC;
           t.grupo = cNome;
           t.cidade = cNome;
         }
-        // AFIN é exigido por pautaMulti/aplicarMarketing — territórios do ABC não tinham entrada
+        // AFIN e exigido por pautaMulti/aplicarMarketing — territorios do ABC nao tinham entrada
         if (typeof AFIN !== "undefined" && AFIN && !AFIN[t.id]) {
           AFIN[t.id] = [1, 1, 1, 1];
         }
@@ -34321,6 +34335,7 @@ window.GEO_ABC = GEO_ABC;
       nome: "Campanha",
       subs: [
         ["camp", "Campanha"],
+        ["marqueteiro", "Marqueteiro"],
         ["mapa", "Mapa"],
         ["ele", "Eleições"]
       ]
@@ -37626,19 +37641,6 @@ document.addEventListener("click", function(e){
       + "</section>";
   }
 
-  if (typeof VIEWS !== "undefined" && typeof VIEWS.mes === "function" && !VIEWS.mes._fase1) {
-    var _vm = VIEWS.mes;
-    VIEWS.mes = function () {
-      var h = _vm.apply(this, arguments) || "";
-      try {
-        var card = htmlAgenda();
-        if (card && String(h).indexOf("fase1-agenda") < 0) h = card + h;
-      } catch (e2) { console.warn("fase1 mes", e2); }
-      return h;
-    };
-    VIEWS.mes._fase1 = true;
-    VIEWS.mes._navhGuard = true;
-  }
   if (typeof VIEWS !== "undefined" && typeof VIEWS.poder === "function" && !VIEWS.poder._fase1) {
     var _vp = VIEWS.poder;
     VIEWS.poder = function () {
@@ -38612,15 +38614,6 @@ document.addEventListener("click", function(e){
     return extra + h;
   }
 
-  if (typeof VIEWS !== "undefined" && typeof VIEWS.mes === "function" && !VIEWS.mes._fase2) {
-    var _vm = VIEWS.mes;
-    VIEWS.mes = function () {
-      return injetar(_vm.apply(this, arguments) || "");
-    };
-    VIEWS.mes._fase2 = true;
-    VIEWS.mes._fase1 = true;
-    VIEWS.mes._navhGuard = true;
-  }
   if (typeof VIEWS !== "undefined" && typeof VIEWS.poder === "function" && !VIEWS.poder._fase2) {
     var _vp = VIEWS.poder;
     VIEWS.poder = function () {
@@ -39554,14 +39547,6 @@ document.addEventListener("click", function(e){
     return extra + h;
   }
 
-  if (typeof VIEWS !== "undefined" && typeof VIEWS.mes === "function" && !VIEWS.mes._fase3) {
-    var _vm = VIEWS.mes;
-    VIEWS.mes = function () { return injetar(_vm.apply(this, arguments) || ""); };
-    VIEWS.mes._fase3 = true;
-    VIEWS.mes._fase2 = true;
-    VIEWS.mes._fase1 = true;
-    VIEWS.mes._navhGuard = true;
-  }
   if (typeof VIEWS !== "undefined" && typeof VIEWS.poder === "function" && !VIEWS.poder._fase3) {
     var _vp = VIEWS.poder;
     VIEWS.poder = function () { return injetar(_vp.apply(this, arguments) || ""); };
@@ -40321,15 +40306,6 @@ document.addEventListener("click", function(e){
     return extra + h;
   }
 
-  if (typeof VIEWS !== "undefined" && typeof VIEWS.mes === "function" && !VIEWS.mes._fase4) {
-    var _vm = VIEWS.mes;
-    VIEWS.mes = function () { return injetar(_vm.apply(this, arguments) || ""); };
-    VIEWS.mes._fase4 = true;
-    VIEWS.mes._fase3 = true;
-    VIEWS.mes._fase2 = true;
-    VIEWS.mes._fase1 = true;
-    VIEWS.mes._navhGuard = true;
-  }
   if (typeof VIEWS !== "undefined" && typeof VIEWS.poder === "function" && !VIEWS.poder._fase4) {
     var _vp = VIEWS.poder;
     VIEWS.poder = function () { return injetar(_vp.apply(this, arguments) || ""); };
@@ -41148,5 +41124,2136 @@ document.addEventListener("click", function(e){
 /* APURACAO MAPA FIM */
 
 </script>
+<script>
+/* ============================================================================
+ * PATCH v27 — SISTEMA DE MARQUETEIROS (FASES 1, 2 E 3)
+ * Base de 34 marqueteiros (9 reais, 25 fictícios) embutida de marqueteiros-cadeira.json
+ * ============================================================================ */
+(function(){
+  "use strict";
+
+  const BASE_MARQUETEIROS = [
+    {
+      "id": "MKT_001",
+      "nome": "Gabriel Campagnoli",
+      "real": false,
+      "overall": 99,
+      "tier": "Lendário",
+      "uf": "SP",
+      "cidade": "Mauá",
+      "especialidade": "Estrategista total (TV, digital, rua e crise)",
+      "atributos": { "televisao": 99, "digital": 99, "debate": 98, "crise": 99, "pesquisa": 98, "rua": 97, "discurso": 99 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Deputado Estadual", "Deputado Federal", "Senador", "Prefeito", "Governador", "Presidente"],
+      "preco": { "taxa_contratacao": 7500000, "honorario_mensal": 2500000 },
+      "risco": { "escandalo": 6, "exposicao_caixa2": 4 },
+      "lealdade": 92,
+      "traco": "Só pega uma campanha por cargo e eleição, em exclusividade. Se o cliente perde duas pesquisas seguidas, ele reassume a narrativa e a conta sobe.",
+      "bio": "Saiu do Jardim Zaíra, em Mauá, e virou o nome mais disputado das eleições brasileiras. Lê pesquisa como poucos, escreve discurso de madrugada e ainda sabe a hora exata de soltar um vídeo. Dizem que nunca perdeu uma eleição que decidiu ganhar.",
+      "frase": "Eleição não se ganha no horário nobre, se ganha no bairro, na tela e na cabeça de quem ainda não decidiu.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false,
+      "exigencias": {
+        "exclusividade_por_cargo_e_eleicao": true,
+        "max_clientes_simultaneos": 1,
+        "obs": "Recusa quem tem IEO acima de 60% ou quem já contratou outro marqueteiro de overall ≥ 85 na mesma eleição."
+      }
+    },
+    {
+      "id": "MKT_002",
+      "nome": "João Santana",
+      "real": true,
+      "overall": 91,
+      "tier": "Elite",
+      "uf": "BA",
+      "cidade": "Salvador",
+      "especialidade": "Campanhas presidenciais e TV",
+      "atributos": { "televisao": 95, "digital": 86, "debate": 90, "crise": 88, "pesquisa": 92, "rua": 84, "discurso": 96 },
+      "ideologia": { "faixa": "esquerda", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Presidente", "Senador", "Deputado Federal", "Prefeito"],
+      "preco": { "taxa_contratacao": 2850000, "honorario_mensal": 950000 },
+      "risco": { "escandalo": 55, "exposicao_caixa2": 60 },
+      "lealdade": 70,
+      "traco": "Cobra caro e exige controle total da mensagem. Foco em campanhas grandes; evita cargos pequenos.",
+      "bio": "Marqueteiro de campanhas nacionais vitoriosas do campo petista. Referência em narrativa de TV e construção de imagem presidencial. Histórico de controvérsias judiciais pesa na exposição.",
+      "frase": "Uma boa campanha conta uma história que o eleitor já queria acreditar.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_005",
+      "nome": "Sidônio Palmeira",
+      "real": true,
+      "overall": 90,
+      "tier": "Elite",
+      "uf": "BA",
+      "cidade": "Salvador",
+      "especialidade": "Marca, narrativa e comunicação de governo",
+      "atributos": { "televisao": 94, "digital": 86, "debate": 86, "crise": 92, "pesquisa": 88, "rua": 86, "discurso": 93 },
+      "ideologia": { "faixa": "centro-esquerda", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Presidente", "Governador", "Senador", "Prefeito", "Deputado Federal"],
+      "preco": { "taxa_contratacao": 2550000, "honorario_mensal": 850000 },
+      "risco": { "escandalo": 28, "exposicao_caixa2": 22 },
+      "lealdade": 82,
+      "traco": "Forte em campanha e em comunicação de governo depois da eleição. Prefere projetos de esquerda e centro-esquerda.",
+      "bio": "Publicitário premiado e marqueteiro de campanha presidencial vitoriosa. Reconhecido por narrativa de marca e comunicação de crise.",
+      "frase": "Quem controla a história que o povo repete controla a eleição.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_004",
+      "nome": "Duda Mendonça",
+      "real": true,
+      "overall": 88,
+      "tier": "Elite",
+      "uf": "BA",
+      "cidade": "Salvador",
+      "especialidade": "TV, emoção e virada de imagem",
+      "atributos": { "televisao": 97, "digital": 70, "debate": 85, "crise": 84, "pesquisa": 80, "rua": 82, "discurso": 97 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Presidente", "Governador", "Senador", "Prefeito", "Deputado Federal"],
+      "preco": { "taxa_contratacao": 1950000, "honorario_mensal": 650000 },
+      "risco": { "escandalo": 40, "exposicao_caixa2": 45 },
+      "lealdade": 65,
+      "traco": "Transforma imagem rejeitada em simpatia. Gosta de candidato \"difícil\" e topa trabalhar para qualquer lado se a verba valer.",
+      "bio": "Lenda do marketing político brasileiro, mestre em conectar candidato e emoção do eleitor, com enorme prestígio entre campanhas majoritárias.",
+      "frase": "Gente não vota em plano de governo, vota em quem parece que entende a vida dela.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_003",
+      "nome": "Mônica Moura",
+      "real": true,
+      "overall": 87,
+      "tier": "Elite",
+      "uf": "BA",
+      "cidade": "Salvador",
+      "especialidade": "Gestão de campanha e produção",
+      "atributos": { "televisao": 90, "digital": 80, "debate": 82, "crise": 90, "pesquisa": 88, "rua": 82, "discurso": 88 },
+      "ideologia": { "faixa": "esquerda", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Presidente", "Senador", "Deputado Federal", "Prefeito"],
+      "preco": { "taxa_contratacao": 1725000, "honorario_mensal": 575000 },
+      "risco": { "escandalo": 50, "exposicao_caixa2": 55 },
+      "lealdade": 72,
+      "traco": "Entrega operação redonda: orçamento, produção e logística de campanha andam juntas.",
+      "bio": "Sócia de campanhas de peso nacional, forte em produção e comando operacional. Conhecida pela disciplina e pelo olho nos números. Histórico judicial pesa na exposição.",
+      "frase": "Campanha é logística: quem erra a operação perde na reta final.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_011",
+      "nome": "Helena Brandão Matos",
+      "real": false,
+      "overall": 87,
+      "tier": "Elite",
+      "uf": "SP",
+      "cidade": "São Paulo",
+      "especialidade": "TV e imagem de líder",
+      "atributos": { "televisao": 94, "digital": 78, "debate": 88, "crise": 86, "pesquisa": 84, "rua": 76, "discurso": 92 },
+      "ideologia": { "faixa": "centro-direita", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Senador", "Prefeito", "Presidente"],
+      "preco": { "taxa_contratacao": 1725000, "honorario_mensal": 575000 },
+      "risco": { "escandalo": 20, "exposicao_caixa2": 10 },
+      "lealdade": 76,
+      "traco": "Ex-diretora de criação de TV. Faz candidato parecer estadista, mesmo sem ser.",
+      "bio": "Veio da publicidade de grandes marcas e entrou no mundo político por acidente. Hoje é a mais disputada na faixa centro-direita.",
+      "frase": "Imagem não é mentira, é edição.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_007",
+      "nome": "Duda Lima",
+      "real": true,
+      "overall": 86,
+      "tier": "Elite",
+      "uf": "SP",
+      "cidade": "São Paulo",
+      "especialidade": "Campanha digital e mobilização da base",
+      "atributos": { "televisao": 78, "digital": 94, "debate": 82, "crise": 86, "pesquisa": 80, "rua": 86, "discurso": 84 },
+      "ideologia": { "faixa": "direita", "aceita_qualquer_lado": false, "rigido": true },
+      "cargos_que_aceita": ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual"],
+      "preco": { "taxa_contratacao": 1575000, "honorario_mensal": 525000 },
+      "risco": { "escandalo": 48, "exposicao_caixa2": 38 },
+      "lealdade": 86,
+      "traco": "Só trabalha para direita e centro-direita. Leal ao cliente enquanto a base responde nas redes.",
+      "bio": "Marqueteiro de campanha presidencial recente, com perfil de mobilização massiva nas redes e disciplina de comunicação em guerra permanente.",
+      "frase": "A militância é o exército: quem não sabe usar a rede perde antes de começar.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_012",
+      "nome": "Ícaro \"Tubarão\" Vasconcelos",
+      "real": false,
+      "overall": 86,
+      "tier": "Elite",
+      "uf": "SC",
+      "cidade": "Florianópolis",
+      "especialidade": "Guerrilha digital e mobilização de nicho",
+      "atributos": { "televisao": 70, "digital": 96, "debate": 86, "crise": 82, "pesquisa": 82, "rua": 76, "discurso": 86 },
+      "ideologia": { "faixa": "direita", "aceita_qualquer_lado": false, "rigido": true },
+      "cargos_que_aceita": ["Deputado Estadual", "Deputado Federal", "Senador", "Governador", "Presidente"],
+      "preco": { "taxa_contratacao": 1575000, "honorario_mensal": 525000 },
+      "risco": { "escandalo": 62, "exposicao_caixa2": 50 },
+      "lealdade": 58,
+      "traco": "Só atua pela direita. Rende muito em redes, mas gera exposição quando a campanha vaza.",
+      "bio": "Surgiu em grupo de zap e cresceu virando algoritmo contra adversário. Tem fama de vencer eleição com orçamento baixo.",
+      "frase": "Quem vende indignação lucra sem precisar de estúdio.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_013",
+      "nome": "Dandara Nascimento Reis",
+      "real": false,
+      "overall": 86,
+      "tier": "Elite",
+      "uf": "PE",
+      "cidade": "Recife",
+      "especialidade": "Mobilização de rua e militância",
+      "atributos": { "televisao": 76, "digital": 82, "debate": 82, "crise": 80, "pesquisa": 82, "rua": 96, "discurso": 88 },
+      "ideologia": { "faixa": "esquerda", "aceita_qualquer_lado": false, "rigido": true },
+      "cargos_que_aceita": ["Vereador", "Deputado Estadual", "Deputado Federal", "Prefeito", "Governador"],
+      "preco": { "taxa_contratacao": 1575000, "honorario_mensal": 525000 },
+      "risco": { "escandalo": 18, "exposicao_caixa2": 14 },
+      "lealdade": 90,
+      "traco": "Só aceita causas de esquerda. Multiplica voluntários e reduz custo da campanha de rua.",
+      "bio": "Vinda do movimento estudantil e dos mutirões de bairro. Transforma militância em máquina eleitoral.",
+      "frase": "Voto de periferia se ganha batendo na porta, não impulsionando post.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_016",
+      "nome": "Bruna Zalcman",
+      "real": false,
+      "overall": 86,
+      "tier": "Elite",
+      "uf": "SP",
+      "cidade": "São Paulo",
+      "especialidade": "Dados, pesquisa e microtargeting",
+      "atributos": { "televisao": 70, "digital": 90, "debate": 76, "crise": 82, "pesquisa": 98, "rua": 78, "discurso": 84 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Senador", "Prefeito", "Deputado Federal", "Presidente"],
+      "preco": { "taxa_contratacao": 1575000, "honorario_mensal": 525000 },
+      "risco": { "escandalo": 26, "exposicao_caixa2": 24 },
+      "lealdade": 68,
+      "traco": "Distribui verba por território com precisão. Desconfia de feeling e exige dado.",
+      "bio": "Ex-cientista de dados de grande empresa de varejo. Troca intuição por planilha e acerta mais que os veteranos.",
+      "frase": "Pesquisa não é para ver quanto você tem, é para saber onde buscar o que falta.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_014",
+      "nome": "Rodrigo Ferrer",
+      "real": false,
+      "overall": 84,
+      "tier": "Profissional",
+      "uf": "RS",
+      "cidade": "Porto Alegre",
+      "especialidade": "Debates e preparação de candidato",
+      "atributos": { "televisao": 78, "digital": 70, "debate": 96, "crise": 82, "pesquisa": 82, "rua": 70, "discurso": 90 },
+      "ideologia": { "faixa": "centro-direita", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Senador", "Prefeito", "Deputado Federal", "Presidente"],
+      "preco": { "taxa_contratacao": 1200000, "honorario_mensal": 400000 },
+      "risco": { "escandalo": 20, "exposicao_caixa2": 12 },
+      "lealdade": 72,
+      "traco": "Prepara cliente para debate e entrevistas. Elimina gafe antes que ela vire manchete.",
+      "bio": "Ex-assessor de comunicação parlamentar. Dizem que sabe a pergunta antes do mediador.",
+      "frase": "Quem entra no debate sem simulação já começou perdendo.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_015",
+      "nome": "Tatiane \"Tati\" Quirino",
+      "real": false,
+      "overall": 84,
+      "tier": "Profissional",
+      "uf": "GO",
+      "cidade": "Goiânia",
+      "especialidade": "Gestão de crise",
+      "atributos": { "televisao": 76, "digital": 78, "debate": 80, "crise": 96, "pesquisa": 80, "rua": 74, "discurso": 82 },
+      "ideologia": { "faixa": "centro", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Senador", "Prefeito", "Deputado Federal", "Presidente"],
+      "preco": { "taxa_contratacao": 1200000, "honorario_mensal": 400000 },
+      "risco": { "escandalo": 22, "exposicao_caixa2": 20 },
+      "lealdade": 84,
+      "traco": "Entra em campanha em crise, não em campanha tranquila. Reduz bastante o estrago de escândalo.",
+      "bio": "Apagadora de incêndios do Centro-Oeste. Já salvou candidato com a imagem em pedaços.",
+      "frase": "Escândalo não se nega, se administra.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_017",
+      "nome": "Márcio Dourado",
+      "real": false,
+      "overall": 84,
+      "tier": "Profissional",
+      "uf": "RJ",
+      "cidade": "Rio de Janeiro",
+      "especialidade": "Pauta de costumes e público evangélico",
+      "atributos": { "televisao": 76, "digital": 82, "debate": 80, "crise": 78, "pesquisa": 80, "rua": 90, "discurso": 88 },
+      "ideologia": { "faixa": "direita", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Deputado Estadual", "Deputado Federal", "Prefeito", "Governador"],
+      "preco": { "taxa_contratacao": 1200000, "honorario_mensal": 400000 },
+      "risco": { "escandalo": 30, "exposicao_caixa2": 26 },
+      "lealdade": 80,
+      "traco": "Alta penetração em igrejas e comunidades. Rejeita candidato com agenda contrária aos costumes.",
+      "bio": "Ex-assessor de bancada e organizador de eventos religiosos. Conhece o caminho do voto de fé.",
+      "frase": "Quem fala de família sem demagogia ganha confiança que dinheiro não compra.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_006",
+      "nome": "Nizan Guanaes",
+      "real": true,
+      "overall": 83,
+      "tier": "Profissional",
+      "uf": "BA",
+      "cidade": "Salvador",
+      "especialidade": "Publicidade, marca e posicionamento",
+      "atributos": { "televisao": 92, "digital": 80, "debate": 70, "crise": 85, "pesquisa": 84, "rua": 66, "discurso": 90 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Presidente", "Governador", "Senador", "Prefeito"],
+      "preco": { "taxa_contratacao": 1050000, "honorario_mensal": 350000 },
+      "risco": { "escandalo": 22, "exposicao_caixa2": 15 },
+      "lealdade": 60,
+      "traco": "Prefere campanhas grandes e candidatos com recursos. Entrega marca forte, mas rua e debate são pontos médios.",
+      "bio": "Um dos publicitários mais influentes do país, referência em construção de marca e posicionamento, com trânsito entre elites políticas e econômicas.",
+      "frase": "Marca forte aguenta pesquisa ruim; marca fraca não aguenta nem lançamento.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_023",
+      "nome": "Yasmin Karam",
+      "real": false,
+      "overall": 83,
+      "tier": "Profissional",
+      "uf": "DF",
+      "cidade": "Brasília",
+      "especialidade": "Marketing nacional e relação com a imprensa",
+      "atributos": { "televisao": 88, "digital": 78, "debate": 82, "crise": 86, "pesquisa": 82, "rua": 70, "discurso": 86 },
+      "ideologia": { "faixa": "centro", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Senador", "Governador", "Presidente", "Deputado Federal"],
+      "preco": { "taxa_contratacao": 1050000, "honorario_mensal": 350000 },
+      "risco": { "escandalo": 24, "exposicao_caixa2": 16 },
+      "lealdade": 70,
+      "traco": "Abre portas na imprensa nacional. Entrega manchete boa e vazamento controlado.",
+      "bio": "Ex-assessora de ministro e jornalista. Troca de cargo mais que de partido.",
+      "frase": "Quem controla o primeiro parágrafo controla o resto da matéria.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_027",
+      "nome": "Priscila Okamoto",
+      "real": false,
+      "overall": 82,
+      "tier": "Profissional",
+      "uf": "SP",
+      "cidade": "São Paulo",
+      "especialidade": "Dados, anúncios e rede de apoiadores",
+      "atributos": { "televisao": 66, "digital": 92, "debate": 76, "crise": 78, "pesquisa": 92, "rua": 74, "discurso": 80 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Deputado Estadual", "Deputado Federal", "Prefeito", "Senador"],
+      "preco": { "taxa_contratacao": 975000, "honorario_mensal": 325000 },
+      "risco": { "escandalo": 18, "exposicao_caixa2": 12 },
+      "lealdade": 70,
+      "traco": "Foco em tráfego pago, gestão de redes e funil de voluntários.",
+      "bio": "Ex-gerente de marketing de e-commerce. Aplica conversão e retenção em eleição.",
+      "frase": "Voto também é conversão: você só ganha quando mede.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_008",
+      "nome": "Luiz Gonzalez",
+      "real": true,
+      "overall": 81,
+      "tier": "Profissional",
+      "uf": "SP",
+      "cidade": "São Paulo",
+      "especialidade": "Marketing majoritário paulista",
+      "atributos": { "televisao": 86, "digital": 70, "debate": 80, "crise": 80, "pesquisa": 82, "rua": 76, "discurso": 82 },
+      "ideologia": { "faixa": "centro-direita", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Prefeito", "Senador", "Deputado Federal"],
+      "preco": { "taxa_contratacao": 855000, "honorario_mensal": 285000 },
+      "risco": { "escandalo": 18, "exposicao_caixa2": 12 },
+      "lealdade": 70,
+      "traco": "Conhece SP como a palma da mão. Prefere centro e centro-direita, mas faz campanha para quem paga.",
+      "bio": "Marqueteiro veterano com experiência em campanhas para governo e prefeituras de peso no eixo São Paulo.",
+      "frase": "São Paulo é interior com sotaque de capital: quem esquece isso perde a eleição.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_019",
+      "nome": "Letícia Pamplona",
+      "real": false,
+      "overall": 81,
+      "tier": "Profissional",
+      "uf": "PR",
+      "cidade": "Curitiba",
+      "especialidade": "Centro-direita institucional e economia",
+      "atributos": { "televisao": 80, "digital": 76, "debate": 82, "crise": 82, "pesquisa": 84, "rua": 70, "discurso": 84 },
+      "ideologia": { "faixa": "centro-direita", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Senador", "Deputado Federal", "Prefeito"],
+      "preco": { "taxa_contratacao": 855000, "honorario_mensal": 285000 },
+      "risco": { "escandalo": 12, "exposicao_caixa2": 8 },
+      "lealdade": 76,
+      "traco": "Boa para candidato técnico, ruim para populista. Prefere pauta de gestão e economia.",
+      "bio": "Ex-consultora de empresas e campanhas de prefeitos eficientes. Vende competência como se fosse carisma.",
+      "frase": "Eleitor que quer bonito vota no outro; quem quer resolvido vota em você.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_024",
+      "nome": "Heitor Bastos",
+      "real": false,
+      "overall": 81,
+      "tier": "Profissional",
+      "uf": "AM",
+      "cidade": "Manaus",
+      "especialidade": "Guerrilha, boato e submundo",
+      "atributos": { "televisao": 50, "digital": 92, "debate": 78, "crise": 74, "pesquisa": 86, "rua": 86, "discurso": 82 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Deputado Estadual", "Deputado Federal", "Senador", "Governador", "Prefeito", "Presidente"],
+      "preco": { "taxa_contratacao": 855000, "honorario_mensal": 285000 },
+      "risco": { "escandalo": 92, "exposicao_caixa2": 88 },
+      "lealdade": 34,
+      "traco": "Entrega vitória e destruição de adversário, mas aumenta o risco de PF, escândalo e processo. Trai quem não paga em dia.",
+      "bio": "Ninguém assume que contrata, todo mundo sabe que ele existe. Resultados chamativos, passado sombrio.",
+      "frase": "Política é guerra, e guerra suja é a única que se ganha.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_020",
+      "nome": "Caio Brandt",
+      "real": false,
+      "overall": 80,
+      "tier": "Profissional",
+      "uf": "SC",
+      "cidade": "Joinville",
+      "especialidade": "Influenciadores, TikTok e vídeos curtos",
+      "atributos": { "televisao": 60, "digital": 94, "debate": 78, "crise": 72, "pesquisa": 76, "rua": 68, "discurso": 80 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Deputado Estadual", "Deputado Federal", "Prefeito"],
+      "preco": { "taxa_contratacao": 750000, "honorario_mensal": 250000 },
+      "risco": { "escandalo": 32, "exposicao_caixa2": 20 },
+      "lealdade": 60,
+      "traco": "Entrega alcance em jovem. Pouca penetração entre idosos.",
+      "bio": "Ex-gerente de agência de influenciadores. Faz candidato bombar com micro-celebridades locais.",
+      "frase": "Se não virar corte, não existiu.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_025",
+      "nome": "Clarissa Leão",
+      "real": false,
+      "overall": 80,
+      "tier": "Profissional",
+      "uf": "PR",
+      "cidade": "Londrina",
+      "especialidade": "Campanhas de prefeito e voto feminino",
+      "atributos": { "televisao": 76, "digital": 78, "debate": 80, "crise": 80, "pesquisa": 82, "rua": 76, "discurso": 84 },
+      "ideologia": { "faixa": "centro", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Prefeito", "Vereador", "Deputado Estadual", "Deputado Federal"],
+      "preco": { "taxa_contratacao": 750000, "honorario_mensal": 250000 },
+      "risco": { "escandalo": 12, "exposicao_caixa2": 8 },
+      "lealdade": 80,
+      "traco": "Forte em eleitor feminino e em prefeitura de cidade média.",
+      "bio": "Ex-vereadora que virou marqueteira. Entende o jogo de dentro e fala de segurança e saúde com credibilidade.",
+      "frase": "Mulher vota em quem tenta resolver a vida dela, não em quem promete mudar o mundo.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_028",
+      "nome": "Mariana Salgueiro",
+      "real": false,
+      "overall": 79,
+      "tier": "Profissional",
+      "uf": "PA",
+      "cidade": "Belém",
+      "especialidade": "Marketing amazônico e agenda ambiental",
+      "atributos": { "televisao": 66, "digital": 76, "debate": 74, "crise": 76, "pesquisa": 76, "rua": 82, "discurso": 86 },
+      "ideologia": { "faixa": "centro-esquerda", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Prefeito", "Deputado Estadual", "Deputado Federal", "Senador", "Governador"],
+      "preco": { "taxa_contratacao": 660000, "honorario_mensal": 220000 },
+      "risco": { "escandalo": 14, "exposicao_caixa2": 12 },
+      "lealdade": 82,
+      "traco": "Boa em pauta ambiental, povos tradicionais e interior do Norte.",
+      "bio": "Antropóloga que virou marqueteira de campanhas do Norte. Conhece o interior fluvial.",
+      "frase": "Floresta não vota, mas quem vive nela vota em quem a defende.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_009",
+      "nome": "Renato Pereira",
+      "real": true,
+      "overall": 78,
+      "tier": "Profissional",
+      "uf": "SP",
+      "cidade": "São Paulo",
+      "especialidade": "Marketing majoritário e TV",
+      "atributos": { "televisao": 84, "digital": 66, "debate": 76, "crise": 76, "pesquisa": 80, "rua": 72, "discurso": 80 },
+      "ideologia": { "faixa": "centro-direita", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Senador", "Prefeito", "Deputado Federal"],
+      "preco": { "taxa_contratacao": 585000, "honorario_mensal": 195000 },
+      "risco": { "escandalo": 16, "exposicao_caixa2": 10 },
+      "lealdade": 66,
+      "traco": "Bom de TV e horário eleitoral. Fraco em redes sociais.",
+      "bio": "Marqueteiro com passagens por campanhas estaduais e nacionais, forte em programa de TV e produção de horário eleitoral.",
+      "frase": "Dois minutos bem escritos valem mais que dois meses de tuíte.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_010",
+      "nome": "Elsinho Mouco",
+      "real": true,
+      "overall": 78,
+      "tier": "Profissional",
+      "uf": "SP",
+      "cidade": "São Paulo",
+      "especialidade": "Marketing majoritário e narrativa de centro",
+      "atributos": { "televisao": 82, "digital": 74, "debate": 78, "crise": 78, "pesquisa": 78, "rua": 70, "discurso": 82 },
+      "ideologia": { "faixa": "centro", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Governador", "Senador", "Prefeito", "Deputado Federal"],
+      "preco": { "taxa_contratacao": 585000, "honorario_mensal": 195000 },
+      "risco": { "escandalo": 14, "exposicao_caixa2": 8 },
+      "lealdade": 70,
+      "traco": "Perfil moderado: não aceita campanha de ruptura nem de extremos.",
+      "bio": "Marqueteiro experiente em campanhas majoritárias, conhecido por discurso conciliador e narrativa de centro.",
+      "frase": "Eleitor decide no meio: quem fala só para a sua bolha perde o tamanho da eleição.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_022",
+      "nome": "Wellington \"Welly\" Sampaio",
+      "real": false,
+      "overall": 77,
+      "tier": "Profissional",
+      "uf": "SP",
+      "cidade": "Mauá",
+      "especialidade": "Campanhas de periferia no ABC",
+      "atributos": { "televisao": 60, "digital": 76, "debate": 68, "crise": 66, "pesquisa": 74, "rua": 90, "discurso": 80 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Deputado Estadual", "Deputado Federal", "Prefeito"],
+      "preco": { "taxa_contratacao": 525000, "honorario_mensal": 175000 },
+      "risco": { "escandalo": 24, "exposicao_caixa2": 26 },
+      "lealdade": 82,
+      "traco": "Muito eficiente em Mauá, Santo André e Diadema. Fora do ABC perde poder.",
+      "bio": "Morador do Jardim Zaíra, conhece cada rua, cada igreja, cada associação do bairro. Já elegeu vereador com orçamento de padaria.",
+      "frase": "Eleição de bairro é feita de nome, cara e favor.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_018",
+      "nome": "Zé Alencar",
+      "real": false,
+      "overall": 76,
+      "tier": "Profissional",
+      "uf": "CE",
+      "cidade": "Fortaleza",
+      "especialidade": "Rádio, carro de som e interior",
+      "atributos": { "televisao": 66, "digital": 50, "debate": 66, "crise": 70, "pesquisa": 70, "rua": 92, "discurso": 84 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Deputado Estadual", "Deputado Federal", "Prefeito"],
+      "preco": { "taxa_contratacao": 465000, "honorario_mensal": 155000 },
+      "risco": { "escandalo": 20, "exposicao_caixa2": 22 },
+      "lealdade": 78,
+      "traco": "Imbatível em cidade pequena. Fraco em campanha metropolitana e digital.",
+      "bio": "Radialista cearense que virou marqueteiro de prefeito do interior. Sabe cada rádio, cada padre e cada compadre.",
+      "frase": "Quem tem jingle bom ganha antes da urna abrir.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_026",
+      "nome": "Abelardo Tavares",
+      "real": false,
+      "overall": 75,
+      "tier": "Profissional",
+      "uf": "MA",
+      "cidade": "São Luís",
+      "especialidade": "Marketing de prefeitos e grupo político",
+      "atributos": { "televisao": 66, "digital": 54, "debate": 70, "crise": 76, "pesquisa": 72, "rua": 86, "discurso": 82 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Prefeito", "Vereador", "Deputado Estadual", "Deputado Federal", "Governador"],
+      "preco": { "taxa_contratacao": 405000, "honorario_mensal": 135000 },
+      "risco": { "escandalo": 28, "exposicao_caixa2": 30 },
+      "lealdade": 88,
+      "traco": "Montou dinastias locais. Entrega continuidade: reeleição de grupo político.",
+      "bio": "Marketing de família política maranhense, especialista em manter prefeito no poder.",
+      "frase": "Eleição boa é a que se ganha duas vezes seguidas.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_021",
+      "nome": "Dona Nair Albuquerque",
+      "real": false,
+      "overall": 74,
+      "tier": "Profissional",
+      "uf": "BA",
+      "cidade": "Salvador",
+      "especialidade": "Jingles, santinho e tradição",
+      "atributos": { "televisao": 70, "digital": 40, "debate": 64, "crise": 74, "pesquisa": 70, "rua": 88, "discurso": 86 },
+      "ideologia": { "faixa": "centro", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Deputado Estadual", "Deputado Federal", "Prefeito", "Senador"],
+      "preco": { "taxa_contratacao": 360000, "honorario_mensal": 120000 },
+      "risco": { "escandalo": 10, "exposicao_caixa2": 10 },
+      "lealdade": 94,
+      "traco": "Veterana. Muito leal ao cliente e nunca expõe segredo de campanha. Fraca em rede social.",
+      "bio": "Há 40 anos faz jingle e santinho para vereadores e prefeitos. Ainda confia em panfleto e boca de urna.",
+      "frase": "Quem não tem jingle, não tem eleição.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_031",
+      "nome": "Beto Cardoso",
+      "real": false,
+      "overall": 72,
+      "tier": "Profissional",
+      "uf": "MT",
+      "cidade": "Cuiabá",
+      "especialidade": "Agro, interior e produtor rural",
+      "atributos": { "televisao": 66, "digital": 62, "debate": 64, "crise": 64, "pesquisa": 66, "rua": 84, "discurso": 74 },
+      "ideologia": { "faixa": "centro-direita", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Prefeito", "Deputado Estadual", "Deputado Federal", "Senador"],
+      "preco": { "taxa_contratacao": 285000, "honorario_mensal": 95000 },
+      "risco": { "escandalo": 22, "exposicao_caixa2": 20 },
+      "lealdade": 78,
+      "traco": "Forte no interior do agro. Fraco em grande capital e em esquerda.",
+      "bio": "Filho de produtor, virou marqueteiro de cooperativa e depois de prefeito. Fala a língua do campo.",
+      "frase": "Quem planta sabe esperar, mas não perdoa quem promete e some.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_033",
+      "nome": "Thaís Bonfim",
+      "real": false,
+      "overall": 70,
+      "tier": "Profissional",
+      "uf": "ES",
+      "cidade": "Vitória",
+      "especialidade": "Nova geração, vídeo curto e rua",
+      "atributos": { "televisao": 50, "digital": 82, "debate": 66, "crise": 58, "pesquisa": 66, "rua": 70, "discurso": 72 },
+      "ideologia": { "faixa": "centro-esquerda", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Deputado Estadual", "Deputado Federal", "Prefeito"],
+      "preco": { "taxa_contratacao": 225000, "honorario_mensal": 75000 },
+      "risco": { "escandalo": 18, "exposicao_caixa2": 12 },
+      "lealdade": 72,
+      "traco": "Promissora. Pode virar elite se acumular vitórias.",
+      "bio": "Ex-estudante de comunicação que viralizou em campanha de DCE e foi puxada por partido médio.",
+      "frase": "Se o jovem não se enxerga na campanha, ele vota em quem se enxerga.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_032",
+      "nome": "Carla Menezes",
+      "real": false,
+      "overall": 66,
+      "tier": "Promissor",
+      "uf": "RN",
+      "cidade": "Natal",
+      "especialidade": "Campanha de vereança e pequenas cidades",
+      "atributos": { "televisao": 54, "digital": 64, "debate": 60, "crise": 56, "pesquisa": 62, "rua": 76, "discurso": 70 },
+      "ideologia": { "faixa": "centro", "aceita_qualquer_lado": false, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Prefeito", "Deputado Estadual"],
+      "preco": { "taxa_contratacao": 138000, "honorario_mensal": 46000 },
+      "risco": { "escandalo": 16, "exposicao_caixa2": 14 },
+      "lealdade": 80,
+      "traco": "Excelente custo-benefício para campanha de vereador.",
+      "bio": "Começou como assessora de vereador e hoje toca cinco campanhas por eleição.",
+      "frase": "Vereador não precisa de estúdio, precisa de agenda.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_034",
+      "nome": "Seu Edinho Praxedes",
+      "real": false,
+      "overall": 61,
+      "tier": "Promissor",
+      "uf": "AL",
+      "cidade": "Maceió",
+      "especialidade": "Carro de som, comício e favor",
+      "atributos": { "televisao": 46, "digital": 36, "debate": 50, "crise": 60, "pesquisa": 52, "rua": 80, "discurso": 66 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Prefeito"],
+      "preco": { "taxa_contratacao": 75000, "honorario_mensal": 25000 },
+      "risco": { "escandalo": 34, "exposicao_caixa2": 36 },
+      "lealdade": 66,
+      "traco": "Eficaz em reduto e fraco fora dele. Tende a prometer mais do que entrega.",
+      "bio": "Dono de gráfica e de dois carros de som. Faz campanha desde o governo Collor.",
+      "frase": "Eleição boa é a que termina em churrasco.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_029",
+      "nome": "Nando Pitta",
+      "real": false,
+      "overall": 56,
+      "tier": "Promissor",
+      "uf": "MG",
+      "cidade": "Uberlândia",
+      "especialidade": "Santinho, WhatsApp e carro de som",
+      "atributos": { "televisao": 50, "digital": 56, "debate": 50, "crise": 48, "pesquisa": 50, "rua": 64, "discurso": 58 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Vereador", "Prefeito"],
+      "preco": { "taxa_contratacao": 42000, "honorario_mensal": 14000 },
+      "risco": { "escandalo": 24, "exposicao_caixa2": 26 },
+      "lealdade": 64,
+      "traco": "Barato e sem frescura. Bom para vereador de cidade pequena.",
+      "bio": "Começou imprimindo santinho em gráfica de esquina e ficou conhecido por fechar campanha em duas semanas.",
+      "frase": "Qualquer um que bate na porta vira candidato.",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    },
+    {
+      "id": "MKT_030",
+      "nome": "Juninho Marketing",
+      "real": false,
+      "overall": 38,
+      "tier": "Iniciante",
+      "uf": "SP",
+      "cidade": "Guarulhos",
+      "especialidade": "Iniciante e freelancer de rede social",
+      "atributos": { "televisao": 30, "digital": 44, "debate": 32, "crise": 28, "pesquisa": 34, "rua": 42, "discurso": 40 },
+      "ideologia": { "faixa": "pragmatico", "aceita_qualquer_lado": true, "rigido": false },
+      "cargos_que_aceita": ["Vereador"],
+      "preco": { "taxa_contratacao": 6000, "honorario_mensal": 2000 },
+      "risco": { "escandalo": 40, "exposicao_caixa2": 40 },
+      "lealdade": 50,
+      "traco": "Barato. Tem 30% de chance de entregar algo útil, 20% de se meter em confusão.",
+      "bio": "Fez curso online, abriu CNPJ e já se diz marqueteiro. Surpreendentemente, às vezes funciona.",
+      "frase": "Já fiz cinco campanhas! (duas ganharam)",
+      "disponivel": true,
+      "foto_url": "",
+      "foto_carrega": false
+    }
+  ];
+
+  window.BASE_MARQUETEIROS = BASE_MARQUETEIROS;
+
+  const CARGO_ID_PARA_GENERICO = {
+    VER: "Vereador",
+    PREF: "Prefeito",
+    DEPE: "Deputado Estadual",
+    DEPF: "Deputado Federal",
+    SEN: "Senador",
+    GOV: "Governador",
+    PRES: "Presidente"
+  };
+
+  const PESOS_CARGO_ATRIBUTOS = {
+    VER:  { rua: 1.45, pesquisa: 1.35, digital: 1.05, discurso: 1.05, televisao: 0.65, debate: 0.75, crise: 0.80 },
+    PREF: { rua: 1.35, pesquisa: 1.30, televisao: 1.10, debate: 1.15, crise: 1.10, discurso: 1.10, digital: 1.05 },
+    DEPE: { digital: 1.35, rua: 1.30, discurso: 1.25, pesquisa: 1.10, televisao: 0.80, debate: 0.85, crise: 0.90 },
+    DEPF: { digital: 1.35, rua: 1.25, discurso: 1.30, pesquisa: 1.15, televisao: 0.95, debate: 0.95, crise: 1.00 },
+    SEN:  { televisao: 1.35, debate: 1.30, crise: 1.30, discurso: 1.20, pesquisa: 1.15, digital: 1.05, rua: 0.85 },
+    GOV:  { televisao: 1.35, debate: 1.35, crise: 1.30, pesquisa: 1.20, discurso: 1.20, digital: 1.15, rua: 1.00 },
+    PRES: { televisao: 1.40, digital: 1.35, crise: 1.35, discurso: 1.35, debate: 1.25, pesquisa: 1.20, rua: 0.95 }
+  };
+
+  function ensureMarqueteirosState(){
+    if(typeof gameState === "undefined" || !gameState) return null;
+    if(!gameState.marqueteiros){
+      gameState.marqueteiros = {
+        ativoId: null,
+        contrato: null,
+        contratou85MaisPorAno: {},
+        progresso: {},
+        iaContratosPorAno: {},
+        filtros: {
+          cargo: "TODOS",
+          tier: "TODOS",
+          ideologia: "TODOS",
+          tipo: "TODOS",
+          preco: "TODOS",
+          soAceitam: false,
+          ordenacao: "overall",
+          selecionadoId: "MKT_001",
+          usarCaixa2: false
+        },
+        ultimoMesProcessado: -1,
+        ultimaPesquisaValor: null,
+        quedasSeguidas: 0
+      };
+    }
+    const st = gameState.marqueteiros;
+    if(st._initDone) return st;
+    st.contratou85MaisPorAno = st.contratou85MaisPorAno || {};
+    st.progresso = st.progresso || {};
+    st.iaContratosPorAno = st.iaContratosPorAno || {};
+    st.filtros = Object.assign({
+      cargo: "TODOS",
+      tier: "TODOS",
+      ideologia: "TODOS",
+      tipo: "TODOS",
+      preco: "TODOS",
+      soAceitam: false,
+      ordenacao: "overall",
+      selecionadoId: "MKT_001",
+      usarCaixa2: false
+    }, st.filtros || {});
+
+    BASE_MARQUETEIROS.forEach(function(m){
+      if(!st.progresso[m.id]){
+        st.progresso[m.id] = {
+          overall: m.overall,
+          eleicoes_disputadas: 0,
+          vitorias: 0,
+          clientes: []
+        };
+      }
+      if(m.id === "MKT_001"){
+        st.progresso[m.id].overall = 99;
+      }
+    });
+    st._initDone = true;
+    return st;
+  }
+
+  function getMarqueteiroFull(id){
+    const base = BASE_MARQUETEIROS.find(function(x){ return x.id === id; });
+    if(!base) return null;
+    const st = ensureMarqueteirosState();
+    const prog = (st && st.progresso && st.progresso[id]) ? st.progresso[id] : { overall: base.overall, eleicoes_disputadas: 0, vitorias: 0, clientes: [] };
+    const ov = base.id === "MKT_001" ? 99 : Math.max(30, Math.min(98, prog.overall || base.overall));
+    let tier = base.tier;
+    if(base.id === "MKT_001") tier = "Lendário";
+    else if(ov >= 85) tier = "Elite";
+    else if(ov >= 70) tier = "Profissional";
+    else if(ov >= 55) tier = "Promissor";
+    else tier = "Iniciante";
+    return Object.assign({}, base, {
+      overall: ov,
+      tier: tier,
+      historico: {
+        eleicoes_disputadas: prog.eleicoes_disputadas || 0,
+        vitorias: prog.vitorias || 0,
+        clientes: (prog.clientes || []).slice()
+      }
+    });
+  }
+
+  function listarTodosMarqueteiros(){
+    return BASE_MARQUETEIROS.map(function(m){ return getMarqueteiroFull(m.id); });
+  }
+
+  function getMarqueteiroAtivo(){
+    const st = ensureMarqueteirosState();
+    if(!st || !st.ativoId) return null;
+    const m = getMarqueteiroFull(st.ativoId);
+    if(!m) return null;
+    return Object.assign({}, m, { contrato: st.contrato || {} });
+  }
+  window.getMarqueteiroAtivo = getMarqueteiroAtivo;
+
+  function cargoAlvoGenericoJogador(){
+    try {
+      const j = J();
+      const cid = cargoIdPorNome(j.campanha && j.campanha.cargo_alvo) || cargoAtualId() || "VER";
+      return CARGO_ID_PARA_GENERICO[cid] || "Vereador";
+    } catch(e){
+      return "Vereador";
+    }
+  }
+
+  function cargoAlvoIdJogador(){
+    try {
+      const j = J();
+      return cargoIdPorNome(j.campanha && j.campanha.cargo_alvo) || cargoAtualId() || "VER";
+    } catch(e){
+      return "VER";
+    }
+  }
+
+  function ideologiaJogador(){
+    try {
+      const j = J();
+      const p = PARTIDOS[j.partido_atual] || { e: "C" };
+      return p.e || "C"; // "E", "C", "D"
+    } catch(e){
+      return "C";
+    }
+  }
+
+  function compatibilidadeIdeologica(m, eJog){
+    const id = m.ideologia || { faixa: "pragmatico", aceita_qualquer_lado: true, rigido: false };
+    const faixa = (id.faixa || "pragmatico").toLowerCase();
+    if(id.aceita_qualquer_lado || faixa === "pragmatico"){
+      return { aceita: true, sobretaxa: 0, motivo: null };
+    }
+    const campoMkt = (faixa === "esquerda" || faixa === "centro-esquerda") ? "E"
+                   : (faixa === "direita" || faixa === "centro-direita") ? "D" : "C";
+
+    if(campoMkt === eJog){
+      return { aceita: true, sobretaxa: 0, motivo: null };
+    }
+    // Centro tolera centro-esquerda e centro-direita sem recusa rígida
+    if(eJog === "C" && (faixa === "centro-esquerda" || faixa === "centro-direita" || faixa === "centro")){
+      return { aceita: true, sobretaxa: 0.15, motivo: null };
+    }
+    if(campoMkt === "C" && !id.rigido){
+      return { aceita: true, sobretaxa: 0.20, motivo: null };
+    }
+    // Oposto ideológico
+    const oposto = (campoMkt === "E" && eJog === "D") || (campoMkt === "D" && eJog === "E") || (id.rigido && campoMkt !== eJog);
+    if(id.rigido && oposto){
+      return {
+        aceita: false,
+        sobretaxa: 0,
+        motivo: "Recusa por ideologia rígida (" + id.faixa + " não atende seu campo partidário)"
+      };
+    }
+    // Não rígido mas fora da faixa: cobra mais caro (+25% a +35%)
+    const sobretaxa = oposto ? 0.35 : 0.25;
+    return { aceita: true, sobretaxa: sobretaxa, motivo: null };
+  }
+
+  function clienteIADoMarqueteiro(mktId){
+    const st = ensureMarqueteirosState();
+    if(!st) return null;
+    const ano = (typeof dt === "function" && dt()) ? dt().ano : 2026;
+    const mapa = st.iaContratosPorAno[ano] || {};
+    return mapa[mktId] || null;
+  }
+
+  function avaliarAceitacaoMarqueteiro(m){
+    const st = ensureMarqueteirosState();
+    const j = J();
+    const ano = (typeof dt === "function" && dt()) ? dt().ano : 2026;
+    const cargoGen = cargoAlvoGenericoJogador();
+    const eJog = ideologiaJogador();
+    const ieo = (j && j.juridico) ? (j.juridico.ieo_risco || 0) : 0;
+
+    // 1. Cargo aceito
+    if(!(m.cargos_que_aceita || []).includes(cargoGen)){
+      return {
+        aceita: false,
+        motivo: "Não trabalha em campanhas para " + cargoGen,
+        sobretaxa: 0,
+        taxaFinal: m.preco.taxa_contratacao,
+        mensalFinal: m.preco.honorario_mensal
+      };
+    }
+
+    // 2. Regras exclusivas de Gabriel Campagnoli (MKT_001)
+    if(m.id === "MKT_001"){
+      if(ieo > 60){
+        return {
+          aceita: false,
+          motivo: "Exigência de Gabriel Campagnoli: recusa candidato com IEO acima de 60% (seu IEO: " + Math.round(ieo) + "%)",
+          sobretaxa: 0,
+          taxaFinal: m.preco.taxa_contratacao,
+          mensalFinal: m.preco.honorario_mensal
+        };
+      }
+      if(st && st.contratou85MaisPorAno && st.contratou85MaisPorAno[ano] && st.ativoId !== "MKT_001"){
+        return {
+          aceita: false,
+          motivo: "Exigência de Gabriel Campagnoli: recusa quem já contratou outro marqueteiro de overall ≥ 85 nesta eleição (" + st.contratou85MaisPorAno[ano] + ")",
+          sobretaxa: 0,
+          taxaFinal: m.preco.taxa_contratacao,
+          mensalFinal: m.preco.honorario_mensal
+        };
+      }
+    }
+
+    // 3. Exclusividade com adversário de IA no mesmo ano/eleição
+    const cliIA = clienteIADoMarqueteiro(m.id);
+    if(cliIA && st.ativoId !== m.id){
+      return {
+        aceita: false,
+        motivo: "Exclusividade nesta eleição: já contratado por " + cliIA.nome + " (" + cliIA.partido + " — " + cliIA.cargo + ")",
+        sobretaxa: 0,
+        taxaFinal: m.preco.taxa_contratacao,
+        mensalFinal: m.preco.honorario_mensal
+      };
+    }
+
+    // 4. Ideologia
+    const idCheck = compatibilidadeIdeologica(m, eJog);
+    if(!idCheck.aceita){
+      return {
+        aceita: false,
+        motivo: idCheck.motivo,
+        sobretaxa: 0,
+        taxaFinal: m.preco.taxa_contratacao,
+        mensalFinal: m.preco.honorario_mensal
+      };
+    }
+
+    const mult = 1 + (idCheck.sobretaxa || 0);
+    return {
+      aceita: true,
+      motivo: idCheck.sobretaxa > 0 ? ("Pedágio ideológico: +" + Math.round(idCheck.sobretaxa * 100) + "% por divergência partidária") : "Aceita sua campanha sem restrições",
+      sobretaxa: idCheck.sobretaxa || 0,
+      taxaFinal: Math.round(m.preco.taxa_contratacao * mult),
+      mensalFinal: Math.round(m.preco.honorario_mensal * mult)
+    };
+  }
+
+  /* ---------- FASE 2: CÁLCULO DE BÔNUS E INTEGRAÇÃO NA CAMPANHA ---------- */
+  function multAtrib(val){
+    return ((+val || 50) - 50) / 50; // de -0.4 a +0.98
+  }
+
+  function calcularEfeitosMarqueteiroAtivo(cargoIdOverride){
+    const m = getMarqueteiroAtivo();
+    if(!m) return null;
+    const cid = cargoIdOverride || cargoAlvoIdJogador();
+    const pesos = PESOS_CARGO_ATRIBUTOS[cid] || PESOS_CARGO_ATRIBUTOS.VER;
+    const a = m.atributos || {};
+    const atraso = (m.contrato && m.contrato.mesesAtraso) ? 0.55 : 1;
+    const narrativa = (m.contrato && m.contrato.assumiuNarrativa) ? 1.15 : 1;
+
+    const nTV       = multAtrib(a.televisao) * (pesos.televisao || 1) * atraso * narrativa;
+    const nDigital  = multAtrib(a.digital)   * (pesos.digital || 1)   * atraso * narrativa;
+    const nDebate   = multAtrib(a.debate)    * (pesos.debate || 1)    * atraso * narrativa;
+    const nCrise    = multAtrib(a.crise)     * (pesos.crise || 1)     * atraso * narrativa;
+    const nPesquisa = multAtrib(a.pesquisa)  * (pesos.pesquisa || 1)  * atraso * narrativa;
+    const nRua      = multAtrib(a.rua)       * (pesos.rua || 1)       * atraso * narrativa;
+    const nDiscurso = multAtrib(a.discurso)  * (pesos.discurso || 1)  * atraso * narrativa;
+    const nOverall  = ((m.overall - 50) / 50) * 0.14 * atraso * narrativa;
+
+    // Bônus regional extra para Wellington Sampaio ou Gabriel Campagnoli em Mauá/ABC
+    const bonusABC = ((m.id === "MKT_001" || m.id === "MKT_022") && (cid === "VER" || cid === "PREF")) ? 0.14 : 0;
+
+    return {
+      marqueteiro: m,
+      tvBonus: 1 + Math.max(-0.25, nTV * 0.42 + nDiscurso * 0.15 + nOverall),
+      digitalBonus: 1 + Math.max(-0.25, nDigital * 0.45 + nPesquisa * 0.25 + nOverall),
+      custoDigitalFator: Math.max(0.68, 1 - Math.max(0, nDigital * 0.18 + nPesquisa * 0.10)),
+      debateProbDelta: nDebate * 0.18 + nDiscurso * 0.08 + nOverall * 0.4,
+      gafeReducaoFator: Math.max(0.15, 1 - Math.max(0, nDebate * 0.55 + nCrise * 0.25)),
+      criseReducaoFator: Math.max(0.32, 1 - Math.max(-0.20, nCrise * 0.48 + nOverall * 0.5)),
+      pesquisaPrecisaoBonus: Math.max(0, nPesquisa * 0.40),
+      ruaBonus: 1 + Math.max(-0.25, nRua * 0.45 + nDiscurso * 0.15 + nOverall + bonusABC),
+      discursoBonus: 1 + Math.max(-0.20, nDiscurso * 0.35 + nOverall),
+      scoreMajDelta: (nTV + nDigital + nDebate + nCrise + nPesquisa + nRua + nDiscurso) * 0.85 + (m.overall - 65) * 0.08
+    };
+  }
+  window.calcularEfeitosMarqueteiroAtivo = calcularEfeitosMarqueteiroAtivo;
+
+  /* ---------- CONTRATAÇÃO E DEMISSÃO ---------- */
+  function saldoDisponivelContratacao(usarCaixa2){
+    const f = J().financas || {};
+    const oficial = (f.campanha || 0) + (f.caixa1 || 0);
+    return usarCaixa2 ? (oficial + (f.caixa2 || 0)) : oficial;
+  }
+
+  function debitarValorCampanha(valor, usarCaixa2, causa){
+    const f = J().financas;
+    let rest = Math.round(valor);
+    if(rest <= 0) return { ok: true, usouCaixa2: 0 };
+    const totalDisp = saldoDisponivelContratacao(usarCaixa2);
+    if(totalDisp < rest) return { ok: false, usouCaixa2: 0 };
+
+    const deCamp = Math.min(f.campanha || 0, rest);
+    f.campanha = (f.campanha || 0) - deCamp;
+    rest -= deCamp;
+
+    const deCx1 = Math.min(f.caixa1 || 0, rest);
+    f.caixa1 = (f.caixa1 || 0) - deCx1;
+    if(deCx1 > 0 && typeof rep === "function") rep("cx1", -deCx1, causa || "Marqueteiro");
+    rest -= deCx1;
+
+    let usouCx2 = 0;
+    if(rest > 0 && usarCaixa2){
+      usouCx2 = Math.min(f.caixa2 || 0, rest);
+      f.caixa2 = (f.caixa2 || 0) - usouCx2;
+      if(usouCx2 > 0 && typeof rep === "function") rep("cx2", -usouCx2, (causa || "Marqueteiro") + " (Caixa 2)");
+      rest -= usouCx2;
+    }
+    return { ok: true, usouCaixa2: usouCx2 };
+  }
+
+  window.contratarMarqueteiro = function(id){
+    const st = ensureMarqueteirosState();
+    const m = getMarqueteiroFull(id);
+    if(!st || !m) return;
+    if(st.ativoId){
+      toast("Você já possui um marqueteiro ativo. Demita o atual antes de contratar outro.", "err");
+      return;
+    }
+    const av = avaliarAceitacaoMarqueteiro(m);
+    if(!av.aceita){
+      toast(av.motivo || "Este marqueteiro recusou sua campanha.", "err");
+      return;
+    }
+    const usarCx2 = !!st.filtros.usarCaixa2;
+    const disp = saldoDisponivelContratacao(usarCx2);
+    if(disp < av.taxaFinal){
+      toast("Saldo insuficiente para a taxa de contratação (" + fmt(av.taxaFinal) + ").", "err");
+      return;
+    }
+    const pg = debitarValorCampanha(av.taxaFinal, usarCx2, "Contratação de Marqueteiro");
+    if(!pg.ok){
+      toast("Não foi possível concluir o pagamento.", "err");
+      return;
+    }
+
+    const ano = (typeof dt === "function" && dt()) ? dt().ano : 2026;
+    if(m.overall >= 85){
+      st.contratou85MaisPorAno[ano] = m.nome;
+    }
+
+    st.ativoId = m.id;
+    st.quedasSeguidas = 0;
+    st.ultimaPesquisaValor = null;
+    st.contrato = {
+      id: m.id,
+      nome: m.nome,
+      anoContratacao: ano,
+      mesContratacao: (typeof agoraM === "function") ? agoraM() : 0,
+      cargoAlvo: cargoAlvoGenericoJogador(),
+      taxaPaga: av.taxaFinal,
+      honorarioMensal: av.mensalFinal,
+      sobretaxaIdeologica: av.sobretaxa,
+      pagouComCaixa2: pg.usouCaixa2 > 0,
+      valorCaixa2: pg.usouCaixa2 || 0,
+      mesesAtraso: 0,
+      assumiuNarrativa: false
+    };
+
+    // Se usou Caixa 2 na contratação, aplica risco de exposição de caixa 2
+    if(pg.usouCaixa2 > 0){
+      const rCx2 = (m.risco && m.risco.exposicao_caixa2) || 15;
+      addIEO(Math.max(2, Math.round(rCx2 * 0.12)));
+      if(typeof registrarAudio === "function"){
+        registrarAudio("pagamento por fora de marketing eleitoral", Math.min(0.75, rCx2 / 120), R.i(14, 30));
+      }
+    }
+
+    // Ganho imediato de percepção de discurso/posicionamento na contratação
+    const efx = calcularEfeitosMarqueteiroAtivo();
+    if(efx){
+      const imp = Math.max(0.4, ((m.atributos.discurso - 50) / 50) * 1.4);
+      mudarAprovTodos(imp);
+    }
+
+    manchete(J().nome + " anuncia " + m.nome + " (" + m.tier + ", OVR " + m.overall + ") no comando da comunicação da campanha.", "eleicao");
+    toast(m.nome + " contratado(a) por " + fmt(av.taxaFinal) + " (+ " + fmt(av.mensalFinal) + "/mês).", "ok");
+    if(typeof salvar === "function") salvar();
+    if(typeof render === "function") render();
+  };
+
+  window.demitirMarqueteiro = function(){
+    const st = ensureMarqueteirosState();
+    const m = getMarqueteiroAtivo();
+    if(!st || !m){
+      toast("Nenhum marqueteiro contratado no momento.", "err");
+      return;
+    }
+    const multa = Math.round(((m.contrato && m.contrato.taxaPaga) || m.preco.taxa_contratacao) * 0.5);
+    const usarCx2 = !!st.filtros.usarCaixa2;
+    const disp = saldoDisponivelContratacao(usarCx2);
+    if(disp < multa){
+      toast("Você precisa de " + fmt(multa) + " (multa rescisória de 50%) para demitir " + m.nome + ".", "err");
+      return;
+    }
+    debitarValorCampanha(multa, usarCx2, "Multa rescisória de Marqueteiro");
+
+    // Risco de ressentimento se lealdade for baixa (< 60) e for personagem fictício
+    if(!m.real && m.lealdade < 60 && Math.random() < ((65 - m.lealdade) / 100)){
+      addEscandalo(4);
+      manchete("Bastidores da campanha de " + J().nome + " vazam após rompimento com a equipe de comunicação.", "imprensa");
+    } else {
+      manchete(J().nome + " encerra contrato com " + m.nome + " e reformula a coordenação de campanha.", "eleicao");
+    }
+
+    st.ativoId = null;
+    st.contrato = null;
+    st.quedasSeguidas = 0;
+    st.ultimaPesquisaValor = null;
+    toast("Contrato rescindido. Multa de " + fmt(multa) + " paga.", "ok");
+    if(typeof salvar === "function") salvar();
+    if(typeof render === "function") render();
+  };
+
+  /* ---------- FASE 3: IA, MENSALIDADE, LEALDADE, RISCO E PROGRESSÃO ---------- */
+  let _alocandoIA = false;
+  let _origCandidatosMajRef = null;
+
+  function alocarMarqueteirosIA(){
+    if(_alocandoIA) return;
+    const st = ensureMarqueteirosState();
+    if(!st) return;
+    const d = (typeof dt === "function") ? dt() : null;
+    if(!d || !tipoEleicao(d.ano)) return;
+
+    st.iaContratosPorAno[d.ano] = st.iaContratosPorAno[d.ano] || {};
+    const mapa = st.iaContratosPorAno[d.ano];
+
+    // Se o jogador contratou alguém que estava na IA, libera da IA
+    if(st.ativoId && mapa[st.ativoId]){
+      delete mapa[st.ativoId];
+    }
+
+    const mAtual = (typeof agoraM === "function") ? agoraM() : 0;
+    if(st._iaUltimoMesAlocado === mAtual && Object.keys(mapa).length > 0) return;
+    if(Object.keys(mapa).length > 0 && d.mes < 7) return;
+    if(Object.keys(mapa).length >= 8) return;
+
+    _alocandoIA = true;
+    st._iaUltimoMesAlocado = mAtual;
+    try {
+      const fnCandsMaj = _origCandidatosMajRef || window.candidatosMajoritarios;
+      const todosMkt = listarTodosMarqueteiros();
+      const cargosDisp = cargosDaEleicao(tipoEleicao(d.ano)).filter(function(c){
+        return ["PREF", "GOV", "SEN", "PRES", "DEPF"].includes(c);
+      });
+
+      cargosDisp.forEach(function(cid){
+        const cargoGen = CARGO_ID_PARA_GENERICO[cid];
+        let cands = [];
+        try {
+          if(["PREF", "GOV", "SEN", "PRES"].includes(cid) && typeof fnCandsMaj === "function"){
+            cands = (fnCandsMaj(cid) || []).map(function(x){ return x && x.npc; }).filter(Boolean);
+          }
+        } catch(e){}
+
+        cands.slice(0, 3).forEach(function(npc){
+          if(!npc || npc.jogador) return;
+          const jaTem = Object.values(mapa).some(function(v){ return v && v.npcId === npc.id; });
+          if(jaTem) return;
+
+          const eNpc = (PARTIDOS[npc.partidoBase] || { e: "C" }).e;
+          const orcamentoEst = (npc.caixa1 || 300000) + ((PARTIDOS[npc.partidoBase] || { fundo: 5 }).fundo * 120000);
+
+          const candidatosMkt = todosMkt.filter(function(m){
+            if(m.id === st.ativoId) return false;
+            if(mapa[m.id]) return false;
+            if(m.id === "MKT_001" && cid !== "PRES" && cid !== "GOV") return false;
+            if(!(m.cargos_que_aceita || []).includes(cargoGen)) return false;
+            if(m.preco.taxa_contratacao > orcamentoEst * 1.35) return false;
+            const comp = compatibilidadeIdeologica(m, eNpc);
+            return comp.aceita;
+          }).sort(function(a, b){ return b.overall - a.overall; });
+
+          if(candidatosMkt.length > 0){
+            const escolhido = candidatosMkt[0];
+            mapa[escolhido.id] = {
+              npcId: npc.id,
+              nome: npc.nome,
+              partido: npc.partido,
+              cargo: cargoGen,
+              cargoId: cid
+            };
+          }
+        });
+      });
+    } finally {
+      _alocandoIA = false;
+    }
+  }
+
+  function bonusIAMarqueteiroScore(npcId, cargoId){
+    const st = ensureMarqueteirosState();
+    if(!st) return 0;
+    const ano = (typeof dt === "function" && dt()) ? dt().ano : 2026;
+    const mapa = st.iaContratosPorAno[ano] || {};
+    for(const mktId in mapa){
+      const info = mapa[mktId];
+      if(info && info.npcId === npcId && (!cargoId || info.cargoId === cargoId)){
+        const m = getMarqueteiroFull(mktId);
+        if(m){
+          return Math.max(0.5, (m.overall - 68) * 0.16);
+        }
+      }
+    }
+    return 0;
+  }
+
+  function processarMesMarqueteiro(){
+    const st = ensureMarqueteirosState();
+    if(!st) return;
+    const mAtual = (typeof agoraM === "function") ? agoraM() : -1;
+    if(st.ultimoMesProcessado === mAtual) return;
+    st.ultimoMesProcessado = mAtual;
+
+    alocarMarqueteirosIA();
+
+    const m = getMarqueteiroAtivo();
+    if(!m || !st.contrato) return;
+
+    const j = J();
+    const hon = st.contrato.honorarioMensal || m.preco.honorario_mensal;
+    const usarCx2 = !!st.filtros.usarCaixa2;
+    const disp = saldoDisponivelContratacao(usarCx2);
+
+    // 1. Pagamento do honorário mensal
+    if(disp >= hon){
+      const pg = debitarValorCampanha(hon, usarCx2, "Honorário do Marqueteiro");
+      st.contrato.mesesAtraso = 0;
+      if(pg.usouCaixa2 > 0){
+        st.contrato.pagouComCaixa2 = true;
+        st.contrato.valorCaixa2 = (st.contrato.valorCaixa2 || 0) + pg.usouCaixa2;
+      }
+    } else {
+      st.contrato.mesesAtraso = (st.contrato.mesesAtraso || 0) + 1;
+      toast("Atraso no honorário de " + m.nome + " (" + fmt(hon) + ")!", "err");
+
+      // Verifica abandono ou traição por falta de pagamento
+      const chanceAbandono = Math.max(0.20, (100 - m.lealdade) / 95) + (st.contrato.mesesAtraso - 1) * 0.25;
+      if(Math.random() < chanceAbandono){
+        const nomeMkt = m.nome;
+        const ehReal = !!m.real;
+        const leal = m.lealdade;
+        st.ativoId = null;
+        st.contrato = null;
+        if(!ehReal && leal < 55){
+          addEscandalo(6);
+          mudarAprovTodos(-1.5);
+          manchete(nomeMkt + " deixa a campanha de " + j.nome + " por falta de pagamento e passa informações estratégicas a adversários.", "imprensa");
+          toast(nomeMkt + " abandonou a campanha e vazou sua estratégia!", "err");
+        } else {
+          manchete("Por atraso nos honorários, " + nomeMkt + " encerra o contrato de comunicação com " + j.nome + ".", "eleicao");
+          toast(nomeMkt + " rescindiu o contrato por falta de pagamento.", "err");
+        }
+        return;
+      }
+    }
+
+    // 2. Rolagem mensal de risco da campanha (escândalo e exposição de caixa 2)
+    // Regra crítica: para os 9 marqueteiros reais (m.real === true), nunca atribuir crime, fala ou ato pessoal ao marqueteiro.
+    if(j.campanha && (j.campanha.candidatura_ativa || modoCampanha())){
+      const rEsc = (m.risco && m.risco.escandalo) || 10;
+      const rCx2 = (m.risco && m.risco.exposicao_caixa2) || 10;
+
+      // Chance mensal proporcional ao atributo de risco
+      if(Math.random() < (rEsc / 420)){
+        const danoBruto = R.i(3, 7);
+        addEscandalo(danoBruto);
+        if(m.real){
+          manchete("Imprensa questiona custos de produção e peças publicitárias da campanha de " + j.nome + ".", "imprensa");
+        } else if(m.id === "MKT_024"){
+          addIEO(5);
+          manchete("Operação mira gráfica e disparo de boatos ligados à campanha de " + j.nome + ".", "pf");
+        } else {
+          manchete("Bastidores da campanha de " + j.nome + " geram desgaste na imprensa.", "imprensa");
+        }
+      }
+
+      if((st.contrato.pagouComCaixa2 || (j.financas && j.financas.caixa2 > 200000)) && Math.random() < (rCx2 / 450)){
+        addIEO(R.i(4, 9));
+        addEscandalo(R.i(2, 5));
+        manchete("Justiça Eleitoral apura indícios de movimentação paralela nas contas de campanha de " + j.nome + ".", "tse");
+      }
+    }
+  }
+
+  function verificarPesquisaMarqueteiro(){
+    const st = ensureMarqueteirosState();
+    const m = getMarqueteiroAtivo();
+    if(!st || !m || !st.contrato) return;
+    const j = J();
+    if(!j.campanha || !j.campanha.candidatura_ativa) return;
+    const P = M().pesquisaAtual;
+    if(!P) return;
+
+    const valAtual = P.tipo === "LEG"
+      ? (P.jv / Math.max(1, P.corte) * 100)
+      : ((P.lista && P.lista.find(function(x){ return x.jogador; })) || { share: 0 }).share;
+
+    if(st.ultimaPesquisaValor != null){
+      if(valAtual < st.ultimaPesquisaValor - 0.3){
+        st.quedasSeguidas = (st.quedasSeguidas || 0) + 1;
+      } else if(valAtual > st.ultimaPesquisaValor + 0.2){
+        st.quedasSeguidas = 0;
+      }
+    }
+    st.ultimaPesquisaValor = valAtual;
+
+    // Regra especial de Gabriel Campagnoli: 2 pesquisas seguidas em queda -> reassume a narrativa e a conta sobe
+    if(m.id === "MKT_001" && st.quedasSeguidas >= 2 && !st.contrato.assumiuNarrativa){
+      st.contrato.assumiuNarrativa = true;
+      st.contrato.honorarioMensal = Math.round(st.contrato.honorarioMensal * 1.25);
+      st.quedasSeguidas = 0;
+      mudarAprovTodos(1.8);
+      manchete("Após duas quedas nas pesquisas, Gabriel Campagnoli assume controle total da narrativa de " + j.nome + " e reformula a campanha.", "eleicao");
+      toast("Gabriel Campagnoli reassumiu a narrativa! Bônus de campanha ampliado e honorário reajustado (+25%).", "warn");
+      return;
+    }
+
+    // Demais marqueteiros: 3 pesquisas seguidas ruins -> crise de comando
+    if(m.id !== "MKT_001" && st.quedasSeguidas >= 3){
+      st.quedasSeguidas = 0;
+      if(m.lealdade < 62 && Math.random() < 0.45){
+        const nomeMkt = m.nome;
+        st.ativoId = null;
+        st.contrato = null;
+        manchete("Com pesquisas em baixa, " + nomeMkt + " deixa o comando da campanha de " + j.nome + ".", "eleicao");
+        toast(nomeMkt + " pediu demissão após 3 pesquisas em queda.", "err");
+      } else {
+        mudarAprovTodos(0.8);
+        manchete("Equipe de comunicação cobra mudança de rumo na agenda de " + j.nome + " após sequência de pesquisas desfavoráveis.", "eleicao");
+        toast(m.nome + " impôs correção de rota na estratégia após 3 quedas seguidas.", "warn");
+      }
+    }
+  }
+
+  function registrarResultadoEleicaoMarqueteiros(){
+    const st = ensureMarqueteirosState();
+    if(!st) return;
+    const j = J();
+    const ano = (typeof dt === "function" && dt()) ? dt().ano : 2026;
+    const chaveAno = "apurado_" + ano + "_" + (M().eleicao && M().eleicao.segundo_turno ? "1T" : "FIM");
+    if(st[chaveAno]) return;
+
+    // Se ainda vai para o 2º turno do cargo do jogador, aguarda o 2º turno para fechar o histórico do jogador
+    const alvo = cargoAlvoIdJogador();
+    const emSegTurnoJog = M().eleicao && M().eleicao.segundo_turno && M().eleicao.segundo_turno.cargo === alvo &&
+      (M().eleicao.segundo_turno.candidatos || []).some(function(c){ return c.jogador; });
+    if(emSegTurnoJog) return;
+
+    st[chaveAno] = true;
+
+    // 1. Marqueteiro do jogador
+    if(st.ativoId && j.campanha && (j.campanha.registro_ok || j.campanha.candidatura_ativa || j.campanha.eleito)){
+      const mId = st.ativoId;
+      const prog = st.progresso[mId] || { overall: 75, eleicoes_disputadas: 0, vitorias: 0, clientes: [] };
+      const venceu = !!j.campanha.eleito;
+      prog.eleicoes_disputadas = (prog.eleicoes_disputadas || 0) + 1;
+      if(venceu) prog.vitorias = (prog.vitorias || 0) + 1;
+      if(mId === "MKT_001"){
+        prog.overall = 99;
+      } else {
+        prog.overall = Math.max(30, Math.min(98, (prog.overall || 75) + (venceu ? 1 : -1)));
+      }
+      prog.clientes = prog.clientes || [];
+      prog.clientes.unshift({
+        ano: ano,
+        candidato: j.nome,
+        partido: j.partido_atual,
+        cargo: cargoAlvoGenericoJogador(),
+        venceu: venceu
+      });
+      if(prog.clientes.length > 12) prog.clientes.length = 12;
+      st.progresso[mId] = prog;
+    }
+
+    // 2. Marqueteiros contratados pela IA neste ano
+    const mapaIA = st.iaContratosPorAno[ano] || {};
+    Object.keys(mapaIA).forEach(function(mId){
+      const info = mapaIA[mId];
+      if(!info) return;
+      const prog = st.progresso[mId] || { overall: 75, eleicoes_disputadas: 0, vitorias: 0, clientes: [] };
+      const npc = (typeof npcPorId === "function") ? npcPorId(info.npcId) : null;
+      const venceuIA = !!(npc && npc.mandato_fim && npc.mandato_fim > ano);
+      prog.eleicoes_disputadas = (prog.eleicoes_disputadas || 0) + 1;
+      if(venceuIA) prog.vitorias = (prog.vitorias || 0) + 1;
+      if(mId === "MKT_001"){
+        prog.overall = 99;
+      } else {
+        prog.overall = Math.max(30, Math.min(98, (prog.overall || 75) + (venceuIA ? 1 : -1)));
+      }
+      prog.clientes = prog.clientes || [];
+      prog.clientes.unshift({
+        ano: ano,
+        candidato: info.nome,
+        partido: info.partido,
+        cargo: info.cargo,
+        venceu: venceuIA
+      });
+      if(prog.clientes.length > 12) prog.clientes.length = 12;
+      st.progresso[mId] = prog;
+    });
+
+    // Encerra o contrato da campanha ao final da apuração
+    if(st.ativoId){
+      st.ativoId = null;
+      st.contrato = null;
+      st.quedasSeguidas = 0;
+      st.ultimaPesquisaValor = null;
+    }
+  }
+
+  /* ---------- HOOKS NAS FUNÇÕES DO MOTOR DO JOGO ---------- */
+  function instalarHooksMarqueteiros(){
+    // 1. mult_tv: televisão + discurso do marqueteiro aumentam alcance de HGPE e TV
+    if(typeof window.mult_tv === "function" && !window.mult_tv._mktHook){
+      const _origMultTv = window.mult_tv;
+      window.mult_tv = function(){
+        const base = _origMultTv.apply(this, arguments);
+        const efx = calcularEfeitosMarqueteiroAtivo();
+        return efx ? base * efx.tvBonus : base;
+      };
+      window.mult_tv._mktHook = true;
+      mult_tv = window.mult_tv;
+    }
+
+    // 2. addEscandalo: atributo "crise" reduz dano de escândalo quando positivo
+    if(typeof window.addEscandalo === "function" && !window.addEscandalo._mktHook){
+      const _origAddEsc = window.addEscandalo;
+      window.addEscandalo = function(v){
+        let val = v;
+        if(val > 0){
+          const efx = calcularEfeitosMarqueteiroAtivo();
+          if(efx) val = +(val * efx.criseReducaoFator).toFixed(2);
+        }
+        return _origAddEsc.call(this, val);
+      };
+      window.addEscandalo._mktHook = true;
+      addEscandalo = window.addEscandalo;
+    }
+
+    // 3. aplicarMarketing: digital + pesquisa + rua + crise melhoram tráfego pago e reduzem decaimento
+    if(typeof window.aplicarMarketing === "function" && !window.aplicarMarketing._mktHook){
+      const _origAplicarMkt = window.aplicarMarketing;
+      window.aplicarMarketing = function(fator){
+        const f = fator == null ? 1 : fator;
+        const r = _origAplicarMkt.apply(this, arguments);
+        try {
+          const efx = calcularEfeitosMarqueteiroAtivo();
+          if(efx && J().campanha){
+            const c = J().campanha;
+            const ts = territoriosDoCargo(cargoAlvoIdJogador());
+            // Ganho extra de digital e pesquisa nos territórios com tráfego ativo
+            let ganhoExtra = 0;
+            ts.forEach(function(t){
+              const s = +(c.trafego && c.trafego[t.id]) || 0;
+              if(s > 0){
+                const dExtra = Math.log10(1 + s / 3000) * Math.max(0, efx.digitalBonus - 1) * 1.35 * f;
+                if(dExtra > 0){
+                  mudarAprov(t.id, dExtra);
+                  ganhoExtra += dExtra;
+                }
+              }
+            });
+            // Base orgânica de discurso/rua do marqueteiro durante campanha
+            if(modoCampanha() || c.candidatura_ativa){
+              const pulsoOrg = Math.max(0, (efx.ruaBonus - 1) * 0.35 + (efx.discursoBonus - 1) * 0.30) * f;
+              if(pulsoOrg > 0){
+                ts.forEach(function(t){ mudarAprov(t.id, pulsoOrg); });
+              }
+            }
+            // Redução extra de escândalo por gestão de crise ativa
+            if(J().escandalo > 0 && efx.marqueteiro.atributos.crise > 65){
+              const decCrise = ((efx.marqueteiro.atributos.crise - 60) / 40) * 0.45 * f;
+              addEscandalo(-decCrise);
+            }
+          }
+        } catch(e){}
+        return r;
+      };
+      window.aplicarMarketing._mktHook = true;
+      aplicarMarketing = window.aplicarMarketing;
+    }
+
+    // 4. acaoCampanha: rua (comício/carreata/visita), debate (debate/sabatina) e TV (hgpe)
+    if(typeof window.acaoCampanha === "function" && !window.acaoCampanha._mktHook){
+      const _origAcaoCamp = window.acaoCampanha;
+      window.acaoCampanha = function(tipo, tid){
+        const efx = calcularEfeitosMarqueteiroAtivo();
+        const j = J();
+        const escAntes = j ? j.escandalo : 0;
+        const aprovAntes = (j && tid && j.aprovacao) ? j.aprovacao[tid] : null;
+        const res = _origAcaoCamp.apply(this, arguments);
+        try {
+          if(efx && j && j.campanha && j.campanha.candidatura_ativa){
+            if(["comicio", "carreata", "visita"].includes(tipo) && tid && aprovAntes != null){
+              const delta = (j.aprovacao[tid] || 0) - aprovAntes;
+              if(delta > 0 && efx.ruaBonus !== 1){
+                const comp = delta * (efx.ruaBonus - 1);
+                mudarAprov(tid, comp);
+              }
+              // Se houve gafe no comício, o atributo debate/crise pode neutralizá-la
+              if(tipo === "comicio" && j.escandalo > escAntes && Math.random() > efx.gafeReducaoFator){
+                addEscandalo(-(j.escandalo - escAntes));
+              }
+            } else if(tipo === "debate" || tipo === "sabatina"){
+              if(efx.debateProbDelta > 0){
+                mudarAprovTodos(efx.debateProbDelta * 2.2);
+                if(j.escandalo > escAntes && Math.random() < Math.min(0.75, efx.debateProbDelta * 2.5)){
+                  // Converte tropeço em empate técnico graças ao media training
+                  addEscandalo(-(j.escandalo - escAntes));
+                  mudarAprovTodos(1.4);
+                  toast(efx.marqueteiro.nome + " blindou seu desempenho no pós-debate!", "ok");
+                }
+              }
+            } else if(tipo === "hgpe"){
+              if(efx.tvBonus > 1){
+                mudarAprovTodos((efx.tvBonus - 1) * 1.1);
+              }
+            }
+          }
+        } catch(e){}
+        return res;
+      };
+      window.acaoCampanha._mktHook = true;
+      acaoCampanha = window.acaoCampanha;
+    }
+
+    // 5. scoreJogadorMaj e candidatosMajoritarios (bônus para jogador e para IA com marqueteiro)
+    if(typeof window.scoreJogadorMaj === "function" && !window.scoreJogadorMaj._mktHook){
+      const _origScoreMaj = window.scoreJogadorMaj;
+      window.scoreJogadorMaj = function(cargoId){
+        const base = _origScoreMaj.apply(this, arguments);
+        const efx = calcularEfeitosMarqueteiroAtivo(cargoId);
+        return efx ? (base + efx.scoreMajDelta) : base;
+      };
+      window.scoreJogadorMaj._mktHook = true;
+      scoreJogadorMaj = window.scoreJogadorMaj;
+    }
+
+    if(typeof window.candidatosMajoritarios === "function" && !window.candidatosMajoritarios._mktHook){
+      const _origCandsMaj = window.candidatosMajoritarios;
+      _origCandidatosMajRef = _origCandsMaj;
+      window.candidatosMajoritarios = function(cargoId){
+        const lista = _origCandsMaj.apply(this, arguments) || [];
+        if(!_alocandoIA){
+          try {
+            lista.forEach(function(item){
+              if(item && item.npc){
+                item.score += bonusIAMarqueteiroScore(item.npc.id, cargoId);
+              }
+            });
+          } catch(e){}
+        }
+        return lista;
+      };
+      window.candidatosMajoritarios._mktHook = true;
+      candidatosMajoritarios = window.candidatosMajoritarios;
+    }
+
+    // 6. votosLegislativoJogador (bônus proporcional de rua, digital e discurso)
+    if(typeof window.votosLegislativoJogador === "function" && !window.votosLegislativoJogador._mktHook){
+      const _origVotosLeg = window.votosLegislativoJogador;
+      window.votosLegislativoJogador = function(cargoId){
+        const base = _origVotosLeg.apply(this, arguments);
+        const efx = calcularEfeitosMarqueteiroAtivo(cargoId);
+        if(!efx) return base;
+        const multLeg = 1 + Math.max(-0.15, (efx.ruaBonus - 1) * 0.35 + (efx.digitalBonus - 1) * 0.35 + (efx.discursoBonus - 1) * 0.25);
+        return Math.round(base * multLeg);
+      };
+      window.votosLegislativoJogador._mktHook = true;
+      votosLegislativoJogador = window.votosLegislativoJogador;
+    }
+
+    // 7. custoTrafegoMensal: eficiência de digital/pesquisa reduz custo efetivo do tráfego
+    if(typeof window.custoTrafegoMensal === "function" && !window.custoTrafegoMensal._mktHook){
+      const _origCustoTraf = window.custoTrafegoMensal;
+      window.custoTrafegoMensal = function(f, j){
+        const r = _origCustoTraf.apply(this, arguments);
+        try {
+          processarMesMarqueteiro();
+          const efx = calcularEfeitosMarqueteiroAtivo();
+          if(efx && j && j.campanha && j.campanha.investimento_trafego_mensal > 0){
+            const econ = Math.round(j.campanha.investimento_trafego_mensal * (1 - efx.custoDigitalFator));
+            if(econ > 0 && j.campanha.traf_fator > 0){
+              f.caixa1 += econ;
+              if(typeof rep === "function") rep("cx1", econ, "Otimização de tráfego (" + efx.marqueteiro.nome + ")");
+            }
+          }
+        } catch(e){}
+        return r;
+      };
+      window.custoTrafegoMensal._mktHook = true;
+      custoTrafegoMensal = window.custoTrafegoMensal;
+    }
+
+    // 8. registrarPesquisa: monitora quedas consecutivas para Gabriel Campagnoli (2) e demais (3)
+    if(typeof window.registrarPesquisa === "function" && !window.registrarPesquisa._mktHook){
+      const _origRegPesq = window.registrarPesquisa;
+      window.registrarPesquisa = function(){
+        const r = _origRegPesq.apply(this, arguments);
+        try { verificarPesquisaMarqueteiro(); } catch(e){}
+        return r;
+      };
+      window.registrarPesquisa._mktHook = true;
+      registrarPesquisa = window.registrarPesquisa;
+    }
+
+    // 9. apurarEleicao e apurarSegundoTurno: progressão (+1 / -1 overall) e histórico
+    if(typeof window.apurarEleicao === "function" && !window.apurarEleicao._mktHook){
+      const _origApurar = window.apurarEleicao;
+      window.apurarEleicao = function(){
+        const r = _origApurar.apply(this, arguments);
+        try { registrarResultadoEleicaoMarqueteiros(); } catch(e){}
+        return r;
+      };
+      window.apurarEleicao._mktHook = true;
+      apurarEleicao = window.apurarEleicao;
+    }
+
+    if(typeof window.apurarSegundoTurno === "function" && !window.apurarSegundoTurno._mktHook){
+      const _origApurar2 = window.apurarSegundoTurno;
+      window.apurarSegundoTurno = function(){
+        const r = _origApurar2.apply(this, arguments);
+        try { registrarResultadoEleicaoMarqueteiros(); } catch(e){}
+        return r;
+      };
+      window.apurarSegundoTurno._mktHook = true;
+      apurarSegundoTurno = window.apurarSegundoTurno;
+    }
+
+    // 10. carregarStr: migração de saves antigos
+    if(typeof window.carregarStr === "function" && !window.carregarStr._mktHook){
+      const _origCarregar = window.carregarStr;
+      window.carregarStr = function(s){
+        const r = _origCarregar.apply(this, arguments);
+        try { ensureMarqueteirosState(); } catch(e){}
+        return r;
+      };
+      window.carregarStr._mktHook = true;
+      carregarStr = window.carregarStr;
+    }
+  }
+
+  /* ---------- FASE 1: UI COMPLETA (ABA CAMPANHA > MARQUETEIRO) ---------- */
+  window.setFiltroMarqueteiro = function(campo, valor){
+    const st = ensureMarqueteirosState();
+    if(!st) return;
+    if(campo === "soAceitam" || campo === "usarCaixa2"){
+      st.filtros[campo] = !st.filtros[campo];
+    } else {
+      st.filtros[campo] = valor;
+    }
+    if(typeof render === "function") render();
+  };
+
+  window.selecionarMarqueteiro = function(id){
+    const st = ensureMarqueteirosState();
+    if(!st) return;
+    st.filtros.selecionadoId = id;
+    if(typeof render === "function") render();
+  };
+
+  function corTier(tier){
+    if(tier === "Lendário") return { bg: "linear-gradient(135deg, rgba(245,158,11,0.28), rgba(217,119,6,0.12))", border: "#f59e0b", text: "#fbbf24" };
+    if(tier === "Elite") return { bg: "rgba(168,85,247,0.18)", border: "#a855f7", text: "#c084fc" };
+    if(tier === "Profissional") return { bg: "rgba(59,130,246,0.18)", border: "#3b82f6", text: "#60a5fa" };
+    if(tier === "Promissor") return { bg: "rgba(16,185,129,0.18)", border: "#10b981", text: "#34d399" };
+    return { bg: "rgba(148,163,184,0.15)", border: "#64748b", text: "#94a3b8" };
+  }
+
+  function iniciaisNome(nome){
+    return String(nome || "M").replace(/["']/g, "").split(/\s+/).filter(Boolean).slice(0, 2).map(function(p){ return p[0].toUpperCase(); }).join("");
+  }
+
+  function barraAtributoHTML(rotulo, valor, pesoCargo){
+    const v = Math.round(+valor || 0);
+    const cor = v >= 90 ? "#fbbf24" : v >= 80 ? "#34d399" : v >= 65 ? "#60a5fa" : "#94a3b8";
+    const destaquePeso = pesoCargo && pesoCargo >= 1.25
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(245,158,11,0.18);color:#fbbf24;margin-left:6px;" title="Atributo chave para seu cargo-alvo">★ Peso Alto</span>`
+      : "";
+    return `
+      <div style="margin-bottom:7px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;">
+          <span>${rotulo}${destaquePeso}</span>
+          <b style="color:${cor};font-family:var(--mono);">${v}</b>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
+          <div style="width:${Math.min(100, v)}%;height:100%;background:${cor};border-radius:4px;"></div>
+        </div>
+      </div>`;
+  }
+
+  window.renderTelaMarqueteiros = function(){
+    const st = ensureMarqueteirosState();
+    if(!st) return `<div class="card">Carregando sistema de marqueteiros...</div>`;
+    alocarMarqueteirosIA();
+
+    const j = J();
+    const f = j.financas || {};
+    const flt = st.filtros;
+    const ativo = getMarqueteiroAtivo();
+    const cargoJogGen = cargoAlvoGenericoJogador();
+    const cargoJogId = cargoAlvoIdJogador();
+    const pesosAtuais = PESOS_CARGO_ATRIBUTOS[cargoJogId] || PESOS_CARGO_ATRIBUTOS.VER;
+
+    const todos = listarTodosMarqueteiros().map(function(m){
+      return { m: m, av: avaliarAceitacaoMarqueteiro(m) };
+    });
+
+    // Filtragem
+    const filtrados = todos.filter(function(item){
+      const m = item.m, av = item.av;
+      if(flt.cargo !== "TODOS" && !(m.cargos_que_aceita || []).includes(flt.cargo)) return false;
+      if(flt.tier !== "TODOS" && m.tier !== flt.tier) return false;
+      if(flt.ideologia !== "TODOS" && (m.ideologia && m.ideologia.faixa) !== flt.ideologia) return false;
+      if(flt.tipo === "REAL" && !m.real) return false;
+      if(flt.tipo === "FICTICIO" && m.real) return false;
+      if(flt.preco === "ATE_200K" && m.preco.taxa_contratacao > 200000) return false;
+      if(flt.preco === "200K_1M" && (m.preco.taxa_contratacao <= 200000 || m.preco.taxa_contratacao > 1000000)) return false;
+      if(flt.preco === "ACIMA_1M" && m.preco.taxa_contratacao <= 1000000) return false;
+      if(flt.soAceitam && !av.aceita) return false;
+      return true;
+    });
+
+    // Ordenação: Gabriel Campagnoli (MKT_001) sempre em 1º lugar quando presente
+    filtrados.sort(function(a, b){
+      if(a.m.id === "MKT_001") return -1;
+      if(b.m.id === "MKT_001") return 1;
+      if(flt.ordenacao === "preco_asc") return a.m.preco.taxa_contratacao - b.m.preco.taxa_contratacao;
+      if(flt.ordenacao === "preco_desc") return b.m.preco.taxa_contratacao - a.m.preco.taxa_contratacao;
+      if(flt.ordenacao === "especialidade") return String(a.m.especialidade).localeCompare(String(b.m.especialidade));
+      return b.m.overall - a.m.overall;
+    });
+
+    const selId = (filtrados.some(function(x){ return x.m.id === flt.selecionadoId; }) ? flt.selecionadoId : (filtrados[0] ? filtrados[0].m.id : "MKT_001"));
+    const selItem = todos.find(function(x){ return x.m.id === selId; }) || todos[0];
+    const sel = selItem.m;
+    const selAv = selItem.av;
+
+    const saldoOficial = (f.campanha || 0) + (f.caixa1 || 0);
+    const saldoTotal = saldoDisponivelContratacao(flt.usarCaixa2);
+
+    // Card do marqueteiro ativo no topo
+    let bannerAtivoHTML = "";
+    if(ativo){
+      const efx = calcularEfeitosMarqueteiroAtivo();
+      const multa = Math.round(((ativo.contrato && ativo.contrato.taxaPaga) || ativo.preco.taxa_contratacao) * 0.5);
+      bannerAtivoHTML = `
+        <div class="card" style="margin-bottom:14px;border:1px solid ${ativo.id === 'MKT_001' ? '#f59e0b' : 'rgba(59,130,246,0.45)'};background:${ativo.id === 'MKT_001' ? 'linear-gradient(135deg, rgba(245,158,11,0.14), rgba(15,23,42,0.92))' : 'rgba(15,23,42,0.85)'};">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+              <div class="tiny muted" style="text-transform:uppercase;letter-spacing:0.06em;">Comando de Campanha Ativo</div>
+              <div style="font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px;margin-top:2px;">
+                <span>${ativo.id === "MKT_001" ? "👑 " : "🎯 "}${ativo.nome}</span>
+                <span class="tag" style="border-color:${corTier(ativo.tier).border};color:${corTier(ativo.tier).text};">OVR ${ativo.overall} • ${ativo.tier}</span>
+                <span class="tag">${ativo.real ? "REAL" : "FICTÍCIO"}</span>
+                ${ativo.contrato && ativo.contrato.assumiuNarrativa ? `<span class="tag warn">Narrativa Reassumida (+15% Efeito)</span>` : ""}
+              </div>
+              <div class="small muted" style="margin-top:4px;">
+                ${ativo.especialidade} • Honorário mensal: <b>${fmt(ativo.contrato.honorarioMensal || ativo.preco.honorario_mensal)}/mês</b>
+                • Efeitos p/ <b>${cargoJogGen}</b>: TV <b>${efx ? ((efx.tvBonus>=1?"+":"")+Math.round((efx.tvBonus-1)*100)+"%") : "0%"}</b>,
+                Digital <b>${efx ? ((efx.digitalBonus>=1?"+":"")+Math.round((efx.digitalBonus-1)*100)+"%") : "0%"}</b>,
+                Rua <b>${efx ? ((efx.ruaBonus>=1?"+":"")+Math.round((efx.ruaBonus-1)*100)+"%") : "0%"}</b>,
+                Redução de Crise <b>-${efx ? Math.round((1-efx.criseReducaoFator)*100) : 0}%</b>
+              </div>
+            </div>
+            <div>
+              <button class="btn bad" onclick="window.demitirMarqueteiro()">Demitir (Multa 50%: ${fmt(multa)})</button>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      bannerAtivoHTML = `
+        <div class="card" style="margin-bottom:14px;border:1px dashed rgba(148,163,184,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <div>
+              <b>Sem marqueteiro contratado</b>
+              <div class="small muted">Sua campanha para <b>${cargoJogGen}</b> está rodando sem estrategista-chefe. Escolha um nome na lista abaixo para destravar bônus de TV, Digital, Rua, Debate, Pesquisa e blindagem de Crise.</div>
+            </div>
+            <div class="small" style="text-align:right;">
+              <div>Caixa de Campanha + Caixa 1: <b class="mono">${fmt(saldoOficial)}</b></div>
+              <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:4px;font-size:12px;">
+                <input type="checkbox" ${flt.usarCaixa2 ? "checked" : ""} onchange="window.setFiltroMarqueteiro('usarCaixa2')">
+                Permitir completar com Caixa 2 (${fmt(f.caixa2 || 0)})
+              </label>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // Barra de filtros e ordenação
+    const barraFiltrosHTML = `
+      <div class="card" style="margin-bottom:14px;padding:12px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;align-items:end;">
+          <div>
+            <label class="tiny muted">Cargo-Alvo</label>
+            <select style="width:100%;padding:6px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;" onchange="window.setFiltroMarqueteiro('cargo', this.value)">
+              <option value="TODOS" ${flt.cargo==="TODOS"?"selected":""}>Todos os cargos</option>
+              ${["Vereador","Prefeito","Deputado Estadual","Deputado Federal","Senador","Governador","Presidente"].map(function(c){
+                return `<option value="${c}" ${flt.cargo===c?"selected":""}>${c}</option>`;
+              }).join("")}
+            </select>
+          </div>
+          <div>
+            <label class="tiny muted">Tier</label>
+            <select style="width:100%;padding:6px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;" onchange="window.setFiltroMarqueteiro('tier', this.value)">
+              <option value="TODOS" ${flt.tier==="TODOS"?"selected":""}>Todos os tiers</option>
+              ${["Lendário","Elite","Profissional","Promissor","Iniciante"].map(function(t){
+                return `<option value="${t}" ${flt.tier===t?"selected":""}>${t}</option>`;
+              }).join("")}
+            </select>
+          </div>
+          <div>
+            <label class="tiny muted">Ideologia</label>
+            <select style="width:100%;padding:6px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;" onchange="window.setFiltroMarqueteiro('ideologia', this.value)">
+              <option value="TODOS" ${flt.ideologia==="TODOS"?"selected":""}>Todas</option>
+              ${["pragmatico","esquerda","centro-esquerda","centro","centro-direita","direita"].map(function(id){
+                return `<option value="${id}" ${flt.ideologia===id?"selected":""}>${id}</option>`;
+              }).join("")}
+            </select>
+          </div>
+          <div>
+            <label class="tiny muted">Personagem</label>
+            <select style="width:100%;padding:6px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;" onchange="window.setFiltroMarqueteiro('tipo', this.value)">
+              <option value="TODOS" ${flt.tipo==="TODOS"?"selected":""}>Todos (34)</option>
+              <option value="REAL" ${flt.tipo==="REAL"?"selected":""}>Reais (9)</option>
+              <option value="FICTICIO" ${flt.tipo==="FICTICIO"?"selected":""}>Fictícios (25)</option>
+            </select>
+          </div>
+          <div>
+            <label class="tiny muted">Faixa de Preço</label>
+            <select style="width:100%;padding:6px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;" onchange="window.setFiltroMarqueteiro('preco', this.value)">
+              <option value="TODOS" ${flt.preco==="TODOS"?"selected":""}>Qualquer preço</option>
+              <option value="ATE_200K" ${flt.preco==="ATE_200K"?"selected":""}>Até R$ 200 mil</option>
+              <option value="200K_1M" ${flt.preco==="200K_1M"?"selected":""}>R$ 200 mil – R$ 1 mi</option>
+              <option value="ACIMA_1M" ${flt.preco==="ACIMA_1M"?"selected":""}>Acima de R$ 1 mi</option>
+            </select>
+          </div>
+          <div>
+            <label class="tiny muted">Ordenar por</label>
+            <select style="width:100%;padding:6px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;" onchange="window.setFiltroMarqueteiro('ordenacao', this.value)">
+              <option value="overall" ${flt.ordenacao==="overall"?"selected":""}>Maior Overall</option>
+              <option value="preco_asc" ${flt.ordenacao==="preco_asc"?"selected":""}>Menor Preço</option>
+              <option value="preco_desc" ${flt.ordenacao==="preco_desc"?"selected":""}>Maior Preço</option>
+              <option value="especialidade" ${flt.ordenacao==="especialidade"?"selected":""}>Especialidade (A-Z)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;gap:8px;">
+          <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;">
+            <input type="checkbox" ${flt.soAceitam ? "checked" : ""} onchange="window.setFiltroMarqueteiro('soAceitam')">
+            <b>Mostrar apenas os que aceitam minha campanha atual (${cargoJogGen} • ${j.partido_atual})</b>
+          </label>
+          <span class="tiny muted">Exibindo <b>${filtrados.length}</b> de <b>${BASE_MARQUETEIROS.length}</b> marqueteiros</span>
+        </div>
+      </div>`;
+
+    // Lista de cards à esquerda
+    const listaCardsHTML = filtrados.map(function(item){
+      const m = item.m;
+      const av = item.av;
+      const isGab = m.id === "MKT_001";
+      const isSel = m.id === sel.id;
+      const isAtivo = ativo && ativo.id === m.id;
+      const tCor = corTier(m.tier);
+      const cliIA = clienteIADoMarqueteiro(m.id);
+
+      const borderStyle = isGab
+        ? "2px solid #f59e0b"
+        : isSel
+          ? "2px solid #38bdf8"
+          : "1px solid rgba(148,163,184,0.22)";
+
+      const bgStyle = isGab
+        ? "linear-gradient(135deg, rgba(245,158,11,0.18), rgba(15,23,42,0.95))"
+        : isSel
+          ? "rgba(30,41,59,0.95)"
+          : "rgba(15,23,42,0.75)";
+
+      const opStyle = (!av.aceita && !isAtivo) ? "opacity:0.55;filter:grayscale(0.35);" : "";
+
+      return `
+        <div onclick="window.selecionarMarqueteiro('${m.id}')" style="cursor:pointer;padding:12px;border-radius:10px;border:${borderStyle};background:${bgStyle};margin-bottom:9px;transition:all 0.15s;${opStyle}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <div style="width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;background:${tCor.bg};border:2px solid ${tCor.border};color:${tCor.text};flex-shrink:0;">
+                ${isGab ? "👑" : iniciaisNome(m.nome)}
+              </div>
+              <div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                  <b style="font-size:14px;color:${isGab ? '#fbbf24' : '#f8fafc'};">${m.nome}</b>
+                  <span style="font-size:10px;padding:1px 6px;border-radius:4px;background:${m.real ? 'rgba(56,189,248,0.18)' : 'rgba(148,163,184,0.16)'};color:${m.real ? '#38bdf8' : '#cbd5e1'};border:1px solid ${m.real ? 'rgba(56,189,248,0.4)' : 'rgba(148,163,184,0.3)'};">${m.real ? "REAL" : "FICTÍCIO"}</span>
+                  <span style="font-size:10px;padding:1px 6px;border-radius:4px;background:${tCor.bg};color:${tCor.text};border:1px solid ${tCor.border};">${m.tier}</span>
+                  ${isAtivo ? `<span class="tag ok" style="font-size:10px;">CONTRATADO</span>` : ""}
+                </div>
+                <div class="tiny muted" style="margin-top:2px;">📍 ${m.cidade}/${m.uf} • ${m.especialidade}</div>
+                <div class="tiny" style="margin-top:4px;color:${av.aceita ? '#34d399' : '#f87171'};">
+                  ${av.aceita ? ("✓ " + av.motivo) : ("✕ " + av.motivo)}
+                </div>
+                ${cliIA ? `<div class="tiny muted" style="margin-top:2px;">Na campanha de: <b>${cliIA.nome} (${cliIA.partido})</b></div>` : ""}
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:20px;font-weight:900;font-family:var(--mono);color:${tCor.text};line-height:1;">${m.overall}</div>
+              <div class="tiny muted">OVERALL</div>
+              <div class="tiny mono" style="margin-top:6px;"><b>${fmtK(av.taxaFinal)}</b></div>
+              <div class="tiny muted mono">+${fmtK(av.mensalFinal)}/mês</div>
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+
+    // Ficha detalhada à direita
+    const tCorSel = corTier(sel.tier);
+    const podePagar = saldoTotal >= selAv.taxaFinal;
+    const jaContratado = ativo && ativo.id === sel.id;
+    const hist = sel.historico || { eleicoes_disputadas: 0, vitorias: 0, clientes: [] };
+
+    const fichaHTML = `
+      <div class="card" style="position:sticky;top:12px;border:1px solid ${sel.id==='MKT_001' ? '#f59e0b' : tCorSel.border};">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08);">
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span style="font-size:11px;padding:2px 7px;border-radius:4px;background:${tCorSel.bg};color:${tCorSel.text};border:1px solid ${tCorSel.border};font-weight:700;">${sel.tier.toUpperCase()}</span>
+              <span style="font-size:11px;padding:2px 7px;border-radius:4px;background:${sel.real ? 'rgba(56,189,248,0.18)' : 'rgba(148,163,184,0.16)'};color:${sel.real ? '#38bdf8' : '#cbd5e1'};">${sel.real ? "PERSONAGEM REAL" : "PERSONAGEM FICTÍCIO"}</span>
+            </div>
+            <h3 style="margin:6px 0 2px 0;font-size:20px;color:${sel.id==='MKT_001' ? '#fbbf24' : '#ffffff'};">${sel.id==='MKT_001' ? '👑 ' : ''}${sel.nome}</h3>
+            <div class="small muted">📍 ${sel.cidade} (${sel.uf}) • <b>${sel.especialidade}</b></div>
+          </div>
+          <div style="text-align:center;padding:8px 12px;border-radius:10px;background:${tCorSel.bg};border:1px solid ${tCorSel.border};">
+            <div style="font-size:26px;font-weight:900;font-family:var(--mono);color:${tCorSel.text};line-height:1;">${sel.overall}</div>
+            <div class="tiny" style="color:${tCorSel.text};">OVERALL</div>
+          </div>
+        </div>
+
+        <blockquote style="margin:10px 0;padding:8px 12px;background:rgba(255,255,255,0.04);border-left:3px solid ${tCorSel.border};font-style:italic;font-size:12.5px;color:#e2e8f0;">
+          "${sel.frase}"
+        </blockquote>
+
+        <p class="small" style="margin:8px 0;line-height:1.45;color:#cbd5e1;">${sel.bio}</p>
+
+        <div style="padding:8px 10px;border-radius:8px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);margin:10px 0;font-size:12px;">
+          <b>Traço Especial:</b> ${sel.traco}
+          ${sel.exigencias && sel.exigencias.obs ? `<div style="margin-top:4px;color:#fbbf24;"><b>Exigência Exclusiva:</b> ${sel.exigencias.obs}</div>` : ""}
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="tiny muted" style="text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Atributos de Campanha (Pesos para ${cargoJogGen})</div>
+          ${barraAtributoHTML("📺 Televisão (HGPE e inserções)", sel.atributos.televisao, pesosAtuais.televisao)}
+          ${barraAtributoHTML("📱 Digital (Redes, alcance e tráfego)", sel.atributos.digital, pesosAtuais.digital)}
+          ${barraAtributoHTML("🎙️ Debate (Sabatinas e blindagem de gafe)", sel.atributos.debate, pesosAtuais.debate)}
+          ${barraAtributoHTML("🛡️ Gestão de Crise (Redução de escândalos)", sel.atributos.crise, pesosAtuais.crise)}
+          ${barraAtributoHTML("📊 Pesquisa (Leitura territorial e conversão)", sel.atributos.pesquisa, pesosAtuais.pesquisa)}
+          ${barraAtributoHTML("📢 Rua (Comícios, carreatas e base)", sel.atributos.rua, pesosAtuais.rua)}
+          ${barraAtributoHTML("✍️ Discurso (Narrativa, imagem e slogan)", sel.atributos.discurso, pesosAtuais.discurso)}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;font-size:12px;">
+          <div style="padding:8px;border-radius:6px;background:rgba(255,255,255,0.04);">
+            <div class="tiny muted">Ideologia</div>
+            <b>${sel.ideologia.faixa}</b>
+            <div class="tiny muted">${sel.ideologia.rigido ? "Rígido (recusa opostos)" : sel.ideologia.aceita_qualquer_lado ? "Pragmático (aceita todos)" : "Flexível (+pedágio fora da faixa)"}</div>
+          </div>
+          <div style="padding:8px;border-radius:6px;background:rgba(255,255,255,0.04);">
+            <div class="tiny muted">Lealdade & Risco</div>
+            <b>Lealdade: ${sel.lealdade}</b>
+            <div class="tiny muted">Risco Escândalo: ${sel.risco.escandalo}% • Caixa 2: ${sel.risco.exposicao_caixa2}%</div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;font-size:12px;">
+          <span class="tiny muted">Cargos que aceita:</span>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+            ${(sel.cargos_que_aceita || []).map(function(c){
+              const ativoCargo = c === cargoJogGen;
+              return `<span class="tag" style="font-size:10.5px;${ativoCargo ? 'border-color:#38bdf8;color:#38bdf8;font-weight:700;' : ''}">${c}</span>`;
+            }).join("")}
+          </div>
+        </div>
+
+        <div style="margin-top:10px;padding:8px;border-radius:6px;background:rgba(255,255,255,0.03);font-size:11.5px;">
+          <b>Histórico no Jogo:</b> ${hist.eleicoes_disputadas} eleição(ões) disputada(s) • <b>${hist.vitorias} vitória(s)</b>
+          ${hist.clientes && hist.clientes.length ? `<div class="tiny muted" style="margin-top:3px;">Últimos clientes: ${hist.clientes.slice(0, 3).map(function(c){ return c.candidato + " (" + c.cargo + " " + c.ano + (c.venceu ? " ✓" : " ✕") + ")"; }).join(", ")}</div>` : ""}
+        </div>
+
+        <div style="margin-top:12px;padding:10px;border-radius:8px;background:rgba(15,23,42,0.9);border:1px solid rgba(148,163,184,0.25);">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;">
+            <span>Taxa de Contratação:</span>
+            <b class="mono">${fmt(selAv.taxaFinal)}</b>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-top:3px;">
+            <span>Honorário Mensal:</span>
+            <b class="mono">${fmt(selAv.mensalFinal)}/mês</b>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.07);">
+            <span class="muted">Seu saldo disponível (${flt.usarCaixa2 ? "Campanha + Cx1 + Cx2" : "Campanha + Cx1"}):</span>
+            <b class="mono" style="color:${podePagar ? '#34d399' : '#f87171'};">${fmt(saldoTotal)}</b>
+          </div>
+          <div class="tiny" style="margin-top:6px;color:${selAv.aceita ? '#34d399' : '#f87171'};">
+            ${selAv.aceita ? ("✓ " + selAv.motivo) : ("✕ Motivo da recusa: " + selAv.motivo)}
+          </div>
+          <div style="margin-top:10px;">
+            ${jaContratado
+              ? `<button class="btn bad" style="width:100%;" onclick="window.demitirMarqueteiro()">Demitir ${sel.nome} (Multa 50%)</button>`
+              : `<button class="btn ${selAv.aceita && podePagar && !ativo ? 'ok' : ''}" style="width:100%;" ${(!selAv.aceita || !podePagar || !!ativo) ? "disabled" : ""} onclick="window.contratarMarqueteiro('${sel.id}')">
+                  ${ativo ? "Demita o marqueteiro atual para trocar" : !selAv.aceita ? "Indisponível para sua campanha" : !podePagar ? ("Saldo insuficiente (Faltam " + fmt(selAv.taxaFinal - saldoTotal) + ")") : ("Contratar " + sel.nome + " por " + fmt(selAv.taxaFinal))}
+                </button>`}
+          </div>
+        </div>
+      </div>`;
+
+    return `
+      <div>
+        ${bannerAtivoHTML}
+        ${barraFiltrosHTML}
+        <div class="g2" style="align-items:start;">
+          <div style="max-height:760px;overflow-y:auto;padding-right:4px;">
+            ${listaCardsHTML || `<div class="card muted">Nenhum marqueteiro encontrado com os filtros selecionados.</div>`}
+          </div>
+          <div>
+            ${fichaHTML}
+          </div>
+        </div>
+      </div>`;
+  };
+
+  try {
+    instalarHooksMarqueteiros();
+    ensureMarqueteirosState();
+  } catch(e){}
+  window.addEventListener("DOMContentLoaded", function(){
+    try {
+      instalarHooksMarqueteiros();
+      ensureMarqueteirosState();
+      if(typeof render === "function") render();
+    } catch(e){}
+  });
+})();
+</script>
 </body>
 </html>
+
