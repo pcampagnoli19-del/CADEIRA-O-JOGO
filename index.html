@@ -10789,7 +10789,7 @@ function podeReeleger(n){ return (n.mandatosSeguidos||1)<CFG_ELEICAO.maxMandatos
 function hist(n,de,para,via){ n.hist_pol=n.hist_pol||[]; n.hist_pol.push({ano:dt().ano,mes:dt().mes,de,para,via}); if(n.hist_pol.length>30) n.hist_pol.shift(); }
 
 /* --- 1 candidato por ciclo; 1 por partido nos majoritários --- */
-function tentarRegistrar(n,c){ if(ehSemPartido(n)) return {ok:false,motivo:Candidatura avulsa Ã© vedada pela CF/88 (art. 14, Â§ 3Âº, V). Filie-se a um partido.};
+function tentarRegistrar(n,c){ if(ehSemPartido(n)) return {ok:false,motivo:"Candidatura avulsa é vedada pela CF/88 (art. 14, § 3º, V). Filie-se a um partido."};
   const r=regE(); const o=r.npc[n.id];
   if(o&&o!==c) return {ok:false,motivo:`Este candidato já está concorrendo a ${NOMEC(o)}. Não é possível registrar outra candidatura no mesmo ciclo eleitoral.`};
   const pb=n.partidoBase||n.partido||"?", k=c+"|"+pb, lim=c==="SEN"?vagasSen():1; r.part[k]=r.part[k]||[];
@@ -41378,7 +41378,7 @@ document.addEventListener("click", function(e){
         else if (!run && c === a) badge = ' <span class="ap-badge">Eleito</span>';
       }
       var cor = corDe(c.partido, dir ? 1 : 0);
-      return '<div class="ap-who ' + (dir || "") + '"><span class="foto">' + foto(c, 52, 64) + '</span><div><div class="nm">' + esc(c.nome) + badge + '</div><small style="color:' + cor + '">' + esc(partidoCurto(c.partido)) + '</small><div class="ap-big" style="color:' + cor + '">' + pct(c.share) + "</div><small>" + fmtV(c.votos) + " votos</small></div></div>';
+      return '<div class="ap-who ' + (dir || "") + '"><span class="foto">' + foto(c, 52, 64) + '</span><div><div class="nm">' + esc(c.nome) + badge + '</div><small style="color:' + cor + '">' + esc(partidoCurto(c.partido)) + '</small><div class="ap-big" style="color:' + cor + '">' + pct(c.share) + "</div><small>" + fmtV(c.votos) + " votos</small></div></div>";
     }
     var titulo = "";
     if (!ocultarMancheteEleito) {
