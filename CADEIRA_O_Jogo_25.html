@@ -4236,7 +4236,7 @@ const MotorBiologico = {
   risco(n){ const idadeF = n.idade>=60 ? Math.pow((n.idade-60)/10,2) : 0.12; return idadeF*(100-n.saude)*(n.estresse||1); },
   probMensal(n){ const k=gameState.config.mortalidade||1; return Math.min(.2,this.risco(n)*k/450000); },
   processarMes(){
-    const mortos=[];
+    let mortos=[];
     for(const n of bancoDeNPCs){
       if(!n.vivo) continue;
       if(n.estresse>1) n.estresse=Math.max(1,n.estresse-0.08);
@@ -4285,11 +4285,12 @@ const MotorBiologico = {
     // gabinete do jogador: nomeado morreu
     Object.values(M().gab.nomeacoes||{}).forEach(x=>{ if(x&&x.npcId===n.id){ x.npcId=null; x.vago=true; } });
     // padrinho/afilhados
+    const eraPadrinho = J().padrinho_id === n.id;
     bancoDeNPCs.forEach(a=>{ if(a.padrinho_politico_id===n.id) a.padrinho_politico_id=sortearPadrinho(a); });
-    if(J().padrinho_id===n.id){ J().padrinho_id=null; manchete("Seu padrinho político morreu. Você agora está órfão de bênção pública.","padrinho"); }
+    if(eraPadrinho){ J().padrinho_id=null; manchete("Seu padrinho político morreu. Você agora está órfão de bênção pública.","padrinho"); }
     processarEspolio(n);
-    const ehMuitoRelevante = n.cargo === "Presidente da República" || n.cargo === "Governador de SP" || n.cargo === "Ministro do STF" || n.id === J().padrinho_id || (n.cargo && n.cargo.includes("Prefeito") && n.municipio_domicilio === J().municipio_domicilio);
-    if(ehMuitoRelevante && typeof UI !== "undefined" && typeof UI.renderizarMancheteExtraordinaria === "function") {
+    // Toda morte da base vira aviso no topo (o motor limita a um óbito natural por mês).
+    if(typeof UI !== "undefined" && typeof UI.renderizarMancheteExtraordinaria === "function") {
       UI.renderizarMancheteExtraordinaria(`URGENTE: Falece ${n.nome}!`);
     }
   }
