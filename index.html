@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="utf-8">
@@ -44118,6 +44118,751 @@ document.addEventListener("click", function(e){
   });
 })();
 </script>
+<style>
+/* ===== CADEIRA — UI FOCO: Plano do Mês, dossiês, modo compacto e busca ===== */
+.pf-plano { margin: 6px 0 18px; }
+.pf-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin: 4px 0 12px; }
+.pf-head h1 { font-size: 1.42rem; line-height: 1.15; margin: 2px 0 3px; letter-spacing: -.02em; }
+.pf-kicker { display: block; font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta2); font-weight: 700; }
+.pf-sub { margin: 0; color: var(--tinta2); font-size: .88rem; line-height: 1.45; max-width: 70ch; }
+.pf-fase { margin: 6px 0 0; color: var(--tinta2); font-size: .8rem; line-height: 1.4; }
+.pf-fase b { color: var(--tinta); }
+.pf-head-actions { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.pf-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pf-card { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 6px; min-height: 126px; padding: 13px 14px 13px 16px; border: 1px solid var(--linha); border-radius: var(--radius-md); background: var(--superficie); box-shadow: var(--shadow-sm); }
+.pf-card:before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--eu); opacity: .85; }
+.pf-evento:before { background: var(--corrige); }
+.pf-risco:before { background: var(--bad); }
+.pf-poder:before { background: var(--confirma); }
+.pf-title { margin: 0; font-size: 1.02rem; line-height: 1.25; }
+.pf-text { margin: 0; color: var(--tinta2); font-size: .85rem; line-height: 1.46; }
+.pf-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px; }
+.pf-full { grid-column: 1 / -1; }
+.pf-footer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.pf-avancar { min-width: 170px; }
+.pf-hint { color: var(--tinta2); font-size: .76rem; line-height: 1.35; }
+.pf-news { margin: 12px 0 16px; padding: 10px 12px; border: 1px solid var(--linha); border-radius: var(--radius-md); background: var(--superficie2); }
+.pf-news p { margin: 4px 0; color: var(--tinta2); font-size: .83rem; line-height: 1.4; }
+.pf-news small { color: var(--tinta); font-weight: 700; margin-right: 5px; }
+.pf-secao { margin: 18px 0; }
+.pf-secao-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 9px; }
+.pf-secao h2 { margin: 2px 0 0; font-size: 1.02rem; }
+.pf-secao-sub { color: var(--tinta2); font-size: .76rem; }
+.pf-dossies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pf-dossie { position: relative; min-height: 58px; padding: 11px 30px 11px 12px; text-align: left; border: 1px solid var(--linha); border-radius: var(--radius-sm); background: var(--superficie); color: var(--tinta); cursor: pointer; }
+.pf-dossie:hover { border-color: var(--eu); background: var(--superficie2); }
+.pf-dossie b { display: block; font-size: .9rem; line-height: 1.2; }
+.pf-dossie small { display: block; margin-top: 2px; color: var(--tinta2); font-size: .73rem; }
+.pf-arrow { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--tinta2); }
+.pf-mapas { padding: 13px 14px; border: 1px solid var(--linha); border-radius: var(--radius-md); background: linear-gradient(180deg, var(--superficie2), var(--superficie)); }
+.pf-mapas-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pf-mapa { padding: 12px; text-align: left; border: 1px solid var(--linha); border-radius: var(--radius-sm); background: var(--superficie); color: var(--tinta); cursor: pointer; }
+.pf-mapa:hover { border-color: var(--eu); background: var(--superficie2); }
+.pf-mapa b { display: block; font-size: .92rem; }
+.pf-mapa small { display: block; margin-top: 2px; color: var(--tinta2); font-size: .74rem; }
+.pf-resumo { margin: 18px 0; border: 1px solid var(--linha); border-radius: var(--radius-md); background: var(--superficie); }
+.pf-resumo summary { padding: 11px 14px; cursor: pointer; font-size: .88rem; font-weight: 700; }
+.pf-resumo-body { padding: 0 14px 14px; }
+.pf-voltar { margin: 0 0 10px; }
+.pf-cc-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 10px; padding: 8px 10px; border: 1px solid var(--linha); border-radius: var(--radius-sm); background: var(--superficie2); color: var(--tinta2); font-size: .78rem; }
+.pf-cc-toggle { display: inline-block; margin: 0 0 8px; padding: 2px 8px; border: 1px solid var(--linha); border-radius: 99px; background: transparent; color: var(--tinta2); font-size: .72rem; cursor: pointer; }
+.pf-cc-toggle:hover { color: var(--tinta); border-color: var(--eu); }
+.pf-cc-body[hidden] { display: none; }
+.pf-cc-open { border-color: var(--eu); }
+.pf-nav-tools { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; padding-left: 6px; }
+.pf-nav-btn { min-height: 32px; padding: 5px 9px; font-size: .74rem; box-shadow: none; }
+.pf-cmd-overlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: flex-start; justify-content: center; padding: 10vh 14px 14px; background: rgba(2, 6, 23, .72); backdrop-filter: blur(3px); }
+.pf-cmd-overlay[hidden] { display: none; }
+.pf-cmd-box { width: min(680px, 100%); overflow: hidden; border: 1px solid var(--linha); border-radius: var(--radius-lg); background: var(--superficie); box-shadow: var(--shadow-lg); }
+.pf-cmd-input-wrap { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--linha); }
+.pf-cmd-input-wrap input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--tinta); font: inherit; font-size: 1rem; }
+.pf-cmd-input-wrap kbd { padding: 1px 5px; border: 1px solid var(--linha); border-radius: 4px; color: var(--tinta2); font-size: .68rem; }
+.pf-cmd-list { max-height: 52vh; overflow: auto; padding: 6px; }
+.pf-cmd-item { display: flex; justify-content: space-between; gap: 10px; width: 100%; padding: 9px 10px; text-align: left; border: 0; border-radius: 6px; background: transparent; color: var(--tinta); font: inherit; font-size: .88rem; cursor: pointer; }
+.pf-cmd-item:hover, .pf-cmd-item.on { background: var(--superficie2); }
+.pf-cmd-cat { max-width: 45%; overflow: hidden; color: var(--tinta2); font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
+.pf-cmd-empty { padding: 16px; color: var(--tinta2); font-size: .86rem; }
+.pf-cmd-foot { display: flex; gap: 12px; flex-wrap: wrap; padding: 8px 14px; border-top: 1px solid var(--linha); color: var(--tinta2); font-size: .72rem; }
+@media (max-width: 900px) {
+  .pf-head { flex-direction: column; align-items: stretch; gap: 8px; }
+  .pf-head-actions { width: 100%; }
+}
+@media (max-width: 760px) {
+  .pf-grid { grid-template-columns: 1fr; }
+  .pf-dossies { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pf-head h1 { font-size: 1.25rem; }
+  .pf-card { min-height: 0; }
+}
+@media (max-width: 560px) {
+  .pf-mapas-grid { grid-template-columns: 1fr; }
+  .pf-cmd-overlay { padding: 6vh 8px 8px; }
+}
+@media (max-width: 480px) {
+  .pf-dossies { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+/* CADEIRA — UI FOCO (aditivo). Não altera mapas, hemiciclo nem regras. */
+(function () {
+  "use strict";
+  if (window.__cadeiraFocoUI) return;
+  window.__cadeiraFocoUI = true;
+
+  try {
+    if (typeof S !== "undefined" && S) {
+      if (typeof S.modoFoco === "undefined") S.modoFoco = true;
+      if (typeof S.compacto === "undefined") S.compacto = true;
+      if (!S.hubSub) S.hubSub = {};
+    }
+  } catch (e) {}
+
+  function escUI(s) {
+    if (typeof esc === "function") { try { return esc(s); } catch (e) {} }
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function pbtn(label, act, params, cls, dis) {
+    params = params || [];
+    cls = cls || "";
+    if (typeof btn === "function") {
+      try { return btn(label, act, params, cls, !!dis); } catch (e) {}
+    }
+    var p = escUI(JSON.stringify(params));
+    return '<button class="b ' + cls + '" data-a="' + act + '" data-p="' + p + '" ' + (dis ? "disabled" : "") + ">" + label + "</button>";
+  }
+
+  function pcard(kicker, titulo, texto, acoes, cls) {
+    return '<article class="pf-card ' + (cls || "") + '">' +
+      '<div class="pf-kicker">' + kicker + "</div>" +
+      '<h3 class="pf-title">' + titulo + "</h3>" +
+      (texto ? '<p class="pf-text">' + texto + "</p>" : "") +
+      (acoes ? '<div class="pf-actions">' + acoes + "</div>" : "") +
+      "</article>";
+  }
+
+  function safe(fn) {
+    try { return fn() || ""; } catch (e) {
+      try { console.warn("CADEIRA plano:", e); } catch (e2) {}
+      return "";
+    }
+  }
+
+  function podeCela() {
+    try {
+      return (typeof preso === "function" && preso()) ||
+        !!(J().juridico && J().juridico.status === "PRISAO_DOMICILIAR");
+    } catch (e) { return false; }
+  }
+
+  /* ---------- cartões do Plano ---------- */
+  function cardAvisosPlano() {
+    return safe(function () {
+      var l = ((M().avisos) || []).filter(function (a) { return a && !a.visto; });
+      if (!l.length) return "";
+      return card("📢 Avisos da atualização", l.map(function (a) {
+        return "<h4>" + escUI(a.titulo) + '</h4><p class="txt">' + escUI(a.texto) +
+          '</p><div class="row">' + pbtn("Entendi", "avisoOk", [a.id], "confirma mini") + "</div>";
+      }).join(""), "diag");
+    });
+  }
+
+  function cardCalendarioPlano() {
+    return safe(function () {
+      if (typeof cardCalendarioEleitoral === "function") return cardCalendarioEleitoral();
+      return "";
+    });
+  }
+
+  function cardEventoPlano() {
+    return safe(function () {
+      var ev = M().evento;
+      if (!ev || ev.resolvido) return "";
+      var txt = S.evMin
+        ? "Você minimizou a decisão do mês. Reabra para escolher antes de avançar."
+        : "Há uma decisão do mês em aberto. Se o pop-up não estiver na tela, reabra.";
+      return pcard("DECISÃO PENDENTE", "Evento do mês", txt,
+        pbtn("Abrir evento", "evAbrir", [], "confirma mini") +
+        pbtn("Avançar mesmo assim", "evPassar", [], "branco mini"),
+        "pf-evento");
+    });
+  }
+
+  function cardCongressoPlano() {
+    return safe(function () {
+      var g = M().gab || {};
+      var votos = Number(g.votos_mes) || 0;
+      var exe = false, leg = false;
+      try { exe = typeof emExecutivo === "function" && emExecutivo(); } catch (e) {}
+      try { leg = typeof ehLegislador === "function" && ehLegislador(); } catch (e) {}
+      if (exe) {
+        var materias = [];
+        try { materias = (typeof materiasExec === "function") ? materiasExec() : []; } catch (e) { materias = []; }
+        if (votos >= 2) {
+          return pcard("CONGRESSO", "Votações do mês concluídas",
+            "Você já usou as 2 votações deste mês. O plenário volta no próximo mês.",
+            pbtn("Abrir Congresso", "tab", ["cong"], "branco mini"));
+        }
+        if (!materias.length) {
+          return pcard("CONGRESSO", "Plenário sem pauta crítica",
+            "Nenhuma matéria nova na mesa. Use o tempo para articulação.",
+            pbtn("Abrir Congresso", "tab", ["cong"], "branco mini"));
+        }
+        var acoes = materias.slice(0, 2).map(function (v) {
+          return pbtn("Votar: " + escUI(v.nome), "voto", [v.id], "confirma mini");
+        }).join("") + pbtn("Ver todas", "tab", ["cong"], "branco mini");
+        return pcard("CONGRESSO", materias.length + " matéria(s) no plenário",
+          "Votações restantes neste mês: " + Math.max(0, 2 - votos) + ". PEC exige 60%.",
+          acoes);
+      }
+      if (leg) {
+        return pcard("CONGRESSO", "Sua cadeira no plenário",
+          "Acompanhe pautas, comissões e a Mesa Diretora.",
+          pbtn("Abrir Congresso", "tab", ["cong"], "branco mini"));
+      }
+      return pcard("CONGRESSO", "O que o Congresso decide",
+        "Acompanhe as votações que afetam seu cargo e sua campanha.",
+        pbtn("Abrir Congresso", "tab", ["cong"], "branco mini"));
+    });
+  }
+
+  function cardCampanhaPlano() {
+    return safe(function () {
+      var j = J();
+      var c = j.campanha || {};
+      var alvo = null, ano = null;
+      try { alvo = (typeof cargoIdPorNome === "function") ? cargoIdPorNome(c.cargo_alvo) : null; } catch (e) {}
+      try { ano = (alvo && typeof proximaEleicaoAno === "function") ? proximaEleicaoAno(alvo) : null; } catch (e) {}
+      var P = M().pesquisaAtual;
+      var pos = null, leg = null;
+      if (P && P.tipo === "MAJ" && Array.isArray(P.lista)) {
+        pos = P.lista.filter(function (x) { return x && x.jogador; })[0] || null;
+      } else if (P && P.tipo === "LEG") {
+        leg = P;
+      }
+      var txt;
+      var alvoNome = c.cargo_alvo || (P && P.cargo) || "seu cargo-alvo";
+      if (pos) txt = "Pesquisa para " + escUI(alvoNome) + ": você está em " + Number(pos.share || 0).toFixed(1) + "%.";
+      else if (leg) txt = "Projeção para " + escUI(alvoNome) + ": " + (leg.jv != null ? (typeof fmtV === "function" ? fmtV(leg.jv) : leg.jv) : "—") + " votos, " + (leg.pos != null ? leg.pos : "?") + "º lugar.";
+      else txt = "Cargo-alvo: " + escUI(c.cargo_alvo || "não definido") + (ano ? " · eleição em " + ano : "") + ".";
+      var emCamp = false;
+      try { emCamp = (typeof modoCampanha === "function") && modoCampanha() && !!c.candidatura_ativa; } catch (e) {}
+      var acoes = "";
+      if (emCamp) {
+        var as = {}, mk = null;
+        try { as = (typeof acoesSem === "function") ? acoesSem() : {}; } catch (e) {}
+        try { mk = (typeof mark === "function") ? mark() : null; } catch (e) {}
+        var ok = function (k) { return mk != null && as[k] === mk; };
+        acoes += pbtn(ok("debate") ? "Debate já feito" : "Fazer debate", "camp", ["debate"], "corrige mini", ok("debate"));
+        acoes += pbtn(ok("hgpe") ? "HGPE já gravado" : "Gravar HGPE", "camp", ["hgpe"], "confirma mini", ok("hgpe"));
+        acoes += pbtn("Abrir campanha", "tab", ["camp"], "branco mini");
+        var sem = 1;
+        try { sem = (typeof dt === "function" && dt().semana) || 1; } catch (e) {}
+        txt = "Semana " + sem + "/4. " + txt;
+      } else {
+        acoes += pbtn("Abrir campanha", "tab", ["camp"], "confirma mini");
+        if (ano) acoes += pbtn("Ver eleições", "tab", ["ele"], "branco mini");
+      }
+      return pcard("CAMPANHA", c.candidatura_ativa ? "Campanha em curso" : "Próximo passo eleitoral", txt, acoes);
+    });
+  }
+
+  function cardRiscoPlano() {
+    return safe(function () {
+      var j = J();
+      var jur = j.juridico || {};
+      var ieo = Math.round(Number(jur.ieo_risco) || 0);
+      var status = String(jur.status || "");
+      var isPreso = false;
+      try { isPreso = typeof preso === "function" && preso(); } catch (e) {}
+      if (isPreso || status === "PRISAO_DOMICILIAR") {
+        var titulo = status === "PRISAO_DOMICILIAR" ? "Prisão domiciliar" : "Você está preso";
+        return pcard("RISCO", titulo,
+          "Defesa, habeas corpus e o calendário do processo definem o próximo passo.",
+          pbtn("Abrir Jurídico", "tab", ["jur"], "corrige mini"), "pf-risco");
+      }
+      if (ieo >= 60) {
+        return pcard("RISCO", "IEO em " + ieo + "%",
+          "Acima do limiar de segurança. Uma operação pode ser sorteada.",
+          pbtn("Blindar / defender", "tab", ["jur"], "corrige mini"), "pf-risco");
+      }
+      if (ieo >= 35) {
+        return pcard("RISCO", "IEO em " + ieo + "%",
+          "Risco moderado. Acompanhe processos e evite novos vazamentos.",
+          pbtn("Ver Jurídico", "tab", ["jur"], "branco mini"));
+      }
+      return "";
+    });
+  }
+
+  function cardPoderPlano() {
+    return safe(function () {
+      var exe = false, leg = false;
+      try { exe = typeof emExecutivo === "function" && emExecutivo(); } catch (e) {}
+      try { leg = typeof ehLegislador === "function" && ehLegislador(); } catch (e) {}
+      if (!exe) {
+        if (leg) {
+          var bl = null;
+          try { bl = (typeof blindagemParlamentar === "function") ? blindagemParlamentar() : null; } catch (e) {}
+          return pcard("PODER", "Blindagem parlamentar" + (bl != null ? ": " + Math.round(bl) + "%" : ""),
+            "Comissões, relatores e aliados reduzem o risco de crise.",
+            pbtn("Abrir Poder", "tab", ["poder"], "branco mini"));
+        }
+        return "";
+      }
+      var cid = null;
+      try { cid = (typeof cargoAtualId === "function") ? cargoAtualId() : null; } catch (e) {}
+      var pastas = [];
+      try { if (typeof PASTAS !== "undefined" && cid && PASTAS[cid]) pastas = PASTAS[cid]; } catch (e) {}
+      var g = M().gab || {};
+      var nom = g.nomeacoes || {};
+      var vagas = pastas.filter(function (p) { return p && !nom[p.id]; });
+      if (vagas.length) {
+        return pcard("PODER", vagas.length + " pasta(s) sem titular",
+          "Nomear agora rende governabilidade. Indicado corrupto cobra o preço depois.",
+          pbtn("Nomear", "tab", ["poder"], "confirma mini"), "pf-poder");
+      }
+      var cg = null;
+      try { if (typeof calcCG === "function") { var r = calcCG(); cg = r && r.cg; } } catch (e) {}
+      return pcard("PODER", cg != null ? "Governabilidade: " + Math.round(cg) + "%" : "Máquina pública",
+        "Pastas ocupadas. Acompanhe emendas, orçamento e votações.",
+        pbtn("Abrir Poder", "tab", ["poder"], "branco mini"));
+    });
+  }
+
+  function cardPartidoPlano() {
+    return safe(function () {
+      var c = M().convencao;
+      if (!c || !c.aberta) return "";
+      return pcard("PARTIDO", "Convenção aberta",
+        "O cacique decide o fundo e a legenda. Negocie antes do fim de julho.",
+        pbtn("Abrir partido", "tab", ["partido"], "confirma mini"));
+    });
+  }
+
+  function cardNoticiasPlano() {
+    return safe(function () {
+      var feed = (M().feedMes || []).filter(Boolean);
+      if (!feed.length) return "";
+      var n = feed.slice(0, 2);
+      var mesNome = function (x) {
+        try { var mm = (typeof MESES !== "undefined" && MESES[x && x.mes]); return mm ? String(mm).slice(0, 3) : "—"; } catch (e) { return "—"; }
+      };
+      return '<div class="pf-news">' + n.map(function (x) {
+        return "<p><small>" + escUI(mesNome(x)) + "</small> " + escUI(x.txt || "") + "</p>";
+      }).join("") + pbtn("Ver manchetes", "tab", ["mang"], "link") + "</div>";
+    });
+  }
+
+  function dossiesPlano() {
+    return safe(function () {
+      var hubs = (window.NAVH && window.NAVH.HUBS) || [];
+      if (!hubs.length) return "";
+      var btns = hubs.map(function (h) {
+        var sub = (S.hubSub && S.hubSub[h.id]) || (h.subs[0] && h.subs[0][0]);
+        if (h.id === "gabinete") {
+          if (sub === "mes") sub = "eu";
+          if (sub === "cela" && !podeCela()) sub = "eu";
+        }
+        var label = "";
+        (h.subs || []).some(function (s) { if (s[0] === sub) { label = s[1]; return true; } return false; });
+        var desc = { campanha: "Comitê, caixa e pesquisas", partido: "Sigla, fundo e convenções" };
+        if (desc[h.id] && (!label || label.toLowerCase() === h.nome.toLowerCase())) label = desc[h.id];
+        return '<button type="button" class="pf-dossie" data-a="tab" data-p=\'' + JSON.stringify([sub]) + '\'>' +
+          "<b>" + escUI(h.nome) + "</b><small>" + escUI(label || "Abrir") + '</small><span class="pf-arrow">→</span></button>';
+      }).join("");
+      return '<section class="pf-secao"><div class="pf-secao-head"><div><span class="pf-kicker">DOSSIÊS</span><h2>Tudo o que você governa</h2></div>' +
+        '<span class="pf-secao-sub">Abra só o que importa agora.</span></div><div class="pf-dossies">' + btns + "</div></section>";
+    });
+  }
+
+  function salaMapasPlano() {
+    return '<section class="pf-secao pf-mapas"><div class="pf-secao-head"><div><span class="pf-kicker">SALA DE MAPAS</span><h2>Seus trunfos, intocados</h2></div>' +
+      '<span class="pf-secao-sub">Os mapas interativos continuam exatamente onde estavam.</span></div>' +
+      '<div class="pf-mapas-grid">' +
+      '<button type="button" class="pf-mapa" data-a="tab" data-p=\'["mapa"]\'><b>Mapa interativo</b><small>Territórios, aprovação e tráfego</small></button>' +
+      '<button type="button" class="pf-mapa" data-a="tab" data-p=\'["cong"]\'><b>Lugares do Congresso</b><small>Hemiciclo, bancadas e a Mesa</small></button>' +
+      "</div></section>";
+  }
+
+  function resumoPlano() {
+    var body = safe(function () { return typeof cardRelatorio === "function" ? cardRelatorio() : ""; }) +
+      safe(function () { return typeof cardMetas === "function" ? cardMetas() : ""; });
+    if (!body) return "";
+    return '<details class="pf-resumo"' + (S.pfResumo ? " open" : "") + ' ontoggle="if(window.__pfResumoToggle)window.__pfResumoToggle(this.open)">' +
+      '<summary>Resumo do mês, metas e causas</summary><div class="pf-resumo-body">' + body + "</div></details>";
+  }
+
+  function planoDoMes() {
+    var d = { ano: "", mes: "", semana: 0 };
+    try { if (typeof dt === "function") d = dt(); } catch (e) {}
+    var mes = "";
+    try { mes = (typeof MESES !== "undefined" && MESES[d.mes]) ? String(MESES[d.mes]) : ""; } catch (e) {}
+    if (mes) mes = mes.charAt(0).toUpperCase() + mes.slice(1);
+    var faseTxt = "";
+    try {
+      if (typeof faseCalendario === "function") {
+        var f = faseCalendario();
+        if (f && f.t) faseTxt = '<p class="pf-fase"><b>' + escUI(f.t) + "</b> — " + escUI(f.x || "") + "</p>";
+      }
+    } catch (e) {}
+    var exe = safe(function () { return (typeof emExecutivo === "function" && emExecutivo()) ? "exe" : ""; });
+    var leg = safe(function () { return (typeof ehLegislador === "function" && ehLegislador()) ? "leg" : ""; });
+
+    var ev = safe(cardEventoPlano);
+    var cong = safe(cardCongressoPlano);
+    var camp = safe(cardCampanhaPlano);
+    var poder = safe(cardPoderPlano);
+    var risco = safe(cardRiscoPlano);
+    var partido = safe(cardPartidoPlano);
+    var cards = [];
+    if (ev) cards.push(ev);
+    if (exe === "exe") cards.push(cong, poder, camp, risco, partido);
+    else if (leg === "leg") cards.push(cong, camp, risco, poder, partido);
+    else cards.push(camp, risco, cong, poder, partido);
+    cards = cards.filter(function (x) { return !!x; }).slice(0, 5);
+    if (cards.length) cards[0] = cards[0].replace('class="pf-card ', 'class="pf-card pf-full ');
+
+    var over = false;
+    try { over = !!(typeof gameState !== "undefined" && gameState && gameState.fase_do_turno === "GAME_OVER"); } catch (e) {}
+    var evPend = false;
+    try { evPend = !!(M().evento && !M().evento.resolvido); } catch (e) {}
+    var footer;
+    if (evPend) {
+      footer = pbtn("Abrir evento", "evAbrir", [], "confirma", over) +
+        pbtn("Avançar mesmo assim", "evPassar", [], "branco", over) +
+        '<span class="pf-hint">Há um evento pendente. Decida antes de avançar ou pule com consciência.</span>';
+    } else {
+      footer = pbtn("Avançar o mês", "avancar", [], "confirma pf-avancar", over) +
+        '<span class="pf-hint">Avançar resolve o turno. Use os dossiês para microgerenciar.</span>';
+    }
+
+    return safe(cardCalendarioPlano) +
+      safe(cardAvisosPlano) +
+      '<section class="pf-plano"><div class="pf-head"><div><span class="pf-kicker">PLANO DO MÊS</span>' +
+      "<h1>" + escUI(mes) + "/" + d.ano + (d.semana ? " · semana " + d.semana + "/4" : "") + "</h1>" +
+      '<p class="pf-sub">O que precisa da sua decisão agora. O resto está nos dossiês.</p>' + faseTxt + "</div>" +
+      '<div class="pf-head-actions">' + pbtn("Buscar ação", "pfPalette", [], "branco mini") +
+      pbtn("Guia rápido", "guia", [], "link") +
+      pbtn(S.compacto ? "Dossiês: compactos" : "Dossiês: completos", "pfCompacto", [], "link") +
+      pbtn("Modo completo", "pfFoco", [], "link") + "</div></div>" +
+      '<div class="pf-grid">' + cards.join("") + "</div>" +
+      '<div class="pf-footer">' + footer + "</div></section>" +
+      safe(cardNoticiasPlano) +
+      safe(dossiesPlano) +
+      safe(salaMapasPlano) +
+      safe(resumoPlano);
+  }
+
+  /* ---------- modo compacto (não toca em mapa, Congresso, Eleições, Cela) ---------- */
+  function aplicarCompacto() {
+    var main = document.getElementById("main");
+    if (!main || main.querySelector(".pf-cc-bar")) return;
+    var cards = [];
+    for (var i = 0; i < main.children.length; i++) {
+      var el = main.children[i];
+      if (el && el.tagName === "SECTION" && el.classList && el.classList.contains("card")) cards.push(el);
+    }
+    var collapsed = 0;
+    cards.forEach(function (card, idx) {
+      if (idx < 2) return;
+      if (card.classList.contains("ev") || card.classList.contains("passo") || card.classList.contains("pf-cc")) return;
+      if (card.querySelector("canvas, svg.mapa, #mapa, #hemi, .hemi, .mapa, .mapa-wrap, [data-mapa]")) return;
+      var dk = (card.getAttribute("data-k") || "").toLowerCase();
+      if (/^(ev|passo)(\||:|$)/.test(dk)) return; // eventos e passos ficam sempre abertos
+      var h3 = card.querySelector("h3");
+      if (!h3 || h3.parentElement !== card) return;
+      var body = document.createElement("div");
+      body.className = "pf-cc-body";
+      var next = h3.nextElementSibling, moved = 0;
+      while (next) {
+        var after = next.nextElementSibling;
+        body.appendChild(next);
+        moved++;
+        next = after;
+      }
+      if (!moved) return;
+      var toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "pf-cc-toggle";
+      toggle.textContent = "Abrir detalhes";
+      toggle.setAttribute("aria-expanded", "false");
+      h3.insertAdjacentElement("afterend", toggle);
+      card.appendChild(body);
+      body.hidden = true;
+      card.classList.add("pf-cc");
+      toggle.addEventListener("click", function () {
+        var open = body.hidden;
+        body.hidden = !open;
+        toggle.textContent = open ? "Fechar detalhes" : "Abrir detalhes";
+        toggle.setAttribute("aria-expanded", String(open));
+        card.classList.toggle("pf-cc-open", open);
+      });
+      collapsed++;
+    });
+    if (!collapsed) return;
+    var bar = document.createElement("div");
+    bar.className = "pf-cc-bar";
+    bar.innerHTML = "<span>Modo compacto: " + collapsed + " bloco(s) recolhido(s).</span>" +
+      '<button type="button" class="b mini branco" data-a="pfCompacto">Expandir tudo</button>';
+    main.insertBefore(bar, main.firstChild);
+  }
+
+  /* ---------- busca de ações (Ctrl+K) ---------- */
+  var cmdState = { items: [], filtered: [], active: 0 };
+
+  function cmdNorm(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+
+  function cmdMount() {
+    if (document.getElementById("pfCmd")) return;
+    var ov = document.createElement("div");
+    ov.id = "pfCmd";
+    ov.className = "pf-cmd-overlay";
+    ov.hidden = true;
+    ov.innerHTML = '<div class="pf-cmd-box" role="dialog" aria-modal="true" aria-label="Buscar ação">' +
+      '<div class="pf-cmd-input-wrap"><span aria-hidden="true">⌕</span><input id="pfCmdInput" type="search" autocomplete="off" placeholder="Buscar ação, tela ou comando..."><kbd>Esc</kbd></div>' +
+      '<div id="pfCmdList" class="pf-cmd-list"></div>' +
+      '<div class="pf-cmd-foot"><span>↑↓ navegar</span><span>Enter abrir</span><span>Ctrl+K buscar</span></div></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener("click", function (e) { if (e.target === ov) cmdClose(); });
+    var input = ov.querySelector("#pfCmdInput");
+    input.addEventListener("input", function () { cmdState.active = 0; cmdRender(); });
+    ov.querySelector("#pfCmdList").addEventListener("click", function (e) {
+      var b = e.target.closest ? e.target.closest("[data-pf-ci]") : null;
+      if (!b) return;
+      cmdState.active = Number(b.getAttribute("data-pf-ci")) || 0;
+      cmdRun();
+    });
+  }
+
+  function cmdCollect() {
+    var out = [], seen = {};
+    function add(label, cat, action, params, el) {
+      if (!label || !action) return;
+      var p = params || [];
+      var key = action + "|" + JSON.stringify(p);
+      if (seen[key]) return;
+      seen[key] = 1;
+      out.push({ label: String(label).replace(/\s+/g, " ").trim(), cat: cat || "", action: action, params: p, el: el || null });
+    }
+    add("Avançar o tempo", "Turno", "avancar", []);
+    add("Salvar carreira", "Sistema", "salvar", []);
+    add("Modo completo / foco", "Sistema", "pfFoco", []);
+    add("Modo compacto dos dossiês", "Sistema", "pfCompacto", []);
+    add("Mapa interativo", "Trunfo", "tab", ["mapa"]);
+    add("Lugares do Congresso", "Trunfo", "tab", ["cong"]);
+    try {
+      ((window.NAVH && window.NAVH.HUBS) || []).forEach(function (h) {
+        add("Ir para " + h.nome, "Dossiê", "hub", [h.id]);
+        (h.subs || []).forEach(function (s) {
+          if (s[0] === "cela" && !podeCela()) return;
+          add("Ir para " + s[1], h.nome, "tab", [s[0]]);
+        });
+      });
+    } catch (e) {}
+    try {
+      var els = document.querySelectorAll("#app [data-a]");
+      Array.prototype.forEach.call(els, function (el) {
+        var a = el.getAttribute("data-a");
+        if (!a) return;
+        if (["tab", "hub", "sheet", "hexp", "pfPalette", "pfFoco", "pfCompacto"].indexOf(a) >= 0) return;
+        if (el.disabled) return;
+        var label = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (!label || label.length > 90) return;
+        var p = [];
+        try { p = JSON.parse(el.getAttribute("data-p") || "[]"); } catch (e) { p = []; }
+        var box = null;
+        try { box = el.closest("section.card, article.pf-card, section.pf-secao"); } catch (e) {}
+        var cat = "Nesta tela";
+        if (box) {
+          var t = box.querySelector("h3, .pf-title, h2");
+          if (t && t.textContent) cat = t.textContent.replace(/\s+/g, " ").trim().slice(0, 46);
+        }
+        add(label, cat, a, p, el);
+      });
+    } catch (e) {}
+    return out;
+  }
+
+  function cmdRender() {
+    var input = document.getElementById("pfCmdInput");
+    var list = document.getElementById("pfCmdList");
+    if (!input || !list) return;
+    var q = cmdNorm(input.value);
+    var tokens = q.split(/\s+/).filter(Boolean);
+    var items = cmdState.items.filter(function (it) {
+      var hay = cmdNorm(it.label + " " + it.cat);
+      return tokens.every(function (t) { return hay.indexOf(t) >= 0; });
+    }).slice(0, 40);
+    cmdState.filtered = items;
+    if (cmdState.active >= items.length) cmdState.active = Math.max(0, items.length - 1);
+    if (!items.length) {
+      list.innerHTML = '<div class="pf-cmd-empty">Nenhuma ação encontrada.</div>';
+      return;
+    }
+    list.innerHTML = items.map(function (it, i) {
+      return '<button type="button" class="pf-cmd-item' + (i === cmdState.active ? " on" : "") + '" data-pf-ci="' + i + '">' +
+        "<span>" + escUI(it.label) + '</span><span class="pf-cmd-cat">' + escUI(it.cat) + "</span></button>";
+    }).join("");
+    var on = list.querySelector(".pf-cmd-item.on");
+    if (on && on.scrollIntoView) { try { on.scrollIntoView({ block: "nearest" }); } catch (e) {} }
+  }
+
+  function cmdOpen() {
+    cmdMount();
+    var ov = document.getElementById("pfCmd");
+    if (!ov) return;
+    cmdState.items = cmdCollect();
+    cmdState.active = 0;
+    cmdState.filtered = cmdState.items.slice(0, 40);
+    ov.hidden = false;
+    var input = document.getElementById("pfCmdInput");
+    if (input) input.value = "";
+    cmdRender();
+    setTimeout(function () { try { if (input) input.focus(); } catch (e) {} }, 0);
+  }
+
+  function cmdClose() {
+    var ov = document.getElementById("pfCmd");
+    if (ov) ov.hidden = true;
+  }
+
+  function cmdRun() {
+    var it = (cmdState.filtered || [])[cmdState.active];
+    if (!it) return;
+    cmdClose();
+    try { if (it.el && it.el.isConnected) { it.el.click(); return; } } catch (e) {}
+    var tmp = document.createElement("button");
+    tmp.type = "button";
+    tmp.setAttribute("data-a", it.action);
+    tmp.setAttribute("data-p", JSON.stringify(it.params || []));
+    tmp.style.display = "none";
+    document.body.appendChild(tmp);
+    try { tmp.click(); } catch (e) {}
+    setTimeout(function () { try { tmp.remove(); } catch (e) {} }, 0);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    var ov = document.getElementById("pfCmd");
+    var open = !!(ov && !ov.hidden);
+    if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
+      e.preventDefault();
+      if (open) cmdClose(); else cmdOpen();
+      return;
+    }
+    if (!open) return;
+    if (e.key === "Escape") { e.preventDefault(); cmdClose(); return; }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if ((cmdState.filtered || []).length) cmdState.active = Math.min(cmdState.filtered.length - 1, cmdState.active + 1);
+      cmdRender();
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if ((cmdState.filtered || []).length) cmdState.active = Math.max(0, cmdState.active - 1);
+      cmdRender();
+      return;
+    }
+    if (e.key === "Enter") { e.preventDefault(); cmdRun(); }
+  });
+
+  /* ---------- ações e navegação ---------- */
+  try {
+    if (typeof A !== "undefined" && A) {
+      A.pfPalette = function () { cmdOpen(); };
+      A.pfCompacto = function () { if (typeof S !== "undefined" && S) S.compacto = !S.compacto; };
+      A.pfFoco = function () { if (typeof S !== "undefined" && S) S.modoFoco = !S.modoFoco; };
+    }
+  } catch (e) {}
+  try {
+    if (typeof ROT_ACAO !== "undefined" && ROT_ACAO) {
+      ROT_ACAO.pfPalette = "Interface";
+      ROT_ACAO.pfCompacto = "Interface";
+      ROT_ACAO.pfFoco = "Interface";
+    }
+  } catch (e) {}
+
+  window.__pfResumoToggle = function (open) {
+    try { if (typeof S !== "undefined" && S) S.pfResumo = !!open; } catch (e) {}
+  };
+
+  try {
+    var originalTabsBar = (typeof window.tabsBar === "function") ? window.tabsBar : (typeof tabsBar === "function" ? tabsBar : null);
+    if (originalTabsBar) {
+      var novoTabsBar = function () {
+        var html = originalTabsBar.apply(this, arguments);
+        try {
+          var tab = (typeof S !== "undefined" && S && S.tab) || "";
+          var canCompact = !!tab && ["mapa", "cong", "ele", "mes", "cela", "marqueteiro"].indexOf(tab) < 0;
+          var tools = '<span class="pf-nav-tools">' +
+            '<button type="button" class="tab pf-nav-btn" data-a="pfPalette" title="Buscar ação (Ctrl+K)" aria-label="Buscar ação">⌕<span class="pf-nav-label"> Buscar</span></button>';
+          if (canCompact) {
+            tools += '<button type="button" class="tab pf-nav-btn' + ((typeof S !== "undefined" && S && S.compacto) ? " on" : "") + '" data-a="pfCompacto" title="Alternar modo compacto" aria-label="Alternar modo compacto">' +
+              ((typeof S !== "undefined" && S && S.compacto) ? "Compacto" : "Expandido") + "</button>";
+          }
+          tools += "</span>";
+          var pos = html.indexOf("</nav>");
+          if (pos >= 0) html = html.slice(0, pos) + tools + html.slice(pos);
+        } catch (e) {}
+        return html;
+      };
+      novoTabsBar._navh = true; // impede o boot do NAVH de sobrescrever este wrapper
+      window.tabsBar = novoTabsBar;
+      try { tabsBar = novoTabsBar; } catch (e) {}
+    }
+  } catch (e) {}
+
+  try {
+    if (typeof VIEWS !== "undefined" && VIEWS && typeof VIEWS.mes === "function") {
+      var mesOriginal = VIEWS.mes;
+      VIEWS.mes = function () {
+        if (typeof S !== "undefined" && S && S.modoFoco) {
+          try { return planoDoMes(); } catch (e) {
+            try { console.warn("Plano do Mês", e); } catch (e2) {}
+            return mesOriginal.apply(this, arguments);
+          }
+        }
+        var html = mesOriginal.apply(this, arguments);
+        return '<div class="pf-voltar">' + pbtn("Voltar ao Plano do Mês", "pfFoco", [], "branco mini") + "</div>" + html;
+      };
+    }
+  } catch (e) {}
+
+  try {
+    if (typeof render === "function") {
+      var renderOriginal = render;
+      var renderFoco = function () {
+        var r = renderOriginal.apply(this, arguments);
+        try {
+          if (typeof gameState !== "undefined" && gameState && typeof S !== "undefined" && S) {
+            var tab = S.tab || "";
+            if (S.compacto && ["mapa", "cong", "ele", "mes", "cela", "marqueteiro"].indexOf(tab) < 0) aplicarCompacto();
+            if (tab === "mes" && S.modoFoco) {
+              var plano = document.querySelector(".pf-plano");
+              if (plano) {
+                var fab = document.querySelector(".fab");
+                if (fab) fab.style.display = "none";
+                var chip = document.querySelector(".evchip");
+                if (chip && document.querySelector(".pf-evento")) chip.style.display = "none";
+              }
+            }
+          }
+        } catch (e) {
+          try { console.warn("Modo compacto", e); } catch (e2) {}
+        }
+        return r;
+      };
+      render = renderFoco;
+      window.render = renderFoco;
+    }
+  } catch (e) {}
+})();
+</script>
+
 </body>
 </html>
 
