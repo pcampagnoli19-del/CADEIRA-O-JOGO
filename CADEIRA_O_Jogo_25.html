@@ -44577,6 +44577,8 @@ document.addEventListener("click", function(e){
       if (/^(ev|passo)(\||:|$)/.test(dk)) return; // eventos e passos ficam sempre abertos
       var h3 = card.querySelector("h3");
       if (!h3 || h3.parentElement !== card) return;
+      var chaveCC = card.getAttribute("data-k") || ((typeof S !== "undefined" && S && S.tab ? S.tab : "") + "|" + String(h3.textContent || "").trim().toLowerCase());
+      var abertoCC = !!(typeof S !== "undefined" && S && S.pfCC && S.pfCC[chaveCC]);
       var body = document.createElement("div");
       body.className = "pf-cc-body";
       var next = h3.nextElementSibling, moved = 0;
@@ -44590,18 +44592,25 @@ document.addEventListener("click", function(e){
       var toggle = document.createElement("button");
       toggle.type = "button";
       toggle.className = "pf-cc-toggle";
-      toggle.textContent = "Abrir detalhes";
-      toggle.setAttribute("aria-expanded", "false");
+      toggle.textContent = abertoCC ? "Fechar detalhes" : "Abrir detalhes";
+      toggle.setAttribute("aria-expanded", String(abertoCC));
       h3.insertAdjacentElement("afterend", toggle);
       card.appendChild(body);
-      body.hidden = true;
+      body.hidden = !abertoCC;
       card.classList.add("pf-cc");
+      card.classList.toggle("pf-cc-open", abertoCC);
       toggle.addEventListener("click", function () {
         var open = body.hidden;
         body.hidden = !open;
         toggle.textContent = open ? "Fechar detalhes" : "Abrir detalhes";
         toggle.setAttribute("aria-expanded", String(open));
         card.classList.toggle("pf-cc-open", open);
+        try {
+          if (typeof S !== "undefined" && S) {
+            if (!S.pfCC) S.pfCC = {};
+            S.pfCC[chaveCC] = open;
+          }
+        } catch (e) {}
       });
       collapsed++;
     });
