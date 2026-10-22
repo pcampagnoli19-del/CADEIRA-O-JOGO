@@ -4811,6 +4811,60 @@ function contratarAgencia(id){
 }
 function dispensarAgencia(id){ const c=J().campanha; c.agencias=c.agencias.filter(x=>x!==id); c.agencia_marketing=c.agencias[0]||null; toast("Contrato rescindido.","ok"); }
 function setTrafego(tid,v){ const c=J().campanha; v=Math.max(0,Math.round(v/1000)*1000); if(v<=0) delete c.trafego[tid]; else c.trafego[tid]=v; c.investimento_trafego_mensal=Object.values(c.trafego).reduce((s,x)=>s+x,0); }
+/* ---------- Tráfego pago automático por aprovação ---------- */
+function idsTrafego(){
+  const c=J().campanha;
+  const alvo=cargoIdPorNome(c.cargo_alvo);
+  const ts=(typeof territoriosDoCargo==="function"&&territoriosDoCargo(alvo))||[];
+  const ids=ts.map(t=>t.id);
+  return ids.length?ids:Object.keys(J().aprovacao||{});
+}
+function distribuirTrafegoAuto(total, ids){
+  const j=J(), c=j.campanha;
+  total=Math.max(0,Math.round((+total||0)/1000)*1000);
+  c.trafego_total=total;
+  c.trafego=c.trafego||{};
+  Object.keys(c.trafego).forEach(k=>delete c.trafego[k]);
+  ids=(ids&&ids.length?ids:idsTrafego()).filter(id=>j.aprovacao&&j.aprovacao[id]!=null);
+  if(!total||!ids.length){ c.investimento_trafego_mensal=0; return; }
+  // Quanto menor a aprovação no território, maior o peso do investimento.
+  const pesos=ids.map(id=>Math.max(5,100-(+j.aprovacao[id]||0)));
+  const soma=pesos.reduce((a,b)=>a+b,0)||1;
+  let acc=0;
+  ids.forEach((id,i)=>{
+    let v=i===ids.length-1?total-acc:Math.round((total*pesos[i]/soma)/1000)*1000;
+    if(v<0)v=0;
+    if(acc+v>total)v=Math.max(0,total-acc);
+    acc+=v;
+    if(v>0)c.trafego[id]=v;
+  });
+  c.investimento_trafego_mensal=Object.values(c.trafego).reduce((s,x)=>s+x,0);
+}
+function sincronizarTrafegoAuto(ids){ const c=J().campanha; if(!c.trafego_auto) return; distribuirTrafegoAuto(c.trafego_total||0, ids); }
+function cardTrafegoHTML(){
+  const j=J(), c=j.campanha;
+  const alvo=cargoIdPorNome(c.cargo_alvo);
+  const ts=(typeof territoriosDoCargo==="function"&&territoriosDoCargo(alvo))||TERRITORIOS;
+  if(c.trafego_auto) sincronizarTrafegoAuto(ts.map(t=>t.id));
+  const auto=!!c.trafego_auto;
+  const total=Object.values(c.trafego||{}).reduce((s,x)=>s+(+x||0),0);
+  const max=Math.max(20000000,total);
+  const linhas=ts.map(t=>{
+    const a=j.aprovacao[t.id], tr=c.trafego[t.id]||0;
+    return `<div class="terr"><div class="row"><span class="grow">${t.nome} <small>${t.grupo}</small></span><b>${Math.round(a)}%</b></div>${bar(a,100,"eu")}`
+      +`<div class="row step"><span class="grow">Tráfego ${fmtK(tr)}/mês${auto?' <small>automático</small>':''}</span>${btn("Zerar","traf",[t.id,-1e12],"mini branco",tr<=0)}</div>`
+      +`${stepRow("traf",t.id,tr)}</div>`;
+  }).join("");
+  return card("Aprovação e tráfego pago",
+    `<p class="txt">Aprovação por território onde o cargo-alvo é decidido. O tráfego é debitado do Caixa 1 todo mês e rende mais em campanha.</p>`
+    +`<label class="chk"><input type="checkbox" data-a="trafAuto" ${auto?"checked":""}> <b>Distribuição automática</b> — mais verba onde a aprovação está menor</label>`
+    +`<label class="f rng">Investimento total/mês: <b id="tv-total">${fmtK(total)}</b><input type="range" min="0" max="${max}" step="1000" value="${total}" data-i="trafTotal"></label>`
+    +`<div class="row">${[[100000,"100k"],[500000,"500k"],[1000000,"1 mi"],[5000000,"5 mi"],[10000000,"10 mi"]].map(function(p){return btn(p[1],"trafTotal",[p[0]],"mini");}).join("")}</div>`
+    +`<p class="txt"><small>${auto?"O jogo redistribui o total pela aprovação de cada território.":"Modo manual: use os botões por território ou mova o controle para ativar a distribuição automática."}</small></p>`
+    +linhas
+    +`<div class="row tot"><span class="grow">Total mensal</span><b>${fmt(total)}</b></div>`);
+}
+
 function setPauta(pid,v){ J().campanha.pautas[pid]=Math.max(0,Math.min(100,v)); }
 function pautaMulti(tid){
   const c=J().campanha||{};
@@ -8406,7 +8460,9 @@ A.vertodas=()=>{S.verTodas=!S.verTodas;};
 const ALVOS=["VER","PREF","DEPE","DEPF","SEN","GOV","PRES"];
 A.alvo=id=>{ if(J().campanha.candidatura_ativa){toast("Você já está registrado(a) para este ano. Mude depois da eleição.","err");return;} J().campanha.cargo_alvo=NOME_CARGO[id]; atualizarPopularidade(); atualizarPesquisa(); };
 A.agencia=id=>contratarAgencia(id); A.dispensa=id=>dispensarAgencia(id);
-A.traf=(tid,d)=>{ const c=J().campanha; setTrafego(tid,(c.trafego[tid]||0)+d); };
+A.traf=(tid,d)=>{ const c=J().campanha; c.trafego_auto=false; setTrafego(tid,(c.trafego[tid]||0)+d); c.trafego_total=c.investimento_trafego_mensal; };
+A.trafTotal=(v)=>{ const c=J().campanha; c.trafego_auto=true; distribuirTrafegoAuto(v); };
+A.trafAuto=()=>{ const c=J().campanha; c.trafego_auto=!c.trafego_auto; if(c.trafego_auto){ const total=Object.values(c.trafego||{}).reduce((s,x)=>s+(+x||0),0); distribuirTrafegoAuto(total); } };
 A.camp=(tipo,tid)=>acaoCampanha(tipo,tid); A.dob=id=>selarDobradinha(id); A.dobrompe=()=>romperDobradinha(); A.vaq=()=>vaquinha();
 A.deepfake=(id,tipo)=>lancarDeepfake(id,tipo);
 A.padrinho=id=>buscarPadrinho(id); A.golpedir=()=>golpeDeDiretorio();
@@ -8421,7 +8477,7 @@ function vCamp(){
   const alvos=card("Cargo-alvo",`<div class="chips">${ALVOS.map(id=>`<button class="chip ${alvo===id?"on":""}" data-a="alvo" data-p='["${id}"]'>${NOME_CARGO[id]}<small>eleição ${proximaEleicaoAno(id)}, mín. ${IDADE_MIN[id]} anos</small></button>`).join("")}<button class="chip ${!cargoIdPorNome(c.cargo_alvo)?"on":""}" data-a="alvoNenhum">Não disputar<small>Articular o poder, estilo Kassab</small></button></div>${pc.ok?"":`<p class="warn-txt">${esc(pc.motivo)}</p>`}`);
   let pesq=""; if(P){ if(P.tipo==="LEG") pesq=card("Pesquisa de intenção",`<div class="row"><span class="grow">Sua projeção</span><b>${fmtV(P.jv)} votos</b></div><div class="row"><span class="grow">Posição</span><b>${P.pos}º de ${P.N} vagas</b></div><div class="row"><span class="grow">Corte estimado</span><b>${fmtV(P.corte)} votos</b></div>${bar(Math.min(P.jv,P.corte*2),P.corte*2,P.vence?"ok":"neg")}<p class="txt">${P.vence?"Você está dentro, mas a margem muda todo mês.":"Você precisa de mais base: tráfego pago, padrinho e fundo eleitoral."}</p>`);
     else pesq=card("Pesquisa de intenção",P.lista.map(x=>`<div class="row"><span class="grow ${x.jogador?"eu":""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share,60,x.jogador?"eu":"")}`).join("")+`<p class="txt">${P.lista.some(x=>x.jogador)?"":"Você só aparece na pesquisa quando tem o cargo como alvo."}</p>`); }
-  const apr=card("Aprovação e tráfego pago",`<p class="txt">Aprovação por território onde o cargo-alvo é decidido. O tráfego é debitado do Caixa 1 todo mês e rende mais em campanha.</p>`+ts.map(t=>{const a=j.aprovacao[t.id],tr=c.trafego[t.id]||0;return `<div class="terr"><div class="row"><span class="grow">${t.nome} <small>${t.grupo}</small></span><b>${Math.round(a)}%</b></div>${bar(a,100,"eu")}<div class="row step"><span class="grow">Tráfego ${fmtK(tr)}/mês</span>${btn("Zerar","traf",[t.id,-1e12],"mini branco",tr<=0)}</div>${stepRow("traf",t.id,tr)}</div>`;}).join("")+`<div class="row tot"><span class="grow">Total mensal</span><b>${fmt(c.investimento_trafego_mensal)}</b></div>`);
+  const apr=cardTrafegoHTML();
   const pau=card("Segmentação por pauta",PAUTAS.map(p=>`<label class="f rng">${p.nome}: <b id="pv-${p.id}">${c.pautas[p.id]}</b><input type="range" min="0" max="100" step="5" value="${c.pautas[p.id]}" data-i="pauta" data-k="${p.id}"></label>`).join("")+`<p class="txt">Cada território reage diferente. Partidos de esquerda rendem mais em auxílio e obras; de direita, em segurança e costumes.</p>`);
   const ag=card("Agências de marketing",AGENCIAS.map(a=>{const on=c.agencias.includes(a.id);return `<div class="ag ${on?"on":""}"><div class="row"><b class="grow">${a.nome}</b><span>${fmt(a.custo)}/mês ${a.cx===2?tag("Caixa 2","warn"):""}</span></div><p class="txt">${esc(a.entrega)}. <i>Risco: ${esc(a.risco)}.</i></p>${on?btn("Rescindir","dispensa",[a.id],"branco"):btn("Contratar","agencia",[a.id],"confirma mini")}</div>`;}).join("")+`<p class="txt">Até 2 agências ao mesmo tempo (uma oficial e uma clandestina). A Marqueteiro Presidencial cobra ministérios depois.</p>`);
   let suja=""; if(c.agencias.includes("odio")){ const rv=rivaisSujos(alvo); suja=card("Guerra digital: deepfakes e dossiês forjados",`<p class="txt">Destrói a reputação de um adversário. Mais forte na véspera da eleição. Se a perícia da PF rastrear o IP antes da apuração, o registro de candidatura cai. Custa R$ 150 mil de Caixa 2 por disparo.</p>`+rv.map(r=>`<div class="row"><span class="grow">${esc(r.label)}</span>${btn("Deepfake","deepfake",[r.id,"deepfake"],"corrige mini")}${btn("Dossiê","deepfake",[r.id,"dossie"],"corrige mini")}</div>`).join("")+(M().deepfakes.filter(d=>!d.resolvido).length?`<p class="warn-txt">${M().deepfakes.filter(d=>!d.resolvido).length} disparo(s) ainda no radar da perícia.</p>`:"")); }
@@ -8697,7 +8753,8 @@ document.addEventListener("change",e=>{
   else if(i==="pacto"){ S.pacto[k]=t.value; render(); }
   else if(i==="cheat"){ S.cheat[k]=t.value; }
 });
-document.addEventListener("input",e=>{ const t=e.target; if(t.dataset&&t.dataset.i==="pauta"){ const el=$("#pv-"+t.dataset.k); if(el) el.textContent=t.value; } if(t.dataset&&t.dataset.i==="cheat") S.cheat[t.dataset.k]=t.value; });
+document.addEventListener("input",e=>{ const t=e.target; if(t.dataset&&t.dataset.i==="pauta"){ const el=$("#pv-"+t.dataset.k); if(el) el.textContent=t.value; } if(t.dataset&&t.dataset.i==="cheat") S.cheat[t.dataset.k]=t.value; if(t.dataset&&t.dataset.i==="trafTotal"){ const el=$("#tv-total"); if(el) el.textContent=fmtK(+t.value); } });
+document.addEventListener("change",e=>{ const t=e.target; if(t.dataset&&t.dataset.i==="trafTotal"){ A.trafTotal(+t.value); render(); } });
 document.addEventListener("keydown",e=>{ if(e.ctrlKey&&e.shiftKey&&(e.key==="C"||e.key==="c")){ e.preventDefault(); if(gameState){ S.modal=S.modal&&S.modal.tipo==="cheats"?null:{tipo:"cheats"}; render(); } } });
 window.addEventListener("DOMContentLoaded",()=>{ try{ const t=localStorage.getItem("cadeira_tema"); if(t) document.documentElement.setAttribute("data-theme",t); }catch(e){} S.cfg=novoCfg(); render(); });
 window.addEventListener("beforeunload",()=>{ if(gameState) salvar(); });
@@ -14687,10 +14744,7 @@ window.v24Relatorio=relHTML;
       }
       if (typeof cardCandidatosFoto === "function") body += cardCandidatosFoto();
     } else if (sub === "territorios") {
-      body += card("Aprovação e tráfego pago", `<p class="txt">Aprovação por território onde o cargo-alvo é decidido. O tráfego é debitado do Caixa 1 todo mês e rende mais em campanha.</p>` + ts.map(t => {
-        const a = j.aprovacao[t.id], tr = c.trafego[t.id] || 0;
-        return `<div class="terr"><div class="row"><span class="grow">${t.nome} <small>${t.grupo}</small></span><b>${Math.round(a)}%</b></div>${bar(a, 100, "eu")}<div class="row step"><span class="grow">Tráfego ${fmtK(tr)}/mês</span>${btn("Zerar", "traf", [t.id, -1e12], "mini branco", tr <= 0)}</div>${stepRow("traf", t.id, tr)}</div>`;
-      }).join("") + `<div class="row tot"><span class="grow">Total mensal</span><b>${fmt(c.investimento_trafego_mensal)}</b></div>`);
+      body += cardTrafegoHTML();
       body += card("Segmentação por pauta", PAUTAS.map(p => `<label class="f rng">${p.nome}: <b id="pv-${p.id}">${c.pautas[p.id]}</b><input type="range" min="0" max="100" step="5" value="${c.pautas[p.id]}" data-i="pauta" data-k="${p.id}"></label>`).join("") + `<p class="txt">Cada território reage diferente. Partidos de esquerda rendem mais em auxílio e obras; de direita, em segurança e costumes.</p>`);
     } else if (sub === "marketing") {
       body += card("Agências de marketing", AGENCIAS.map(a => {
