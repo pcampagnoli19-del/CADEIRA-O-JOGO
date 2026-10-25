@@ -47495,6 +47495,3260 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
 })();
 
 </script>
+<script>
+/* TELEJORNAL_V1 falas
+   Blocos recombináveis em pt-BR. Arquétipos, sem veículo nem jornalista real.
+   Nenhuma linha fora de "chamada" usa a palavra "eleito". */
+(function (root) {
+  "use strict";
+
+  function trio(abertura, corpo, fecho) {
+    return { abertura: abertura, corpo: corpo, fecho: fecho };
+  }
+
+  var F = {};
+
+  F.abertura = {
+    solene: trio(
+      [
+        "Boa noite. Encerrou-se a votação em {circunscricao}. Começa agora a apuração das eleições {ano}.",
+        "Estamos no ar para acompanhar, ao vivo, a escolha de {vagas} {cargo}.",
+        "Boa noite. As urnas fecharam e a Rede Horizonte abre a noite de {ano}.",
+        "O país votou. A partir de agora, cada zona que entra muda o placar de {cargo}.",
+        "Começa a cobertura das eleições {ano}. O que está em jogo: {vagas} {cargo}.",
+        "Boa noite. Sem pressa e sem chute: a apuração de {circunscricao} entra no ar."
+      ],
+      [
+        "O quociente, as sobras e a cláusula de desempenho explicam quem senta e quem fica na porta.",
+        "A matemática eleitoral já está fechada nas urnas. A nossa tarefa é mostrar a conta na ordem em que ela chega.",
+        "As primeiras seções costumam vir da capital. O interior entra depois e pesa.",
+        "Há pesquisa de saída, com margem de erro, e há urna de verdade. As duas não se misturam nesta bancada.",
+        "O placar que o senhor vê agora ainda é o começo. Ninguém atravessa a noite com o primeiro boletim.",
+        "A transmissão é uma simulação satírica. Os votos que vamos ler são os votos desta partida."
+      ],
+      [
+        "Fique conosco. O telão abre em instantes.",
+        "Vamos aos números assim que a primeira zona fechar.",
+        "A noite é longa. A conta, não.",
+        "Seguimos ao vivo até a totalização."
+      ]
+    ),
+    plantao: trio(
+      [
+        "Plantão: urnas fechadas em {circunscricao}. A apuração de {ano} começa agora.",
+        "Atenção. {cargo} entra no ar com {vagas} vagas em disputa.",
+        "Cabo 24h no ar. Sem vinheta longa: o primeiro número sai já.",
+        "Interrompemos a grade. Eleições {ano}, apuração aberta.",
+        "Ao vivo, sem intervalo de cortesia. {circunscricao} começou a contar.",
+        "Plantão duplo: o que chega de urna e o que ainda é só expectativa."
+      ],
+      [
+        "A regra da casa é simples: número na tela, fonte na tarja, chute nenhum.",
+        "Se a liderança trocar, a tarja troca junto. Até lá, é parcial.",
+        "Zona urbana primeiro, periferia em seguida, interior no fim da fila.",
+        "O relógio de Brasília corre. A urna corre no ritmo dela.",
+        "Metade do país ainda nem apareceu no boletim. Anote isso.",
+        "Qualquer selo de vitória, aqui, espera a conta fechar."
+      ],
+      [
+        "Não saia. O próximo bloco de urnas está a caminho.",
+        "Voltamos aos números em segundos.",
+        "Tarja ligada. Apuração ligada.",
+        "Segura o controle. A noite virou."
+      ]
+    ),
+    popular: trio(
+      [
+        "Boa noite, Brasil. A praça está cheia e a apuração de {ano} começou.",
+        "Família, senta junto: hoje a gente acompanha {cargo} em {circunscricao}.",
+        "A TV Aliança abre a noite com o povo na frente do telão.",
+        "Acabou a votação. Agora é aquela espera que ninguém consegue disfarçar.",
+        "Olha o ano de {ano}. {vagas} cadeiras e um país inteiro contando nos dedos.",
+        "Boa noite. Aqui a apuração tem nome, bairro e gente na calçada."
+      ],
+      [
+        "A Dona Cida da praça disse que votou pensando na rua dela. É esse o clima.",
+        "Comitê ainda não solta fogos. Quem solta cedo passa vergonha.",
+        "As primeiras urnas vêm de onde a fila andou mais depressa. O resto chega.",
+        "A gente explica a conta devagar, porque cadeira não é achismo.",
+        "Tem mãe com criança no colo esperando o número. A noite é deles também.",
+        "Simulação, tá? Sátira de estúdio. O nervoso, esse, é de verdade."
+      ],
+      [
+        "Fica com a gente, que o interior ainda vai falar.",
+        "Já já a gente cruza com o comitê.",
+        "Respira. A urna não corre no grito.",
+        "Segue no ar. A praça não esvaziou."
+      ]
+    ),
+    analitico: trio(
+      [
+        "Boa noite. A apuração de {ano} em {circunscricao} começa com uma ressalva: parcial não é resultado.",
+        "Abrimos a noite para ler {cargo} pelo que a urna diz, não pelo que a pesquisa prometeu.",
+        "Eleições {ano}. {vagas} vagas. O resto é narrativa, e a narrativa espera a conta.",
+        "A cobertura independente entra no ar. Sem torcida de bancada.",
+        "O mapa importa: de onde vem a urna muda quem aparece na frente.",
+        "Boa noite. Vamos tratar quociente como quociente, não como enigma."
+      ],
+      [
+        "Capital chega antes. Quem lidera agora pode ser só o perfil urbano da disputa.",
+        "A cláusula de desempenho e o quociente decidem dinheiro de partido e cadeira. As duas contas cabem nesta noite.",
+        "Não há milagre estatístico. Há votos, vagas e a ordem de chegada das zonas.",
+        "Se a vantagem encolher, a gente diz que encolheu. Se virar, a gente mostra de qual região veio o voto.",
+        "O financiamento e o horário de televisão ficam para depois do número. Primeiro, o número.",
+        "Obra de ficção, método de apuração. As duas coisas ao mesmo tempo."
+      ],
+      [
+        "Seguimos com o telão e com a conta ao lado.",
+        "O próximo corte é geográfico. Vale olhar o mapa.",
+        "Sem adjetivo antes do percentual.",
+        "A noite segue. A dúvida também, até a matemática dizer o contrário."
+      ]
+    ),
+    combativo: trio(
+      [
+        "Entrou no ar. Eleições {ano} e eu quero ver quem aguenta o placar.",
+        "Boa noite. {cargo} em {circunscricao}. Chega de ensaio: a urna abriu.",
+        "Opinião na mesa, número no telão. As duas coisas, sem pedir licença.",
+        "{vagas} cadeiras. Alguém vai sair desta noite menor do que entrou.",
+        "A votação encerrou. Agora ninguém controla a ordem das zonas.",
+        "Começou. E quem prometeu vitória fácil vai ter que sentar e assistir."
+      ],
+      [
+        "As primeiras urnas são um retrato torto. Eu digo torto agora para não engolir a frase depois.",
+        "Pesquisa é pesquisa. Urna é urna. Quem misturar as duas aqui leva o corte.",
+        "O interior ainda não falou. Quem comemorar na capital pode apagar o sorriso.",
+        "Eu quero média, quociente e nome. Discurso fica para o fim.",
+        "A bancada vai discordar. Faz parte. O voto não discordou de si mesmo.",
+        "Sátira, sim. Moleza, não."
+      ],
+      [
+        "Segura, porque a tarja hoje trabalha.",
+        "Fica. O melhor pedaço da briga ainda não entrou.",
+        "Vamos ao número antes da opinião. Desta vez, nessa ordem.",
+        "Não pisca. A parcial muda."
+      ]
+    ),
+    seco: trio(
+      [
+        "Apuração iniciada. {circunscricao}. Eleições {ano}. Cargo: {cargo}.",
+        "Urnas encerradas. Total de vagas em disputa: {vagas}.",
+        "Boletim factual. Sem comentário de abertura.",
+        "Transmissão da Agência Fato. A contagem começou.",
+        "Registro: votação encerrada, apuração em curso.",
+        "Nota de abertura. Os percentuais a seguir são parciais."
+      ],
+      [
+        "A ordem de chegada das zonas altera a liderança temporária. Não altera o total.",
+        "Pesquisa de saída será identificada como pesquisa. Resultado, só com a regra matemática.",
+        "Quociente eleitoral, quociente partidário e sobras serão lidos quando a base permitir.",
+        "Não há projeção pessoal nesta bancada. Há conta.",
+        "Margem, votos restantes e vantagem entram na mesma linha.",
+        "Simulação satírica. Método explícito."
+      ],
+      [
+        "Próximo boletim em seguida.",
+        "Fim da abertura.",
+        "Aguardando a primeira zona.",
+        "Cobertura continua."
+      ]
+    ),
+    mercado: trio(
+      [
+        "Good evening from the desk — em português, boa noite. Eleições {ano} em {circunscricao}.",
+        "A mesa internacional acompanha {cargo}. O que o mercado lê é maioria, não discurso.",
+        "Abertura curta. {vagas} cadeiras e uma pergunta: quem governa a conta amanhã.",
+        "Correspondentes a postos. A apuração brasileira entrou no fio.",
+        "Noites presidenciais movem câmbio na ficção desta mesa. O voto, porém, é o voto.",
+        "Começamos. Sem adjetivo, com percentual."
+      ],
+      [
+        "Investidor gosta de número redondo. A urna não deve esse favor.",
+        "Primeiro as zonas urbanas. O interior corrige o viés. Anotem.",
+        "Qualquer chamada antes da vantagem superar os votos restantes é rumor, não fato.",
+        "A cláusula de desempenho interessa a quem financia legenda. Cabe no fim da noite.",
+        "Esta é uma obra de ficção. Nenhum pregão real está do outro lado.",
+        "O fio fica aberto até a totalização."
+      ],
+      [
+        "Seguimos. O próximo dado é de urna, não de bolsa.",
+        "Mesa de volta ao placar.",
+        "Sem alarde. Com tabela.",
+        "A cobertura internacional continua em português."
+      ]
+    )
+  };
+
+  F.boca_de_urna = {
+    solene: trio(
+      [
+        "Antes das urnas, a pesquisa de saída. Margem de dois pontos. Não é resultado.",
+        "O instituto da casa divulga a boca de urna de {cargo}. Tratamos como fotografia borrada.",
+        "Pesquisa de saída na tela. {partido} aparece à frente, dentro da margem de erro.",
+        "O comparativo entra agora: o que a saída mediu e o que a urna ainda vai dizer.",
+        "Boca de urna com ressalva em letras grandes. {circunscricao}, eleições {ano}.",
+        "O analista pede calma. A amostra não é a totalização."
+      ],
+      [
+        "{partido} marca {pct}% nesta saída. {candidato2} vem em seguida, com {pct2}%.",
+        "A diferença cabe na margem. Quem transformar isso em vitória está adiantado.",
+        "O instituto acerta o bloco urbano com mais facilidade. O interior é o ponto cego.",
+        "Se a urna divergir, a credibilidade de amanhã é de quem mediu, não de quem votou.",
+        "Guardem este quadro. No fim da noite a gente coloca a pesquisa ao lado do resultado.",
+        "Nenhum selo de eleição sai desta pesquisa. Selo é outra regra."
+      ],
+      [
+        "Pesquisa lida. Agora a urna.",
+        "Aviso registrado. Seguimos para as primeiras seções.",
+        "O telão troca de pesquisa para apuração.",
+        "Fim da saída. Começa a contagem."
+      ]
+    ),
+    plantao: trio(
+      [
+        "Boca de urna no ar. Margem de dois pontos. Repito: não é a urna.",
+        "Saiu a pesquisa de saída de {cargo}. {partido} na frente neste retrato.",
+        "Plantão de instituto. Número fresco, confiança limitada.",
+        "A tarja diz PESQUISA. Quem ler RESULTADO leu errado.",
+        "Saída de urna em {circunscricao}. Ano {ano}.",
+        "Dois pontos para cima, dois para baixo. É esse o tamanho do aviso."
+      ],
+      [
+        "{partido} com {pct}%. {candidato2} com {pct2}%. A briga está dentro da margem.",
+        "Se o interior vier diferente, esta pesquisa envelhece em uma hora.",
+        "Amostra urbana pesa demais neste instituto. A gente avisa antes.",
+        "Nada de discurso de vitória em cima de questionário.",
+        "O erro, se vier, vira matéria. O acerto também.",
+        "Próximo gráfico: urna de verdade."
+      ],
+      [
+        "Pesquisa encerrada na tela.",
+        "Trocamos o selo. Agora é apuração.",
+        "Instituto avisado. Urna na fila.",
+        "Segue o plantão."
+      ]
+    ),
+    popular: trio(
+      [
+        "Saiu a pesquisa da saída. Calma na praça: isso ainda não é a urna.",
+        "O povo pergunta quem ganhou. A resposta honesta é: ainda não dá para saber.",
+        "Boca de urna na tela grande. {partido} aparece na frente, com asterisco.",
+        "Explica para quem chegou agora: pesquisa de saída tem margem.",
+        "A tia do comitê já quer soltar rojão. Ainda não, tia.",
+        "Ano {ano}, {circunscricao}. O retrato da saída está no ar."
+      ],
+      [
+        "{partido} tem {pct}% nessa conta. {candidato2} tem {pct2}%. Cabe os dois na margem.",
+        "A fila do interior nem entrou na conversa do instituto.",
+        "Quem votou cedo no centro não é o país inteiro.",
+        "A gente mostra a pesquisa e já avisa o tamanho do erro.",
+        "Se virar, ninguém aqui finge que previu.",
+        "O telão da praça vai trocar para a urna."
+      ],
+      [
+        "Pesquisa dada. Agora espera a seção.",
+        "Guarda o rojão.",
+        "Vamos para a urna, família.",
+        "Fim da saída."
+      ]
+    ),
+    analitico: trio(
+      [
+        "Pesquisa de saída, margem de dois pontos percentuais. Leitura crítica, não comemoração.",
+        "O instituto coloca {partido} à frente. A diferença precisa sobreviver à margem.",
+        "Boca de urna é hipótese. A urna é o teste.",
+        "Publicamos o número e o viés conhecido da amostra.",
+        "Sem transformar questionário em mandato.",
+        "{circunscricao}, {ano}. Saída na mesa."
+      ],
+      [
+        "{pct}% para {partido}, {pct2}% para {candidato2}. Estatisticamente, a briga segue aberta.",
+        "Amostras urbanas erram quando o voto rural decide. Já vimos esse filme.",
+        "Se a divergência passar da margem, o instituto perde crédito. A regra está dita.",
+        "Compararemos esta saída com a parcial a partir dos 25%, não antes.",
+        "O eleitorado não cabe numa amostra de fim de tarde.",
+        "Segue o gráfico, com a etiqueta certa."
+      ],
+      [
+        "Saída registrada.",
+        "Próximo quadro: seções apuradas.",
+        "A ressalva fica no ar.",
+        "Trocamos de fonte."
+      ]
+    ),
+    combativo: trio(
+      [
+        "Lá vem pesquisa. Eu já digo: eu não caso com instituto.",
+        "Boca de urna de {cargo}. {partido} na foto. Foto não é filme.",
+        "Margem de dois pontos e um país inteiro cansado de chute.",
+        "Quem vender vitória com este número está vendendo fumaça.",
+        "Olha a tela. PESQUISA, em caixa alta, para ninguém se fazer de sonso.",
+        "Saída no ar. A briga de verdade ainda está na caixa."
+      ],
+      [
+        "{partido} {pct}%, {candidato2} {pct2}%. Quer apostar a carreira nisso? Eu não aposto.",
+        "Instituto erra, e quando erra a gente cobra. Hoje ainda é cedo para a cobrança.",
+        "O interior ri dessa amostra. Espera sentado.",
+        "Eu leio o número. Eu não leio o desejo de ninguém.",
+        "Se bater com a urna, o instituto ganha a noite. Se não bater, perde o trimestre.",
+        "Próximo: seção eleitoral, não call center."
+      ],
+      [
+        "Pesquisa lida, desconfiança mantida.",
+        "Agora a urna. Aí a conversa muda.",
+        "Fim do questionário.",
+        "Segue."
+      ]
+    ),
+    seco: trio(
+      [
+        "Pesquisa de saída. Margem: 2 p.p. Natureza: estimativa.",
+        "{partido}: {pct}%. Segundo colocado neste retrato: {candidato2}, {pct2}%.",
+        "Fonte identificada como instituto. Não é totalização.",
+        "Boca de urna publicada. {cargo}. {ano}.",
+        "Registro de estimativa. Sem adjetivo.",
+        "Comparação com a urna ficará para quando houver urna bastante."
+      ],
+      [
+        "Diferença dentro ou na borda da margem. Sem declaração de tendência oficial.",
+        "Cobertura geográfica da amostra: predominantemente urbana.",
+        "Divergência superior à margem, se ocorrer, será registrada como erro de instituto.",
+        "Nenhuma chamada de resultado decorre desta tabela.",
+        "Série arquivada para o quadro pesquisa contra apuração.",
+        "Fim dos números de saída."
+      ],
+      [
+        "Estimativa encerrada.",
+        "Retomada da apuração.",
+        "Próximo dado: seção.",
+        "Nota fechada."
+      ]
+    ),
+    mercado: trio(
+      [
+        "Saída de urna na mesa. O pregão fictício não se mexe com margem de dois pontos.",
+        "Pesquisa: {partido} à frente. Leitura de risco: baixa, até a urna confirmar.",
+        "Boca de urna não precifica mandato. A gente repete isso para o correspondente.",
+        "Estimativa de {cargo}, {ano}. Etiqueta de pesquisa visível.",
+        "Dois pontos de margem. Abaixo disso, é ruído.",
+        "O desk publica e segue."
+      ],
+      [
+        "{pct}% e {pct2}%. Spread insuficiente para qualquer chamada.",
+        "Viés urbano conhecido. O interior é o fator de correção.",
+        "Se o instituto errar grosso, a credibilidade entra no fio de amanhã.",
+        "Nenhum líder estrangeiro comenta estimativa. Isso fica para o resultado.",
+        "Cenário ainda aberto. Sem seta de bolsa.",
+        "Trocamos para a urna."
+      ],
+      [
+        "Estimativa lida.",
+        "De volta à contagem.",
+        "Sem movimento de mercado nesta altura.",
+        "Mesa segue."
+      ]
+    )
+  };
+
+  function estiloQuatro(base, trocas) {
+    var o = { solene: base };
+    ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+      o[k] = trocas[k] || base;
+    });
+    return o;
+  }
+
+  F.marco = estiloQuatro(
+    trio(
+      [
+        "Com {pct_apurado}% das urnas apuradas, {partido} aparece na frente. Ainda é cedo: essas urnas vêm de {regiao}.",
+        "Chegamos a {pct_apurado}%. {partido} lidera com {pct}%.",
+        "Marco da noite: {pct_apurado}% contados em {circunscricao}.",
+        "O boletim atravessa {pct_apurado}%. A liderança, neste instante, é de {partido}.",
+        "Urnas em {pct_apurado}%. A diferença para {candidato2} é de {vantagem} ponto.",
+        "Parcial oficial do estúdio: {pct_apurado}% . Nada além disso."
+      ],
+      [
+        "{partido} soma {pct}% dos votos já contados. {candidato2} tem {pct2}%.",
+        "A zona que entrou agora é {regiao}. O perfil dela puxa o placar.",
+        "Ainda faltam {restante} votos na conta cheia. Cabe virada, até que a matemática diga o contrário.",
+        "Quem lidera com pouco apurado lidera um pedaço do mapa, não o mapa.",
+        "O ritmo de chegada acelerou. O próximo bloco pode mexer na ordem.",
+        "Vantagem de {votos} votos nesta parcial. É foto, não filme."
+      ],
+      [
+        "Seguimos contando.",
+        "Próximo marco, próxima zona.",
+        "O telão fica neste placar.",
+        "Anotado. A noite continua."
+      ]
+    ),
+    {
+      plantao: trio(
+        [
+          "Plantão de marco: {pct_apurado}% apurados. {partido} na frente.",
+          "{pct_apurado}%! Vamos aos números sem enrolar.",
+          "Bateu {pct_apurado}%. Liderança momentânea: {partido}.",
+          "Urnas: {pct_apurado}%. Diferença de {vantagem} ponto.",
+          "Mais um corte. {regiao} entrou na soma.",
+          "Marco rápido. {partido} com {pct}%."
+        ],
+        [
+          "{candidato2} segue em {pct2}%. A briga não fechou.",
+          "Essas urnas são de {regiao}. Não generalize.",
+          "Restam {restante} votos fora da soma. É muito ou pouco? Depende da vantagem.",
+          "A tarja não muda de cor por causa de marco redondo.",
+          "Próxima fatia pode ser periferia ou interior. O placar sabe a diferença.",
+          "Votos de vantagem agora: {votos}."
+        ],
+        ["Segue o plantão.", "Próximo corte já já.", "Marco lido.", "De volta ao telão."]
+      ),
+      popular: trio(
+        [
+          "Família, {pct_apurado}% das urnas. {partido} está na frente neste pedaço.",
+          "Olha o telão da praça: {pct_apurado}%. Calma, veio de {regiao}.",
+          "Mais um tanto contado. {partido} lidera com {pct}%.",
+          "A rua pergunta se já acabou. Não acabou. Estamos em {pct_apurado}%.",
+          "Chegou urna de {regiao}. O grito foi maior do que o número.",
+          "{pct_apurado}% e o coração ainda na mão."
+        ],
+        [
+          "{candidato2} não saiu da disputa: {pct2}%.",
+          "Quem mora em {regiao} reconhece esse voto. O resto do mapa, ainda não.",
+          "Faltam {restante} votos. Não é hora de fogos.",
+          "A vantagem é de {vantagem} ponto. Dá para caber os dois no sofá.",
+          "A fila de casa ainda não entrou. Espera.",
+          "{votos} votos separam os dois neste boletim."
+        ],
+        ["Fica com a gente.", "Já já tem mais urna.", "Respira.", "A praça continua."]
+      ),
+      analitico: trio(
+        [
+          "{pct_apurado}% apurados. A liderança de {partido} precisa ser lida junto com a origem: {regiao}.",
+          "Marco quantitativo. {partido} tem {pct}% do que já entrou.",
+          "A série atravessa {pct_apurado}%. Sem extrapolar o que falta.",
+          "Corte de {pct_apurado}%. Vantagem de {vantagem} ponto sobre {candidato2}.",
+          "A zona {regiao} moveu a parcial. O viés geográfico está visível.",
+          "Registro: {pct_apurado}% , liderança temporária de {partido}."
+        ],
+        [
+          "Segundo colocado: {candidato2}, {pct2}%.",
+          "Votos ainda de fora: {restante}. A vantagem em votos é {votos}.",
+          "Enquanto a vantagem não superar o que falta, não há chamada.",
+          "O perfil de {regiao} explica o número melhor do que qualquer adjetivo.",
+          "Comparar esta parcial com a pesquisa de saída só faz sentido com mais urna na mesa.",
+          "A ordem pode mudar. A série está aberta."
+        ],
+        ["Marco arquivado.", "Seguimos a série.", "Sem conclusão.", "Próximo ponto da curva."]
+      ),
+      combativo: trio(
+        [
+          "{pct_apurado}% e {partido} na frente. Aproveita, porque o mapa não acabou.",
+          "Olha o número: {pct}%. Veio de {regiao}. Eu não compraria com esse endereço.",
+          "Marco da noite, sem fogos. {pct_apurado}%.",
+          "{partido} lidera. {candidato2} respira no cangote: {pct2}%.",
+          "Chegou {regiao}. Quem torcia pelo contrário, senta.",
+          "{pct_apurado}% apurados. A briga está feia do jeito certo."
+        ],
+        [
+          "Vantagem de {vantagem} ponto. Isso vira e desvira.",
+          "Faltam {restante} votos. Eu repito o número para ninguém se fazer de campeão.",
+          "{votos} votos de diferença. Amanhã ninguém lembra de marco redondo. Lembra de quem ganhou.",
+          "A zona explica. O comentarista que ignorar a zona está torcendo.",
+          "Eu não chamo vitória. Eu chamo parcial.",
+          "Próxima urna pode constranger alguém neste estúdio."
+        ],
+        ["Segue a briga.", "Não celebra.", "Número lido.", "Próximo round."]
+      ),
+      seco: trio(
+        [
+          "Apurado: {pct_apurado}%. Líder da parcial: {partido}, {pct}%.",
+          "Origem do último bloco: {regiao}.",
+          "Segundo: {candidato2}, {pct2}%. Vantagem: {vantagem} p.p.",
+          "Votos restantes estimados: {restante}.",
+          "Corte {pct_apurado}%. Sem qualificação.",
+          "Boletim {pct_apurado}% publicado."
+        ],
+        [
+          "Diferença em votos: {votos}.",
+          "Regra de chamada ainda não atendida, salvo indicação em contrário neste boletim.",
+          "Série geográfica coerente com a ordem capital, periferia, interior.",
+          "Nenhuma projeção de cadeira neste marco, se o cargo for majoritário.",
+          "Dado suficiente para o placar. Insuficiente para selo.",
+          "Fim do quadro numérico deste corte."
+        ],
+        ["Próximo boletim.", "Registro feito.", "Cobertura segue.", "Corte encerrado."]
+      ),
+      mercado: trio(
+        [
+          "Corte de {pct_apurado}%. {partido} lidera a parcial. Sem impacto de mesa.",
+          "{regiao} entrou. O viés é geográfico, não um choque.",
+          "Vantagem de {vantagem} ponto. Abaixo do limiar de chamada.",
+          "{partido} {pct}%, {candidato2} {pct2}%.",
+          "Restante: {restante} votos. Risco de virada ainda na mesa.",
+          "Marco lido para o fio internacional."
+        ],
+        [
+          "Não há seta de câmbio nesta parcial.",
+          "A liderança só vira fato quando a vantagem passar o que falta.",
+          "Correspondente avisado: número parcial.",
+          "Diferença de {votos} votos.",
+          "O interior segue como fator de correção.",
+          "Desk mantém o cenário aberto."
+        ],
+        ["De volta ao fio.", "Sem preço novo.", "Marco enviado.", "Mesa estável."]
+      )
+    }
+  );
+
+  F.analise_telao = {
+    solene: trio(
+      [
+        "Olho no telão. Com {pct_apurado}% apurados, a curva de {partido} ainda não é destino.",
+        "O analista assume o gráfico. A liderança é de {partido}, com {pct}%.",
+        "Vamos ler a barra, não a torcida. {vantagem} ponto de vantagem.",
+        "A zona {regiao} puxou este trecho. O desenho está na tela.",
+        "Análise fria: {candidato2} segue a {pct2}%.",
+        "O placar de {cargo} neste instante, e só neste instante."
+      ],
+      [
+        "Se o bloco seguinte tiver outro perfil, a barra troca de lugar sem pedir licença.",
+        "A vantagem em votos é {votos}. O que falta contar é {restante}.",
+        "Enquanto esses dois números não se cruzarem a favor de quem lidera, a palavra de ordem é parcial.",
+        "A pesquisa de saída fica no canto, menor, para ninguém confundir com a urna.",
+        "O ritmo agora é o meio da apuração: nem o susto do começo, nem o silêncio do fim.",
+        "Cada fatia que entra redesenha a curva. A curva é o que a gente comenta."
+      ],
+      [
+        "Telão mantido. A bancada segue.",
+        "Gráfico lido.",
+        "Devolvemos a palavra ao estúdio.",
+        "A análise fica de pé até o próximo bloco."
+      ]
+    ),
+    plantao: trio(
+      [
+        "Telão agora. {partido} {pct}%, {pct_apurado}% das urnas.",
+        "Lê comigo: vantagem {vantagem}, restante {restante}.",
+        "Análise em trinta segundos. {regiao} foi o último endereço.",
+        "Barras em movimento. {candidato2} não descolou.",
+        "Corte visual. Sem texto demais.",
+        "O número grande é {pct_apurado}%."
+      ],
+      [
+        "{votos} votos separam. Isso cabe numa zona grande.",
+        "Não é tendência de vitória. É barra.",
+        "Se a barra cruzar, a tarja nasce. Ainda não cruzou.",
+        "Comparativo no canto: pesquisa menor, urna maior.",
+        "Meio de apuração. O gráfico acelera.",
+        "Próxima leitura em seguida."
+      ],
+      ["Telão ok.", "Segue.", "Lido.", "De volta."]
+    ),
+    popular: trio(
+      [
+        "Olha a barra, pessoal. {partido} na frente com {pct}%.",
+        "O telão da praça mostra {pct_apurado}%. {regiao} acabou de entrar.",
+        "Explica a barra: o pedaço colorido é o que já foi contado.",
+        "{candidato2} ainda está na disputa, com {pct2}%.",
+        "Não é corrida de cavalo. É urna. Mas a barra ajuda a ver.",
+        "A vantagem cabe na palma: {vantagem} ponto."
+      ],
+      [
+        "Se entrar o interior, a cor da frente pode mudar. Já vimos isso.",
+        "Faltam {restante} votos. Por isso ninguém sobe na cadeira.",
+        "{votos} votos na frente. Dá para o comitê gritar, não dá para cravar.",
+        "A pesquisa ficou pequenininha no canto, de propósito.",
+        "A rua entende barra melhor do que tabela. A tabela está certa do mesmo jeito.",
+        "Segue o desenho."
+      ],
+      ["Telão explicado.", "Fica de olho.", "A praça viu.", "Seguimos."]
+    ),
+    analitico: trio(
+      [
+        "Leitura do gráfico: liderança de {partido} com {pct}% em {pct_apurado}% apurados.",
+        "A curva separa origem e volume. {regiao} é origem. {votos} é volume.",
+        "Vantagem de {vantagem} ponto contra um restante de {restante} votos.",
+        "O segundo, {candidato2}, mantém {pct2}%.",
+        "Não há inflexão bastante para falar em tendência firme.",
+        "O telão está rotulado como parcial."
+      ],
+      [
+        "Uma zona de perfil oposto reduz esta vantagem sem contradizer o total final, seja ele qual for.",
+        "A regra de ouro segue de pé: vantagem maior do que o restante, ou silêncio.",
+        "A pesquisa de saída não entra nesta escala. Escalas diferentes, selos diferentes.",
+        "Meio da apuração é onde a curva mente menos, e ainda mente.",
+        "Quem lê só o líder perde o mapa.",
+        "Atualizamos no próximo bloco."
+      ],
+      ["Análise encerrada.", "Série continua.", "Sem selo.", "Gráfico permanece."]
+    ),
+    combativo: trio(
+      [
+        "Olha a barra e me diz se isso é vitória. Não é. É {pct_apurado}%.",
+        "{partido} está com {pct}%. Bonito. Frágil.",
+        "{candidato2} não morreu: {pct2}%.",
+        "Veio de {regiao}. Eu já disse que endereço importa.",
+        "Vantagem de {vantagem}. Eu quero ver essa vantagem no fim.",
+        "Telão honesto. Comentarista impaciente. Os dois cabem."
+      ],
+      [
+        "{votos} votos. {restante} ainda fora. Faz a conta comigo.",
+        "Quem pintar tendência aqui está pintando desejo.",
+        "A curva vai entortar quando o perfil mudar. Eu espero sentado, mas eu espero.",
+        "Pesquisa no canto, pequena, como deve ser.",
+        "Meio de apuração é terra de ninguém. Eu gosto.",
+        "Próxima barra, próxima briga."
+      ],
+      ["Gráfico lido, opinião guardada.", "Segue.", "Não cravem.", "De volta à mesa."]
+    ),
+    seco: trio(
+      [
+        "Placar. {partido} {pct}%. {candidato2} {pct2}%. Apurado {pct_apurado}%.",
+        "Vantagem {vantagem} p.p. Votos {votos}. Restante {restante}.",
+        "Última zona incorporada: {regiao}.",
+        "Rótulo do gráfico: parcial.",
+        "Sem projeção verbal neste quadro.",
+        "Leitura de tela concluída nos campos acima."
+      ],
+      [
+        "Condição de chamada matemática: não verificada neste instante, salvo tarja específica.",
+        "Pesquisa de saída fora da escala principal.",
+        "Série temporal disponível no gráfico de curva.",
+        "Atualização no próximo incremento de zona.",
+        "Nada a adicionar.",
+        "Quadro numérico estável até novo bloco."
+      ],
+      ["Fim da leitura.", "Próximo.", "Registro ok.", "Tela mantida."]
+    ),
+    mercado: trio(
+      [
+        "Tela limpa. {partido} à frente por {vantagem} ponto. Apurado: {pct_apurado}%.",
+        "Sem seta. O spread ainda é {votos} votos contra {restante} restantes.",
+        "{candidato2} em {pct2}%. Cenário aberto.",
+        "Origem: {regiao}. Fator geográfico, não fator de risco novo.",
+        "O desk não renomeia parcial como tendência.",
+        "Gráfico mínimo, de propósito."
+      ],
+      [
+        "Chamada só com vantagem acima do restante. Ainda não.",
+        "Correspondente seguro: número móvel.",
+        "Pesquisa fora do preço.",
+        "Interior segue como cauda do evento.",
+        "Nada de adjetivo no fio.",
+        "Próxima atualização no mesmo quadro."
+      ],
+      ["Mesa de volta.", "Sem preço.", "Lido.", "Fio aberto."]
+    )
+  };
+
+  F.explicador_regras = trio(
+    [
+      "O professor entra para a conta, não para a torcida.",
+      "Hora de explicar o quociente sem pressa. {pct_apurado}% das urnas já estão na mesa.",
+      "Antes do próximo número, a regra. Ela não muda no meio da noite.",
+      "Quem chegou agora: a cadeira proporcional não é dos mais votados, é da conta.",
+      "Um minuto de aula. Depois voltamos ao placar de {partido}.",
+      "A regra cabe em duas frases. A noite inteira cabe dentro dela."
+    ],
+    [
+      "O quociente eleitoral é a conta que define quanto vale uma cadeira: votos válidos divididos pelas vagas. Aqui, {qe} votos.",
+      "{partido} e os demais só garantem cadeira direta quando atravessam essa linha. Antes disso, é projeção.",
+      "Vale lembrar: o candidato precisa ter pelo menos 10% do quociente para ocupar a vaga do partido. É a regra.",
+      "As vagas que sobram não vão para o mais votado solto. Vão para as maiores médias.",
+      "Federação, quando existe, conta como um partido só. Coligação eleitoral não entra nessa conta proporcional.",
+      "Projeção é projeção. O selo de cadeira confirmada espera o pior caso dos votos que ainda faltam."
+    ],
+    [
+      "Aula encerrada. De volta ao telão.",
+      "A régua do quociente fica no gráfico.",
+      "Regra dita. Número em seguida.",
+      "Quem quiser rever, o botão Entenda a conta continua na tela."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.explicador_regras[k] = F.explicador_regras.solene;
+  });
+
+  F.virada = {
+    solene: trio(
+      [
+        "Atenção. A liderança mudou. {partido} assume a frente com {pct_apurado}% apurados.",
+        "O placar virou. {partido} passa à frente. As urnas novas são de {regiao}.",
+        "Mudança de líder neste instante. {partido} chega a {pct}%.",
+        "A bancada interrompe a análise. Há uma virada na parcial.",
+        "Última hora: {partido} toma a liderança de {partido_ant}.",
+        "Não é ruído de uma seção. A soma mudou de mãos."
+      ],
+      [
+        "A virada se explica pela chegada de {regiao}, onde o perfil puxa {partido}.",
+        "{candidato2} deixa a frente. A diferença agora é de {vantagem} ponto.",
+        "Quem liderava cresceu nas zonas urbanas. Quem chega agora traz outro mapa.",
+        "Ainda é parcial. Virada de liderança não é chamada de resultado.",
+        "O gráfico de curva marca este ponto. Dá para ver o cruzamento.",
+        "Votos de vantagem neste novo arranjo: {votos}."
+      ],
+      [
+        "Tarja de última hora no ar.",
+        "A curva fica na tela.",
+        "Seguimos em cima deste cruzamento.",
+        "A noite mudou de texto."
+      ]
+    ),
+    plantao: trio(
+      [
+        "Última hora! {partido} assume a liderança agora.",
+        "Virou. {partido} passa {partido_ant} com {pct_apurado}% apurado.",
+        "Plantão de virada. Novo líder: {partido}, {pct}%.",
+        "Interrompe tudo. A ordem mudou.",
+        "Tarja vermelha. {regiao} entregou a virada.",
+        "{partido} na frente. Repito: liderança nova, ainda parcial."
+      ],
+      [
+        "Não é selo. É cruzamento de curva.",
+        "{candidato2} cai para segundo, com {pct2}%.",
+        "Vantagem curta: {vantagem} ponto. Cabe outra virada.",
+        "A origem é {regiao}. Sem essa zona, o desenho era outro.",
+        "{votos} votos. Anota.",
+        "A gente não comemora cruzamento."
+      ],
+      ["Tarja fica.", "Ao vivo.", "Segue o cruzamento.", "Plantão mantido."]
+    ),
+    popular: trio(
+      [
+        "Virou, família! {partido} tomou a frente.",
+        "O telão da praça mudou de cor. Agora é {partido}.",
+        "Olha {regiao} entrando e levando a liderança junto.",
+        "O grito trocou de comitê. {partido} está na frente.",
+        "Calma no abraço: é liderança, não é o fim.",
+        "{partido_ant} perdeu a ponta com {pct_apurado}% contados."
+      ],
+      [
+        "{partido} marca {pct}%. {candidato2} fica com {pct2}%.",
+        "A diferença é de {vantagem} ponto. Dá para voltar.",
+        "Quem soltou fogos cedo está quieto agora.",
+        "Veio de {regiao}. O bairro reconhece o próprio voto.",
+        "{votos} votos na frente, neste instante.",
+        "A praça entendeu. A urna ainda não acabou."
+      ],
+      ["Fica com a tarja.", "Segura o rojão.", "A noite virou.", "Continua ao vivo."]
+    ),
+    analitico: trio(
+      [
+        "A virada se explica pela chegada de {regiao}, onde {partido} historicamente, neste mapa, vai melhor.",
+        "Cruzamento confirmado na série: {partido} ultrapassa {partido_ant}.",
+        "Não é surpresa geográfica. É a ordem de chegada das zonas.",
+        "Liderança nova com {pct_apurado}% apurados. {partido} a {pct}%.",
+        "O gráfico marca o ponto. A parcial muda de nome.",
+        "Leitura: virada de caminho, não de resultado final."
+      ],
+      [
+        "O vencedor da noite continua sendo a soma inteira. Esta é só a soma até aqui.",
+        "{candidato2} agora em segundo, {pct2}%.",
+        "Vantagem de {vantagem} ponto, {votos} votos. Estreita o bastante para respeitar.",
+        "Quem ignorou o interior não entendeu o cruzamento.",
+        "Sem chamada. A regra matemática não foi atendida por este fato.",
+        "A série segue aberta depois do cruzamento."
+      ],
+      ["Ponto marcado na curva.", "Análise reposicionada.", "Sem selo.", "Seguimos."]
+    ),
+    combativo: trio(
+      [
+        "ATENÇÃO! {partido} assume a liderança agora! Quem diria?",
+        "Virou! {partido} passa {partido_ant} com {pct_apurado}% apurado.",
+        "Eu avisei que {regiao} ia mexer. Mexeu.",
+        "Troca de líder no meio da mesa. {partido} com {pct}%.",
+        "Quem cravou cedo, engole. A curva cruzou.",
+        "Última hora de verdade. Não é enfeite de tarja."
+      ],
+      [
+        "{candidato2} vai explicar esta zona. Eu também quero ouvir.",
+        "Vantagem de {vantagem} ponto. Não é almofada.",
+        "{votos} votos. Cabe numa região, cabe numa retratação.",
+        "Ainda não é resultado. É um tapa na parcial anterior.",
+        "O mapa fez o trabalho. O comentarista só lê.",
+        "Pode virar de novo. Eu não abaixo a guarda."
+      ],
+      ["Tarja no alto.", "A mesa inteira viu.", "Segue o pau.", "Não pisca."]
+    ),
+    seco: trio(
+      [
+        "Mudança de líder. Novo líder da parcial: {partido}.",
+        "Apurado no cruzamento: {pct_apurado}%.",
+        "Líder anterior: {partido_ant}.",
+        "Zona associada: {regiao}.",
+        "Evento: virada de liderança. Natureza: parcial.",
+        "{partido} {pct}%. {candidato2} {pct2}%."
+      ],
+      [
+        "Vantagem: {vantagem} p.p., {votos} votos.",
+        "Chamada matemática: não.",
+        "Restante estimado: {restante}.",
+        "Causa descrita: composição geográfica do bloco recém-incorporado.",
+        "Selo de vitória: não emitido.",
+        "Fim do registro do cruzamento."
+      ],
+      ["Evento lançado.", "Série atualizada.", "Segue.", "Nota fechada."]
+    ),
+    mercado: trio(
+      [
+        "A curva cruzou. {partido} passa à frente. Evento geográfico, não ainda um fato de mandato.",
+        "Virada com {pct_apurado}% . Origem: {regiao}.",
+        "O fio registra a troca de líder. Sem adjetivo de vitória.",
+        "{partido} {pct}%, à frente de {candidato2}.",
+        "Spread de {vantagem} ponto. Insuficiente para chamada.",
+        "Mesa atenta, não alarmada."
+      ],
+      [
+        "O total final não foi reescrito. Só a ordem da leitura.",
+        "{votos} votos de vantagem contra {restante} restantes.",
+        "Correspondentes: parcial nova, mesma eleição.",
+        "Nenhuma felicitação se dispara num cruzamento.",
+        "Risco de novo cruzamento permanece.",
+        "Preço fictício estável."
+      ],
+      ["Fio atualizado.", "Sem chamada.", "Mesa segue.", "Evento lido."]
+    )
+  };
+
+  F.disputa_ultima_vaga = trio(
+    [
+      "A reta final aperta. {partido} e {candidato2} estão separados por {vantagem} ponto.",
+      "Foto de chegada: com {pct_apurado}% apurados, a vantagem cabe numa zona.",
+      "A última faixa de urnas decide o tom. Ainda não decide sozinha, se a conta não fechar.",
+      "Disputa curta entre {partido} e {candidato2}.",
+      "O telão entra em duelo. Dois nomes, uma diferença pequena.",
+      "{regiao} ainda pesa neste fim."
+    ],
+    [
+      "A diferença é de {votos} votos. O que falta é {restante}.",
+      "Enquanto o segundo alcança com o que resta, não há selo.",
+      "{partido} marca {pct}%. {candidato2} marca {pct2}%.",
+      "É o tipo de noite em que uma seção muda a frase do âncora.",
+      "Quem fala em vitória aqui fala cedo.",
+      "O duelo fica no centro do telão até a totalização."
+    ],
+    [
+      "Duelo mantido.",
+      "Sem vencedor neste quadro.",
+      "A reta final continua.",
+      "Olho no restante."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.disputa_ultima_vaga[k] = F.disputa_ultima_vaga.solene;
+  });
+
+  F.projecao = trio(
+    [
+      "Há uma projeção, não uma chamada. {partido} reúne {projecao}% de chance neste modelo.",
+      "O analista publica tendência. A palavra é tendência.",
+      "Com {pct_apurado}% apurados, o modelo aponta {partido}. O modelo não é a urna.",
+      "Projeção no ar, com o selo certo: ainda não é fechamento.",
+      "O número de chance é {projecao}. A vantagem é {vantagem} ponto.",
+      "Tendência de {partido}. Confirmação, só com a regra matemática."
+    ],
+    [
+      "{candidato2} seguiria precisando de um bloco muito fora da curva para alcançar.",
+      "Mesmo assim, o que falta são {restante} votos. A casa não queima a frase antes da hora.",
+      "Canal rigoroso espera. Canal apressado tropeça. Esta bancada espera.",
+      "A projeção usa a dispersão dos blocos que ainda não chegaram. É estimativa.",
+      "{partido} está com {pct}% do contado. Isso alimenta o modelo, não o selo.",
+      "Se a curva virar, a projeção cai. Ela já caiu em outras noites."
+    ],
+    [
+      "Selo de projeção, não de resultado.",
+      "A tarja diz PROJEÇÃO.",
+      "Seguimos sem cravar.",
+      "O modelo fica no canto do telão."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.projecao[k] = F.projecao.solene;
+  });
+
+  F.chamada = {
+    solene: trio(
+      [
+        "{candidato} está eleito. Com {pct_apurado}% das urnas, a vantagem é matematicamente irreversível.",
+        "Chamada da casa: {partido} venceu. Nem o restante inteiro alcança {candidato2}.",
+        "Podemos dizer com a regra na mesa: {candidato} está eleito.",
+        "A conta fechou antes de 100%. {partido} está eleito.",
+        "Vantagem de {votos} votos, restante de {restante}. {candidato} está eleito.",
+        "O selo entra agora, porque a matemática autoriza. {candidato} está eleito."
+      ],
+      [
+        "{candidato2} não alcança mais, ainda que leve cada voto que falta.",
+        "A parcial está em {pct}% para {partido}. O número que importa é a vantagem contra o restante.",
+        "Não é tendência. Não é projeção. É a chamada matemática.",
+        "O gráfico troca de cor com critério, não com pressa.",
+        "A noite pode seguir até 100%, mas o vencedor desta disputa já não muda.",
+        "Registramos a hora da chamada para o inspetor da cobertura."
+      ],
+      [
+        "Chamada publicada.",
+        "Selo no ar.",
+        "A bancada confirma.",
+        "Resultado matemático definido."
+      ]
+    ),
+    plantao: trio(
+      [
+        "Chamada! {candidato} está eleito. A vantagem passou o que falta.",
+        "{partido} está eleito. Plantão confirma pela conta, não pelo grito.",
+        "Pode cravar: {candidato} está eleito com {pct_apurado}% apurados.",
+        "Tarja de chamada. {candidato} está eleito.",
+        "Fechou a conta. {partido} está eleito.",
+        "{votos} votos na frente, {restante} fora. {candidato} está eleito."
+      ],
+      [
+        "{candidato2} fica sem caminho matemático.",
+        "{pct}% no contado. O selo não depende de chegar a 100%.",
+        "Repetindo: chamada matemática, não palpite.",
+        "A urna segue entrando. O vencedor, não.",
+        "Hora registrada.",
+        "O plantão mantém a tarja."
+      ],
+      ["Chamada no ar.", "Confirmado pela conta.", "Selo dado.", "Segue a totalização."]
+    ),
+    popular: trio(
+      [
+        "Pode soltar o rojão com critério: {candidato} está eleito.",
+        "A praça ouviu. {partido} está eleito. A conta autoriza.",
+        "{candidato} está eleito, família. Nem que o resto inteiro vire, não alcança.",
+        "O telão trocou. {candidato} está eleito.",
+        "Chegou a hora certa, não a hora cedo. {partido} está eleito.",
+        "Abraço no comitê, agora sim. {candidato} está eleito."
+      ],
+      [
+        "A vantagem é de {votos} votos. Faltam {restante}. Não dá mais.",
+        "{candidato2} fica na história desta noite como segundo.",
+        "A gente segurou a palavra a noite toda. Agora ela cabe.",
+        "{pct}% do que já entrou, e o que falta não muda o nome.",
+        "Simulação, tá? Mas a regra é a regra.",
+        "A praça pode gritar o nome."
+      ],
+      ["Selo na tela.", "Chamada feita.", "Festa com licença da matemática.", "Seguimos até o fim da urna."]
+    ),
+    analitico: trio(
+      [
+        "Condição atendida: vantagem maior do que os votos restantes. {candidato} está eleito.",
+        "Chamada conservadora. {partido} está eleito.",
+        "O pior caso não tira {candidato} da vitória. Portanto, eleito.",
+        "{candidato} está eleito. A série pode continuar; o resultado desta chave, não.",
+        "Registramos p e a hora. O critério foi o da vantagem contra o restante.",
+        "Sem eufemismo: {candidato} está eleito."
+      ],
+      [
+        "{candidato2} somando tudo o que falta ainda permanece atrás.",
+        "Apurado: {pct_apurado}%. Vantagem: {votos} votos. Restante: {restante}.",
+        "Isto não é o modelo de 97%. Isto é desigualdade estrita.",
+        "A totalização confirma o caminho. Não reabre a disputa.",
+        "Outras corridas da noite seguem o próprio relógio.",
+        "Nota metodológica arquivada."
+      ],
+      ["Chamada registrada.", "Critério explícito.", "Selo aplicado.", "Fim da disputa nesta chave."]
+    ),
+    combativo: trio(
+      [
+        "Agora pode. {candidato} está eleito. Eu esperei a conta.",
+        "Crava. {partido} está eleito. Quem duvidou da regra, olha o restante.",
+        "{candidato} está eleito e o segundo não tem de onde tirar voto.",
+        "Eu recusei esta frase a noite inteira. {candidato} está eleito.",
+        "Chamada no grito certo: {partido} está eleito.",
+        "Acabou a discussão desta cadeira. {candidato} está eleito."
+      ],
+      [
+        "{votos} na frente, {restante} no bolso de ninguém. Não alcança.",
+        "{candidato2} luta até o fim da urna e não vira.",
+        "{pct}% é o retrato. O selo é a desigualdade.",
+        "Quem chamou antes, sem esta conta, chamou por conta própria.",
+        "A mesa cala o adjetivo e deixa o verbo.",
+        "Hora marcada."
+      ],
+      ["Chamei.", "Selo dado.", "Discussão encerrada nesta chave.", "A urna pode continuar."]
+    ),
+    seco: trio(
+      [
+        "Chamada matemática. {candidato} eleito. Critério: vantagem > restante.",
+        "{partido} eleito. Vantagem {votos}. Restante {restante}.",
+        "Condição verdadeira. {candidato} eleito.",
+        "Selo emitido. {partido} eleito.",
+        "Apurado {pct_apurado}%. Resultado desta disputa: {candidato} eleito.",
+        "Registro de chamada. Confirmado: sim."
+      ],
+      [
+        "O segundo colocado, {candidato2}, não atinge o líder no pior caso.",
+        "Percentual parcial do líder: {pct}%.",
+        "Eventos posteriores não reabrem esta chave.",
+        "Totalização segue para arquivo, não para dúvida.",
+        "Hora de tela associada ao selo.",
+        "Fim da nota de chamada."
+      ],
+      ["Chamada lançada.", "Confirmado.", "Selo ok.", "Nota fechada."]
+    ),
+    mercado: trio(
+      [
+        "Fato, não rumor: {candidato} está eleito. A vantagem excedeu o restante.",
+        "O fio pode usar o verbo. {partido} está eleito.",
+        "Chamada limpa. {candidato} está eleito.",
+        "Critério de mesa atendido. {partido} está eleito.",
+        "Sem modelo probabilístico nesta frase. {candidato} está eleito pela desigualdade.",
+        "Correspondentes liberados para o resultado. {partido} está eleito."
+      ],
+      [
+        "{candidato2} sem caminho aritmético.",
+        "Vantagem {votos}, restante {restante}, apurado {pct_apurado}%.",
+        "Reação de mercado, nesta ficção, só depois do verbo correto.",
+        "Nenhuma felicitação antes deste selo. Agora o selo existe.",
+        "Outras praças seguem abertas.",
+        "Arquivo da chamada disponível."
+      ],
+      ["Fio atualizado com o verbo.", "Chamada enviada.", "Selo no desk.", "Mesa segue para o resto da noite."]
+    )
+  };
+
+  F.encerramento = trio(
+    [
+      "A totalização entra. O placar deixa de ser caminho e passa a ser soma.",
+      "Cem por cento, ou o último passo até lá. {partido} fecha com {pct}%.",
+      "Encerramos a leitura ao vivo de {cargo} em {circunscricao}.",
+      "O que era projeção vira quadro. O que era chamada permanece chamada.",
+      "Noite de {ano} chegando ao fim nesta chave.",
+      "Último bloco. A bancada recolhe o adjetivo e deixa o número."
+    ],
+    [
+      "{candidato2} termina com {pct2}%. A diferença final é o que a urna inteira produziu.",
+      "As zonas contadas batem com o total. A soma por legenda fecha.",
+      "Amanhã o noticiário lê esta noite com outros verbos. Aqui, o verbo foi o da urna.",
+      "Simulação satírica, conta explícita. As duas frases cabem na despedida.",
+      "Quem quiser a animação antiga, o modo Simples continua no botão.",
+      "O destaque da noite fica guardado para rever, sem recontar voto."
+    ],
+    [
+      "Boa noite. A cadeira desta disputa está definida.",
+      "Encerramos. Obrigado por ficar até a soma.",
+      "Fim da cobertura desta chave.",
+      "A tela repousa no resultado."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.encerramento[k] = F.encerramento.solene;
+  });
+
+  F.comentarista_debate = trio(
+    [
+      "Passo a palavra à mesa. O número já está dado: {partido} com {pct}% em {pct_apurado}% apurados.",
+      "Dois comentaristas, uma parcial. Sem inventar urna.",
+      "A mesa comenta {regiao}. O voto novo veio de lá.",
+      "Debate curto. {candidato} e {candidato2} são os nomes da hora.",
+      "Opinião agora, com o percentual na frente.",
+      "A bancada discorda do tom, não do algarismo."
+    ],
+    [
+      "O campo de {partido} lê força. O outro campo lê que {pauta} ainda cobra a conta.",
+      "Um diz que a zona urbana sempre abre assim. O outro aponta o interior como correção.",
+      "Ninguém na mesa antecipa selo. Isso já é um acordo raro.",
+      "A discussão é sobre {pauta}, mas o gráfico não vota pauta. O gráfico conta voto.",
+      "Há quem veja recado e quem veja inércia. Os dois olham a mesma barra.",
+      "O analista devolve a conversa para a vantagem de {vantagem} ponto."
+    ],
+    [
+      "Mesa encerrada. Número intacto.",
+      "Devolvemos ao telão.",
+      "O debate fica. A urna segue.",
+      "Opiniões dadas, parcial mantida."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.comentarista_debate[k] = F.comentarista_debate.solene;
+  });
+
+  F.ao_vivo_qg = trio(
+    [
+      "Ao vivo no comitê. O clima segue o percentual, não o desejo.",
+      "Estamos no comitê. Com {pct_apurado}% apurados, ninguém quer a frase errada.",
+      "O repórter está na sala onde {partido} acompanha a própria barra.",
+      "QG de campanha. A tela aqui é a mesma do estúdio, o suor é outro.",
+      "Da rua do comitê: {regiao} é o assunto de quem entra.",
+      "Ligação com quem espera {candidato} no salão."
+    ],
+    [
+      "A militância olha {pct}% e ainda não sobe na cadeira.",
+      "Quando a barra ameaça cair, o silêncio chega antes do discurso.",
+      "Há faixa enrolada no canto. Faixa pronta cedo envelhece mal.",
+      "O nome {candidato2} também é acompanhado aqui. Adversário também é número.",
+      "Pedem calma pelo telefone. A calma dura até o próximo boletim.",
+      "O repórter não confirma vitória. Confirma presença e percentual."
+    ],
+    [
+      "Devolvemos ao estúdio.",
+      "O comitê continua no ar em segundo plano.",
+      "Ligação encerrada.",
+      "QG de volta à espera."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.ao_vivo_qg[k] = F.ao_vivo_qg.solene;
+  });
+
+  F.sobras_passo_a_passo = trio(
+    [
+      "Agora as sobras, rodada a rodada. O professor conduz a média.",
+      "D'Hondt ao vivo, em frase curta. A vaga vai para a maior média.",
+      "O quociente direto já foi distribuído. O que falta é sobra.",
+      "Telão das médias. Quem pulsa, leva a cadeira desta rodada.",
+      "Uma vaga por vez. Sem atropelar a conta.",
+      "As sobras decidem o fim da lista. {qe} segue como referência do quociente."
+    ],
+    [
+      "A média desta rodada favorece {partido}. A vaga desta conta vai para lá.",
+      "Comparando as médias na tela: quem está na frente leva, quem fica atrás espera a próxima.",
+      "{media}. É esse o tamanho da disputa pela cadeira que ainda não tem dono.",
+      "Candidato muito votado em partido pequeno não fura a média sozinho. A legenda entra na divisão.",
+      "A casa mostra a rodada e para. Duas frases, como combinado.",
+      "Projeção de sobra não é selo. Selo só no pior caso, ou no fim."
+    ],
+    [
+      "Rodada lida.",
+      "Próxima média em seguida, se ainda houver vaga.",
+      "O hemiciclo acende mais uma cadeira.",
+      "Sobras continuam no telão."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.sobras_passo_a_passo[k] = F.sobras_passo_a_passo.solene;
+  });
+
+  F.curiosidade = trio(
+    [
+      "Um dado de respiro, enquanto {regiao} termina de entrar.",
+      "Curiosidade da noite, sem mexer no placar: a ordem das zonas muda a história, não a soma.",
+      "No intervalo do susto, um recorte. {pct_apurado}% já estão contados.",
+      "A praça comenta {pauta}. A urna comenta outra coisa.",
+      "Pequeno quadro. {partido} segue com {pct}% do contado.",
+      "Nem toda fala é tarja. Esta é uma pausa."
+    ],
+    [
+      "As primeiras urnas quase sempre urbanizam o vencedor aparente. O interior corrige sem pedir desculpa.",
+      "Voto de legenda não tem rosto e mesmo assim elege lista. A proporcional vive disso.",
+      "A cláusula de desempenho não dá cadeira hoje à noite em todo cargo, mas decide o ano seguinte do partido.",
+      "Foto de urna no celular não é apuração. Apuração é a soma.",
+      "O segundo colocado, {candidato2}, ainda está com {pct2}%.",
+      "Simulação satírica: nenhum rosto desta bancada existe fora do estúdio."
+    ],
+    [
+      "Pausa feita.",
+      "De volta ao placar.",
+      "Curiosidade encerrada.",
+      "O número grande retoma."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.curiosidade[k] = F.curiosidade.solene;
+  });
+
+  F.destaque_candidato = trio(
+    [
+      "Destaque da parcial: {candidato}, puxado pela própria legenda neste momento.",
+      "O telão isola um nome. {candidato}, de {partido}.",
+      "Não é selo. É destaque. {pct}% ficam com {partido} nesta altura.",
+      "O repórter separa {candidato} de {candidato2} para a leitura ficar clara.",
+      "Nome em evidência com {pct_apurado}% apurados.",
+      "A barra individual entra no centro."
+    ],
+    [
+      "Na proporcional, o nome famoso não senta se a legenda não alcançar o quociente.",
+      "Os 10% do quociente continuam valendo. Sem eles, o voto alto não vira cadeira direta.",
+      "{candidato2} aparece logo atrás no recorte, com a legenda em {pct2}%.",
+      "Puxador ajuda a lista. Não reescreve a vaga sozinho.",
+      "A casa evita a palavra final. Este quadro é caminho.",
+      "O gasto de campanha fica para o modo Simples, onde a ficha já existe."
+    ],
+    [
+      "Destaque lido.",
+      "De volta à legenda.",
+      "Nome fora do centro.",
+      "Placar retoma."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.destaque_candidato[k] = F.destaque_candidato.solene;
+  });
+
+  F.intervalo = trio(
+    [
+      "Voltamos já com a apuração. Fique com a gente.",
+      "Um respiro de estúdio. A urna não para; a fala, sim.",
+      "Intervalo curto. Do outro lado, {partido} segue no placar.",
+      "Já voltamos. {pct_apurado}% não saem da tela.",
+      "Pausa de programa, não de seção eleitoral.",
+      "O patrocínio desta ficção é o próprio jogo. Sem marca de fora."
+    ],
+    [
+      "Quando a gente voltar, o próximo bloco de {regiao} pode estar na soma.",
+      "Nada de jingle alheio. Um silêncio curto basta.",
+      "A tarja de última hora, se nascer agora, corta este intervalo.",
+      "Áudio do estúdio segue desligado, salvo se você ligou.",
+      "A conta não foi ao intervalo. Só a voz.",
+      "Simulação satírica. Até daqui a pouco."
+    ],
+    [
+      "Estamos de volta.",
+      "Intervalo encerrado.",
+      "Ao vivo de novo.",
+      "O placar retoma a fala."
+    ]
+  );
+  ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) {
+    F.intervalo[k] = F.intervalo.solene;
+  });
+
+  /* Variantes extras por tom, reaproveitadas como corpos alternativos do marco solene.
+     Aumentam a combinação sem repetir a mesma frase. */
+  var EXTRAS = {
+    informativo: [
+      "Leitura informativa: {partido} permanece à frente neste corte de {pct_apurado}%.",
+      "O boletim informativo registra {pct}% para {partido} e {pct2}% para {candidato2}.",
+      "Sem adjetivo novo. {regiao} é a origem do último incremento.",
+      "A vantagem informada é de {vantagem} ponto.",
+      "Restam {restante} votos fora desta soma.",
+      "O estúdio mantém o selo de parcial.",
+      "Próxima atualização no mesmo critério.",
+      "Nada de chamada neste tom."
+    ],
+    tenso: [
+      "A sala fica mais quieta. {vantagem} ponto é pouco com {pct_apurado}% na mesa.",
+      "Tensão real: {candidato2} ainda cabe no que falta.",
+      "{regiao} pode alargar ou apertar. O gráfico espera.",
+      "Ninguém pisca para a barra de {partido}.",
+      "O restante, {restante} votos, ainda é personagem.",
+      "A tarja não nasce de nervoso. Nasce de conta.",
+      "Segura o fôlego até o próximo bloco.",
+      "Clima de reta, mesmo no meio."
+    ],
+    didatico: [
+      "Didática rápida: percentual é sobre o contado, não sobre o eleitorado inteiro.",
+      "{pct_apurado}% apurados significa que o resto ainda pode mover {partido}.",
+      "Vantagem em pontos e vantagem em votos não são a mesma frase. Aqui, {vantagem} e {votos}.",
+      "A zona {regiao} tem perfil. Perfil não é fraude. É geografia.",
+      "Projeção e chamada moram em gavetas diferentes.",
+      "O quociente, quando houver, é outra gaveta. {qe}.",
+      "Se a frase não cabe na gaveta, a frase não vai ao ar.",
+      "Aula de um parágrafo, de volta ao placar."
+    ],
+    ironico: [
+      "Que surpresa: quem está na frente gosta do número, e {candidato2} pede calma.",
+      "O comitê de {partido} descobriu a prudência. Demorou {pct_apurado}% para isso.",
+      "Ironia à parte, {vantagem} ponto não é muralha.",
+      "{regiao} entrou e a torcida fingiu que sempre soube.",
+      "Eu anoto o discurso de agora para cobrar no discurso de daqui a pouco.",
+      "Nada contra a esperança. Contra a pressa, sim.",
+      "O telão, esse, não tem ironia. Tem barra.",
+      "Seguimos, com o sorriso do lado de fora da conta."
+    ],
+    emotivo: [
+      "Tem gente segurando a mão do lado no comitê de {partido}.",
+      "O número {pct}% não conta o silêncio da sala.",
+      "{regiao} chegou e alguém chorou sem saber se era hora.",
+      "A distância de {vantagem} ponto cabe num abraço apertado.",
+      "A gente não ri de quem espera {candidato2}.",
+      "A noite eleitoral é longa para quem pôs o nome na urna.",
+      "Emoção na praça, régua no estúdio.",
+      "Segue, com respeito pela espera."
+    ],
+    analitico: [
+      "Recorte analítico: a liderança de {partido} coincide com o perfil de {regiao}.",
+      "A série não mostra ruptura, mostra composição.",
+      "{pct2}% de {candidato2} ainda são compatíveis com oscilação.",
+      "Restante de {restante} votos é o intervalo de incerteza.",
+      "Sem extrapolar além do bloco que entrou.",
+      "A hipótese de virada segue quantificável, não garantida.",
+      "Atualizaremos a leitura no próximo ponto.",
+      "Fim do parágrafo analítico."
+    ],
+    grave: [
+      "Tom grave, porque o número pede: {pct_apurado}% ainda não são o país.",
+      "{partido} lidera, e a liderança nesta hora é um fardo, não uma festa.",
+      "A diferença de {votos} votos será lida por muita gente como destino. Ainda não é.",
+      "{regiao} não carrega sozinha o mandato.",
+      "A bancada baixa a voz e mantém a régua.",
+      "Gravidade não é pessimismo. É medida.",
+      "Seguimos sóbrios.",
+      "O próximo bloco entra sem fanfarra."
+    ],
+    alarmista: [
+      "Alerta de estúdio, não de catástrofe: a parcial ainda cabe virada.",
+      "{candidato2} não está fora. {pct2}% e um restante de {restante}.",
+      "Quem desligar a televisão agora perde o pedaço em que {regiao} pesa.",
+      "A vantagem de {vantagem} ponto é fina.",
+      "A casa eleva a tarja de atenção, não a de resultado.",
+      "Nada de pânico. Tudo de atenção.",
+      "O gráfico pisca o cuidado, não a vitória.",
+      "Fique. O número mexe."
+    ],
+    comemorativo: [
+      "O comitê de {partido} sorri com {pct}%, e o estúdio ainda não sorri junto.",
+      "Há alívio em {regiao}, do lado de quem se vê na frente.",
+      "Comemoração, por enquanto, só na sala certa. Aqui é parcial.",
+      "A barra de {partido} está bonita. Bonita não é definitiva.",
+      "{vantagem} ponto deixam a sala mais leve, não mais certa.",
+      "O abraço fica permitido. O selo, não.",
+      "Alegria registrada como clima, não como chamada.",
+      "Seguimos com o sorriso do lado de lá do vidro."
+    ]
+  };
+
+  Object.keys(EXTRAS).forEach(function (tom) {
+    F.marco.solene.corpo = F.marco.solene.corpo.concat(EXTRAS[tom]);
+  });
+
+  Object.keys(F).forEach(function (seg) {
+    var bloco = F[seg];
+    if (!bloco || typeof bloco !== "object" || !Array.isArray(bloco.abertura)) return;
+    var base = { abertura: bloco.abertura, corpo: bloco.corpo, fecho: bloco.fecho };
+    var o = { solene: base };
+    ["plantao", "popular", "analitico", "combativo", "seco", "mercado"].forEach(function (k) { o[k] = base; });
+    F[seg] = o;
+  });
+
+  function contar() {
+    var n = 0;
+    var chaves = [];
+    Object.keys(F).forEach(function (seg) {
+      Object.keys(F[seg]).forEach(function (est) {
+        ["abertura", "corpo", "fecho"].forEach(function (parte) {
+          var lista = F[seg][est][parte] || [];
+          lista.forEach(function (_, i) {
+            n++;
+            chaves.push(seg + ":" + est + ":" + parte + ":" + i);
+          });
+        });
+      });
+    });
+    return { blocos: n, ids: chaves };
+  }
+
+  F.contar = contar;
+  root.TelejornalFalas = F;
+  if (typeof module !== "undefined" && module.exports) module.exports = F;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+/* TELEJORNAL_V1
+   Cobertura de noite de eleição: curva de urnas, eventos, narração.
+   Sem DOM. A matemática do Anexo A é reproduzida abaixo, sem desvio.
+   A cobertura só revela um resultado já calculado. */
+(function (root) {
+  "use strict";
+
+  function rng(seed) {
+    var s = seed >>> 0;
+    return function () {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  }
+
+  function hash32(str) {
+    var h = 2166136261;
+    var s = String(str);
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function fmtInt(n) {
+    var s = String(Math.max(0, Math.round(Number(n) || 0)));
+    return s.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
+  function fmtPct(x, casas) {
+    var c = casas == null ? 1 : casas;
+    var n = Number(x);
+    if (!isFinite(n)) n = 0;
+    return n.toFixed(c).replace(".", ",");
+  }
+
+  function erf(x) {
+    var s = Math.sign(x), a = Math.abs(x), t = 1 / (1 + 0.3275911 * a);
+    var y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-a * a);
+    return s * y;
+  }
+
+  /* Anexo A — matriz bloco × partido, IPF, linha do tempo, chamada majoritária. */
+  function gerarMatrizBlocos(opts) {
+    var totais = opts.totais;
+    var blocos = opts.blocos;
+    var vies = opts.vies || {};
+    var ruido = opts.ruido == null ? 0.15 : opts.ruido;
+    var seed = opts.seed == null ? 1 : opts.seed;
+    var iter = opts.iter == null ? 50 : opts.iter;
+    var r = rng(seed);
+    var P = Object.keys(totais);
+    var somaBlocos = blocos.reduce(function (s, b) { return s + b.votos; }, 0);
+    var somaTot = P.reduce(function (s, p) { return s + totais[p]; }, 0);
+    var k = somaTot / somaBlocos;
+    var linhas = blocos.map(function (b) { return b.votos * k; });
+    var M = blocos.map(function (b) {
+      return P.map(function (p) {
+        var v = 0;
+        if (vies[p]) {
+          v = Object.entries(b.perfil || {}).reduce(function (s, par) {
+            return s + par[1] * (vies[p][par[0]] || 0);
+          }, 0);
+        }
+        return (totais[p] / somaTot) * Math.exp(v + (r() - 0.5) * 2 * ruido);
+      });
+    });
+    for (var it = 0; it < iter; it++) {
+      M.forEach(function (row, i) {
+        var s = row.reduce(function (a, b) { return a + b; }, 0);
+        row.forEach(function (_, j) { row[j] = row[j] / s * linhas[i]; });
+      });
+      P.forEach(function (p, j) {
+        var s = M.reduce(function (a, row) { return a + row[j]; }, 0);
+        M.forEach(function (row) { row[j] = row[j] / s * totais[p]; });
+      });
+    }
+    return { P: P, M: M, linhas: linhas };
+  }
+
+  function linhaDoTempo(opts) {
+    var passos = opts.passos == null ? 6 : opts.passos;
+    var gerado = gerarMatrizBlocos(opts);
+    var P = gerado.P;
+    var M = gerado.M;
+    var blocos = opts.blocos;
+    var totais = opts.totais;
+    var eventos = [];
+    blocos.forEach(function (b, i) {
+      for (var c = 1; c <= passos; c++) {
+        eventos.push({
+          t: b.chegada + (c - 1) * b.duracao / passos,
+          bloco: b.id,
+          nome: b.nome || b.id,
+          frac: 1 / passos,
+          votos: P.map(function (p, j) { return M[i][j] / passos; })
+        });
+      }
+    });
+    eventos.sort(function (a, b) { return a.t - b.t; });
+    var acum = P.map(function () { return 0; });
+    var totalFinal = P.reduce(function (s, p) { return s + totais[p]; }, 0);
+    var anterior = null;
+    var snaps = [];
+    eventos.forEach(function (e) {
+      e.votos.forEach(function (v, j) { acum[j] += v; });
+      var apurado = acum.reduce(function (a, b) { return a + b; }, 0);
+      var lider = P[acum.indexOf(Math.max.apply(null, acum))];
+      snaps.push({
+        t: e.t,
+        bloco: e.bloco,
+        regiao: e.nome,
+        pct_apurado: apurado / totalFinal,
+        parcial: Object.fromEntries(P.map(function (p, j) { return [p, acum[j]]; })),
+        lider: lider,
+        virada: !!(anterior && anterior !== lider)
+      });
+      anterior = lider;
+    });
+    return snaps;
+  }
+
+  function situacaoMajoritaria(snap, totalEsperado) {
+    var arr = Object.entries(snap.parcial).sort(function (a, b) { return b[1] - a[1]; });
+    var apurado = arr.reduce(function (s, par) { return s + par[1]; }, 0);
+    var restante = Math.max(0, totalEsperado - apurado);
+    var lider = arr[0];
+    var seg = arr[1] || ["", 0];
+    var matematico = lider[1] - seg[1] > restante;
+    var z = (lider[1] - seg[1]) / Math.max(1, restante * 0.35);
+    var p = 0.5 * (1 + erf(z / Math.SQRT2));
+    if (restante <= 1e-6) p = 1;
+    return {
+      lider: lider[0],
+      segundo: seg[0],
+      vantagem: lider[1] - seg[1],
+      restante: restante,
+      matematico: matematico,
+      pVitoria: p,
+      apurado: apurado,
+      liderVotos: lider[1]
+    };
+  }
+
+  function blocosAnexoB() {
+    return [
+      { id: "capital_centro", nome: "Capital — centro", votos: 200000, perfil: { urbano: 1 }, chegada: 0, duracao: 20 },
+      { id: "capital_periferia", nome: "Capital — periferia", votos: 250000, perfil: { urbano: 0.6, periferia: 1 }, chegada: 5, duracao: 30 },
+      { id: "regiao_metro", nome: "Região metropolitana", votos: 220000, perfil: { urbano: 0.7, periferia: 0.5 }, chegada: 15, duracao: 35 },
+      { id: "interior_a", nome: "Interior", votos: 180000, perfil: { rural: 1 }, chegada: 30, duracao: 40 },
+      { id: "interior_b", nome: "Interior distante", votos: 150000, perfil: { rural: 1 }, chegada: 40, duracao: 40 }
+    ];
+  }
+
+  function viesAnexoB() {
+    return {
+      A: { urbano: 0.35, periferia: -0.20, rural: -0.40 },
+      B: { urbano: -0.30, periferia: 0.25, rural: 0.45 },
+      C: { urbano: 0.10, periferia: 0, rural: -0.10 }
+    };
+  }
+
+  function cenarioAnexoB(qual) {
+    return {
+      totais: qual === "B2" ? { A: 450000, B: 470000, C: 80000 } : { A: 480000, B: 440000, C: 80000 },
+      blocos: blocosAnexoB(),
+      vies: viesAnexoB(),
+      seed: 7,
+      ruido: 0.15,
+      passos: 6
+    };
+  }
+
+  function somasMatriz(opts) {
+    var g = gerarMatrizBlocos(opts);
+    var col = {};
+    g.P.forEach(function (p, j) {
+      col[p] = g.M.reduce(function (s, row) { return s + row[j]; }, 0);
+    });
+    var linhas = g.M.map(function (row) { return row.reduce(function (s, v) { return s + v; }, 0); });
+    return { P: g.P, colunas: col, linhas: linhas, M: g.M };
+  }
+
+  function snapNoPct(snaps, alvo) {
+    for (var i = 0; i < snaps.length; i++) {
+      if (snaps[i].pct_apurado + 1e-12 >= alvo) return snaps[i];
+    }
+    return snaps[snaps.length - 1];
+  }
+
+  function sharesDe(snap) {
+    var ap = Object.keys(snap.parcial).reduce(function (s, k) { return s + snap.parcial[k]; }, 0) || 1;
+    var o = {};
+    Object.keys(snap.parcial).forEach(function (k) { o[k] = snap.parcial[k] / ap; });
+    return o;
+  }
+
+  function marcoPct(snaps, alvo, total) {
+    var snap = snapNoPct(snaps, alvo);
+    var sit = situacaoMajoritaria(snap, total);
+    var sh = sharesDe(snap);
+    return {
+      pct: alvo,
+      t: snap.t,
+      lider: snap.lider,
+      A: sh.A,
+      B: sh.B,
+      C: sh.C,
+      pVitoria: sit.pVitoria,
+      matematico: sit.matematico,
+      vantagem: sit.vantagem,
+      restante: sit.restante
+    };
+  }
+
+  function primeiraVirada(snaps) {
+    for (var i = 0; i < snaps.length; i++) if (snaps[i].virada) return snaps[i];
+    return null;
+  }
+
+  function blocosDeTotal(total, nomes) {
+    var base = blocosAnexoB();
+    var soma = base.reduce(function (s, b) { return s + b.votos; }, 0);
+    var acc = 0;
+    return base.map(function (b, i) {
+      var v = i === base.length - 1 ? Math.round(total - acc) : Math.round(total * b.votos / soma);
+      acc += v;
+      var copia = {
+        id: b.id,
+        nome: (nomes && nomes[i]) || b.nome,
+        votos: v,
+        perfil: b.perfil,
+        chegada: b.chegada,
+        duracao: b.duracao
+      };
+      return copia;
+    });
+  }
+
+  function viesDeChaves(chaves, seed) {
+    var vies = {};
+    chaves.forEach(function (id, i) {
+      var r = rng((hash32(id) ^ seed ^ (i * 997)) >>> 0);
+      vies[id] = {
+        urbano: (r() - 0.5) * 0.9,
+        periferia: (r() - 0.5) * 0.6,
+        rural: (r() - 0.5) * 1.0
+      };
+    });
+    return vies;
+  }
+
+  /* Distribui o voto do partido no bloco entre candidatos, proporcional ao total final, com ruído. */
+  function matrizCandidatos(opts, gerado) {
+    var partidos = opts.partidos || [];
+    var r = rng((opts.seed || 1) ^ 0x5eed);
+    var porPartido = {};
+    partidos.forEach(function (p) {
+      var cands = (p.candidatos || []).filter(function (c) { return (c.votos || 0) > 0; });
+      if (!cands.length) return;
+      var j = gerado.P.indexOf(p.id);
+      if (j < 0) return;
+      var pesos = cands.map(function (c) {
+        return Math.max(1e-9, (c.votos || 0) * Math.exp((r() - 0.5) * 0.35));
+      });
+      var ps = pesos.reduce(function (s, v) { return s + v; }, 0);
+      porPartido[p.id] = opts.blocos.map(function (_, i) {
+        var fatia = gerado.M[i][j];
+        return cands.map(function (c, k) {
+          return { id: c.id, nome: c.nome, partido: p.id, votos: fatia * pesos[k] / ps };
+        });
+      });
+    });
+    return porPartido;
+  }
+
+  function parcialCandidatos(porPartido, ateBlocoFracao) {
+    var acc = {};
+    Object.keys(porPartido).forEach(function (pid) {
+      porPartido[pid].forEach(function (lista, i) {
+        var usado = ateBlocoFracao[i] || 0;
+        lista.forEach(function (c) {
+          if (!acc[c.id]) acc[c.id] = { id: c.id, nome: c.nome, partido: c.partido, votos: 0 };
+          acc[c.id].votos += c.votos * usado;
+        });
+      });
+    });
+    return acc;
+  }
+
+  /* Fração de cada bloco já contada quando o relógio da curva está em t. */
+  function fracaoBlocos(blocos, t, passos) {
+    passos = passos || 6;
+    return blocos.map(function (b) {
+      if (t < b.chegada) return 0;
+      var andou = Math.min(b.duracao, t - b.chegada);
+      var fatias = Math.floor(andou / b.duracao * passos + 1e-9);
+      if (t >= b.chegada + b.duracao - 1e-9) return 1;
+      return Math.max(0, Math.min(1, fatias / passos));
+    });
+  }
+
+  function qeArredondadoLocal(validos, vagas) {
+    if (typeof root.qeArredondado === "function") return root.qeArredondado(validos, vagas);
+    var q = validos / vagas, f = Math.floor(q), frac = q - f;
+    return frac > 0.5 ? f + 1 : f;
+  }
+
+  function entradaProporcional(partidos, vagas) {
+    return {
+      vagas: vagas,
+      partidos: partidos.map(function (p) {
+        return {
+          id: p.id,
+          votos_legenda: p.votos_legenda || 0,
+          candidatos: (p.candidatos || []).map(function (c) {
+            return { id: c.id, nome: c.nome, votos: Math.max(0, Math.round(c.votos || 0)), idade: c.idade || 40, partido: c.partido || p.id, jogador: !!c.jogador };
+          })
+        };
+      })
+    };
+  }
+
+  function projetarCadeiras(snap, meta) {
+    if (!meta || !meta.vagas || !meta.apurar || snap.pct_apurado < 0.02) return null;
+    var fator = 1 / snap.pct_apurado;
+    var partidos = (meta.partidos || []).map(function (p) {
+      var base = snap.parcial[p.id] || 0;
+      var projetado = base * fator;
+      var legenda = p.votos_legenda || 0;
+      var somaCand = (p.candidatos || []).reduce(function (s, c) { return s + (c.votos || 0); }, 0) || 1;
+      var cands = (p.candidatos || []).map(function (c) {
+        var nominal = Math.max(0, projetado - legenda * (projetado / Math.max(1, (snap._totais && snap._totais[p.id]) || projetado)));
+        /* Reparte o projetado do partido na mesma proporção do resultado final. */
+        var fatia = (p._total || (somaCand + legenda)) > 0 ? (c.votos || 0) / (somaCand + legenda) : 0;
+        return { id: c.id, nome: c.nome, votos: Math.max(0, Math.round(projetado * ((c.votos || 0) / (somaCand || 1)))), idade: c.idade || 40, partido: c.partido || p.id, jogador: !!c.jogador, _fatia: fatia };
+      });
+      var somaAgora = cands.reduce(function (s, c) { return s + c.votos; }, 0);
+      var legendProj = Math.max(0, Math.round(projetado - somaAgora));
+      return { id: p.id, votos_legenda: legendProj, candidatos: cands, _projetado: projetado };
+    });
+    try {
+      return meta.apurar({ vagas: meta.vagas, partidos: partidos });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* confirmavel: mínimo do candidato, máximo de cada rival com os votos que faltam. */
+  function confirmavel(candId, snap, meta) {
+    if (!meta || !meta.apurar || !meta.vagas) return false;
+    var total = meta.total || 0;
+    var apurado = Object.keys(snap.parcial).reduce(function (s, k) { return s + snap.parcial[k]; }, 0);
+    var restante = Math.max(0, total - apurado);
+    if (restante <= 1) {
+      var oficial = meta.resultadoOficial;
+      if (!oficial) return false;
+      return (oficial.eleitos || []).some(function (e) { return e.candidato === candId || e.id === candId; });
+    }
+    var partidos = meta.partidos || [];
+    var dono = null;
+    partidos.forEach(function (p) {
+      (p.candidatos || []).forEach(function (c) { if (c.id === candId) dono = p.id; });
+    });
+    if (!dono) return false;
+    function montar(alvoRestante) {
+      return {
+        vagas: meta.vagas,
+        partidos: partidos.map(function (p) {
+          var atual = snap.parcial[p.id] || 0;
+          var extra = p.id === alvoRestante ? restante : 0;
+          var cheio = atual + extra;
+          var somaCand = (p.candidatos || []).reduce(function (s, c) { return s + (c.votos || 0); }, 0) || 1;
+          var cands = (p.candidatos || []).map(function (c) {
+            var base = atual * ((c.votos || 0) / somaCand);
+            var mais = 0;
+            if (p.id === alvoRestante) mais = extra * ((c.votos || 0) / somaCand);
+            if (c.id === candId) mais = 0;
+            return { id: c.id, nome: c.nome, votos: Math.max(0, Math.round(base + (c.id === candId ? 0 : mais))), idade: c.idade || 40, jogador: !!c.jogador };
+          });
+          if (p.id === alvoRestante) {
+            var soma = cands.reduce(function (s, c) { return s + c.votos; }, 0);
+            var folga = Math.round(cheio - soma);
+            if (folga > 0) {
+              var rival = cands.filter(function (c) { return c.id !== candId; }).sort(function (a, b) { return b.votos - a.votos; })[0];
+              if (rival) rival.votos += folga;
+              else return { id: p.id, votos_legenda: folga, candidatos: cands };
+            }
+          }
+          var soma2 = cands.reduce(function (s, c) { return s + c.votos; }, 0);
+          return { id: p.id, votos_legenda: Math.max(0, Math.round(cheio - soma2)), candidatos: cands };
+        })
+      };
+    }
+    var rivais = partidos.map(function (p) { return p.id; }).filter(function (id) { return id !== dono; });
+    if (!rivais.length) rivais = [dono];
+    for (var i = 0; i < rivais.length; i++) {
+      var entradaPior = montar(rivais[i]);
+      var res;
+      try { res = meta.apurar(entradaPior); } catch (e) { return false; }
+      var segue = (res.eleitos || []).some(function (e) { return e.candidato === candId; });
+      if (!segue) return false;
+    }
+    var resZero;
+    try { resZero = meta.apurar(montar(null)); } catch (e2) { return false; }
+    return (resZero.eleitos || []).some(function (e) { return e.candidato === candId; });
+  }
+
+  function chamadaEleito(sit, total, opts) {
+    opts = opts || {};
+    if (!sit) return false;
+    if (opts.tipo === "proporcional") return false;
+    if (opts.maioria && opts.turno !== 2) return sit.liderVotos > total / 2;
+    return !!sit.matematico;
+  }
+
+  function detectarEventos(snaps, opts) {
+    opts = opts || {};
+    var total = opts.total;
+    var eventos = [];
+    var marcos = [0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 1];
+    var viuMarco = {};
+    var liderAnt = null;
+    var maxVant = 0;
+    var foto = false;
+    var empate = false;
+    var matematico = false;
+    var projetado = false;
+    var vantagemAnt = 0;
+    snaps.forEach(function (snap) {
+      var sit = situacaoMajoritaria(snap, total);
+      var ap = sit.apurado || 1;
+      var vantPp = ap > 0 ? (sit.vantagem / ap) * 100 : 0;
+      marcos.forEach(function (m) {
+        var id = "urnas_" + Math.round(m * 100) + "pct";
+        if (!viuMarco[id] && snap.pct_apurado + 1e-9 >= m) {
+          viuMarco[id] = 1;
+          eventos.push({
+            id: id, tipo: id, t: snap.t, prioridade: 30 + Math.round(m * 20),
+            dados: { pct_apurado: snap.pct_apurado, lider: sit.lider, regiao: snap.regiao }
+          });
+        }
+      });
+      if (!liderAnt) {
+        eventos.push({ id: "primeiro_lider", tipo: "primeiro_lider", t: snap.t, prioridade: 45, dados: { lider: sit.lider, regiao: snap.regiao } });
+      } else if (sit.lider !== liderAnt) {
+        var foiVirada = maxVant >= 10;
+        eventos.push({
+          id: foiVirada ? "virada" : "mudanca_lideranca",
+          tipo: foiVirada ? "virada" : "mudanca_lideranca",
+          t: snap.t,
+          prioridade: foiVirada ? 90 : 80,
+          dados: { lider: sit.lider, anterior: liderAnt, pct_apurado: snap.pct_apurado, regiao: snap.regiao, vantagem_pp: vantPp }
+        });
+        maxVant = 0;
+      }
+      if (vantPp > maxVant) maxVant = vantPp;
+      if (!foto && vantPp < 0.3 && snap.pct_apurado >= 0.9) {
+        foto = true;
+        eventos.push({ id: "foto_finish", tipo: "foto_finish", t: snap.t, prioridade: 92, dados: { vantagem_pp: vantPp, lider: sit.lider, segundo: sit.segundo } });
+      }
+      if (!empate && vantPp < 1 && snap.pct_apurado >= 0.15 && snap.pct_apurado < 0.9) {
+        empate = true;
+        eventos.push({ id: "empate_tecnico", tipo: "empate_tecnico", t: snap.t, prioridade: 70, dados: { vantagem_pp: vantPp, lider: sit.lider } });
+      }
+      if (vantagemAnt - vantPp > 8 && snap.pct_apurado > 0.2) {
+        eventos.push({ id: "vantagem_encolhe", tipo: "vantagem_encolhe", t: snap.t, prioridade: 55, dados: { lider: sit.lider, vantagem_pp: vantPp } });
+      }
+      if (!matematico && sit.matematico && chamadaEleito(sit, total, opts)) {
+        matematico = true;
+        eventos.push({
+          id: "vitoria_matematica", tipo: "vitoria_matematica", t: snap.t, prioridade: 95,
+          dados: { lider: sit.lider, segundo: sit.segundo, vantagem: sit.vantagem, restante: sit.restante, pVitoria: sit.pVitoria, confirmado: true }
+        });
+      }
+      if (!projetado && sit.pVitoria >= 0.97 && !sit.matematico) {
+        projetado = true;
+        eventos.push({
+          id: "projecao_eleito", tipo: "projecao_eleito", t: snap.t, prioridade: 84,
+          dados: { lider: sit.lider, pVitoria: sit.pVitoria, confirmado: false }
+        });
+      }
+      liderAnt = sit.lider;
+      vantagemAnt = vantPp;
+    });
+    eventos.sort(function (a, b) { return a.t - b.t || b.prioridade - a.prioridade; });
+    return eventos;
+  }
+
+  var CANAIS = [
+    { id: "V4", pele: "Rede Horizonte", arquetipo: "TV Nacional", estilo: "solene", ritmo: 1, rigor: 70, sensacionalismo: 45, vies: "centro", grafico: "sobrio" },
+    { id: "V3", pele: "Canal 24h Brasil", arquetipo: "Cabo 24h", estilo: "plantao", ritmo: 0.82, rigor: 65, sensacionalismo: 55, vies: "neutro", grafico: "dados" },
+    { id: "V5", pele: "TV Aliança", arquetipo: "Canal Popular", estilo: "popular", ritmo: 1, rigor: 50, sensacionalismo: 70, vies: "popular", grafico: "quente" },
+    { id: "V8", pele: "Independente Investigativo", arquetipo: "Independente", estilo: "analitico", ritmo: 1.08, rigor: 70, sensacionalismo: 55, vies: "esquerda", grafico: "contexto" },
+    { id: "V7", pele: "Portal Direita Livre", arquetipo: "Opinião+", estilo: "combativo", ritmo: 0.8, rigor: 50, sensacionalismo: 70, vies: "direita", grafico: "provocativo" },
+    { id: "V6", pele: "Agência Fato Brasil", arquetipo: "Agência", estilo: "seco", ritmo: 1, rigor: 90, sensacionalismo: 15, vies: "neutro", grafico: "tabela" },
+    { id: "V10", pele: "Global Markets Desk", arquetipo: "Internacional", estilo: "mercado", ritmo: 1.15, rigor: 90, sensacionalismo: 25, vies: "financeiro", grafico: "minimo" }
+  ];
+
+  function canalPorId(id) {
+    return CANAIS.filter(function (c) { return c.id === id; })[0] || CANAIS[0];
+  }
+
+  var NOMES_A = ["Helena", "Caio", "Nara", "Davi", "Lívia", "Otto", "Clara", "Heitor", "Bia", "Renan", "Tereza", "Igor", "Luma", "Iara", "Selma", "Nina"];
+  var NOMES_B = ["Vasques", "Leme", "Pacheco", "Queiroz", "Bentes", "Ramalho", "Vidal", "Lanhas", "Cunha", "Foques", "Prates", "Dutra", "Kessel", "Linhares", "Bastos", "Mol"];
+
+  function nomeGerado(r) {
+    return NOMES_A[Math.floor(r() * NOMES_A.length)] + " " + NOMES_B[Math.floor(r() * NOMES_B.length)];
+  }
+
+  function elenco(seed, canalId) {
+    var r = rng((seed || 1) ^ hash32(canalId || "V4") ^ 0xC0C0);
+    var usados = {};
+    function unico() {
+      var n = nomeGerado(r);
+      var g = 0;
+      while (usados[n] && g < 20) { n = nomeGerado(r); g++; }
+      usados[n] = 1;
+      return n;
+    }
+    var papeis = [
+      ["ancora", "Âncora"],
+      ["coancora", "Co-âncora"],
+      ["analista", "Analista de dados"],
+      ["professor", "Especialista eleitoral"],
+      ["comentarista", "Comentarista"],
+      ["comentarista2", "Comentarista"],
+      ["reporter", "Repórter de comitê"],
+      ["rua", "Repórter de praça"],
+      ["mundo", "Correspondente"]
+    ];
+    return papeis.map(function (p, i) {
+      var cor = ["#8ec5ff", "#f0c27a", "#9ad7c2", "#d7b4f3", "#f3b4c4", "#c9d4e8", "#f2d39a", "#b7d99a", "#e7e2d8"][i];
+      return {
+        id: p[0],
+        nome: unico(),
+        papel: p[1],
+        voz: { pitch: 0.85 + r() * 0.4, rate: 0.92 + r() * 0.16 },
+        rigor: 40 + Math.floor(r() * 50),
+        sensacionalismo: Math.floor(r() * 80),
+        bordoes: r() < 0.5 ? [] : [r() < 0.5 ? "vamos aos números" : "cabe na conta"],
+        silhueta: { cor: cor, forma: ["redondo", "quadrado", "gota"][i % 3] }
+      };
+    });
+  }
+
+  function bagDe(snap, opts, sit) {
+    var sh = sharesDe(snap);
+    var lider = sit.lider;
+    var segundo = sit.segundo;
+    var nomes = opts.nomes || {};
+    function nome(id) { return nomes[id] || id; }
+    var t = snap.t;
+    function slot(v) { return { v: v, t: t }; }
+    var ap = sit.apurado || 1;
+    var vantPp = (sit.vantagem / ap) * 100;
+    return {
+      circunscricao: slot(opts.circunscricao || "o país"),
+      ano: slot(String(opts.ano || "")),
+      cargo: slot(opts.cargo || "a disputa"),
+      vagas: slot(String(opts.vagas || "")),
+      pct_apurado: slot(fmtPct(snap.pct_apurado * 100)),
+      partido: slot(nome(lider)),
+      partido_ant: slot(nome(opts._liderAnt || segundo)),
+      candidato: slot(nome(lider)),
+      candidato2: slot(nome(segundo)),
+      pct: slot(fmtPct((sh[lider] || 0) * 100)),
+      pct2: slot(fmtPct((sh[segundo] || 0) * 100)),
+      vantagem: slot(fmtPct(vantPp)),
+      votos: slot(fmtInt(sit.vantagem)),
+      restante: slot(fmtInt(sit.restante)),
+      regiao: slot(snap.regiao || "as primeiras zonas"),
+      cidade: slot(snap.regiao || "a capital"),
+      projecao: slot(fmtPct(sit.pVitoria * 100, 0)),
+      qe: slot(opts.qeTexto || "—"),
+      cadeiras: slot(opts.cadeirasTexto || "—"),
+      media: slot(opts.mediaTexto || "—"),
+      jogador: slot(opts.jogador || "o candidato"),
+      pauta: slot(opts.pauta || "o custo de vida"),
+      grupo: slot(opts.grupo || "quem foi às urnas"),
+      minutos: slot("alguns minutos")
+    };
+  }
+
+  function preencher(template, bag, tFala) {
+    var ok = true;
+    var slots = [];
+    var texto = String(template).replace(/\{([a-z0-9_]+)\}/gi, function (_, k) {
+      var slot = bag[k];
+      if (!slot || slot.t > tFala + 1e-6) { ok = false; return ""; }
+      slots.push({ nome: k, t_dado: slot.t });
+      return slot.v;
+    });
+    if (!ok) return null;
+    return { texto: texto.replace(/\s+/g, " ").trim(), slots: slots };
+  }
+
+  function pecas() {
+    return root.TelejornalFalas || (typeof TelejornalFalas !== "undefined" ? TelejornalFalas : null);
+  }
+
+  function escolherPeca(lista, memoria, r, chave) {
+    if (!lista || !lista.length) return "";
+    var i, id, g;
+    for (g = 0; g < 6; g++) {
+      i = Math.floor(r() * lista.length);
+      id = chave + "#" + i;
+      if (memoria.blocos.indexOf(id) >= 0) continue;
+      memoria.blocos.push(id);
+      if (memoria.blocos.length > 30) memoria.blocos.shift();
+      return { texto: lista[i], id: id };
+    }
+    i = Math.floor(r() * lista.length);
+    return { texto: lista[i], id: chave + "#f" + i };
+  }
+
+  function narrar(tipo, estilo, tom, bag, tFala, memoria, r, permiteEleito) {
+    var banco = pecas();
+    if (!banco) return { texto: "", slots: [], peca_ids: [] };
+    var est = banco[tipo] && (banco[tipo][estilo] || banco[tipo].solene);
+    if (!est) est = banco.marco && banco.marco.solene;
+    if (!est) return { texto: "", slots: [], peca_ids: [] };
+    var partes = ["abertura", "corpo", "fecho"];
+    var saida = [];
+    var slots = [];
+    var ids = [];
+    for (var p = 0; p < partes.length; p++) {
+      var lista = (est[partes[p]] || []).slice();
+      if (!permiteEleito) {
+        lista = lista.filter(function (linha) { return !/\beleitos?\b|\beleitas?\b/i.test(linha); });
+      }
+      if (!lista.length) continue;
+      var peca = null;
+      var cheio = null;
+      var tent;
+      for (tent = 0; tent < 8; tent++) {
+        peca = escolherPeca(lista, memoria, r, tipo + ":" + estilo + ":" + partes[p] + ":" + tom);
+        cheio = preencher(peca.texto, bag, tFala);
+        if (cheio && memoria.hashes.indexOf(cheio.texto) < 0) break;
+        cheio = null;
+      }
+      if (!cheio) {
+        peca = { texto: lista[0], id: tipo + ":queda" };
+        cheio = preencher(peca.texto, bag, tFala);
+      }
+      if (!cheio) continue;
+      saida.push(cheio.texto);
+      slots = slots.concat(cheio.slots);
+      ids.push(peca.id);
+      memoria.hashes.push(cheio.texto);
+      if (memoria.hashes.length > 300) memoria.hashes.shift();
+    }
+    var texto = saida.join(" ");
+    if (memoria.bordao && memoria.ultimoBordao !== texto && (memoria.tBordao == null || tFala - memoria.tBordao > 90)) {
+      memoria.bordaoConta = memoria.bordaoConta || 0;
+      if (memoria.bordaoConta < 4 && r() < 0.25) {
+        texto = texto + " " + memoria.bordao.charAt(0).toUpperCase() + memoria.bordao.slice(1) + ".";
+        memoria.bordaoConta++;
+        memoria.tBordao = tFala;
+      }
+    }
+    return { texto: texto, slots: slots, peca_ids: ids, tom: tom };
+  }
+
+  var TIPO_SEGMENTO = {
+    urnas_1pct: "marco", urnas_5pct: "marco", urnas_10pct: "explicador_regras", urnas_25pct: "analise_telao",
+    urnas_50pct: "marco", urnas_75pct: "analise_telao", urnas_90pct: "disputa_ultima_vaga", urnas_95pct: "analise_telao",
+    urnas_99pct: "projecao", urnas_100pct: "encerramento",
+    primeiro_lider: "marco", mudanca_lideranca: "virada", virada: "virada", foto_finish: "disputa_ultima_vaga",
+    empate_tecnico: "analise_telao", vantagem_encolhe: "analise_telao",
+    projecao_eleito: "projecao", vitoria_matematica: "chamada"
+  };
+
+  var GRAFICO = {
+    abertura: "vinheta", boca_de_urna: "pesquisa", marco: "placar", analise_telao: "placar",
+    explicador_regras: "qe", virada: "curva", disputa_ultima_vaga: "duelo", projecao: "placar",
+    chamada: "chamada", encerramento: "hemiciclo", ao_vivo_qg: "candidatos", curiosidade: "mapa",
+    sobras_passo_a_passo: "sobras", destaque_candidato: "candidatos", intervalo: "vinheta"
+  };
+
+  function tomDe(tipo, canal) {
+    if (tipo === "virada" || tipo === "foto_finish" || tipo === "chamada") {
+      if (canal.estilo === "combativo" || canal.estilo === "popular") return "emotivo";
+      if (canal.estilo === "analitico" || canal.estilo === "mercado") return "analitico";
+      return "tenso";
+    }
+    if (tipo === "explicador_regras" || tipo === "sobras_passo_a_passo") return "didatico";
+    if (canal.estilo === "seco") return "informativo";
+    if (canal.estilo === "popular") return "emotivo";
+    if (canal.estilo === "combativo") return "ironico";
+    if (canal.estilo === "analitico" || canal.estilo === "mercado") return "analitico";
+    return "informativo";
+  }
+
+  function pessoaDe(tipo, elencoLista) {
+    var papel = "ancora";
+    if (tipo === "explicador_regras" || tipo === "sobras_passo_a_passo") papel = "professor";
+    else if (tipo === "analise_telao" || tipo === "projecao") papel = "analista";
+    else if (tipo === "comentarista_debate") papel = "comentarista";
+    else if (tipo === "ao_vivo_qg" || tipo === "destaque_candidato") papel = "reporter";
+    else if (tipo === "curiosidade") papel = "rua";
+    var achou = elencoLista.filter(function (p) { return p.id === papel; })[0];
+    return achou || elencoLista[0];
+  }
+
+  function curvaTela(u) {
+    if (u <= 0.08) return 0;
+    var x = (u - 0.08) / 0.92;
+    if (x < 0.18) return (x / 0.18) * 0.10;
+    if (x < 0.72) return 0.10 + ((x - 0.18) / 0.54) * 0.72;
+    return 0.82 + ((x - 0.72) / 0.28) * 0.18;
+  }
+
+  function duracaoModo(modo, cargo) {
+    if (modo === "flash") return 70;
+    if (modo === "curto") return 150;
+    if (modo === "completo") return 780;
+    if (modo === "madrugada") return 1500;
+    if (modo === "padrao") return 420;
+    if (cargo === "VER" || cargo === "PREF") return 150;
+    if (cargo === "PRES") return 780;
+    return 420;
+  }
+
+  function roteirizar(snaps, eventos, opts) {
+    var canal = canalPorId(opts.canal || "V4");
+    var dur = opts.duracao_s || duracaoModo(opts.modo, opts.cargoId);
+    var gap = 40 * (dur / 420);
+    var elencoLista = opts.elenco || elenco(opts.seed || 1, canal.id);
+    var memoria = { blocos: (opts.memoriaNoites || []).slice(), hashes: [], bordao: (elencoLista[0].bordoes || [])[0] || "" };
+    var r = rng(((opts.seed || 1) ^ hash32(canal.id) ^ 0xA11A) >>> 0);
+    var tMax = snaps[snaps.length - 1].t || 1;
+    var total = opts.total;
+    var finalSit = situacaoMajoritaria(snaps[snaps.length - 1], total);
+    var itens = [];
+    function empurrar(item) { itens.push(item); }
+
+    function falarEm(tipoSeg, tCurva, prioridade, extra) {
+      extra = extra || {};
+      var snap = snapNoPct(snaps, Math.max(0, (function () {
+        var melhor = snaps[0];
+        for (var i = 0; i < snaps.length; i++) if (snaps[i].t <= tCurva + 1e-6) melhor = snaps[i];
+        return melhor.pct_apurado;
+      })()));
+      var sit = situacaoMajoritaria(snap, total);
+      if (opts._liderPorT) opts._liderAnt = opts._liderPorT(snap.t);
+      var bag = bagDe(snap, opts, sit);
+      if (extra.bag) Object.keys(extra.bag).forEach(function (k) { bag[k] = extra.bag[k]; });
+      var tom = extra.tom || tomDe(tipoSeg, canal);
+      var permite = !!extra.permiteEleito && (sit.matematico || extra.confirmado);
+      var fala = narrar(tipoSeg, canal.estilo, tom, bag, snap.t, memoria, r, permite);
+      var quem = extra.pessoa || pessoaDe(tipoSeg, elencoLista);
+      return {
+        t_curva: snap.t,
+        tipo: tipoSeg,
+        prioridade: prioridade,
+        personagem_id: quem.id,
+        personagem: quem.nome,
+        papel: quem.papel,
+        texto: fala.texto,
+        slots: fala.slots,
+        tom: tom,
+        canal: canal.id,
+        tarja: extra.tarja || (prioridade >= 85 ? "ÚLTIMA HORA" : ""),
+        grafico: extra.grafico || GRAFICO[tipoSeg] || "placar",
+        confirmado: !!(extra.confirmado && sit.matematico),
+        canal_chamou_errado: !!extra.errado,
+        porque: { prioridade: prioridade, tom: tom, canal: canal.pele, cooldown: gap, estilo: canal.estilo }
+      };
+    }
+
+    empurrar(falarEm("abertura", 0, 40, { tarja: "", grafico: "vinheta", pessoa: elencoLista[0] }));
+    var extraBoca = { grafico: "pesquisa", pessoa: elencoLista[2] };
+    if (opts.boca && opts.boca.partes) {
+      var partesB = opts.boca.partes;
+      var ordemB = Object.keys(partesB).sort(function (a, b) { return partesB[b] - partesB[a]; });
+      var nomeB = function (id) { return (opts.nomes && opts.nomes[id]) || id; };
+      extraBoca.bag = {
+        partido: { v: nomeB(ordemB[0]), t: 0 },
+        candidato: { v: nomeB(ordemB[0]), t: 0 },
+        candidato2: { v: nomeB(ordemB[1] || ordemB[0]), t: 0 },
+        pct: { v: fmtPct(partesB[ordemB[0]] * 100), t: 0 },
+        pct2: { v: fmtPct((partesB[ordemB[1] || ordemB[0]] || 0) * 100), t: 0 },
+        pct_apurado: { v: "0,0", t: 0 }
+      };
+    }
+    empurrar(falarEm("boca_de_urna", 0, 42, extraBoca));
+
+    var ultimoTipo = {};
+    eventos.forEach(function (ev) {
+      var tipo = TIPO_SEGMENTO[ev.tipo] || "marco";
+      if (ev.prioridade >= 70 && !TIPO_SEGMENTO[ev.tipo]) tipo = "analise_telao";
+      var interrompe = ev.prioridade >= 85;
+      if (!interrompe && ultimoTipo[tipo] != null && ev.t - ultimoTipo[tipo] < (gap / dur) * tMax) return;
+      ultimoTipo[tipo] = ev.t;
+      var extra = {};
+      if (ev.tipo === "vitoria_matematica") {
+        extra.permiteEleito = true;
+        extra.confirmado = true;
+        extra.tarja = "CHAMADA";
+        extra.grafico = "chamada";
+      }
+      if (ev.tipo === "projecao_eleito") extra.grafico = "placar";
+      if (ev.tipo === "virada") extra.tarja = "ÚLTIMA HORA";
+      empurrar(falarEm(tipo, ev.t, ev.prioridade, extra));
+      if (ev.prioridade >= 80 && tipo !== "comentarista_debate" && dur >= 150) {
+        empurrar(falarEm("comentarista_debate", ev.t, ev.prioridade - 5, { pessoa: elencoLista[4] }));
+      }
+    });
+
+    if (canal.sensacionalismo >= 70 && canal.rigor <= 50) {
+      var cedo = null;
+      for (var s = 0; s < snaps.length; s++) {
+        var sitS = situacaoMajoritaria(snaps[s], total);
+        if (sitS.pVitoria >= 0.97 && !sitS.matematico && sitS.lider !== finalSit.lider) { cedo = snaps[s]; break; }
+      }
+      if (cedo && r() < 0.85) {
+        var errada = falarEm("chamada", cedo.t, 96, { permiteEleito: true, confirmado: false, errado: true, tarja: "CHAMADA", grafico: "chamada" });
+        errada.confirmado = false;
+        errada.canal_chamou_errado = true;
+        empurrar(errada);
+      }
+    }
+
+    if (opts.passosSobras && opts.passosSobras.length && dur >= 150) {
+      empurrar(falarEm("sobras_passo_a_passo", tMax, 82, {
+        grafico: "sobras",
+        bag: { media: { v: opts.mediaTexto || "a maior média", t: tMax }, qe: { v: opts.qeTexto || "—", t: tMax } }
+      }));
+    }
+    empurrar(falarEm("encerramento", tMax, 40, { grafico: "hemiciclo" }));
+
+    function ordemPrograma(it) {
+      if (it.tipo === "abertura") return 0;
+      if (it.tipo === "boca_de_urna") return 1;
+      if (it.tipo === "encerramento") return 3;
+      return 2;
+    }
+    itens.sort(function (a, b) {
+      var oa = ordemPrograma(a), ob = ordemPrograma(b);
+      if (oa !== ob) return oa - ob;
+      return a.t_curva - b.t_curva || b.prioridade - a.prioridade;
+    });
+    var roteiro = [];
+    var cursor = 0;
+    var fatia = dur / Math.max(1, itens.length);
+    itens.forEach(function (it, idx) {
+      var u = it.t_curva / tMax;
+      var preferido = u * dur * 0.86;
+      var ini = Math.max(cursor, preferido);
+      if (idx === 0) ini = 0;
+      var fim = Math.min(dur, ini + Math.max(8, fatia * (canal.ritmo || 1)));
+      if (idx === itens.length - 1) fim = dur;
+      it.t_ini = ini;
+      it.t_fim = Math.max(ini + 4, fim);
+      cursor = it.t_fim;
+      roteiro.push(it);
+    });
+    if (roteiro.length) roteiro[roteiro.length - 1].t_fim = dur;
+    return { roteiro: roteiro, elenco: elencoLista, canal: canal, duracao_s: dur, memoria: memoria.hashes.slice() };
+  }
+
+  function enriquecer(snaps, total) {
+    var ant = null;
+    return snaps.map(function (snap) {
+      var sit = situacaoMajoritaria(snap, total);
+      var copia = Object.assign({}, snap, { sit: sit });
+      if (ant && ant !== sit.lider) copia.virada = true;
+      ant = sit.lider;
+      return copia;
+    });
+  }
+
+  function montarCobertura(opts) {
+    opts = Object.assign({}, opts);
+    var totais = opts.totais;
+    var total = Object.keys(totais).reduce(function (s, k) { return s + totais[k]; }, 0);
+    opts.total = total;
+    var snaps = linhaDoTempo({
+      totais: totais,
+      blocos: opts.blocos,
+      vies: opts.vies || viesDeChaves(Object.keys(totais), opts.seed || 1),
+      seed: opts.seed == null ? 1 : opts.seed,
+      ruido: opts.ruido == null ? 0.15 : opts.ruido,
+      passos: opts.passos || 6
+    });
+    snaps.forEach(function (s) { s._totais = totais; });
+    var eventos = detectarEventos(snaps, {
+      total: total,
+      tipo: opts.tipo || "majoritaria",
+      maioria: !!opts.maioria,
+      turno: opts.turno || 1
+    });
+    var liderAte = {};
+    var corr = null;
+    snaps.forEach(function (s) {
+      liderAte[s.t] = corr;
+      corr = s.lider;
+    });
+    opts._liderPorT = function (t) {
+      var nome = null;
+      for (var i = 0; i < snaps.length; i++) {
+        if (snaps[i].t < t - 1e-6) nome = snaps[i].lider;
+      }
+      return nome;
+    };
+    opts.boca = bocaDeUrna(totais, opts.seed || 1);
+    var script = roteirizar(snaps, eventos, opts);
+    var boca = opts.boca;
+    var matriz = gerarMatrizBlocos({
+      totais: totais,
+      blocos: opts.blocos,
+      vies: opts.vies || viesDeChaves(Object.keys(totais), opts.seed || 1),
+      seed: opts.seed == null ? 1 : opts.seed,
+      ruido: opts.ruido == null ? 0.15 : opts.ruido
+    });
+    return {
+      snaps: snaps,
+      eventos: eventos,
+      roteiro: script.roteiro,
+      elenco: script.elenco,
+      canal: script.canal,
+      duracao_s: script.duracao_s,
+      total: total,
+      totais: totais,
+      boca: boca,
+      seed: opts.seed || 1,
+      final: situacaoMajoritaria(snaps[snaps.length - 1], total),
+      blocos: opts.blocos,
+      matriz: matriz,
+      nomes: opts.nomes || {},
+      partidosNome: opts.partidosNome || {},
+      meta: opts.meta || null,
+      cargoId: opts.cargoId || "",
+      titulo: opts.titulo || opts.cargo || "Apuração",
+      turno: opts.turno || 1,
+      tipo: opts.tipo || "majoritaria",
+      maioria: !!opts.maioria
+    };
+  }
+
+  function bocaDeUrna(totais, seed) {
+    var r = rng((seed || 1) ^ 0xB0CA);
+    var chaves = Object.keys(totais);
+    var raw = chaves.map(function (k) { return Math.max(0.01, totais[k] * (1 + (r() - 0.5) * 0.18)); });
+    var soma = raw.reduce(function (s, v) { return s + v; }, 0);
+    var partes = {};
+    chaves.forEach(function (k, i) { partes[k] = raw[i] / soma; });
+    return { margem_pp: 2, partes: partes, rotulo: "pesquisa de saída" };
+  }
+
+  function estadoNoTempo(cob, tTela) {
+    var dur = cob.duracao_s || 420;
+    var u = Math.max(0, Math.min(1, tTela / dur));
+    var seg = cob.roteiro[0];
+    for (var j = 0; j < cob.roteiro.length; j++) {
+      if (cob.roteiro[j].t_ini <= tTela + 1e-6) seg = cob.roteiro[j];
+    }
+    var snap = cob.snaps[0];
+    var tRef = seg ? seg.t_curva : 0;
+    if (u >= 0.999) tRef = cob.snaps[cob.snaps.length - 1].t;
+    for (var i = 0; i < cob.snaps.length; i++) {
+      if (cob.snaps[i].t <= tRef + 1e-6) snap = cob.snaps[i];
+    }
+    var sit = situacaoMajoritaria(snap, cob.total);
+    return { t: tTela, u: u, pct: snap.pct_apurado, snap: snap, segmento: seg, sit: sit };
+  }
+
+  function auditarSpoilers(cob) {
+    var falhas = [];
+    (cob.roteiro || []).forEach(function (seg, i) {
+      (seg.slots || []).forEach(function (sl) {
+        if (sl.t_dado > seg.t_curva + 1e-6) falhas.push({ i: i, slot: sl.nome, t_dado: sl.t_dado, t: seg.t_curva });
+      });
+      var dizEleito = /\beleitos?\b|\beleitas?\b/i.test(seg.texto || "");
+      if (dizEleito && !seg.confirmado && !seg.canal_chamou_errado) falhas.push({ i: i, eleito: true, tipo: seg.tipo });
+    });
+    return falhas;
+  }
+
+  function repeticao(cob) {
+    var textos = (cob.roteiro || []).map(function (s) { return s.texto; }).filter(Boolean);
+    var vistos = {};
+    var iguais = 0;
+    textos.forEach(function (t) {
+      if (vistos[t]) iguais++;
+      vistos[t] = 1;
+    });
+    return { total: textos.length, iguais: iguais, taxa: textos.length ? iguais / textos.length : 0 };
+  }
+
+  var api = {
+    rng: rng,
+    hash32: hash32,
+    erf: erf,
+    fmtInt: fmtInt,
+    fmtPct: fmtPct,
+    gerarMatrizBlocos: gerarMatrizBlocos,
+    linhaDoTempo: linhaDoTempo,
+    situacaoMajoritaria: situacaoMajoritaria,
+    chamadaEleito: chamadaEleito,
+    blocosAnexoB: blocosAnexoB,
+    viesAnexoB: viesAnexoB,
+    cenarioAnexoB: cenarioAnexoB,
+    somasMatriz: somasMatriz,
+    snapNoPct: snapNoPct,
+    marcoPct: marcoPct,
+    primeiraVirada: primeiraVirada,
+    blocosDeTotal: blocosDeTotal,
+    viesDeChaves: viesDeChaves,
+    detectarEventos: detectarEventos,
+    confirmavel: confirmavel,
+    projetarCadeiras: projetarCadeiras,
+    CANAIS: CANAIS,
+    canalPorId: canalPorId,
+    elenco: elenco,
+    narrar: narrar,
+    roteirizar: roteirizar,
+    montarCobertura: montarCobertura,
+    estadoNoTempo: estadoNoTempo,
+    auditarSpoilers: auditarSpoilers,
+    repeticao: repeticao,
+    bocaDeUrna: bocaDeUrna,
+    curvaTela: curvaTela,
+    fracaoBlocos: fracaoBlocos,
+    duracaoModo: duracaoModo,
+    qeArredondadoLocal: qeArredondadoLocal,
+    entradaProporcional: entradaProporcional
+  };
+
+  root.Telejornal = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+/* TELEJORNAL_UI_V1
+   Estúdio da noite. Não recalcula voto: só revela a corrida já apurada.
+   O modo Simples continua sendo #apurMapa. */
+(function () {
+  "use strict";
+  if (window.__TJ_UI) return;
+  window.__TJ_UI = true;
+  var TJ = window.Telejornal;
+  if (!TJ) return;
+
+  var S = {
+    el: null,
+    corridas: [],
+    i: 0,
+    cob: null,
+    t: 0,
+    play: false,
+    vel: 1,
+    canal: "V4",
+    painel: "auto",
+    audio: false,
+    voz: false,
+    dalt: false,
+    reduz: false,
+    raf: 0,
+    last: 0,
+    pip: null,
+    cache: {},
+    fatos: {},
+    aviso: false
+  };
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function modoGuardado() {
+    try { return sessionStorage.getItem("cadeira_noite_modo") || "cobertura"; } catch (e) { return "cobertura"; }
+  }
+  function guardarModo(m) {
+    try { sessionStorage.setItem("cadeira_noite_modo", m); } catch (e) {}
+  }
+
+  function sementeNoite(cargoId, turno) {
+    var base = 7;
+    try {
+      var m = M();
+      if (!m.sementePartida) m.sementePartida = TJ.hash32((J().nome || "cadeira") + "|noite");
+      base = m.sementePartida >>> 0;
+    } catch (e) {}
+    return (base ^ TJ.hash32(cargoId + "|" + turno + "|" + (function () { try { return dt().ano; } catch (e2) { return 2026; } })())) >>> 0;
+  }
+
+  function corDe(id) {
+    var paleta = S.dalt
+      ? ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#56B4E9", "#D55E00", "#F0E442", "#999999"]
+      : ["#3d8bfd", "#e39b2b", "#2fbf8a", "#d46aa6", "#7aa2ff", "#e07a4c", "#c9b458", "#8fb7c9", "#d98b8b", "#6fbfc4"];
+    return paleta[TJ.hash32(id || "?") % paleta.length];
+  }
+
+  function nomeExib(id, cob) {
+    if (cob.nomes && cob.nomes[id]) return cob.nomes[id];
+    if (cob.partidosNome && cob.partidosNome[id]) return cob.partidosNome[id];
+    return String(id || "").replace(/^FED:/, "");
+  }
+
+  function siglaCurta(txt) {
+    var s = String(txt || "").replace(/^Federação\s+/i, "").trim();
+    if (s.length <= 28) return s;
+    return s.slice(0, 26) + "…";
+  }
+
+  function eleitoNaTela(sit) {
+    if (!S.cob || !sit) return false;
+    return TJ.chamadaEleito(sit, S.cob.total, { tipo: S.cob.tipo, maioria: S.cob.maioria, turno: S.cob.turno });
+  }
+
+  function horaDe(pct) {
+    var mins = Math.round(17 * 60 + Math.max(0, Math.min(1, pct)) * 240);
+    var hh = Math.floor(mins / 60), mm = mins % 60;
+    return (hh < 10 ? "0" : "") + hh + ":" + (mm < 10 ? "0" : "") + mm;
+  }
+
+  function corridasDoJogo() {
+    var E = M().eleicao;
+    var N = (E && E._mapaNac) || {};
+    var turno = (E.noite && E.noite.turno) || 1;
+    var ano = 2026;
+    try { ano = dt().ano; } catch (e) {}
+    var lista = [];
+    function maj(cands, id, titulo, eleitores) {
+      var arr = (cands || []).filter(function (c) { return c && (c.nome || c.share); });
+      if (turno === 2 && arr.length !== 2) return;
+      if (arr.length < 2) return;
+      var base = Math.max(1000, Math.round((eleitores || 1000000) * 0.72));
+      var soma = arr.reduce(function (s, c) { return s + (c.share || 0); }, 0) || 1;
+      var totais = {}, nomes = {}, partidosNome = {}, quem = [];
+      arr.forEach(function (c, i) {
+        var chave = (c.id && String(c.id)) || ("c" + i);
+        var votos = Math.max(1, Math.round(base * (c.share || 0) / soma));
+        totais[chave] = (totais[chave] || 0) + votos;
+        nomes[chave] = c.nome || chave;
+        partidosNome[chave] = c.partido || "";
+        quem.push({ id: chave, nome: c.nome, partido: c.partido || "", votos: votos, jogador: !!c.jogador });
+      });
+      lista.push({
+        id: id, tipo: "majoritaria", titulo: titulo, turno: turno, ano: ano,
+        totais: totais, nomes: nomes, partidosNome: partidosNome, quem: quem,
+        cargo: titulo, circunscricao: id === "PRES" ? "o Brasil" : "São Paulo", vagas: "1"
+      });
+    }
+    maj(N.pres, "PRES", "Presidente", N.elBR);
+    maj(N.spGov, "GOV", "Governador", N.elSP);
+    if (turno !== 2 && N.spSen && N.spSen.length >= 2) maj(N.spSen, "SEN", "Senado", N.elSP);
+    if (turno === 2) return lista;
+    ["DEPF", "DEPE", "VER"].forEach(function (cargo) {
+      var L = E._leg2 && E._leg2[cargo];
+      if (!L || !L.qe || !L.qe.por_partido || L.sistema === "antigo") return;
+      var totais = {}, nomes = {}, quem = [];
+      var entrada = L.qe.entrada || [];
+      entrada.forEach(function (p) {
+        var votos = (L.qe.por_partido[p.id] && L.qe.por_partido[p.id].votos) || 0;
+        if (votos <= 0) return;
+        totais[p.id] = votos;
+        nomes[p.id] = p.nome || String(p.id).replace(/^FED:/, "");
+        (p.candidatos || []).forEach(function (c) {
+          quem.push({ id: c.id, nome: c.nome || c.id, partido: nomes[p.id], votos: c.votos || 0, jogador: !!c.jogador, lista: p.id });
+        });
+      });
+      if (Object.keys(totais).length < 2) return;
+      var tit = cargo === "DEPF" ? "Deputado federal" : cargo === "DEPE" ? "Deputado estadual" : "Vereador";
+      lista.push({
+        id: cargo, tipo: "proporcional", titulo: tit, turno: turno, ano: ano,
+        totais: totais, nomes: nomes, quem: quem, cargo: tit,
+        circunscricao: cargo === "VER" ? "Mauá" : "São Paulo",
+        vagas: String(L.N || (L.qe && L.eleitos && L.eleitos.length) || ""),
+        qe: L.qe, metaPartidos: entrada
+      });
+    });
+    return lista;
+  }
+
+  function montar(corrida) {
+    var total = Object.keys(corrida.totais).reduce(function (s, k) { return s + corrida.totais[k]; }, 0);
+    var seed = sementeNoite(corrida.id, corrida.turno);
+    var vies = TJ.viesDeChaves(Object.keys(corrida.totais), seed);
+    var modo = corrida.id === "PRES" ? "completo" : (corrida.id === "VER" ? "curto" : "padrao");
+    var meta = null;
+    if (corrida.tipo === "proporcional" && typeof apurarProporcional === "function") {
+      meta = {
+        vagas: Number(corrida.vagas) || 1,
+        apurar: apurarProporcional,
+        total: total,
+        partidos: (corrida.metaPartidos || []).map(function (p) {
+          return {
+            id: p.id,
+            votos_legenda: p.votos_legenda || 0,
+            candidatos: (p.candidatos || []).map(function (c) {
+              return { id: c.id, nome: c.nome, votos: c.votos || 0, idade: c.idade || 40, jogador: !!c.jogador };
+            })
+          };
+        }),
+        resultadoOficial: corrida.qe
+      };
+    }
+    var passos = (corrida.qe && corrida.qe.passos || []).filter(function (p) { return p.fase === "sobra"; });
+    var mediaTxt = "a maior média";
+    if (passos[0] && passos[0].medias && passos[0].medias[0]) {
+      mediaTxt = TJ.fmtInt(passos[0].medias[0].media) + " para " + (corrida.nomes[passos[0].medias[0].id] || passos[0].medias[0].id);
+    }
+    return TJ.montarCobertura({
+      totais: corrida.totais,
+      blocos: TJ.blocosDeTotal(total),
+      vies: vies,
+      seed: seed,
+      canal: S.canal,
+      modo: modo,
+      cargoId: corrida.id,
+      cargo: corrida.cargo,
+      titulo: corrida.titulo,
+      ano: corrida.ano,
+      turno: corrida.turno,
+      circunscricao: corrida.circunscricao,
+      vagas: corrida.vagas || "1",
+      nomes: Object.assign({}, corrida.nomes, (function () {
+        var o = {};
+        (corrida.quem || []).forEach(function (c) { o[c.id] = c.nome; });
+        return o;
+      })()),
+      partidosNome: corrida.partidosNome || corrida.nomes,
+      jogador: (function () { try { return J().nome; } catch (e) { return "o candidato"; } })(),
+      tipo: corrida.tipo,
+      maioria: corrida.id === "PRES" || corrida.id === "GOV" || corrida.id === "PREF",
+      qeTexto: corrida.qe ? TJ.fmtInt(corrida.qe.QE) : "—",
+      mediaTexto: mediaTxt,
+      passosSobras: passos,
+      meta: meta
+    });
+  }
+
+  function css() {
+    if (document.getElementById("tj-css")) return;
+    var st = document.createElement("style");
+    st.id = "tj-css";
+    st.textContent = [
+      "#telejornal{position:fixed;inset:0;z-index:100003;background:#071018;color:#f4efe4;font-family:var(--font-ui, 'DM Sans', system-ui, sans-serif);display:flex;flex-direction:column;overflow:hidden}",
+      "#telejornal *{box-sizing:border-box}",
+      "#telejornal button{font-family:inherit;cursor:pointer}",
+      ".tj-aviso{flex:none;background:#1c1408;color:#f0d7a2;font-size:12px;padding:6px 12px;display:flex;gap:10px;align-items:center;justify-content:space-between}",
+      ".tj-top{flex:none;display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(#102033,#0c1828);border-bottom:3px solid #c4552a}",
+      ".tj-marca{font-family:var(--font-display, Fraunces, Georgia, serif);font-weight:700;letter-spacing:.02em;font-size:16px}",
+      ".tj-live{background:#c62828;color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;padding:3px 7px;border-radius:2px}",
+      ".tj-top .grow{flex:1;min-width:0;color:#c9d4e4;font-size:12px}",
+      ".tj-urnas{font-variant-numeric:tabular-nums;font-weight:800;font-size:18px;color:#f2c14e}",
+      ".tj-stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(280px,1.05fr) minmax(300px,1.2fr);gap:8px;padding:8px}",
+      ".tj-studio{background:radial-gradient(120% 80% at 50% 100%, #1a3358 0%, #0c1a2e 55%, #081018 100%);border:1px solid #24344c;border-radius:10px;position:relative;overflow:hidden;min-height:180px;display:flex;flex-direction:column}",
+      ".tj-cam{flex:1;position:relative;min-height:120px}",
+      ".tj-sil{position:absolute;bottom:52px;width:108px;height:150px}",
+      ".tj-sil.a{left:12%}.tj-sil.b{left:46%}",
+      ".tj-sil i{display:block;margin:0 auto}",
+      ".tj-sil .cabeca{width:58px;height:58px;border-radius:50%;border:3px solid #071018}",
+      ".tj-sil.quadrado .cabeca{border-radius:8px}",
+      ".tj-sil.gota .cabeca{border-radius:50% 50% 46% 46%}",
+      ".tj-sil .corpo{width:70px;height:64px;margin-top:-6px;border-radius:40px 40px 8px 8px;opacity:.95}",
+      ".tj-sil.fala .cabeca{box-shadow:0 0 0 3px #f2c14e}",
+      ".tj-desk{position:absolute;left:0;right:0;bottom:0;height:36px;background:linear-gradient(#3b2a22,#241812)}",
+      ".tj-lower{position:absolute;left:10px;right:10px;bottom:42px;background:#101820;border-left:4px solid #f2c14e;padding:6px 8px;display:flex;flex-direction:column}",
+      ".tj-lower b{font-size:14px}.tj-lower span{color:#c9d4e4;font-size:11px}",
+      ".tj-fala{margin:0;padding:8px 10px 10px;font-size:14.5px;line-height:1.35;background:#0b1524}",
+      ".tj-telao{background:#0b1522;border:1px solid #24344c;border-radius:10px;padding:10px;overflow:auto;min-height:0}",
+      ".tj-telao h3{margin:0 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#f2c14e}",
+      ".tj-bar{display:grid;grid-template-columns:minmax(120px,34%) 1fr auto;gap:6px;align-items:center;margin:5px 0;font-size:13px}",
+      ".tj-bar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+      ".tj-bar .trilha{height:14px;background:#16263b;border-radius:7px;overflow:hidden}",
+      ".tj-bar .trilha i{display:block;height:100%;width:0;transition:width .35s linear}",
+      ".tj-selo{font-size:10px;font-weight:800;letter-spacing:.04em;padding:2px 5px;border-radius:3px;background:#1d3b2a;color:#b6f5cf}",
+      ".tj-selo.proj{background:#3a2f12;color:#f2c14e}",
+      ".tj-selo.fora{background:#241820;color:#e7b4c0}",
+      ".tj-vinheta{height:100%;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}",
+      ".tj-vinheta b{font-family:var(--font-display, Fraunces, Georgia, serif);font-size:28px}",
+      ".tj-chamada{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}",
+      ".tj-chamada .grande{font-family:var(--font-display, Fraunces, Georgia, serif);font-size:34px;line-height:1}",
+      ".tj-zona{display:flex;align-items:center;gap:8px;margin:6px 0}",
+      ".tj-zona .bloco{height:28px;flex:1;border-radius:4px;background:#16263b;position:relative;overflow:hidden}",
+      ".tj-zona .bloco i{position:absolute;inset:0 auto 0 0}",
+      ".tj-hemi{width:100%;height:auto}",
+      ".tj-split{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 8px 6px}",
+      ".tj-rep{background:#101a2a;border:1px solid #24344c;border-radius:8px;padding:6px 8px;font-size:12px;min-height:44px}",
+      ".tj-tick{flex:none;background:#081018;border-top:1px solid #24344c;overflow:hidden;height:28px;display:flex;align-items:center}",
+      ".tj-tick p{margin:0;white-space:nowrap;padding-left:100%;animation:tj-marq 28s linear infinite;font-size:13px;color:#d5deea}",
+      "@keyframes tj-marq{from{transform:translateX(0)}to{transform:translateX(-100%)}}",
+      ".tj-ctl{flex:none;display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:#0c1828;border-top:1px solid #24344c}",
+      ".tj-ctl button,.tj-tabs button,.tj-canais button{border:1px solid #31445f;background:#152238;color:#f4efe4;border-radius:6px;padding:7px 10px;font-size:12px;font-weight:700}",
+      ".tj-ctl button.on,.tj-tabs button.on,.tj-canais button.on{background:#c4552a;border-color:#c4552a;color:#fff}",
+      ".tj-tabs,.tj-canais{flex:none;display:flex;gap:6px;overflow:auto;padding:6px 8px;background:#0a1422}",
+      ".tj-pip{position:absolute;right:8px;top:8px;width:min(220px,40%);background:#061018;border:1px solid #f2c14e;border-radius:8px;padding:6px;font-size:11px;z-index:2}",
+      ".tj-insp{position:absolute;left:8px;bottom:8px;right:8px;max-height:40%;overflow:auto;background:#071018ee;border:1px solid #31445f;border-radius:8px;padding:8px;font-size:12px;z-index:3}",
+      ".tj-dec{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}",
+      "#apurMapa.tj-sob-mapa{visibility:hidden !important;pointer-events:none !important}",
+      "#tj-voltar-simples{position:fixed;z-index:100001;top:8px;right:8px;background:#c4552a;color:#fff;border:0;border-radius:8px;padding:8px 10px;font-weight:800}",
+      "@media (max-width:800px){#telejornal .tj-stage{grid-template-columns:1fr}.tj-studio{min-height:150px}.tj-fala{font-size:15px}.tj-ctl button{padding:9px 12px}.tj-pip{display:none}}",
+      "@media (prefers-reduced-motion: reduce){#telejornal .tj-tick p{animation:none;padding-left:8px;white-space:normal}#telejornal .tj-sil{transform:none !important}#telejornal .tj-bar .trilha i{transition:none}}",
+      "#telejornal.tj-quiet .tj-tick p{animation:none;padding-left:8px}",
+      "#telejornal.tj-quiet .tj-live{animation:none}"
+    ].join("");
+    document.head.appendChild(st);
+  }
+
+  function esconderMapa() {
+    var mapa = document.getElementById("apurMapa");
+    if (!mapa && window._apMapa && window._apMapa.abrir) {
+      try { window._apMapa.abrir(); } catch (e) {}
+      mapa = document.getElementById("apurMapa");
+    }
+    if (!mapa) return;
+    if (!mapa.getAttribute("data-tj-turno")) mapa.setAttribute("data-tj-turno", turnoNoite());
+    mapa.classList.add("tj-sob-mapa");
+    var pausa = mapa.querySelector("[data-ap='pausa']");
+    if (pausa && /Pausar/.test(pausa.textContent || "")) {
+      pausa.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
+    }
+  }
+
+  function turnoNoite() {
+    try { return String((M().eleicao.noite && M().eleicao.noite.turno) || 1); } catch (e) { return "1"; }
+  }
+
+  function mostrarMapa() {
+    var mapa = document.getElementById("apurMapa");
+    var turno = turnoNoite();
+    if (mapa && mapa.getAttribute("data-tj-turno") && mapa.getAttribute("data-tj-turno") !== turno) {
+      mapa.remove();
+      mapa = null;
+    }
+    if (!mapa && window._apMapa && window._apMapa.abrir) {
+      try { window._apMapa.abrir(); } catch (e) {}
+      mapa = document.getElementById("apurMapa");
+    }
+    if (mapa) mapa.setAttribute("data-tj-turno", turno);
+    if (!mapa) return;
+    mapa.classList.remove("tj-sob-mapa");
+    if (!document.getElementById("tj-voltar-simples")) {
+      var b = document.createElement("button");
+      b.id = "tj-voltar-simples";
+      b.type = "button";
+      b.textContent = "Voltar ao telejornal";
+      b.onclick = function () {
+        guardarModo("cobertura");
+        b.remove();
+        abrir();
+      };
+      document.body.appendChild(b);
+    }
+  }
+
+  function garantirMapa() {
+    if (!document.getElementById("apurMapa") && window._apMapa && window._apMapa.abrir) {
+      try { window._apMapa.abrir(); } catch (e) {}
+    }
+  }
+
+  function pessoa(cob, id) {
+    return (cob.elenco || []).filter(function (p) { return p.id === id; })[0] || (cob.elenco || [])[0] || { nome: "Bancada", papel: "Estúdio", silhueta: { cor: "#d7deea", forma: "redondo" } };
+  }
+
+  function estado() {
+    if (!S.cob) return null;
+    return TJ.estadoNoTempo(S.cob, S.t);
+  }
+
+  function hemiciclo(itens) {
+    var n = Math.max(1, Math.min(96, itens.length));
+    var partes = [];
+    for (var i = 0; i < n; i++) {
+      var ang = Math.PI + (Math.PI * (i + 0.5)) / n;
+      var x = 160 + Math.cos(ang) * 120;
+      var y = 132 + Math.sin(ang) * 88;
+      var cor = itens[i] && itens[i].cor ? itens[i].cor : "#3a4a60";
+      partes.push('<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="5.2" fill="' + cor + '"></circle>');
+    }
+    return '<svg class="tj-hemi" viewBox="0 0 320 160" role="img" aria-label="Hemiciclo projetado">' + partes.join("") + "</svg>";
+  }
+
+  function desenharTelao(est) {
+    var cob = S.cob;
+    var box = S.el.querySelector(".tj-telao");
+    if (!box || !est) return;
+    var graf = S.painel === "auto" ? ((est.segmento && est.segmento.grafico) || "placar") : S.painel;
+    var chaves = Object.keys(est.snap.parcial).sort(function (a, b) { return est.snap.parcial[b] - est.snap.parcial[a]; });
+    var ap = chaves.reduce(function (s, k) { return s + est.snap.parcial[k]; }, 0) || 1;
+    var topo = chaves[0];
+    var html = "";
+    if (graf === "vinheta") {
+      html = '<div class="tj-vinheta"><small>SIMULAÇÃO SATÍRICA</small><b>Eleições ' + esc(cob.titulo) + '</b><div>' + esc(S.corridas[S.i].ano) + (S.corridas[S.i].turno === 2 ? " · 2º turno" : " · 1º turno") + '</div><div>' + esc(cob.canal.pele) + '</div></div>';
+    } else if (graf === "chamada" || (est.sit.matematico && graf === "chamada")) {
+      var pode = eleitoNaTela(est.sit);
+      html = '<div class="tj-chamada"><small>' + (pode ? "CHAMADA MATEMÁTICA" : "PROJEÇÃO") + '</small><div class="grande">' + esc(nomeExib(est.sit.lider, cob)) + '</div><div>' + (pode ? '<span class="tj-selo">ELEITO</span> Vantagem maior do que os votos restantes.' : "Ainda não há selo. Tendência de " + TJ.fmtPct(est.sit.pVitoria * 100, 0) + "%.") + '</div></div>';
+    } else if (graf === "pesquisa") {
+      var boca = cob.boca.partes;
+      var ks = Object.keys(boca).sort(function (a, b) { return boca[b] - boca[a]; }).slice(0, 6);
+      html = "<h3>Pesquisa de saída · margem 2 p.p.</h3>" + ks.map(function (k) {
+        return '<div class="tj-bar"><span>' + esc(siglaCurta(nomeExib(k, cob))) + '</span><div class="trilha"><i style="width:' + (boca[k] * 100).toFixed(1) + '%;background:' + corDe(k) + '"></i></div><b>' + TJ.fmtPct(boca[k] * 100) + '%</b></div>';
+      }).join("") + '<p>Não é urna. É retrato de saída.</p>';
+    } else if (graf === "mapa") {
+      var fr = TJ.fracaoBlocos(cob.blocos, est.snap.t, 6);
+      html = "<h3>Zonas de apuração</h3>" + cob.blocos.map(function (b, i) {
+        var row = cob.matriz.M[i];
+        var lider = null, best = -1;
+        cob.matriz.P.forEach(function (p, j) { if (row[j] > best) { best = row[j]; lider = p; } });
+        var chegou = fr[i] > 0;
+        return '<div class="tj-zona"><span style="width:132px">' + esc(b.nome) + '</span><div class="bloco"><i style="width:' + Math.round(fr[i] * 100) + '%;background:' + (chegou ? corDe(lider) : "#16263b") + '"></i></div><small>' + (chegou ? esc(siglaCurta(nomeExib(lider, cob))) : "aguardando") + "</small></div>";
+      }).join("") + '<p>O mapa do Brasil por estado continua no modo Simples.</p>';
+    } else if (graf === "hemiciclo" || graf === "sobras" || graf === "qe") {
+      html = desenharProporcional(est, graf);
+    } else if (graf === "candidatos" || graf === "duelo") {
+      html = desenharCandidatos(est, graf === "duelo");
+    } else {
+      var max = Math.max.apply(null, chaves.map(function (k) { return est.snap.parcial[k]; }).concat([1]));
+      html = "<h3>Placar · " + TJ.fmtPct(est.pct * 100) + "% das urnas</h3>" + chaves.slice(0, 8).map(function (k) {
+        var selo = "";
+        if (S.corridas[S.i].tipo === "majoritaria" && k === topo && eleitoNaTela(est.sit)) selo = ' <span class="tj-selo">ELEITO</span>';
+        else if (S.corridas[S.i].tipo === "majoritaria" && k === topo && est.sit.pVitoria >= 0.9) selo = ' <span class="tj-selo proj">TENDÊNCIA</span>';
+        return '<div class="tj-bar"><span>' + esc(siglaCurta(nomeExib(k, cob))) + "</span><div class=\"trilha\"><i style=\"width:" + (est.snap.parcial[k] / max * 100).toFixed(1) + "%;background:" + corDe(k) + '"></i></div><b>' + TJ.fmtPct(est.snap.parcial[k] / ap * 100) + "%</b>" + selo + "</div>";
+      }).join("") + '<p>Vantagem ' + TJ.fmtInt(est.sit.vantagem) + " votos · faltam " + TJ.fmtInt(est.sit.restante) + ".</p>";
+    }
+    if (box.getAttribute("data-k") !== graf + "|" + Math.round(est.pct * 200) + "|" + (est.segmento && est.segmento.tipo)) {
+      box.setAttribute("data-k", graf + "|" + Math.round(est.pct * 200) + "|" + (est.segmento && est.segmento.tipo));
+      box.innerHTML = html;
+    }
+  }
+
+  function projCache(est) {
+    var meta = S.cob.meta;
+    if (!meta) return null;
+    var degrau = Math.round(est.pct * 10);
+    if (S.cache.degrau === degrau && S.cache.proj) return S.cache.proj;
+    var proj = TJ.projetarCadeiras(est.snap, meta);
+    S.cache = { degrau: degrau, proj: proj, conf: {} };
+    return proj;
+  }
+
+  function confirmado(id, est) {
+    var meta = S.cob.meta;
+    if (!meta) return false;
+    if (est.pct >= 0.999) {
+      return (meta.resultadoOficial.eleitos || []).some(function (e) { return e.candidato === id; });
+    }
+    var degrau = Math.round(est.pct * 10);
+    var chave = id + "@" + degrau;
+    if (S.cache.conf && S.cache.conf[chave] != null) return S.cache.conf[chave];
+    var ok = false;
+    try { ok = TJ.confirmavel(id, est.snap, meta); } catch (e) { ok = false; }
+    S.cache.conf = S.cache.conf || {};
+    S.cache.conf[chave] = ok;
+    return ok;
+  }
+
+  function desenharProporcional(est, graf) {
+    var cob = S.cob;
+    var corrida = S.corridas[S.i];
+    if (corrida.tipo !== "proporcional") {
+      return "<h3>Majoritária</h3><p>Hemiciclo e quociente ficam nas corridas proporcionais. Esta chave é de " + esc(corrida.titulo) + ".</p>";
+    }
+    var proj = projCache(est);
+    var por = (proj && proj.por_partido) || {};
+    var cadeiras = [];
+    Object.keys(por).forEach(function (id) {
+      var n = por[id].total || 0;
+      for (var i = 0; i < n; i++) cadeiras.push({ cor: corDe(id), id: id });
+    });
+    var vagas = Number(corrida.vagas) || cadeiras.length;
+    while (cadeiras.length < vagas) cadeiras.push({ cor: "#3a4a60" });
+    var qe = corrida.qe ? corrida.qe.QE : 0;
+    var ap = Object.keys(est.snap.parcial).reduce(function (s, k) { return s + est.snap.parcial[k]; }, 0) || 1;
+    var fator = est.pct > 0.02 ? 1 / est.pct : 0;
+    var barras = Object.keys(est.snap.parcial).sort(function (a, b) { return est.snap.parcial[b] - est.snap.parcial[a]; }).slice(0, 8).map(function (id) {
+      var projetado = est.snap.parcial[id] * (fator || 1);
+      var pctQe = qe ? Math.min(140, projetado / qe * 100) : 0;
+      var cade = por[id] ? por[id].total : 0;
+      return '<div class="tj-bar"><span>' + esc(siglaCurta(nomeExib(id, cob))) + '</span><div class="trilha"><i style="width:' + pctQe.toFixed(1) + '%;background:' + corDe(id) + '"></i></div><b>' + (est.pct < 0.02 ? "—" : cade + " cad.") + "</b></div>";
+    }).join("");
+    var titulo = graf === "qe" ? "Régua do quociente · projeção" : graf === "sobras" ? "Sobras e hemiciclo" : "Hemiciclo projetado";
+    return "<h3>" + titulo + "</h3>" + (qe ? "<p>QE " + TJ.fmtInt(qe) + " · a barra passa de 100% da régua quando a projeção atravessa o quociente.</p>" : "") + barras + hemiciclo(cadeiras.slice(0, vagas)) + "<p>Cadeira cinza ainda não está na projeção. Selo de eleito só no pior caso.</p>";
+  }
+
+  function desenharCandidatos(est, duelo) {
+    var cob = S.cob;
+    var corrida = S.corridas[S.i];
+    if (corrida.tipo === "majoritaria" || duelo) {
+      var chaves = Object.keys(est.snap.parcial).sort(function (a, b) { return est.snap.parcial[b] - est.snap.parcial[a]; }).slice(0, duelo ? 2 : 6);
+      var ap = Object.keys(est.snap.parcial).reduce(function (s, k) { return s + est.snap.parcial[k]; }, 0) || 1;
+      return "<h3>" + (duelo ? "Duelo" : "Nomes") + "</h3>" + chaves.map(function (k) {
+        var eleito = corrida.tipo === "majoritaria" && k === est.sit.lider && eleitoNaTela(est.sit);
+        return '<div class="tj-bar"><span>' + esc(siglaCurta(nomeExib(k, cob))) + '</span><div class="trilha"><i style="width:' + (est.snap.parcial[k] / ap * 100).toFixed(1) + '%;background:' + corDe(k) + '"></i></div><b>' + TJ.fmtPct(est.snap.parcial[k] / ap * 100) + "%</b> " + (eleito ? '<span class="tj-selo">ELEITO</span>' : "") + "</div>";
+      }).join("");
+    }
+    var quem = (corrida.quem || []).slice().sort(function (a, b) { return b.votos - a.votos; }).slice(0, 8);
+    var linhas = quem.map(function (c, idx) {
+      var parcialPartido = est.snap.parcial[c.lista] || 0;
+      var fimPartido = corrida.totais[c.lista] || 1;
+      var mostrado = Math.round(c.votos * (parcialPartido / fimPartido));
+      var conf = confirmado(c.id, est);
+      var proj = projCache(est);
+      var naLista = proj && (proj.eleitos || []).some(function (e) { return e.candidato === c.id; });
+      var fase = proj && (proj.eleitos || []).filter(function (e) { return e.candidato === c.id; })[0];
+      var selo = conf ? '<span class="tj-selo">ELEITO</span>' : naLista ? '<span class="tj-selo proj">' + (fase && fase.fase === "sobra" ? "SOBRA" : "DENTRO") + "</span>" : '<span class="tj-selo fora">FORA</span>';
+      if (est.pct < 0.08) selo = '<span class="tj-selo fora">CEDO</span>';
+      return '<div class="tj-bar"><span>' + (idx + 1) + ". " + esc(siglaCurta(c.nome)) + '</span><div class="trilha"><i style="width:' + Math.min(100, mostrado / Math.max(1, quem[0] && Math.round(quem[0].votos * ((est.snap.parcial[quem[0].lista] || 0) / (corrida.totais[quem[0].lista] || 1))) || 1) * 100) + '%;background:' + corDe(c.lista || c.partido) + '"></i></div><b>' + TJ.fmtInt(mostrado) + "</b> " + selo + "</div>";
+    }).join("");
+    return "<h3>Mais votados na parcial</h3>" + linhas;
+  }
+
+  function emitir(tipo, dados) {
+    if (S.fatos[tipo]) return;
+    S.fatos[tipo] = 1;
+    try {
+      if (typeof window.emitirFato === "function") {
+        window.emitirFato({
+          tipo: tipo,
+          categoria: "eleicao",
+          gravidade: 2,
+          novidade: 70,
+          pauta: ["eleicao_calendario"],
+          origem: "apuracao",
+          dados: dados || {}
+        });
+      }
+    } catch (e) {}
+  }
+
+  function pintar() {
+    var est = estado();
+    if (!S.el || !est || !S.cob) return;
+    var seg = est.segmento || {};
+    var quem = pessoa(S.cob, seg.personagem_id);
+    var marca = S.el.querySelector(".tj-marca");
+    if (marca) marca.textContent = S.cob.canal.pele;
+    var urnas = S.el.querySelector(".tj-urnas");
+    if (urnas) urnas.textContent = TJ.fmtPct(est.pct * 100) + "%";
+    var rel = S.el.querySelector(".tj-relogio");
+    if (rel) rel.textContent = horaDe(est.pct);
+    var fala = S.el.querySelector(".tj-fala");
+    if (fala && fala.getAttribute("data-i") !== String(S.cob.roteiro.indexOf(seg))) {
+      fala.setAttribute("data-i", String(S.cob.roteiro.indexOf(seg)));
+      fala.textContent = seg.texto || "";
+      var aria = S.el.querySelector(".tj-aria");
+      if (aria) aria.textContent = (quem.nome || "") + ". " + (seg.texto || "");
+      if (S.voz && window.speechSynthesis) {
+        try {
+          window.speechSynthesis.cancel();
+          var u = new SpeechSynthesisUtterance(seg.texto || "");
+          u.lang = "pt-BR";
+          u.rate = (quem.voz && quem.voz.rate) || 1;
+          u.pitch = (quem.voz && quem.voz.pitch) || 1;
+          window.speechSynthesis.speak(u);
+        } catch (e) {}
+      }
+      if (S.audio && seg.tarja) bip();
+    }
+    var lower = S.el.querySelector(".tj-lower");
+    if (lower) {
+      lower.querySelector("b").textContent = quem.nome || "";
+      var onde = seg.tipo === "ao_vivo_qg" ? "AO VIVO — comitê" : (quem.papel || "");
+      lower.querySelector("span").textContent = onde + (seg.tarja ? " · " + seg.tarja : "");
+    }
+    S.el.querySelectorAll(".tj-sil").forEach(function (sil) {
+      sil.classList.toggle("fala", sil.getAttribute("data-papel") === (quem.id || "ancora"));
+    });
+    var tick = S.el.querySelector(".tj-tick p");
+    if (tick) {
+      var pedacos = (S.cob.roteiro || []).filter(function (r) { return r.t_ini <= S.t; }).slice(-4).map(function (r) { return r.texto; });
+      pedacos.unshift("Urnas " + TJ.fmtPct(est.pct * 100) + "%");
+      pedacos.push("#Apuracao");
+      var tx = pedacos.join("   ·   ");
+      if (tick.getAttribute("data-t") !== tx) { tick.setAttribute("data-t", tx); tick.textContent = tx; }
+    }
+    desenharTelao(est);
+    var rep = S.el.querySelectorAll(".tj-rep");
+    if (rep[0]) rep[0].textContent = "Comitê — " + (pessoa(S.cob, "reporter").nome || "") + ": a parcial acompanha " + nomeExib(est.sit.lider, S.cob) + ".";
+    if (rep[1]) rep[1].textContent = "Praça — " + (pessoa(S.cob, "rua").nome || "") + ": " + (est.snap.regiao || "as zonas") + " entram na conta.";
+    if (S.pip && S.el.querySelector(".tj-pip")) {
+      var outro = TJ.estadoNoTempo(S.pip, S.t);
+      var oseg = outro.segmento || {};
+      S.el.querySelector(".tj-pip").innerHTML = "<b>" + esc(S.pip.canal.pele) + "</b><div>" + esc(oseg.texto || "") + "</div>";
+    }
+    if (est.sit.matematico) emitir("apuracao_chamada", { lider: nomeExib(est.sit.lider, S.cob), cargo: S.corridas[S.i].titulo });
+    if (est.pct >= 0.999) emitir("apuracao_fim", { cargo: S.corridas[S.i].titulo });
+    var fimBox = S.el.querySelector(".tj-dec");
+    if (fimBox) fimBox.style.display = est.pct >= 0.999 ? "flex" : "none";
+  }
+
+  function bip() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!S._actx) S._actx = new Ctx();
+      var o = S._actx.createOscillator();
+      var g = S._actx.createGain();
+      o.frequency.value = 660;
+      g.gain.value = 0.04;
+      o.connect(g); g.connect(S._actx.destination);
+      o.start();
+      o.stop(S._actx.currentTime + 0.12);
+    } catch (e) {}
+  }
+
+  function quadro() {
+    if (!S.el) return;
+    var agora = performance.now();
+    var dt = Math.min(0.08, (agora - (S.last || agora)) / 1000);
+    S.last = agora;
+    if (S.play && S.cob) {
+      S.t = Math.min(S.cob.duracao_s, S.t + dt * S.vel);
+      if (S.t >= S.cob.duracao_s) S.play = false;
+    }
+    pintar();
+    S.raf = requestAnimationFrame(quadro);
+  }
+
+  function pular(dir) {
+    if (!S.cob) return;
+    var lista = S.cob.roteiro;
+    if (dir > 0) {
+      for (var i = 0; i < lista.length; i++) if (lista[i].t_ini > S.t + 0.4) { S.t = lista[i].t_ini; return; }
+      S.t = S.cob.duracao_s;
+    } else {
+      for (var j = lista.length - 1; j >= 0; j--) if (lista[j].t_ini < S.t - 0.8) { S.t = lista[j].t_ini; return; }
+      S.t = 0;
+    }
+  }
+
+  function irResultado() {
+    if (!S.cob) return;
+    var achou = null;
+    S.cob.roteiro.forEach(function (seg) { if (seg.tipo === "chamada" && seg.confirmado) achou = seg; });
+    S.t = achou ? achou.t_ini : S.cob.duracao_s * 0.92;
+    S.play = true;
+  }
+
+  function trocarCanal(id) {
+    S.canal = id;
+    S.cache = {};
+    var t = S.t;
+    S.cob = montar(S.corridas[S.i]);
+    S.t = Math.min(t, S.cob.duracao_s);
+    S.pip = null;
+    if (S.el) preencherControles();
+    pintar();
+  }
+
+  function ligarPip() {
+    var ids = TJ.CANAIS.map(function (c) { return c.id; });
+    var idx = ids.indexOf(S.canal);
+    var outro = ids[(idx + 1) % ids.length];
+    var atual = S.canal;
+    S.canal = outro;
+    S.pip = montar(S.corridas[S.i]);
+    S.canal = atual;
+    S.cob = montar(S.corridas[S.i]);
+  }
+
+  function skeleton() {
+    var el = document.createElement("div");
+    el.id = "telejornal";
+    el.setAttribute("role", "dialog");
+    el.setAttribute("aria-label", "Cobertura ao vivo da apuração");
+    if (S.reduz) el.classList.add("tj-quiet");
+    el.innerHTML = '<div class="tj-aviso"><span>Simulação satírica. Tarja de última hora sem flash contínuo. Áudio desligado.</span><button type="button" data-tj="aviso">Entendi</button></div>' +
+      '<header class="tj-top"><span class="tj-live">AO VIVO</span><div class="tj-marca"></div><div class="grow"><span class="tj-relogio">17:00</span> · Brasília</div><div class="tj-urnas">0,0%</div></header>' +
+      '<div class="tj-tabs" data-tj-corridas></div>' +
+      '<div class="tj-stage"><section class="tj-studio"><div class="tj-cam"><div class="tj-sil a" data-papel="ancora"><i class="cabeca"></i><i class="corpo"></i></div><div class="tj-sil b" data-papel="coancora"><i class="cabeca"></i><i class="corpo"></i></div><div class="tj-desk"></div><div class="tj-lower"><b></b><span></span></div><div class="tj-pip" hidden></div></div><p class="tj-fala"></p></section><section class="tj-telao" aria-label="Telão"></section></div>' +
+      '<div class="tj-tabs" data-tj-paineis></div>' +
+      '<div class="tj-split"><div class="tj-rep"></div><div class="tj-rep"></div></div>' +
+      '<div class="tj-tick"><p></p></div>' +
+      '<div class="tj-canais" data-tj-canais></div>' +
+      '<footer class="tj-ctl"></footer>' +
+      '<div class="tj-aria" aria-live="polite" style="position:absolute;left:-9999px"></div>';
+    el.addEventListener("click", clique);
+    document.body.appendChild(el);
+    S.el = el;
+  }
+
+  function preencherControles() {
+    var tabs = S.el.querySelector("[data-tj-corridas]");
+    tabs.innerHTML = S.corridas.map(function (c, i) {
+      return '<button type="button" data-tj="corrida" data-i="' + i + '"' + (i === S.i ? ' class="on"' : "") + ">" + esc(c.titulo) + (c.turno === 2 ? " · 2º" : "") + "</button>";
+    }).join("");
+    var pai = S.el.querySelector("[data-tj-paineis]");
+    pai.innerHTML = [["auto", "Ao vivo"], ["placar", "Placar"], ["hemiciclo", "Hemiciclo"], ["candidatos", "Candidatos"], ["mapa", "Mapa"], ["qe", "Quociente"]].map(function (p) {
+      return '<button type="button" data-tj="painel" data-i="' + p[0] + '"' + (S.painel === p[0] ? ' class="on"' : "") + ">" + p[1] + "</button>";
+    }).join("");
+    var can = S.el.querySelector("[data-tj-canais]");
+    can.innerHTML = TJ.CANAIS.map(function (c) {
+      return '<button type="button" data-tj="canal" data-i="' + c.id + '"' + (S.canal === c.id ? ' class="on"' : "") + ">" + esc(c.pele) + "</button>";
+    }).join("");
+    var ctl = S.el.querySelector(".tj-ctl");
+    ctl.innerHTML = '<button type="button" data-tj="pausa">' + (S.play ? "Pausar" : "Continuar") + '</button>' +
+      [1, 2, 4].map(function (v) { return '<button type="button" data-tj="vel" data-i="' + v + '"' + (S.vel === v ? ' class="on"' : "") + ">" + v + "×</button>"; }).join("") +
+      '<button type="button" data-tj="pular" data-i="-1">Bloco anterior</button>' +
+      '<button type="button" data-tj="pular" data-i="1">Pular</button>' +
+      '<button type="button" data-tj="resultado">Ver só o resultado</button>' +
+      '<button type="button" data-tj="pip">PiP</button>' +
+      '<button type="button" data-tj="audio"' + (S.audio ? ' class="on"' : "") + ">Áudio</button>" +
+      '<button type="button" data-tj="voz"' + (S.voz ? ' class="on"' : "") + ">Voz</button>" +
+      '<button type="button" data-tj="dalt"' + (S.dalt ? ' class="on"' : "") + ">Daltonismo</button>" +
+      '<button type="button" data-tj="insp">Inspetor</button>' +
+      '<button type="button" data-tj="conta">Entenda a conta</button>' +
+      '<button type="button" data-tj="simples">Modo Simples</button>' +
+      '<button type="button" data-tj="fechar">Concluir</button>' +
+      '<div class="tj-dec" style="display:none"><button type="button" data-tj="dec" data-i="agradecer">Agradecer</button><button type="button" data-tj="dec" data-i="conceder">Conceder</button><button type="button" data-tj="dec" data-i="contestar">Contestar</button></div>';
+    var a = pessoa(S.cob, "ancora");
+    var b = pessoa(S.cob, "coancora");
+    var sa = S.el.querySelector('.tj-sil.a');
+    var sb = S.el.querySelector('.tj-sil.b');
+    if (sa && a.silhueta) { sa.querySelector(".cabeca").style.background = a.silhueta.cor; sa.querySelector(".corpo").style.background = a.silhueta.cor; sa.classList.toggle("quadrado", a.silhueta.forma === "quadrado"); }
+    if (sb && b.silhueta) { sb.querySelector(".cabeca").style.background = b.silhueta.cor; sb.querySelector(".corpo").style.background = b.silhueta.cor; }
+  }
+
+  function clique(ev) {
+    var b = ev.target.closest("[data-tj]");
+    if (!b || !S.el.contains(b)) return;
+    var a = b.getAttribute("data-tj");
+    if (a === "aviso") { var av = S.el.querySelector(".tj-aviso"); if (av) av.remove(); S.aviso = true; }
+    else if (a === "pausa") { S.play = !S.play; S.last = performance.now(); preencherControles(); }
+    else if (a === "vel") { S.vel = Number(b.getAttribute("data-i")) || 1; S.play = true; preencherControles(); }
+    else if (a === "pular") pular(Number(b.getAttribute("data-i")) || 1);
+    else if (a === "resultado") irResultado();
+    else if (a === "canal") trocarCanal(b.getAttribute("data-i"));
+    else if (a === "corrida") { S.i = Number(b.getAttribute("data-i")) || 0; S.cache = {}; S.cob = montar(S.corridas[S.i]); S.t = 0; preencherControles(); }
+    else if (a === "painel") { S.painel = b.getAttribute("data-i"); preencherControles(); pintar(); }
+    else if (a === "pip") { if (S.pip) { S.pip = null; S.el.querySelector(".tj-pip").hidden = true; } else { ligarPip(); var p = S.el.querySelector(".tj-pip"); p.hidden = false; } }
+    else if (a === "audio") { S.audio = !S.audio; if (S.audio) bip(); preencherControles(); }
+    else if (a === "voz") { S.voz = !S.voz; if (!S.voz && window.speechSynthesis) window.speechSynthesis.cancel(); preencherControles(); }
+    else if (a === "dalt") { S.dalt = !S.dalt; S.cache = {}; preencherControles(); pintar(); }
+    else if (a === "simples") { modoSimples(); }
+    else if (a === "fechar") { concluir(); }
+    else if (a === "conta") { abrirConta(); }
+    else if (a === "insp") { abrirInspetor(); }
+    else if (a === "dec") { decidir(b.getAttribute("data-i")); }
+    else if (a === "ir-virada") {
+      var v = (S.cob.roteiro || []).filter(function (s) { return s.tipo === "virada"; })[0];
+      if (v) S.t = v.t_ini;
+    }
+  }
+
+  function decidir(tom) {
+    var fala = S.el.querySelector(".tj-fala");
+    var nome = "a candidatura";
+    try { nome = J().nome; } catch (e) {}
+    var txt = tom === "conceder"
+      ? nome + " reconhece o resultado e cumprimenta quem levou a cadeira. Os votos não mudam."
+      : tom === "contestar"
+        ? nome + " pede recontagem. A soma oficial permanece. O pedido vira fato, não vira voto."
+        : nome + " agradece quem votou e fala de " + (S.corridas[S.i] ? S.corridas[S.i].titulo : "a cadeira") + " sem reabrir a urna.";
+    if (fala) fala.textContent = txt;
+    emitir(tom === "contestar" ? "contestacao" : tom === "conceder" ? "concessao" : "discurso_vitoria", { tom: tom });
+  }
+
+  function abrirConta() {
+    var corrida = S.corridas[S.i];
+    var qe = corrida && corrida.qe;
+    var txt = qe
+      ? "O quociente eleitoral desta chave é " + TJ.fmtInt(qe.QE) + " votos válidos por cadeira. Cada partido divide os próprios votos por esse número e fica com a parte inteira. O que sobra de cadeira vai para as maiores médias. O candidato precisa de 10% do quociente para sentar na vaga direta do partido."
+      : "Nesta chave majoritária, a chamada só sai quando a vantagem de quem lidera é maior do que todos os votos que ainda faltam. Antes disso, o máximo é tendência.";
+    var fala = S.el.querySelector(".tj-fala");
+    if (fala) fala.textContent = txt;
+    S.painel = qe ? "qe" : "placar";
+    pintar();
+  }
+
+  function abrirInspetor() {
+    var antigo = S.el.querySelector(".tj-insp");
+    if (antigo) { antigo.remove(); return; }
+    var est = estado();
+    var seg = est && est.segmento;
+    var box = document.createElement("div");
+    box.className = "tj-insp";
+    var linhas = (S.cob.roteiro || []).slice(0, 18).map(function (s) {
+      return "<div>" + Math.round(s.t_ini) + "s · " + esc(s.tipo) + " · " + esc(s.tom) + " · prioridade " + s.prioridade + (s.canal_chamou_errado ? " · chamada errada" : "") + "</div>";
+    }).join("");
+    var pq = seg && seg.porque ? ("Esta fala: " + seg.tipo + ", tom " + seg.tom + ", canal " + seg.porque.canal + ", prioridade " + seg.prioridade + ".") : "";
+    box.innerHTML = "<b>Inspetor</b><p>" + esc(pq) + '</p><button type="button" data-tj="ir-virada">Ir à virada, se houve</button>' + linhas;
+    S.el.querySelector(".tj-studio").appendChild(box);
+  }
+
+  function modoSimples() {
+    guardarModo("simples");
+    parar();
+    if (S.el) { S.el.remove(); S.el = null; }
+    mostrarMapa();
+  }
+
+  function concluir() {
+    try {
+      var E = M().eleicao;
+      E._cobertura = {
+        semente: S.cob && S.cob.seed,
+        canal: S.canal,
+        modo: "cobertura",
+        momentos: (S.cob && S.cob.roteiro || []).filter(function (s) { return s.prioridade >= 85; }).slice(0, 8).map(function (s) {
+          return { t: s.t_curva, tipo: s.tipo, resumo: s.texto };
+        })
+      };
+    } catch (e) {}
+    parar();
+    if (S.el) { S.el.remove(); S.el = null; }
+    var voltar = document.getElementById("tj-voltar-simples");
+    if (voltar) voltar.remove();
+    var fechar = document.querySelector("#apurMapa [data-ap='fechar']");
+    if (fechar) fechar.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
+    else {
+      try { M().eleicao.noiteVista = true; M().eleicao.pendenteModal = false; } catch (e2) {}
+      try { render(); } catch (e3) {}
+    }
+  }
+
+  function parar() {
+    if (S.raf) cancelAnimationFrame(S.raf);
+    S.raf = 0;
+    if (window.speechSynthesis) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+  }
+
+  function abrir() {
+    if (modoGuardado() === "simples") { mostrarMapa(); return; }
+    css();
+    S.reduz = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    garantirMapa();
+    esconderMapa();
+    var voltar = document.getElementById("tj-voltar-simples");
+    if (voltar) voltar.remove();
+    S.corridas = corridasDoJogo();
+    if (S.el) { parar(); S.el.remove(); S.el = null; }
+    if (!S.corridas.length) {
+      mostrarMapa();
+      return;
+    }
+    var pref = "PRES";
+    try {
+      var cargo = typeof cargoAtualId === "function" ? cargoAtualId() : "";
+      if (cargo === "DEPF" || cargo === "DEPE" || cargo === "VER" || cargo === "GOV" || cargo === "PRES") pref = cargo;
+    } catch (e) {}
+    var idx = S.corridas.findIndex(function (c) { return c.id === pref; });
+    S.i = idx >= 0 ? idx : 0;
+    S.t = 0;
+    S.play = true;
+    S.vel = 1;
+    S.cache = {};
+    S.fatos = {};
+    S.cob = montar(S.corridas[S.i]);
+    skeleton();
+    preencherControles();
+    emitir("apuracao_inicio", { cargo: S.corridas[S.i].titulo, canal: S.canal });
+    S.last = performance.now();
+    S.raf = requestAnimationFrame(quadro);
+  }
+
+  function tecla(ev) {
+    if (!S.el) return;
+    var tag = (ev.target && ev.target.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    if (ev.code === "Space") { ev.preventDefault(); S.play = !S.play; preencherControles(); }
+    else if (ev.key === "ArrowRight") pular(1);
+    else if (ev.key === "ArrowLeft") pular(-1);
+    else if (ev.key === "s" || ev.key === "S") irResultado();
+    else if (ev.key === "c" || ev.key === "C") {
+      var ids = TJ.CANAIS.map(function (c) { return c.id; });
+      trocarCanal(ids[(ids.indexOf(S.canal) + 1) % ids.length]);
+      preencherControles();
+    }
+  }
+  document.addEventListener("keydown", tecla);
+
+  var renderAnterior = window.render;
+  window.render = function () {
+    var out = renderAnterior ? renderAnterior.apply(this, arguments) : undefined;
+    try {
+      var E = (typeof gameState !== "undefined" && gameState && M() && M().eleicao) || null;
+      var quer = E && E.noite && E.noite.v2 && !E.noiteVista && E.pendenteModal;
+      if (quer && !document.getElementById("telejornal") && modoGuardado() !== "simples") abrir();
+      if (!quer && document.getElementById("telejornal")) {
+        parar();
+        var el = document.getElementById("telejornal");
+        if (el) el.remove();
+        S.el = null;
+      }
+    } catch (e) {}
+    return out;
+  };
+
+  var modalAnterior = window.modalNoite;
+  window.modalNoite = function () {
+    if (modoGuardado() === "simples") {
+      return modalAnterior ? modalAnterior.apply(this, arguments) : "";
+    }
+    try { abrir(); return ""; }
+    catch (e) { return modalAnterior ? modalAnterior.apply(this, arguments) : ""; }
+  };
+
+  window.__tj = {
+    abrir: abrir,
+    simples: modoSimples,
+    estado: function () { return { t: S.t, play: S.play, canal: S.canal, i: S.i, corridas: S.corridas.map(function (c) { return c.id; }) }; },
+    ir: function (t) { S.t = t; S.play = false; pintar(); },
+    pausar: function () { S.play = false; },
+    seguir: function () { S.play = true; },
+    corrida: function (id) {
+      var i = S.corridas.findIndex(function (c) { return c.id === id; });
+      if (i >= 0) { S.i = i; S.cache = {}; S.cob = montar(S.corridas[S.i]); S.t = 0; preencherControles(); pintar(); }
+      return i;
+    },
+    resultado: irResultado
+  };
+})();
+</script>
 </body>
 </html>
 
