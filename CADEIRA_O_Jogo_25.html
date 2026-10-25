@@ -33550,6 +33550,10 @@ window.GEO_ABC = GEO_ABC;
         '<button type="button" class="b mini branco" data-a="exfCargo" data-p=\'["SEN"]\'>Senador</button>' +
         '<button type="button" class="b mini corrige" data-a="exfCargo" data-p=\'["GOV"]\'>Governador</button>' +
         '<button type="button" class="b mini corrige" data-a="exfCargo" data-p=\'["PRES"]\'>Presidente</button>' +
+        "</div>" +
+        '<p class="txt" style="margin:8px 0 6px;font-size:12px">Salta o calendário até outubro da próxima eleição deste cargo (municipal ou geral) e abre a apuração. O save continua.</p>' +
+        '<div class="row">' +
+        '<button type="button" class="b confirma" data-a="exfEleicao" data-exf-eleicao="1">Ir para a eleição</button>' +
         "</div></div>";
       // Sempre no topo, logo após o título — fácil de achar
       if (/<h2>Console do operador<\/h2>/.test(h)) {
@@ -33591,6 +33595,113 @@ window.GEO_ABC = GEO_ABC;
         _toast("Erro ao mudar cargo: " + err.message, "err");
       }
     };
+
+    function cargoDaEleicaoDoJogador() {
+      var id = null;
+      try { id = typeof cargoAtualId === "function" ? cargoAtualId() : null; } catch (e) {}
+      if (id && typeof NOME_CARGO !== "undefined" && NOME_CARGO[id]) return id;
+      try {
+        var alvo = cargoIdPorNome(J().campanha && J().campanha.cargo_alvo);
+        if (alvo && NOME_CARGO[alvo]) return alvo;
+      } catch (e2) {}
+      return null;
+    }
+    function eleicaoJaApurada(ano) {
+      try {
+        var E = M().eleicao || {};
+        var f = E.fase || {};
+        if (f.r1 === ano) return true;
+        if (E.ano === ano && E.resultados && E.resultados.length) return true;
+      } catch (e) {}
+      return false;
+    }
+    function anoDaProximaEleicao(cargoId) {
+      var mun = cargoId === "VER" || cargoId === "PREF";
+      var d = dt();
+      var y = d.ano;
+      var k;
+      for (k = 0; k < 8; k++, y++) {
+        var serve = mun ? (y % 4 === 0) : (y % 4 === 2);
+        if (!serve) continue;
+        if (y < d.ano) continue;
+        if (y === d.ano && d.mes > 10) continue;
+        if (y === d.ano && eleicaoJaApurada(y)) continue;
+        return y;
+      }
+      return y;
+    }
+    function irParaEleicao() {
+      if (!gameState || typeof J !== "function" || !J()) {
+        _toast("Não há carreira carregada.", "err");
+        return;
+      }
+      if (M().golpe) {
+        _toast("O calendário está suspenso pelo golpe. Restaure a democracia antes.", "err");
+        return;
+      }
+      var cargoId = cargoDaEleicaoDoJogador();
+      if (!cargoId) {
+        _toast("Defina um cargo ou um cargo-alvo para saber qual eleição abrir.", "err");
+        return;
+      }
+      var mun = cargoId === "VER" || cargoId === "PREF";
+      var ano = anoDaProximaEleicao(cargoId);
+      var d = dt();
+      var meses = (ano * 12 + 10) - (d.ano * 12 + (d.mes || 1));
+      if (meses > 0) d.turno_total = (d.turno_total || 1) + meses;
+      d.ano = ano;
+      d.mes = 10;
+      d.semana = 1;
+      try {
+        var j = J();
+        if (j.nascimento && j.nascimento.ano) {
+          var n = j.nascimento;
+          var novo = d.ano - n.ano - (d.mes < n.mes ? 1 : 0);
+          if (novo > j.idade && novo < 120) j.idade = novo;
+        }
+      } catch (eI) {}
+      window.__blkApur = false;
+      var E = M().eleicao;
+      E.fase = E.fase || {};
+      try {
+        window.apurarEleicao();
+      } catch (err) {
+        _toast("A apuração não abriu: " + (err && err.message ? err.message : err), "err");
+        return;
+      }
+      E.fase.r1 = ano;
+      var tem2 = false;
+      try {
+        tem2 = !!(E.segundo_turno || (E.segundos && E.segundos.length) || (E.runoffs && E.runoffs.length) || (typeof haSegundoTurno === "function" && haSegundoTurno()));
+      } catch (e2) {}
+      if (!tem2) E.fase.r2 = ano;
+      if (!gameState.debug_cheats) gameState.debug_cheats = {};
+      gameState.debug_cheats.usou_cheat = true;
+      if (typeof S !== "undefined" && S) S.modal = null;
+      try {
+        var fecharBtn = document.querySelector("#apurMapa [data-ap='fechar']");
+        if (fecharBtn) fecharBtn.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
+      } catch (eF) {}
+      E.pendenteModal = true;
+      E.noiteVista = false;
+      try { salvar(); } catch (eSv) {}
+      try { render(); } catch (eR) {}
+      var abriu = false;
+      try { abriu = !!(E.noite && E.noite.v2 && document.getElementById("apurMapa")); } catch (eA) {}
+      if (!abriu) {
+        try { if (typeof modalNoite === "function") modalNoite(); } catch (eM) {}
+        try { abriu = !!(E.noite && E.noite.v2 && document.getElementById("apurMapa")); } catch (eB) {}
+      }
+      var tipo = mun ? "municipal" : "geral";
+      _toast(
+        abriu
+          ? ("Outubro de " + ano + " (" + tipo + ", " + (NOME_CARGO[cargoId] || cargoId) + "). A apuração está aberta.")
+          : ("Calendário em outubro de " + ano + ", mas a noite de apuração não abriu."),
+        abriu ? "ok" : "err"
+      );
+    }
+    A.exfEleicao = irParaEleicao;
+    if (window.cheats) window.cheats.irParaEleicao = irParaEleicao;
     return true;
   }
 
