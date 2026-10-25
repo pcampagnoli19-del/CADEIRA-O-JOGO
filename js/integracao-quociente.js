@@ -834,6 +834,61 @@
     }
   }
 
+  function montarRanking(L, pct) {
+    var qe = L.qe || {};
+    var barreira = (qe.QE || 0) * ((typeof REGRAS_ELEITORAIS !== "undefined" && REGRAS_ELEITORAIS.barreira_candidato_qp) || 0.1);
+    var porId = {};
+    (L.eleitos || []).forEach(function (e) { if (e && e.id) porId[e.id] = e; });
+    var gente = [];
+    var visto = {};
+    function add(c) {
+      if (!c || c.id == null || visto[c.id]) return;
+      visto[c.id] = 1;
+      gente.push(c);
+    }
+    (qe.entrada || []).forEach(function (p) {
+      (p.candidatos || []).forEach(function (c) {
+        var nome = c.nome;
+        if (!nome && (c.id === "JOGADOR" || c.jogador)) { try { nome = J().nome; } catch (e) { nome = "Você"; } }
+        add({
+          id: c.id,
+          nome: nome || "Candidato de legenda",
+          partido: c.partido || "",
+          votos: c.votos || 0,
+          jogador: !!c.jogador || c.id === "JOGADOR"
+        });
+      });
+    });
+    if (!gente.length) {
+      (L.named || []).forEach(function (c) {
+        add({ id: c.id, nome: c.nome, partido: c.partido || "", votos: c.v || c.votos || 0, jogador: !!c.jogador });
+      });
+      (L.eleitos || []).forEach(function (e) {
+        add({ id: e.id, nome: e.nome, partido: e.partido || "", votos: e.votos || 0, jogador: !!e.jogador });
+      });
+    }
+    gente.sort(function (a, b) {
+      return (b.votos - a.votos) || String(a.nome || "").localeCompare(String(b.nome || ""));
+    });
+    var campeao = null;
+    gente.forEach(function (c) { if (!campeao && !porId[c.id]) campeao = c; });
+    var fator = (pct >= 100) ? 1 : Math.max(0.08, Math.min(1, (pct || 0) / 100));
+    var validos = qe.validos || 1;
+    var nDir = 0, nSob = 0;
+    (L.eleitos || []).forEach(function (e) { if (e.fase === "sobra") nSob++; else nDir++; });
+    return { gente: gente, porId: porId, barreira: barreira, campeao: campeao, fator: fator, validos: validos, nDir: nDir, nSob: nSob, qe: qe };
+  }
+  function ingressoDe(c, porId, barreira) {
+    var el = porId[c.id];
+    if (el && el.fase === "sobra") return { id: "sobra", txt: "sobra", cor: "#f5c542" };
+    if (el) return { id: "direta", txt: "cadeira direta", cor: "#8ee0b0" };
+    if ((c.votos || 0) < barreira) return { id: "barrado", txt: "barrado nos 10%", cor: "#e07a7a" };
+    return { id: "nao", txt: "não eleito", cor: "#9eb0ce" };
+  }
+  function pctCand(votos, validos) {
+    var n = validos ? (votos / validos * 100) : 0;
+    return n.toFixed(2).replace(".", ",") + "%";
+  }
   window.telaDepQuociente = function (opts) {
     try {
       opts = opts || {};
@@ -844,50 +899,22 @@
       var cargo = opts.cargo || "DEPF";
       var L = E && E._leg2 && E._leg2[cargo];
       if (!L || !L.qe || L.sistema === "antigo") return null;
-      var qe = L.qe;
-      var pct = opts.pct || 0;
-      var ato = pct < 34 ? 1 : pct < 67 ? 2 : 3;
-      var atoNome = ato === 1 ? "Ato 1 — Quociente" : ato === 2 ? "Ato 2 — Cadeiras diretas" : "Ato 3 — Sobras";
-      var partes = Object.keys(qe.por_partido || {}).map(function (id) {
-        return { id: id, nome: nomeFed(id), info: qe.por_partido[id] };
-      }).sort(function (a, b) { return b.info.votos - a.info.votos; });
-      var lider = partes.length ? partes[0].info.votos : 1;
-      var barras = partes.slice(0, 8).map(function (p) {
-        var w = Math.max(2, Math.round(p.info.votos / lider * 100));
-        var marca = qe.QE > 0 ? Math.max(0, Math.min(100, Math.round(qe.QE / lider * 100))) : 0;
-        var txt = ato === 1 ? fmtV(p.info.votos) : (p.info.diretas + " direta(s)" + (ato === 3 ? " · " + p.info.sobras + " sobra(s)" : ""));
-        return '<div class="ap-mini"><span class="g"><b>' + esc(p.nome) + '</b><br><small>' + txt + '</small></span><span class="pc" style="min-width:46%"><span style="position:relative;display:block;height:8px;background:#1c2b45;border-radius:6px"><i style="position:absolute;left:' + marca + '%;top:-2px;width:2px;height:12px;background:#f5c542"></i><i style="display:block;height:8px;width:' + w + '%;background:#2f6fe0;border-radius:6px"></i></span></span></div>';
+      var Rk = montarRanking(L, opts.pct || 0);
+      var rows = Rk.gente.map(function (c, i) {
+        var ing = ingressoDe(c, Rk.porId, Rk.barreira);
+        var mostra = Math.round((c.votos || 0) * Rk.fator);
+        var fora = Rk.campeao && c.id === Rk.campeao.id;
+        var fotoHtml = "";
+        try { fotoHtml = (typeof opts.foto === "function") ? opts.foto(c) : ""; } catch (e) { fotoHtml = ""; }
+        if (!fotoHtml) fotoHtml = '<span class="ap-ini">' + esc(((c.nome || "?") + "")[0] || "?") + "</span>";
+        var cor = (typeof corDe === "function") ? corDe(c.partido, i) : "#9eb0ce";
+        return '<div class="ap-leg' + (c.jogador ? " ap-eleito" : "") + '" data-ingresso="' + ing.id + '"' + (fora ? ' data-campeao="1"' : "") + ' style="' + (fora ? "box-shadow:inset 3px 0 0 #f5c542;" : "") + '"><span>' + (i + 1) + '</span><span class="foto">' + fotoHtml + '</span><div class="mid"><div class="l1">' + esc(c.nome) + (c.jogador ? " (você)" : "") + '</div><div class="l2"><span style="color:' + cor + '">●</span> ' + esc(c.partido || "—") + " · " + fmtV(mostra) + " votos · " + pctCand(c.votos, Rk.validos) + (fora ? " · mais votado sem cadeira" : "") + '</div></div><b style="flex:none;text-align:right;font-size:12px;line-height:1.2;color:' + ing.cor + ';max-width:46%">' + ing.txt + "</b></div>";
       }).join("");
-      var lista = (L.eleitos || []).filter(function (c) {
-        if (ato === 1) return false;
-        if (ato === 2) return c.fase === "direta";
-        return true;
-      });
-      var eu = (L.eleitos || []).find(function (c) { return c.jogador; }) || (L.named || []).find(function (c) { return c.jogador; });
-      var euHtml = "";
-      if (eu) {
-        var fase = eu.fase === "sobra" ? "Sobra" : eu.fase === "direta" ? "Direta" : (eu.fase ? eu.fase : "Na urna");
-        euHtml = '<div class="ap-card"><div><div class="nm">' + esc(eu.nome) + ' (você)</div><div class="sub">' + esc(eu.partido || "") + " · " + fmtV(eu.votos || eu.v || 0) + " votos · " + fase + "</div></div>" + (eu.fase ? '<span class="ap-badge' + (eu.fase === "sobra" ? " t2" : "") + '">' + (eu.fase === "sobra" ? "Sobra" : "Eleito") + "</span>" : "") + "</div>";
-      }
-      var diretas = lista.filter(function (c) { return c.fase !== "sobra"; });
-      var sobrasL = lista.filter(function (c) { return c.fase === "sobra"; });
-      var amostra = (ato === 3 && pct >= 100) ? diretas.slice(0, 8).concat(sobrasL.slice(0, 4)) : lista.slice(0, 12);
-      var rows = amostra.map(function (c, i) {
-        var tag = c.fase === "sobra" ? "Sobra" : "Direta";
-        return '<div class="ap-leg ap-eleito"><span>' + (i + 1) + '</span><div class="mid"><div class="l1">' + esc(c.nome) + (c.jogador ? " (você)" : "") + '</div><div class="l2">' + esc(c.partido || "") + " · " + fmtV(c.votos || 0) + " votos</div></div><b>" + tag + "</b></div>";
-      }).join("");
-      var restoLista = lista.length > amostra.length ? '<p class="ap-sec">' + lista.length + " eleitos no total. A amostra mostra cadeiras diretas e sobras.</p>" : "";
-      var barra = (qe.barrados || []).slice(0, 3).map(function (b) {
-        return esc(b.nome) + " (" + fmtV(b.votos) + ")";
-      }).join(", ");
-      var fora = qe.campeaoFora && !(L.eleitos || []).some(function (c) { return c.id === qe.campeaoFora.id; })
-        ? '<p class="ap-sec">Mais votado que não leva cadeira: <b>' + esc(qe.campeaoFora.nome) + "</b>.</p>" : "";
-      return "<h2>" + esc(nomes[cargo] || cargo) + "</h2><p class=\"ap-sec\">" + esc(subtitulos[cargo] || "") + " · " + atoNome + "</p>" +
-        '<p class="ap-el">Votos válidos ' + fmtV(Math.round(qe.validos * Math.max(0.08, pct / 100))) + " · QE " + fmtV(qe.QE) + " · " + (L.N || 0) + " cadeiras · marca amarela = 1 quociente</p>" +
-        '<div class="ap-sec"><b>' + (pct >= 100 ? "100%" : (Math.round(pct) + "%")) + '</b> das urnas</div>' +
-        '<div class="ap-subtabs">' + (subs || "") + "</div>" + euHtml + barras + fora +
-        (barra && ato > 1 ? '<p class="ap-sec">Barrados nos 10% do quociente: ' + barra + ".</p>" : "") +
-        '<div data-leg-qe="1">' + rows + "</div>" + restoLista;
+      var pctTxt = (opts.pct || 0) >= 100 ? "100%" : (Math.round(opts.pct || 0) + "%");
+      return "<h2>" + esc(nomes[cargo] || cargo) + "</h2><p class=\"ap-sec\">" + esc(subtitulos[cargo] || "") + "</p>" +
+        '<p class="ap-el">QE ' + fmtV(Rk.qe.QE) + " · " + (L.N || 0) + " vagas · " + Rk.nDir + " diretas · " + Rk.nSob + " sobras · " + fmtV(Math.round(Rk.validos * Rk.fator)) + " votos válidos · " + pctTxt + " das urnas</p>" +
+        '<div class="ap-subtabs">' + (subs || "") + "</div>" +
+        '<div data-leg-qe="1">' + rows + "</div>";
     } catch (e) { console.error("tela qe", e); return null; }
   };
 
@@ -897,7 +924,7 @@
       var p = _lp.apply(this, arguments);
       try {
         var L = (E_()._leg2 || {})[cargo];
-        if (p && L && L.qe && L.sistema !== "antigo") p.qe = L.qe;
+        if (p && L && L.qe && L.sistema !== "antigo") { p.qe = L.qe; p.eleitosVis = L.eleitos || []; }
       } catch (e) {}
       return p;
     };
@@ -907,12 +934,10 @@
     var _dleg = desenharLeg;
     desenharLeg = function (P, corpo) {
       if (!(P && P.qe)) return _dleg.apply(this, arguments);
-      var qe = P.qe;
       corpo.innerHTML = "<h3>" + esc(P.titulo) + "</h3><div class=\"n-prog\"><span>Urnas apuradas</span><div class=\"bar\"><i id=\"n-pb\"></i></div><b id=\"n-pp\">0%</b></div>" +
-        "<div class=\"n-info\" id=\"n-ato\">Ato 1 — o quociente ainda está se formando.</div>" +
-        "<div class=\"n-sec\">Legendas e a régua do quociente</div><div id=\"n-seats\"></div>" +
-        "<div class=\"n-sec\">Cadeiras</div><div id=\"n-top\"></div><div id=\"n-stat\"></div>";
-      NOITE.refs = { pb: corpo.querySelector("#n-pb"), pp: corpo.querySelector("#n-pp"), seats: corpo.querySelector("#n-seats"), top: corpo.querySelector("#n-top"), stat: corpo.querySelector("#n-stat"), ato: corpo.querySelector("#n-ato") };
+        "<div class=\"n-info\" id=\"n-ato\"></div>" +
+        "<div class=\"n-sec\">Ranking da urna</div><div id=\"n-top\"></div><div id=\"n-stat\"></div>";
+      NOITE.refs = { pb: corpo.querySelector("#n-pb"), pp: corpo.querySelector("#n-pp"), top: corpo.querySelector("#n-top"), stat: corpo.querySelector("#n-stat"), ato: corpo.querySelector("#n-ato") };
     };
     desenharLeg._qe = true;
   }
@@ -921,22 +946,21 @@
     atualizarLeg = function (P) {
       if (!(P && P.qe && NOITE.refs && NOITE.refs.ato)) return _aleg.apply(this, arguments);
       var t = NOITE.t || 0;
-      var ato = t < 0.34 ? 1 : t < 0.67 ? 2 : 3;
       var R = NOITE.refs;
+      var L = { qe: P.qe, eleitos: P.eleitosVis || [], named: (P.cands || []).map(function (c) { return { id: c.id, nome: c.nome, partido: c.partido, v: c.v, jogador: c.jogador }; }), N: P.N };
+      var Rk = montarRanking(L, t * 100);
       R.pb.style.width = (t * 100) + "%";
       R.pp.textContent = (t * 100).toFixed(0) + "%";
-      R.ato.textContent = ato === 1 ? "Ato 1 — Quociente eleitoral " + fmtV(P.qe.QE) + "." : ato === 2 ? "Ato 2 — cadeiras diretas, só quem passa de 10% do quociente." : "Ato 3 — sobras pelas maiores médias.";
-      var partes = Object.keys(P.qe.por_partido || {}).map(function (id) { return { id: id, info: P.qe.por_partido[id] }; }).sort(function (a, b) { return b.info.votos - a.info.votos; }).slice(0, 8);
-      var lider = partes.length ? partes[0].info.votos : 1;
-      R.seats.innerHTML = partes.map(function (p) {
-        var n = ato === 1 ? 0 : ato === 2 ? p.info.diretas : p.info.total;
-        return '<div class="n-seat"><span class="pn">' + esc(nomeFed(p.id)) + '</span><div class="sb"><i style="width:' + Math.round(p.info.votos / lider * 100) + '%;background:' + (typeof corDe === "function" ? corDe(p.id, 0) : "#2f6fe0") + '"></i></div><b>' + n + "</b></div>";
+      R.ato.textContent = "QE " + fmtV(P.qe.QE) + " · " + (P.N || 0) + " vagas · " + Rk.nDir + " diretas · " + Rk.nSob + " sobras";
+      R.top.innerHTML = Rk.gente.slice(0, 40).map(function (c, i) {
+        var ing = ingressoDe(c, Rk.porId, Rk.barreira);
+        var mostra = Math.round((c.votos || 0) * Rk.fator);
+        var fora = Rk.campeao && c.id === Rk.campeao.id;
+        var face = "";
+        try { face = (typeof fotoDe === "function") ? fotoDe(c) : ""; } catch (e) { face = ""; }
+        return '<div class="n-leg" data-ingresso="' + ing.id + '"><span class="foto">' + face + '</span><div class="mid"><div class="l1">' + esc(c.nome) + (c.jogador ? " (você)" : "") + '</div><div class="l2">' + esc(c.partido || "—") + " · " + pctCand(c.votos, Rk.validos) + (fora ? " · mais votado sem cadeira" : "") + "</div></div><div class=\"pc\"><b>" + fmtV(mostra) + "</b><small>" + ing.txt + "</small></div></div>";
       }).join("");
-      var eleitos = (P.qe.eleitos || []).filter(function (e) { return ato === 3 ? true : ato === 2 ? e.fase === "direta" : false; }).slice(0, 8);
-      R.top.innerHTML = eleitos.map(function (e) {
-        return '<div class="n-leg"><div class="mid"><div class="l1">' + esc(e.nome || e.candidato) + '</div><div class="l2">' + (e.fase === "sobra" ? "sobra" : "direta") + "</div></div><div class=\"pc\"><b>" + fmtV(e.votos || 0) + "</b></div></div>";
-      }).join("");
-      R.stat.innerHTML = t >= 1 ? '<div class="n-stat ok"><b>Quociente fechado.</b> ' + (P.qe.campeaoFora ? ("O mais votado sem cadeira: " + esc(P.qe.campeaoFora.nome) + ".") : "") + "</div>" : "";
+      R.stat.innerHTML = "";
     };
     atualizarLeg._qe = true;
   }
