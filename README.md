@@ -29,12 +29,4 @@ Os arquivos `modulo_*.js`, `geo_abc_data.js` e `CADEIRA_O_Jogo_25.html.bak_abc` 
 
 ## Trapaças úteis
 
-No **Console do operador**: bloco **Virar cargo** (Prefeito, Governador, Presidente, etc.). O botão **Ir para a eleição** abre a noite.
-
-## Noite de apuração
-
-O padrão é a cobertura em telejornal (estúdio, telão, tarja, ticker). **Modo Simples** devolve o mapa antigo. Áudio nasce desligado.
-
-```bash
-node js/telejornal.test.js
-```
+No **Console do operador**: bloco **Virar cargo** (Prefeito, Governador, Presidente, etc.).
