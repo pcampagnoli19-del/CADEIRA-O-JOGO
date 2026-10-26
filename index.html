@@ -40565,7 +40565,7 @@ document.addEventListener("click", function(e){
   var LEG_NOME = {DEPF:"Deputados federais",DEPE:"Deputados estaduais",VER:"Vereadores"};
   var LEG_SUB = {DEPF:"São Paulo · Câmara dos Deputados",DEPE:"São Paulo · Assembleia Legislativa",VER:"Mauá · Câmara Municipal"};
   var AP = {
-    tab:"pres", uf:null, cargo:"DEPF", verEleitos:false, aberto:{}, ordem:"votos",
+    tab:"pres", uf:null, cargo:"DEPF", verEleitos:false, verRanking:false, aberto:{}, ordem:"votos",
     pct:0, play:true, vel:1, timer:null, last:0, _fotosUsadas:{}, _candFotoMap:{}
   };
   var DURACAO_AP = 36000; // 36s em 1x (18s em 2x, 9s em 4x)
@@ -41701,11 +41701,16 @@ document.addEventListener("click", function(e){
     "#apurMapa .ap-leg .l1{font-weight:800}",
     "#apurMapa .ap-leg .l2{color:#9eb0ce;font-size:12px}",
     "#apurMapa .ap-subtabs{display:flex;gap:6px;margin:6px 0 10px;flex-wrap:wrap}",
+    "#apurMapa .ap-ordlab{margin:8px 0 0;color:#9eb0ce;font-size:12px;font-weight:700}",
+    "#apurMapa .ap-lista{max-height:240px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid #243656;border-radius:10px;padding:0 8px;margin:0 0 12px;background:#0c1526}",
+    "#apurMapa .ap-tag{flex:none;text-align:right;font-size:12px;line-height:1.25;max-width:46%;font-weight:800;white-space:normal}",
+    "#apurMapa .ap-tag-in{display:inline-block;max-width:none;margin-left:6px;font-size:11px;white-space:nowrap;vertical-align:baseline;font-weight:800}",
+    "#apurMapa .ap-chip{white-space:nowrap}",
     "#apurMapa .ap-foot{flex-shrink:0;position:relative;z-index:3;background:#10192b;border-top:1px solid #243656;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}",
     "#apurMapa .ap-foot button{width:100%;background:#1f7a45;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:800;cursor:pointer;font-size:15px}",
     "#apurMapa .ap-ini{width:40px;height:48px;border-radius:6px;background:#1f3257;display:flex;align-items:center;justify-content:center;font-weight:800}",
     "#apurMapa img,#apurMapa .pv-foto{border-radius:6px;object-fit:cover}",
-    "@media(max-width:800px){#apurMapa .ap-grid{grid-template-columns:1fr}#apurMapa .ap-grow{grid-template-columns:18px 1fr auto;font-size:12px}#apurMapa .ap-grow .ap-hide{display:none}#apurMapa .ap-big{font-size:23px}#apurMapa .ap-pct b{font-size:32px}}"
+    "@media(max-width:800px){#apurMapa .ap-grid{grid-template-columns:1fr}#apurMapa .ap-grow{grid-template-columns:18px 1fr auto;font-size:12px}#apurMapa .ap-grow .ap-hide{display:none}#apurMapa .ap-big{font-size:23px}#apurMapa .ap-pct b{font-size:32px}#apurMapa .ap-tabs{flex-wrap:wrap;overflow:visible;height:auto;gap:4px;padding:6px 10px}#apurMapa .ap-subtabs{flex-wrap:wrap;overflow:visible;gap:4px;margin:4px 0 6px}#apurMapa .ap-tab{flex:0 0 auto;white-space:nowrap;max-width:100%;padding:6px 10px;font-size:12.5px}#apurMapa .ap-lista{max-height:118px}#apurMapa h2{font-size:20px;margin:0 0 2px}#apurMapa h3{margin:6px 0 4px;font-size:15px}#apurMapa .ap-sec{line-height:1.25}#apurMapa .ap-el{font-size:12.5px;line-height:1.3}#apurMapa .ap-ordlab{margin:2px 0 0}#apurMapa .ap-leg{padding:4px 0}#apurMapa .ap-leg .l1{font-size:14px;line-height:1.2}#apurMapa .ap-leg .l2{font-size:11.5px;line-height:1.3}#apurMapa .ap-corpo{padding:6px 12px 12px}}"
   ].join("");
 
   function estilo() {
@@ -41985,7 +41990,7 @@ document.addEventListener("click", function(e){
       var ord = AP.ordem === "gasto" ? todos.slice().sort(function (a, b) { return b.gasto - a.gasto; }) : todos;
       full = '<div data-leg-full="' + ord.length + '">' + ord.map(function (c, i) { return linhaLeg(c, i, "ap-leg ap-eleito"); }).join("") + "</div>";
     }
-    if (typeof window.telaDepQuociente === "function") { var _qeHtml = window.telaDepQuociente({ subs: subs, cargo: AP.cargo, pct: AP.pct, nomes: LEG_NOME, subtitulos: LEG_SUB, foto: function (c) { return foto(c, 36, 44); } }); if (_qeHtml) return _qeHtml; }
+    if (typeof window.telaDepQuociente === "function") { var _qeHtml = window.telaDepQuociente({ subs: subs, cargo: AP.cargo, pct: AP.pct, ordem: AP.ordem, ranking: !!AP.verRanking, nomes: LEG_NOME, subtitulos: LEG_SUB, foto: function (c) { return foto(c, 36, 44); }, preco: fmtPreco, gastoFn: function (c) { return gastoDe(c.nome, c.id, AP.cargo, 30); } }); if (_qeHtml) return _qeHtml; }
     return "<h2>" + esc(LEG_NOME[AP.cargo]) + "</h2><p class=\"ap-sec\">" + esc(LEG_SUB[AP.cargo]) + ". Os 15 mais votados.</p>" + barraSecoes(fracUF("SP")) + "<div class=\"ap-subtabs\">" + subs + "</div>" +
       '<div data-leg-top="' + top.length + '">' + top.map(function (c, i) { return linhaLeg(c, i, "ap-leg ap-quinze"); }).join("") + "</div>" +
       '<button class="ap-btn" data-ap="eleitos">' + (AP.verEleitos ? "Ocultar a lista completa" : "Ver os " + N + " eleitos") + "</button>" +
@@ -42057,7 +42062,8 @@ document.addEventListener("click", function(e){
       else if (AP.tab === "dep") html = telaDep();
       else html = telaEstado(AP.tab);
     } catch (e) { console.error(e); html = "<p>Não foi possível montar esta aba.</p>"; }
-    var prevScroll = corpo.scrollTop;
+    var prevScroll = AP._zeraScroll ? 0 : corpo.scrollTop;
+    AP._zeraScroll = false;
     corpo.innerHTML = html;
     corpo.scrollTop = prevScroll;
     document.querySelectorAll("button.fab").forEach(function (b) { b.style.display = "none"; });
@@ -42088,13 +42094,14 @@ document.addEventListener("click", function(e){
     ev.stopPropagation();
     var a = b.getAttribute("data-ap");
     var u = b.getAttribute("data-u");
-    if (a === "tab") { AP.tab = u; AP.uf = null; AP.verEleitos = false; }
+    if (a === "tab") { AP.tab = u; AP.uf = null; AP.verEleitos = false; AP._zeraScroll = true; }
     else if (a === "uf") { AP.uf = u; if (AP.tab === "dep") AP.tab = "gov"; }
     else if (a === "voltar") AP.uf = null;
     else if (a === "todos") AP.aberto[u] = !AP.aberto[u];
     else if (a === "todos-pres") AP.aberto.pres = !AP.aberto.pres;
-    else if (a === "cargo") { AP.cargo = u; AP.verEleitos = false; }
+    else if (a === "cargo") { AP.cargo = u; AP.verEleitos = false; AP._zeraScroll = true; }
     else if (a === "eleitos") AP.verEleitos = !AP.verEleitos;
+    else if (a === "ranking") AP.verRanking = !AP.verRanking;
     else if (a === "ordem") AP.ordem = u;
     else if (a === "pausa") { AP.play = !AP.play; AP.last = performance.now(); }
     else if (a === "vel") { AP.vel = Number(u) || 1; AP.play = true; AP.last = performance.now(); }
@@ -42120,7 +42127,7 @@ document.addEventListener("click", function(e){
     var N = nac();
     var tabInicial = "pres";
     if (isR2 && (!N.pres || N.pres.length < 2) && N.spGov && N.spGov.length >= 2) tabInicial = "gov";
-    AP.tab = tabInicial; AP.uf = null; AP.cargo = "DEPF"; AP.verEleitos = false; AP.aberto = {}; AP.ordem = "votos";
+    AP.tab = tabInicial; AP.uf = null; AP.cargo = "DEPF"; AP.verEleitos = false; AP.verRanking = false; AP.aberto = {}; AP.ordem = "votos";
     AP.pct = 0; AP.play = true; AP.vel = 1; AP.last = performance.now();
     AP._fotosUsadas = {}; AP._candFotoMap = {};
     var el = document.createElement("div");
@@ -47419,21 +47426,101 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
       var L = E && E._leg2 && E._leg2[cargo];
       if (!L || !L.qe || L.sistema === "antigo") return null;
       var Rk = montarRanking(L, opts.pct || 0);
-      var rows = Rk.gente.map(function (c, i) {
+      var gente = Rk.gente.map(function (c) {
+        var el = Rk.porId[c.id];
+        var gasto = 0;
+        if (el && el.gasto != null) gasto = el.gasto;
+        else if (typeof opts.gastoFn === "function") {
+          try { gasto = Number(opts.gastoFn(c)) || 0; } catch (e2) { gasto = 0; }
+        }
+        return {
+          id: c.id, nome: c.nome, partido: c.partido || "", votos: c.votos || 0,
+          jogador: !!c.jogador, eleito: !!el, gasto: gasto, pv: (c.votos ? gasto / c.votos : 0)
+        };
+      });
+      function nomeCmp(a, b) {
+        return String(a.nome || "").localeCompare(String(b.nome || ""), "pt");
+      }
+      function ordenar(lista, ordem) {
+        var arr = lista.slice();
+        arr.sort(function (a, b) {
+          if (ordem === "eleito") {
+            var d = (b.eleito ? 1 : 0) - (a.eleito ? 1 : 0);
+            if (d) return d;
+            return (b.votos - a.votos) || nomeCmp(a, b);
+          }
+          if (ordem === "gasto") return (b.gasto - a.gasto) || nomeCmp(a, b);
+          if (ordem === "pv-asc") {
+            var ap = a.votos > 0 ? a.pv : Infinity;
+            var bp = b.votos > 0 ? b.pv : Infinity;
+            return (ap - bp) || nomeCmp(a, b);
+          }
+          if (ordem === "pv-desc") {
+            var ap2 = a.votos > 0 ? a.pv : -1;
+            var bp2 = b.votos > 0 ? b.pv : -1;
+            return (bp2 - ap2) || nomeCmp(a, b);
+          }
+          if (ordem === "partido") return String(a.partido || "").localeCompare(String(b.partido || ""), "pt") || nomeCmp(a, b);
+          if (ordem === "nome") return nomeCmp(a, b);
+          return (b.votos - a.votos) || nomeCmp(a, b);
+        });
+        return arr;
+      }
+      var ordens = [
+        ["votos", "Mais votado"],
+        ["eleito", "Eleito ou não"],
+        ["gasto", "Gasto na campanha"],
+        ["pv-asc", "Menor R$/voto"],
+        ["pv-desc", "Maior R$/voto"],
+        ["partido", "Partido"],
+        ["nome", "Nome"]
+      ];
+      var ordem = opts.ordem || "votos";
+      if (!ordens.some(function (o) { return o[0] === ordem; })) ordem = "votos";
+      function preco(v) {
+        if (typeof opts.preco === "function") return opts.preco(v);
+        if (!isFinite(v) || v <= 0) return "—";
+        return "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      function linha(c, i, comGasto) {
         var ing = ingressoDe(c, Rk.porId, Rk.barreira);
         var mostra = Math.round((c.votos || 0) * Rk.fator);
         var fora = Rk.campeao && c.id === Rk.campeao.id;
         var fotoHtml = "";
-        try { fotoHtml = (typeof opts.foto === "function") ? opts.foto(c) : ""; } catch (e) { fotoHtml = ""; }
+        try { fotoHtml = (typeof opts.foto === "function") ? opts.foto(c) : ""; } catch (e2) { fotoHtml = ""; }
         if (!fotoHtml) fotoHtml = '<span class="ap-ini">' + esc(((c.nome || "?") + "")[0] || "?") + "</span>";
         var cor = (typeof corDe === "function") ? corDe(c.partido, i) : "#9eb0ce";
-        return '<div class="ap-leg' + (c.jogador ? " ap-eleito" : "") + '" data-ingresso="' + ing.id + '"' + (fora ? ' data-campeao="1"' : "") + ' style="' + (fora ? "box-shadow:inset 3px 0 0 #f5c542;" : "") + '"><span>' + (i + 1) + '</span><span class="foto">' + fotoHtml + '</span><div class="mid"><div class="l1">' + esc(c.nome) + (c.jogador ? " (você)" : "") + '</div><div class="l2"><span style="color:' + cor + '">●</span> ' + esc(c.partido || "—") + " · " + fmtV(mostra) + " votos · " + pctCand(c.votos, Rk.validos) + (fora ? " · mais votado sem cadeira" : "") + '</div></div><b style="flex:none;text-align:right;font-size:12px;line-height:1.2;color:' + ing.cor + ';max-width:46%">' + ing.txt + "</b></div>";
-      }).join("");
+        var base = '<div class="ap-leg' + (c.jogador ? " ap-eleito" : "") + '" data-ingresso="' + ing.id + '"' + (fora ? ' data-campeao="1"' : "") + ' style="' + (fora ? "box-shadow:inset 3px 0 0 #f5c542;" : "") + '"><span>' + (i + 1) + '</span><span class="foto">' + fotoHtml + '</span><div class="mid">';
+        var meta = '<span style="color:' + cor + '">●</span> ' + esc(c.partido || "—") + " · " + fmtV(mostra) + " votos · " + pctCand(c.votos, Rk.validos);
+        if (!comGasto) {
+          return base + '<div class="l1">' + esc(c.nome) + (c.jogador ? " (você)" : "") + '</div><div class="l2">' + meta + (fora ? " · mais votado sem cadeira" : "") + '</div></div><b class="ap-tag" style="color:' + ing.cor + '">' + ing.txt + "</b></div>";
+        }
+        var gastoTxt = (typeof fmtK === "function") ? fmtK(c.gasto) : preco(c.gasto);
+        var pvTxt = (c.votos > 0 && isFinite(c.pv) && c.pv > 0) ? ("R$ " + c.pv.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "/voto") : "—/voto";
+        return base + '<div class="l1">' + esc(c.nome) + (c.jogador ? " (você)" : "") + ' <b class="ap-tag ap-tag-in" style="color:' + ing.cor + '">' + ing.txt + '</b></div><div class="l2">' + meta + ' · <span class="ap-chip">' + gastoTxt + '</span> · <span class="ap-chip">' + pvTxt + "</span>" + (fora ? " · mais votado sem cadeira" : "") + "</div></div></div>";
+      }
+      function caixa(lista, vazio, comGasto) {
+        if (!lista.length) return '<div class="ap-lista"><p class="ap-sec">' + vazio + "</p></div>";
+        return '<div class="ap-lista">' + lista.map(function (c, i) { return linha(c, i, comGasto); }).join("") + "</div>";
+      }
+      var soEleitos = ordenar(gente.filter(function (c) { return c.eleito; }), "votos");
+      var todos = ordenar(gente, ordem);
+      var seletor = '<p class="ap-ordlab">Ordem de todos os candidatos</p><div class="ap-subtabs" data-leg-ordem="1">' + ordens.map(function (o) {
+        return '<button type="button" class="ap-tab ' + (ordem === o[0] ? "on" : "") + '" data-ap="ordem" data-u="' + o[0] + '">' + esc(o[1]) + "</button>";
+      }).join("") + "</div>";
+      var ranking = "";
+      if (opts.ranking) {
+        ranking = '<h3>Ranking atual</h3><div data-leg-qe="1">' + gente.map(function (c, i) { return linha(c, i, false); }).join("") + "</div>";
+      }
       var pctTxt = (opts.pct || 0) >= 100 ? "100%" : (Math.round(opts.pct || 0) + "%");
       return "<h2>" + esc(nomes[cargo] || cargo) + "</h2><p class=\"ap-sec\">" + esc(subtitulos[cargo] || "") + "</p>" +
         '<p class="ap-el">QE ' + fmtV(Rk.qe.QE) + " · " + (L.N || 0) + " vagas · " + Rk.nDir + " diretas · " + Rk.nSob + " sobras · " + fmtV(Math.round(Rk.validos * Rk.fator)) + " votos válidos · " + pctTxt + " das urnas</p>" +
         '<div class="ap-subtabs">' + (subs || "") + "</div>" +
-        '<div data-leg-qe="1">' + rows + "</div>";
+        seletor +
+        '<h3>Só eleitos</h3>' + caixa(soEleitos, "Nenhum eleito neste cargo.", true) +
+        '<h3>Todos os candidatos</h3>' + caixa(todos, "Nenhum candidato neste cargo.", true) +
+        '<button type="button" class="ap-btn" data-ap="ranking">' + (opts.ranking ? "Ocultar o ranking atual" : "Ver o ranking atual") + "</button>" +
+        ranking;
     } catch (e) { console.error("tela qe", e); return null; }
   };
 
