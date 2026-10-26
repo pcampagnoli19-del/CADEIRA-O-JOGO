@@ -217,8 +217,8 @@
       ".tj-stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(280px,1.05fr) minmax(300px,1.2fr);gap:8px;padding:8px}",
       ".tj-studio{background:radial-gradient(120% 80% at 50% 100%, #1a3358 0%, #0c1a2e 55%, #081018 100%);border:1px solid #24344c;border-radius:10px;position:relative;overflow:hidden;min-height:180px;display:flex;flex-direction:column}",
       ".tj-cam{flex:1;position:relative;min-height:120px}",
-      ".tj-sil{position:absolute;bottom:52px;width:108px;height:150px}",
-      ".tj-sil.a{left:12%}.tj-sil.b{left:46%}",
+      ".tj-sil{position:absolute;bottom:52px;width:108px;height:150px;display:block;padding:0;margin:0;border:0;box-shadow:none;background:transparent;min-height:0;line-height:normal}",
+      ".tj-sil.tj-ancora{left:12%}.tj-sil.tj-coancora{left:46%}",
       ".tj-sil i{display:block;margin:0 auto}",
       ".tj-sil .cabeca{width:58px;height:58px;border-radius:50%;border:3px solid #071018}",
       ".tj-sil.quadrado .cabeca{border-radius:8px}",
@@ -260,7 +260,28 @@
       ".tj-dec{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}",
       "#apurMapa.tj-sob-mapa{visibility:hidden !important;pointer-events:none !important}",
       "#tj-voltar-simples{position:fixed;z-index:100001;top:8px;right:8px;background:#c4552a;color:#fff;border:0;border-radius:8px;padding:8px 10px;font-weight:800}",
-      "@media (max-width:800px){#telejornal .tj-stage{grid-template-columns:1fr}.tj-studio{min-height:150px}.tj-fala{font-size:15px}.tj-ctl button{padding:9px 12px}.tj-pip{display:none}}",
+      "@media (max-width:800px){",
+      "#telejornal{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}",
+      "#telejornal .tj-stage{flex:none;min-height:0;display:flex;flex-direction:column;grid-template-columns:1fr}",
+      "#telejornal .tj-studio{flex:none;min-height:0;overflow:visible}",
+      "#telejornal .tj-cam{flex:none;height:214px;min-height:214px;overflow:hidden}",
+      "#telejornal .tj-sil{bottom:34px;height:156px;z-index:1}",
+      "#telejornal .tj-sil.tj-ancora{left:20px}",
+      "#telejornal .tj-sil.tj-coancora{left:138px}",
+      "#telejornal .tj-lower{bottom:8px;z-index:2}",
+      "#telejornal .tj-desk{height:28px}",
+      "#telejornal .tj-telao{flex:none;width:100%;min-height:220px;overflow:visible}",
+      "#telejornal .tj-vinheta{height:auto;min-height:210px;padding:12px}",
+      "#telejornal .tj-vinheta b{font-size:26px;line-height:1.15;max-width:100%}",
+      "#telejornal .tj-chamada{min-height:210px}",
+      "#telejornal .tj-tick{height:auto;min-height:32px;overflow:visible;align-items:flex-start;padding:6px 0}",
+      "#telejornal .tj-tick p{animation:none;transform:none;padding:0 10px;white-space:normal;line-height:1.35}",
+      "#telejornal .tj-bar{grid-template-columns:minmax(84px,36%) minmax(0,1fr) auto;font-size:13px}",
+      "#telejornal .tj-fala{font-size:15px}",
+      "#telejornal .tj-ctl button{padding:9px 12px}",
+      "#telejornal .tj-pip{display:none}",
+      "#telejornal .tj-split{grid-template-columns:1fr}",
+      "}",
       "@media (prefers-reduced-motion: reduce){#telejornal .tj-tick p{animation:none;padding-left:8px;white-space:normal}#telejornal .tj-sil{transform:none !important}#telejornal .tj-bar .trilha i{transition:none}}",
       "#telejornal.tj-quiet .tj-tick p{animation:none;padding-left:8px}",
       "#telejornal.tj-quiet .tj-live{animation:none}"
@@ -630,14 +651,13 @@
     el.innerHTML = '<div class="tj-aviso"><span>Simulação satírica. Tarja de última hora sem flash contínuo. Áudio desligado.</span><button type="button" data-tj="aviso">Entendi</button></div>' +
       '<header class="tj-top"><span class="tj-live">AO VIVO</span><div class="tj-marca"></div><div class="grow"><span class="tj-relogio">17:00</span> · Brasília</div><div class="tj-urnas">0,0%</div></header>' +
       '<div class="tj-tabs" data-tj-corridas></div>' +
-      '<div class="tj-stage"><section class="tj-studio"><div class="tj-cam"><div class="tj-sil a" data-papel="ancora"><i class="cabeca"></i><i class="corpo"></i></div><div class="tj-sil b" data-papel="coancora"><i class="cabeca"></i><i class="corpo"></i></div><div class="tj-desk"></div><div class="tj-lower"><b></b><span></span></div><div class="tj-pip" hidden></div></div><p class="tj-fala"></p></section><section class="tj-telao" aria-label="Telão"></section></div>' +
+      '<div class="tj-stage"><section class="tj-studio"><div class="tj-cam"><div class="tj-sil tj-ancora" data-papel="ancora"><i class="cabeca"></i><i class="corpo"></i></div><div class="tj-sil tj-coancora" data-papel="coancora"><i class="cabeca"></i><i class="corpo"></i></div><div class="tj-desk"></div><div class="tj-lower"><b></b><span></span></div><div class="tj-pip" hidden></div></div><p class="tj-fala"></p></section><section class="tj-telao" aria-label="Telão"></section></div>' +
       '<div class="tj-tabs" data-tj-paineis></div>' +
       '<div class="tj-split"><div class="tj-rep"></div><div class="tj-rep"></div></div>' +
       '<div class="tj-tick"><p></p></div>' +
       '<div class="tj-canais" data-tj-canais></div>' +
       '<footer class="tj-ctl"></footer>' +
       '<div class="tj-aria" aria-live="polite" style="position:absolute;left:-9999px"></div>';
-    el.addEventListener("click", clique);
     document.body.appendChild(el);
     S.el = el;
   }
@@ -672,8 +692,8 @@
       '<div class="tj-dec" style="display:none"><button type="button" data-tj="dec" data-i="agradecer">Agradecer</button><button type="button" data-tj="dec" data-i="conceder">Conceder</button><button type="button" data-tj="dec" data-i="contestar">Contestar</button></div>';
     var a = pessoa(S.cob, "ancora");
     var b = pessoa(S.cob, "coancora");
-    var sa = S.el.querySelector('.tj-sil.a');
-    var sb = S.el.querySelector('.tj-sil.b');
+    var sa = S.el.querySelector(".tj-sil.tj-ancora");
+    var sb = S.el.querySelector(".tj-sil.tj-coancora");
     if (sa && a.silhueta) { sa.querySelector(".cabeca").style.background = a.silhueta.cor; sa.querySelector(".corpo").style.background = a.silhueta.cor; sa.classList.toggle("quadrado", a.silhueta.forma === "quadrado"); }
     if (sb && b.silhueta) { sb.querySelector(".cabeca").style.background = b.silhueta.cor; sb.querySelector(".corpo").style.background = b.silhueta.cor; }
   }
@@ -833,6 +853,10 @@
     }
   }
   document.addEventListener("keydown", tecla);
+  document.addEventListener("click", function (ev) {
+    if (!S.el) return;
+    clique(ev);
+  }, true);
 
   var renderAnterior = window.render;
   window.render = function () {
