@@ -8774,6 +8774,8 @@ const ICONES={
  camp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l7 4V6L7 10H4z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>',
  poder:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',
  mapa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>',
+ cong:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 20V10M10 20V10M14 20V10M18 20V10M3 10h18M12 3l9 7H3l9-7z"/></svg>',
+ inf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="7" r="2.2"/><circle cx="18" cy="17" r="2.2"/><path d="M8.1 11.2 15.8 8M8.1 12.8l7.7 3.2"/></svg>',
  mais:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>'
 };
 const nomeTab=id=>(TABS.find(t=>t[0]===id)||[id,id])[1];
@@ -8801,7 +8803,7 @@ function footerBar(){
   const go=gameState.fase_do_turno==="GAME_OVER"; const pend=M().evento&&!M().evento.resolvido;
   const mais=!NAV_PRINC.includes(S.tab);
   return `<button class="fab" data-a="avancar" ${go?"disabled":""} aria-label="Avançar o tempo para ${fabLabel()}">${pend?'<i class="dot" aria-hidden="true"></i>':""}<span class="fl">Avançar</span><b>${go?"Fim":fabLabel()}</b></button>
-  <nav class="bnav" aria-label="Navegação principal">${NAV_PRINC.map(id=>`<button class="${S.tab===id?"on":""}" data-a="tab" data-p="${esc(JSON.stringify([id]))}" aria-label="${nomeTab(id)}">${ICONES[id]}<span>${nomeTab(id)}</span></button>`).join("")}<button class="${(mais||S.sheet)?"on":""}" data-a="sheet" aria-label="Mais seções">${ICONES.mais}<span>Mais</span></button></nav>
+  <nav class="bnav" aria-label="Navegação principal">${NAV_PRINC.map(id=>`<button class="${S.tab===id?"on":""}" data-a="tab" data-p="${esc(JSON.stringify([id]))}" aria-label="${nomeTab(id)}">${ICONES[id]||""}<span>${nomeTab(id)}</span></button>`).join("")}<button class="${(mais||S.sheet)?"on":""}" data-a="sheet" aria-label="Mais seções">${ICONES.mais}<span>Mais</span></button></nav>
   ${S.sheet?sheetMais():""}`;
 }
 function sheetMais(){
