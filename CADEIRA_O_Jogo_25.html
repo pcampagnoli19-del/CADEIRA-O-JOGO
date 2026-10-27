@@ -12691,9 +12691,9 @@ const ocup=exc=>{ const ch=chM(), s=new Set(); Object.entries(ch.vice).forEach((
 const marca=(id,tag)=>{ const r=regs(); if(r&&!r[id]) r[id]=tag; };
 function viceOK(id,key){ const n=npcPorId(id); if(!okBase(n)) return false; if(ocup(key).has(id)) return false; const r=regs()[id]; if(r&&r!=="VICE:"+key&&["PRES","GOV","PREF","SEN"].includes(r)) return false; return true; }
 function candJog(){ const j=J(); return {id:"JOGADOR",partido:j.partido_atual,partidoBase:j.partido_atual,nome:j.nome,uf:"SP"}; }
-function garantirVice(cand,cid,key){ const ch=chM(); const ex=ch.vice[key]; if(ex&&viceOK(ex,key)){ marca(ex,"VICE:"+key); return npcPorId(ex); }
+const perdeuEsteCargo=(n,c)=>!!(n&&n.prev_derrota&&Number(n.prev_derrota.ano)===Number(dt().ano)&&n.prev_derrota.cargo===c); function garantirVice(cand,cid,key){ const ch=chM(); const ex=ch.vice[key]; if(ex&&viceOK(ex,key)&&!perdeuEsteCargo(npcPorId(ex),cid)){ marca(ex,"VICE:"+key); return npcPorId(ex); }
   const party=cand.partidoBase||cand.partido, fed=fedDe(party), pp=new Set([party].concat(fed?fed.partidos:[])); if(key==="JOGADOR"){ const col=M().coligacao; if(col&&col.partidos) col.partidos.forEach(x=>pp.add(x)); (J().compromissos||[]).filter(x=>x.tipo==="vice"&&x.cargo===cid).forEach(x=>pp.add(x.partido)); }
-  const oc=ocup(key), r=regs(), minId=(window.MINID&&window.MINID[cid])||21; let pool=bancoDeNPCs.filter(n=>okBase(n)&&n.id!==cand.id&&(!r[n.id]||/VICE/i.test(r[n.id])||!["PRES","GOV","PREF","SEN"].includes(r[n.id]))&&!oc.has(n.id)&&n.idade>=minId&&n.idade<75);
+  const oc=ocup(key), r=regs(), minId=(window.MINID&&window.MINID[cid])||21; let pool=bancoDeNPCs.filter(n=>okBase(n)&&!perdeuEsteCargo(n,cid)&&n.id!==cand.id&&(!r[n.id]||/VICE/i.test(r[n.id])||!["PRES","GOV","PREF","SEN"].includes(r[n.id]))&&!oc.has(n.id)&&n.idade>=minId&&n.idade<75);
   if(cid==="PRES") pool=pool.filter(n=>["Deputado Federal","Senador da República","Ministro"].includes(n.cargo)); else if(cid==="GOV") pool=pool.filter(n=>n.uf==="SP"&&n.cargo!=="Presidente da República"); else pool=pool.filter(n=>n.municipio_domicilio==="Mauá"||/Mauá/.test(n.cargo||""));
   const pref=pool.filter(n=>pp.has(n.partidoBase)); let v=R.p((pref.length?pref:pool).sort((a,b)=>b.popularidade-a.popularidade).slice(0,6));
   if(!v){ v=gerarNovoPoliticoProcedural(LIVRE,cid==="PREF"?"MUNICIPAL":"ESTADUAL",party,{uf:"SP",idade:R.i(38,62)}); if(cid==="PREF") v.municipio_domicilio="Mauá"; }
@@ -41219,6 +41219,7 @@ document.addEventListener("click", function(e){
       var j = J();
       if (!j || !j.campanha || !j.campanha.candidatura_ativa) return null;
       if (cargoIdPorNome(j.campanha.cargo_alvo) !== cargo) return null;
+      if (typeof window.jogadorPodeNaUrna === "function" && !window.jogadorPodeNaUrna(cargo)) return null;
       return j;
     } catch (e) { return null; }
   }
@@ -41419,6 +41420,20 @@ document.addEventListener("click", function(e){
     var ids = {};
     spSen.forEach(function (c) { if (c.eleito && c.id) ids[c.id] = 1; });
     E._mapaNac = {pres: pres, spGov: spGov, spSen: spSen, vagas: vagas, fica: ficaDe("SP", ids, ano), presRun: presRun, govRun: govRun, elBR: elBR, elSP: elSP};
+    try {
+      if (typeof tipoEleicao === "function" && tipoEleicao(ano) === "MUNICIPAL") {
+        var elMaua = 0;
+        try { elMaua = TERRITORIOS.filter(function (t) { return t.grupo === "Mauá"; }).reduce(function (s, t) { return s + (t.el || 0); }, 0) * 1000; } catch (eEl) { elMaua = 258000; }
+        var prefL = garantirJogador(conv(U.PREF, "PREF", elMaua), "PREF", elMaua);
+        var sem2p = false;
+        try { sem2p = typeof REGRAS_ELEITORAIS !== "undefined" && elMaua <= REGRAS_ELEITORAIS.prefeito_segundo_turno_eleitores_min; } catch (eS2) {}
+        var prefRun = !sem2p && !!(prefL[0] && prefL.length > 1 && (prefL[0].share || 0) <= 50);
+        prefL.forEach(function (c, idx) { c.eleito = !prefRun && idx === 0 && (c.share || 0) > 50; });
+        E._mapaNac.pref = prefL;
+        E._mapaNac.prefRun = prefRun;
+        E._mapaNac.elMaua = elMaua;
+      }
+    } catch (ePref) { console.error("apuracao prefeito", ePref); }
     E._mapaAp = E._mapaAp || {};
     E._mapaAp.SP = {uf: "SP", vagas: vagas, gov: spGov, sen: spSen, fica: E._mapaNac.fica, govRun: govRun};
     var fin = {};
@@ -41990,6 +42005,32 @@ document.addEventListener("click", function(e){
     if (!loc.length) return "";
     return "<h3>Presidente em " + esc(UF_NOME[uf] || uf) + "</h3>" + miniLista(loc, 0, 4);
   }
+  function telaPref() {
+    var N = nac();
+    var pref = (N.pref || []).slice();
+    var el = N.elMaua || 0;
+    var E = M().eleicao || {};
+    var turno2 = !!(E.noite && E.noite.turno === 2);
+    if (!pref.length) return "<h2>Prefeito de Mauá</h2><p>A urna de prefeito ainda não tem a chapa desta eleição.</p>";
+    var fechado1 = (pref[0] && (pref[0].share || 0) > 50 && (pref.length > 2 || N.prefRun === false));
+    if (turno2 && fechado1) {
+      return "<h2>Prefeito de Mauá</h2><p class=\"ap-el\">Mauá · " + fmtMilhoes(el) + " de eleitores</p>" + cartaoHistorico(pref, "Prefeito de Mauá");
+    }
+    var lista = pref;
+    var run = !!N.prefRun && !(pref[0] && (pref[0].share || 0) > 50 && pref.length > 2);
+    if (turno2 && !fechado1) {
+      lista = fecharPar(pref, "PREF", el, (E._r2res || {}).PREF || null, (E._finais || {}).PREF || null);
+      run = false;
+    }
+    var f = Math.max(0, Math.min(100, AP.pct || 0)) / 100;
+    var parc = parcialCands(lista, f);
+    var mais = "";
+    if (!turno2 && parc.length > 2) {
+      mais = AP.aberto.pref ? miniLista(parc, 2, parc.length) : miniLista(parc, 2, 5) + restoLinha(parc, 5);
+      mais += '<button class="ap-btn" data-ap="todos" data-u="pref">' + (AP.aberto.pref ? "Ocultar a lista" : "Ver todos os " + parc.length + " candidatos") + "</button>";
+    }
+    return "<h2>Prefeito de Mauá</h2><p class=\"ap-el\">Mauá · " + fmtMilhoes(el) + " de eleitores" + (run && f >= 0.96 ? " · 2º turno" : "") + "</p>" + barraSecoes(f) + duo(parc, run, "Prefeito de Mauá", f, false) + mais + htmlGasto(parc);
+  }
   function telaPres() {
     var N = nac();
     var pres = N.pres || [];
@@ -42095,7 +42136,7 @@ document.addEventListener("click", function(e){
     var locEl = document.getElementById("ap-locbar");
     if (locEl) {
       var locKey = AP.tab + "|" + (AP.uf || "");
-      if (AP.tab === "dep") {
+      if (AP.tab === "dep" || AP.tab === "pref") {
         locEl.style.display = "none";
         locEl.setAttribute("data-key", locKey);
       } else {
@@ -42123,18 +42164,24 @@ document.addEventListener("click", function(e){
 
   function desenhar() {
     try { aplicarSegundoTurnoVisual(); } catch (e) { console.error("2o turno visual", e); }
+    try {
+      if (typeof tipoEleicao === "function" && tipoEleicao(dt().ano) === "MUNICIPAL" && AP.tab !== "pref" && AP.tab !== "dep") AP.tab = "pref";
+    } catch (eMun) {}
     var corpo = document.getElementById("ap-corpo");
     if (!corpo) return;
     atualizarTopoELocalidade();
     var tabs = document.getElementById("ap-tabs");
     if (tabs && tabs.getAttribute("data-tab") !== AP.tab) {
       tabs.setAttribute("data-tab", AP.tab);
-      var nomes = [["pres", "Presidente"], ["gov", "Governadores"], ["sen", "Senado"], ["dep", "Deputados"]];
+      var municipal = false;
+      try { municipal = typeof tipoEleicao === "function" && tipoEleicao(dt().ano) === "MUNICIPAL"; } catch (eNm) {}
+      var nomes = municipal ? [["pref", "Prefeito"], ["dep", "Vereadores"]] : [["pres", "Presidente"], ["gov", "Governadores"], ["sen", "Senado"], ["dep", "Deputados"]];
       tabs.innerHTML = nomes.map(function (t) { return '<button class="ap-tab ' + (AP.tab === t[0] ? "on" : "") + '" data-ap="tab" data-u="' + t[0] + '">' + t[1] + "</button>"; }).join("");
     }
     var html = "";
     try {
-      if (AP.tab === "pres") html = telaPres();
+      if (AP.tab === "pref") html = telaPref();
+      else if (AP.tab === "pres") html = telaPres();
       else if (AP.tab === "dep") html = telaDep();
       else html = telaEstado(AP.tab);
     } catch (e) { console.error(e); html = "<p>Não foi possível montar esta aba.</p>"; }
@@ -42202,7 +42249,8 @@ document.addEventListener("click", function(e){
     var isR2 = !!(M().eleicao && M().eleicao.noite && M().eleicao.noite.turno === 2);
     var N = nac();
     var tabInicial = "pres";
-    if (isR2 && (!N.pres || N.pres.length < 2) && N.spGov && N.spGov.length >= 2) tabInicial = "gov";
+    try { if (typeof tipoEleicao === "function" && tipoEleicao(dt().ano) === "MUNICIPAL") tabInicial = "pref"; } catch (eTi) {}
+    if (tabInicial !== "pref" && isR2 && (!N.pres || N.pres.length < 2) && N.spGov && N.spGov.length >= 2) tabInicial = "gov";
     AP.tab = tabInicial; AP.uf = null; AP.cargo = "DEPF"; AP.verEleitos = false; AP.verRanking = false; AP.aberto = {}; AP.ordem = "votos";
     AP.pct = 0; AP.play = true; AP.vel = 1; AP.last = performance.now();
     AP._fotosUsadas = {}; AP._candFotoMap = {};
@@ -47742,6 +47790,243 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
   var st = document.createElement("style");
   st.textContent = ".leis-anos{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;align-items:center}.leis-anos .b{flex:0 0 auto;white-space:nowrap}";
   document.head.appendChild(st);
+})();
+</script>
+
+<script>
+/* Chapa: um partido, um candidato por cargo e território. Quem perde a prévia sai da urna. */
+(function () {
+  if (window.__chapaUnica) return;
+  window.__chapaUnica = true;
+
+  function anoAgora() { try { return dt().ano; } catch (e) { return 0; } }
+  function siglaRaw(raw) {
+    raw = raw || "";
+    try {
+      if (typeof normPartido === "function") {
+        var n = normPartido(raw);
+        if (n && n !== "Sem Partido") return n;
+      }
+    } catch (e) {}
+    return raw || "?";
+  }
+  function siglaNpc(n) {
+    if (!n) return "?";
+    return siglaRaw(n.partidoBase || n.partido || "");
+  }
+  function siglaJog() {
+    try { return siglaRaw(J().partido_atual || ""); } catch (e) { return "?"; }
+  }
+  function siglaItem(x) {
+    if (!x) return "?";
+    if (x.jogador || x.id === "JOGADOR") return siglaJog();
+    if (x.npc) return siglaNpc(x.npc);
+    if (x.id && x.id !== "JOGADOR" && typeof npcPorId === "function") {
+      var n = npcPorId(x.id);
+      if (n) return siglaNpc(n);
+    }
+    return siglaRaw(x.partido || "");
+  }
+  function grupoPrevia(cargo, sig) {
+    try {
+      var P = M().previas && M().previas.atual;
+      if (!P || Number(P.ano) !== Number(anoAgora()) || !P.grupos || !P.grupos[cargo]) return null;
+      var g = P.grupos[cargo];
+      if (g[sig]) return g[sig];
+      var keys = Object.keys(g);
+      for (var i = 0; i < keys.length; i++) {
+        if (siglaRaw(keys[i]) === sig) return g[keys[i]];
+      }
+    } catch (e) {}
+    return null;
+  }
+  function perdeuPrevia(n, cargo) {
+    if (!n || n.jogador || n.id === "JOGADOR") return false;
+    var d = n.prev_derrota;
+    if (d && Number(d.ano) === Number(anoAgora()) && d.cargo === cargo) return true;
+    var g = grupoPrevia(cargo, siglaNpc(n));
+    if (!g || !g.venc || g.venc === n.id) return false;
+    if (g.final && g.final.indexOf(n.id) >= 0) return true;
+    if (g.ids && g.ids.indexOf(n.id) >= 0) return true;
+    return false;
+  }
+  function jogadorNaChapa(cargo) {
+    var j;
+    try { j = J(); } catch (e) { return false; }
+    if (!j || !j.campanha) return false;
+    var alvo = null;
+    try { alvo = typeof cargoIdPorNome === "function" ? cargoIdPorNome(j.campanha.cargo_alvo) : null; } catch (e2) {}
+    if (alvo !== cargo) return false;
+    var sig = siglaJog();
+    if (!sig || sig === "Sem Partido" || sig === "?") return false;
+    var g = grupoPrevia(cargo, sig);
+    if (g && g.venc) {
+      if (g.venc === "JOGADOR") return true;
+      return false;
+    }
+    return !!j.campanha.candidatura_ativa;
+  }
+  function limite(cargo) {
+    if (cargo === "SEN") { try { return dt().ano % 8 === 2 ? 2 : 1; } catch (e) { return 1; } }
+    return 1;
+  }
+  function idDe(x) {
+    if (!x) return "";
+    if (x.jogador || x.id === "JOGADOR") return "JOGADOR";
+    if (x.npc && x.npc.id) return x.npc.id;
+    return x.id || "";
+  }
+  function npcDe(x) {
+    if (!x || x.jogador || x.id === "JOGADOR") return null;
+    if (x.npc) return x.npc;
+    if (x.id && typeof npcPorId === "function") return npcPorId(x.id);
+    return null;
+  }
+  function tirarDoRegistro(id, cargo) {
+    if (!id || id === "JOGADOR") return;
+    try {
+      var E = M().eleicao;
+      var r = E && E.reg;
+      if (!r || Number(r.ano) !== Number(anoAgora()) || !r.lista || !r.lista[cargo]) return;
+      var L = r.lista[cargo];
+      var i = L.indexOf(id);
+      if (i >= 0) L.splice(i, 1);
+      if (r.npc && r.npc[id] === cargo) delete r.npc[id];
+      if (r.part) {
+        Object.keys(r.part).forEach(function (k) {
+          if (k.indexOf(cargo + "|") === 0 && Array.isArray(r.part[k])) r.part[k] = r.part[k].filter(function (x) { return x !== id; });
+        });
+      }
+    } catch (e) {}
+  }
+  function scoreDe(x) {
+    if (x && x.score != null && isFinite(x.score)) return x.score;
+    if (x && x.share != null) return x.share;
+    var n = npcDe(x);
+    return n ? (n.popularidade || 0) : 0;
+  }
+  function filtrarChapa(lista, cargo) {
+    var lim = limite(cargo);
+    var deve = jogadorNaChapa(cargo);
+    var sigJ = deve ? siglaJog() : "";
+    var por = {};
+    (lista || []).forEach(function (x) {
+      if (!x) return;
+      var id = idDe(x);
+      var jog = id === "JOGADOR";
+      var n = npcDe(x);
+      var sig = siglaItem(x);
+      if (!jog && n && perdeuPrevia(n, cargo)) { tirarDoRegistro(n.id, cargo); return; }
+      var g = grupoPrevia(cargo, sig);
+      if (g && g.venc) {
+        if (g.venc === "JOGADOR") {
+          if (!jog) { if (n) tirarDoRegistro(n.id, cargo); return; }
+        } else if (jog) {
+          return;
+        } else if (n && n.id !== g.venc && ((g.final && g.final.indexOf(n.id) >= 0) || (g.ids && g.ids.indexOf(n.id) >= 0))) {
+          tirarDoRegistro(n.id, cargo);
+          return;
+        }
+      }
+      if (deve && !jog && sig === sigJ && lim === 1) {
+        if (n) tirarDoRegistro(n.id, cargo);
+        return;
+      }
+      var chave = jog ? (sig + "|JOGADOR") : (sig + "|" + (id || Math.random()));
+      if (!por[sig]) por[sig] = [];
+      por[sig].push(x);
+    });
+    var out = [];
+    Object.keys(por).forEach(function (sig) {
+      var arr = por[sig].slice().sort(function (a, b) { return scoreDe(b) - scoreDe(a); });
+      var g = grupoPrevia(cargo, sig);
+      if (g && g.venc && g.venc !== "JOGADOR") {
+        arr.sort(function (a, b) {
+          var ia = idDe(a) === g.venc ? 1 : 0;
+          var ib = idDe(b) === g.venc ? 1 : 0;
+          if (ia !== ib) return ib - ia;
+          return scoreDe(b) - scoreDe(a);
+        });
+      }
+      if (deve && sig === sigJ) {
+        arr.sort(function (a, b) {
+          var ia = idDe(a) === "JOGADOR" ? 1 : 0;
+          var ib = idDe(b) === "JOGADOR" ? 1 : 0;
+          if (ia !== ib) return ib - ia;
+          return scoreDe(b) - scoreDe(a);
+        });
+      }
+      var fica = arr.slice(0, lim);
+      arr.slice(lim).forEach(function (x) {
+        var n = npcDe(x);
+        if (n) tirarDoRegistro(n.id, cargo);
+      });
+      fica.forEach(function (x) { out.push(x); });
+    });
+    return out;
+  }
+
+  window.jogadorPodeNaUrna = jogadorNaChapa;
+  if (typeof candidatosMajoritarios === "function" && !candidatosMajoritarios._chapaUnica) {
+    var _cm = candidatosMajoritarios;
+    candidatosMajoritarios = function (c) {
+      var lista = _cm.apply(this, arguments) || [];
+      try {
+        if (["PRES", "GOV", "SEN", "PREF"].indexOf(c) >= 0) lista = filtrarChapa(lista, c);
+      } catch (e) { console.error("chapa única", e); }
+      return lista;
+    };
+    candidatosMajoritarios._chapaUnica = true;
+  }
+
+  if (typeof projetarMajoritaria === "function" && !projetarMajoritaria._chapaUnica) {
+    var _pm = projetarMajoritaria;
+    projetarMajoritaria = function (cargo, ruido) {
+      var lista = _pm.apply(this, arguments) || [];
+      try {
+        if (["PRES", "GOV", "SEN", "PREF"].indexOf(cargo) < 0) return lista;
+        var antes = lista.map(idDe).join("|");
+        lista = filtrarChapa(lista, cargo);
+        var deve = jogadorNaChapa(cargo);
+        if (deve && !lista.some(function (x) { return idDe(x) === "JOGADOR"; })) {
+          var item = { id: "JOGADOR", nome: J().nome, partido: J().partido_atual, score: (typeof scoreJogadorMaj === "function" ? scoreJogadorMaj(cargo) : (J().popularidade || 30)), jogador: true, share: 0 };
+          try {
+            if (typeof garantirVice === "function" && (cargo === "PRES" || cargo === "GOV" || cargo === "PREF")) {
+              var base = typeof candJog === "function" ? candJog() : { id: "JOGADOR", partido: J().partido_atual, partidoBase: J().partido_atual, nome: J().nome };
+              var v = garantirVice(base, cargo, "JOGADOR");
+              if (v && v.nome) { item.vice = v.nome; item.nome = J().nome + " (vice: " + v.nome + ")"; }
+            }
+          } catch (eV) {}
+          lista.push(item);
+          try {
+            var E0 = M().eleicao;
+            if (E0 && E0.reg && Number(E0.reg.ano) === Number(anoAgora())) {
+              E0.reg.npc = E0.reg.npc || {};
+              E0.reg.npc.JOGADOR = cargo;
+            }
+          } catch (eR) {}
+        }
+        if (!deve) lista = lista.filter(function (x) { return idDe(x) !== "JOGADOR"; });
+        var depois = lista.map(idDe).join("|");
+        if (antes !== depois && lista.length) {
+          var w = lista.map(function (x) { return Math.exp(scoreDe(x) / 16); });
+          var tot = w.reduce(function (s, x) { return s + x; }, 0) || 1;
+          lista.forEach(function (x, i) { x.share = w[i] / tot * 100; });
+          lista.sort(function (a, b) { return (b.share || 0) - (a.share || 0); });
+        }
+        if (ruido && ruido >= 5 && typeof gameState !== "undefined" && gameState) {
+          var E = M().eleicao;
+          var snap = lista.map(function (y) {
+            return { id: y.id || (y.jogador ? "JOGADOR" : (y.npc && y.npc.id)), nome: y.nome, partido: y.partido, share: y.share, jogador: !!y.jogador };
+          });
+          (E._ult2 = E._ult2 || {})[cargo] = snap;
+          if (E._ult) E._ult[cargo] = snap.map(function (y) { return { nome: y.nome, partido: y.partido, share: y.share, jogador: y.jogador }; });
+        }
+      } catch (e) { console.error("chapa única", e); }
+      return lista;
+    };
+    projetarMajoritaria._chapaUnica = true;
+  }
 })();
 </script>
 
