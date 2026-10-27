@@ -58,6 +58,13 @@ O motor puro fica em `js/quociente.js` e é copiado para dentro dos dois HTML (`
 - O registro ganhou versão (`r.v = 2`): saves antigos que já tinham uma lista curta são reconstruídos uma vez ao abrir/atualizar a pesquisa, sem precisar começar uma carreira nova.
 - A pesquisa publicada passou a mostrar até 6 nomes por instituto (antes 4), garantindo que o jogador e os cinco candidatos de governo apareçam no card "Pesquisas publicadas".
 
+## Obras: lista completa e mobilidade separada (2026-10-27)
+
+- O card "Em andamento / rede" não usa mais `slice(0, 40)`. O corte escondia obras novas depois de 40 instâncias ativas (as manutenções automáticas já ocupavam boa parte do limite). Agora todas aparecem, ordenadas por estado (execução/atraso/paralisada/aprovada/negociação/manutenção) e, dentro do grupo, pela mais recente.
+- A área **Mobilidade** saiu do card geral e ganhou o card próprio **"Mobilidade Urbana"**. Ele tem lista ativa, catálogo, filtros de categoria e pedidos independentes; o card "Obras e Programas" passou a excluir essa área.
+- O estado dos filtros fica em `S.obras` (geral) e `S.obrasMob` (mobilidade), para trocar a categoria de um card não afetar o outro.
+- A mudança vale para saves existentes: não há migração, pois a separação é feita na leitura das instâncias e do catálogo.
+
 ## O que não foi mexido
 
 CPI, fases legislativas, fotos, aspas do bloco `ap-who` (o fechamento continua `votos</small></div></div>";`) e o tamanho da Câmara de Mauá.

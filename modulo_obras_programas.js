@@ -938,8 +938,16 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     return String(html).replace(/<(section|details)(\s)/i, '<$1 data-obras-card="1"$2');
   };
 
-  OBRAS.cardCatalogo = function () {
+  // Mobilidade urbana tem card próprio: não se mistura com as demais obras/programas.
+  OBRAS._ehMobilidade = function (it) {
+    return !!(it && it.area === "Mobilidade");
+  };
+
+  OBRAS._cardCatalogo = function (mob) {
+    mob = !!mob;
+    var titulo = mob ? "Mobilidade Urbana" : "Obras e Programas";
     if (!_ehExec()) {
+      if (mob) return "";
       return OBRAS._marcarCard(
         (typeof card === "function"
           ? card(
@@ -951,28 +959,33 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     }
     OBRAS.garantir();
     OBRAS._seedManutencao(M().obrasSys, true);
-    var lista = OBRAS.listaParaCargo();
+    var lista = OBRAS.listaParaCargo().filter(function (it) {
+      return OBRAS._ehMobilidade(it) === mob;
+    });
     var Slocal = typeof S !== "undefined" ? S : (window.S = {});
-    Slocal.obras = Slocal.obras || { cat: "Obra", area: "" };
+    var stKey = mob ? "obrasMob" : "obras";
+    Slocal[stKey] = Slocal[stKey] || { cat: "Obra", area: "" };
+    var st = Slocal[stKey];
     var cats = ["Obra", "Programa", "Manutenção"];
-    if (cats.indexOf(Slocal.obras.cat) < 0) Slocal.obras.cat = "Obra";
+    if (cats.indexOf(st.cat) < 0) st.cat = "Obra";
     var filtrada = lista.filter(function (it) {
-      return it.categoria === Slocal.obras.cat;
+      return it.categoria === st.cat;
     });
     var areas = [];
     filtrada.forEach(function (it) {
       if (areas.indexOf(it.area) < 0) areas.push(it.area);
     });
     areas.sort();
-    if (!Slocal.obras.area || areas.indexOf(Slocal.obras.area) < 0) Slocal.obras.area = areas[0] || "";
+    if (!st.area || areas.indexOf(st.area) < 0) st.area = areas[0] || "";
     var itens = filtrada.filter(function (it) {
-      return !Slocal.obras.area || it.area === Slocal.obras.area;
+      return !st.area || it.area === st.area;
     });
 
     var pedHtml = "";
     var sys = M().obrasSys;
     var pendJog = (sys.pedidos || []).filter(function (p) {
-      return p.status === "pendente" && p.precisaDecisaoJogador && CARGO_ESF[_cid()] === p.para;
+      if (p.status !== "pendente" || !p.precisaDecisaoJogador || CARGO_ESF[_cid()] !== p.para) return false;
+      return OBRAS._ehMobilidade(OBRAS.item(p.catalogoId)) === mob;
     });
     if (pendJog.length) {
       pedHtml =
@@ -1002,12 +1015,26 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     }
 
     var ativas = OBRAS.instanciasAtivas().filter(function (i) {
-      return ["Abandonada", "Recusada"].indexOf(i.estado) < 0;
+      if (["Abandonada", "Recusada"].indexOf(i.estado) >= 0) return false;
+      return OBRAS._ehMobilidade(OBRAS.item(i.catalogoId)) === mob;
+    });
+    var ordemEstado = {
+      "Em execução": 0,
+      "Atrasada": 1,
+      "Paralisada": 2,
+      "Aprovada": 3,
+      "Em negociação": 4,
+      "Em manutenção": 5
+    };
+    ativas.sort(function (a, b) {
+      var oa = ordemEstado[a.estado] == null ? 9 : ordemEstado[a.estado];
+      var ob = ordemEstado[b.estado] == null ? 9 : ordemEstado[b.estado];
+      if (oa !== ob) return oa - ob;
+      return (Number(b.mesInicio) || 0) - (Number(a.mesInicio) || 0);
     });
     var ativasHtml = ativas.length
-      ? "<h4>Em andamento / rede</h4>" +
+      ? "<h4>" + (mob ? "Mobilidade em andamento / rede" : "Em andamento / rede") + " (" + ativas.length + ")</h4>" +
         ativas
-          .slice(0, 40)
           .map(function (inst) {
             var it = OBRAS.item(inst.catalogoId);
             var nome = it ? it.nome : inst.catalogoId;
@@ -1052,18 +1079,26 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     var catChips = cats
       .map(function (c) {
         return typeof btn === "function"
-          ? btn(c, "obrasFiltro", ["cat", c], "mini " + (Slocal.obras.cat === c ? "confirma" : "branco"))
+          ? btn(c, "obrasFiltro", [stKey, "cat", c], "mini " + (st.cat === c ? "confirma" : "branco"))
           : c;
       })
       .join("");
     var areaSel =
-      '<label class="f" style="margin:8px 0">Área <select data-i="obras" data-k="area">' +
-      areas
-        .map(function (a) {
-          return "<option " + (a === Slocal.obras.area ? "selected" : "") + ">" + _esc(a) + "</option>";
-        })
-        .join("") +
-      "</select></label>";
+      areas.length > 1
+        ? '<label class="f" style="margin:8px 0">Área <select data-i="' +
+          stKey +
+          '" data-k="area">' +
+          areas
+            .map(function (a) {
+              return "<option " + (a === st.area ? "selected" : "") + ">" + _esc(a) + "</option>";
+            })
+            .join("") +
+          "</select></label>"
+        : areas.length === 1
+          ? '<p class="txt" style="margin:8px 0"><small><b>Área:</b> ' +
+            _esc(areas[0] === "Mobilidade" ? "Mobilidade Urbana" : areas[0]) +
+            "</small></p>"
+          : "";
 
     var itensHtml = itens
       .map(function (it) {
@@ -1145,7 +1180,7 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
       areaSel +
       "<p class=\"txt\"><small>" +
       itens.length +
-      " itens nesta área · catálogo " +
+      " itens nesta área · catálogo total " +
       OBRAS.DB.length +
       " · fator R$ mi → jogo: ×" +
       OBRAS.FATOR_REAIS.toLocaleString("pt-BR") +
@@ -1155,13 +1190,22 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     // Título curto (= chip da secbar ≤26 chars, sem truncar). Esfera vai no subtítulo.
     var esfera = _esfJogador() || "Executivo";
     var bodyComEsfera =
-      "<p class=\"txt\" style=\"margin:0 0 8px\"><b>Obras e Programas — " +
+      "<p class=\"txt\" style=\"margin:0 0 8px\"><b>" +
+      _esc(titulo) +
+      " — " +
       _esc(esfera) +
-      "</b></p>" +
+      "</b>" +
+      (mob ? " · seção separada" : "") +
+      "</p>" +
       body;
     return OBRAS._marcarCard(
-      typeof card === "function" ? card("Obras e Programas", bodyComEsfera) : bodyComEsfera
+      typeof card === "function" ? card(titulo, bodyComEsfera) : bodyComEsfera
     );
+  };
+
+  OBRAS.cardCatalogo = function () {
+    if (!_ehExec()) return OBRAS._cardCatalogo(false);
+    return OBRAS._cardCatalogo(false) + OBRAS._cardCatalogo(true);
   };
 
   OBRAS.cardEditor = function () {
@@ -1357,10 +1401,16 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
     A.obrasAbandonar = function (id) {
       OBRAS.abandonar(id);
     };
-    A.obrasFiltro = function (k, v) {
+    A.obrasFiltro = function (stKey, k, v) {
       if (typeof S === "undefined") return;
-      S.obras = S.obras || {};
-      S.obras[k] = v;
+      if (arguments.length === 2) {
+        v = k;
+        k = stKey;
+        stKey = "obras";
+      }
+      stKey = stKey === "obrasMob" ? "obrasMob" : "obras";
+      S[stKey] = S[stKey] || {};
+      S[stKey][k] = v;
       try {
         render();
       } catch (e) {}
@@ -1379,10 +1429,11 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
   // change listener for area select
   document.addEventListener("change", function (e) {
     var t = e.target;
-    if (t && t.dataset && t.dataset.i === "obras") {
+    if (t && t.dataset && (t.dataset.i === "obras" || t.dataset.i === "obrasMob")) {
       if (typeof S === "undefined") return;
-      S.obras = S.obras || {};
-      S.obras[t.dataset.k] = t.value;
+      var stKey = t.dataset.i;
+      S[stKey] = S[stKey] || {};
+      S[stKey][t.dataset.k] = t.value;
       try {
         render();
       } catch (err) {}
