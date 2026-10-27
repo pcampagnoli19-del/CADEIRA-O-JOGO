@@ -4619,10 +4619,25 @@ function perderCargo(motivo){
   const j=J(); const ant=j.cargo_atual; if(ant==="Cidadão Comum") return;
   const cid=cargoAtualId();
   manchete(`${j.nome} perde o cargo de ${ant} (${motivo}).`,"cassacao"); diario(`Perdeu o cargo de ${ant}: ${motivo}.`);
-  j.cargo_atual="Cidadão Comum"; j.mandato_fim=null;
-  const cadeira=bancoDeNPCs.find(n=>n.id==="JOGADOR_SEAT_"+cid);
-  gerarNovoPoliticoProcedural(ant,"FEDERAL",null,{uf:"SP"});
-  if(cid==="PRES"){ const v=bancoDeNPCs.find(x=>x.vivo&&x.cargo==="Vice-Presidente"); if(v){ v.cargo="Presidente da República"; } }
+  j.cargo_atual="Cidadão Comum"; j.mandato_fim=null; j.licenca=null;
+  // Sucessão: vice no Executivo, suplente no Legislativo. Sem isso, o cargo
+  // ficava vago e o jogo criava um político federal aleatório até para prefeito.
+  if(cid==="PRES"){
+    const v=bancoDeNPCs.find(x=>x.vivo&&x.cargo==="Vice-Presidente");
+    if(v){ v.cargo="Presidente da República"; v.papel="Presidente (ex-vice)"; manchete(`${v.nome} assume a Presidência da República.`,"vacancia"); }
+    else gerarNovoPoliticoProcedural("Presidente da República","FEDERAL",null,{uf:"SP"});
+  } else if(cid==="GOV"){
+    const v=npcPorId(M().gov_vice_id)||bancoDeNPCs.find(x=>x.vivo&&/Vice-governador/.test(x.papel||""));
+    if(v&&v.vivo){ v.cargo="Governador de SP"; v.papel="Governador de SP (ex-vice)"; v.base_votos=Math.max(v.base_votos||0,3e6); manchete(`${v.nome} assume o Governo de SP.`,"vacancia"); M().gov_vice_id=null; }
+    else gerarNovoPoliticoProcedural("Governador de SP","ESTADUAL",null,{uf:"SP"});
+  } else if(cid==="PREF"){
+    const v=npcPorId(M().vice_pref_id)||bancoDeNPCs.find(x=>x.vivo&&/Vice-prefeito/.test(x.papel||""));
+    if(v&&v.vivo){ v.cargo="Prefeito de Mauá"; v.papel="Prefeito de Mauá (ex-vice)"; manchete(`${v.nome} assume a Prefeitura de Mauá.`,"vacancia"); M().vice_pref_id=null; }
+    else { const pc=bancoDeNPCs.find(x=>x.vivo&&/Pres\. da Câmara Mauá/.test(x.papel||""))||bancoDeNPCs.find(x=>x.vivo&&/Vereador/.test(x.cargo||"")); if(pc){ pc.cargo="Prefeito de Mauá"; manchete(`${pc.nome} assume a Prefeitura de Mauá.`,"vacancia"); } else gerarNovoPoliticoProcedural("Prefeito de Mauá","MUNICIPAL",null,{uf:"SP"}); }
+  } else if(cid==="VER"||cid==="DEPE"||cid==="DEPF"||cid==="SEN"){
+    const esf=cid==="VER"?"MUNICIPAL":cid==="DEPE"?"ESTADUAL":"FEDERAL";
+    gerarNovoPoliticoProcedural(ant,esf,null,{uf:"SP"});
+  }
   if(motivo!=="Renúncia"&&motivo!=="Fim do mandato") j.juridico.inelegivel_ate=Math.max(j.juridico.inelegivel_ate,dt().ano+8);
   Object.values(M().gab.nomeacoes).forEach(x=>{ if(x) x.npcId=null; }); M().gab.nomeacoes={};
   atualizarPopularidade();
@@ -5771,7 +5786,8 @@ function vaquinha(){
 function acoesSem(){ const c=J().campanha; c.acoes_sem=c.acoes_sem||{}; return c.acoes_sem; }
 function custoCamp(v){ return Math.round(v*(J().campanha.dobradinha?.5:1)); }
 function acaoCampanha(tipo,tid){
-  const j=J(), c=j.campanha; if(!c.candidatura_ativa){toast("Só candidatos registrados fazem ativações de campanha.","err");return;}
+  const j=J(), c=j.campanha; if(typeof candidaturaOficial==="function") candidaturaOficial();
+  if(!c.candidatura_ativa){toast("Só candidatos registrados fazem ativações de campanha.","err");return;}
   const alvo=cargoIdPorNome(c.cargo_alvo); const ts=territoriosDoCargo(alvo); const as=acoesSem(); const mult=(c.dobradinha?.85:1)*(emCampanha()?1.15:1); const esc=Math.max(.3,BASE_FUNDO[alvo]/900000);
   const cfg={comicio:{c:30000,e:16,b:4.5,n:"Comício"},carreata:{c:18000,e:11,b:3.2,n:"Carreata"},visita:{c:4000,e:7,b:1.8,n:"Visita de rua"}}[tipo];
   if(cfg){ const t=TERRITORIOS.find(x=>x.id===tid); if(!t||!ts.includes(t)){toast("Escolha um território do cargo-alvo.","err");return;}
@@ -7691,7 +7707,7 @@ function proximoPasso(){
   if(M().operacao&&!M().operacao.resolvida) return {t:"Operação em curso",x:"Resolva a operação deflagrada antes de qualquer outra coisa.",tab:null};
   if(M().evento&&!M().evento.resolvido) return {t:"Decida o evento do mês",x:"Há uma decisão pendente no topo desta tela. Quem não decide, perde a vez.",tab:"mes"};
   if(preso()) return {t:"Você está preso(a)",x:"Abra a aba Cela: silêncio, delação, habeas corpus ou comando remoto.",tab:"cela"};
-  if(modoCampanha()&&c.candidatura_ativa){ const as=acoesSem(); if(as.debate!==mark()) return {t:"Semana de campanha: faça o debate",x:"Debate, sabatina, HGPE e comícios rendem aprovação nesta semana. A energia recomeça toda semana.",tab:"camp"}; return {t:"Campanha de rua",x:"Use a energia restante em comício e carreata nos territórios de maior eleitorado.",tab:"camp"}; }
+  if(modoCampanha()&&candidaturaOficial()){ const as=acoesSem(); if(as.debate!==mark()) return {t:"Semana de campanha: faça o debate",x:"Debate, sabatina, HGPE e comícios rendem aprovação nesta semana. A energia recomeça toda semana.",tab:"camp"}; return {t:"Campanha de rua",x:"Use a energia restante em comício e carreata nos territórios de maior eleitorado.",tab:"camp"}; }
   if(!c.agencias.length&&j.financas.caixa1>=5000) return {t:"Contrate uma agência",x:"Sem agência, o tráfego pago rende bem menos. Comece pela Panfletagem ou pela Agência Regional.",tab:"camp"};
   if(!Object.keys(c.trafego).length&&j.financas.caixa1>=20000) return {t:"Coloque tráfego pago",x:"Distribua tráfego nos territórios do seu cargo-alvo. Os botões +1mi e +10mi aceleram.",tab:"camp"};
   if(t&&d.mes>=6&&d.mes<=7&&M().convencao.aberta&&M().convencao.elegivel) return {t:"Convenção: negocie com o partido",x:"O fundão sai agora. Negocie, blinde delegados e cuide da legenda antes do fim de julho.",tab:"partido"};
@@ -8132,7 +8148,15 @@ function sairPasta(motivo){
   else { j.cargo_atual="Cidadão Comum"; j.mandato_fim=null; j.licenca=null; manchete(`${j.nome} deixa a pasta (${motivo}).`,"posse"); }
   atualizarPopularidade();
 }
-{ const _pc=perderCargo; perderCargo=function(motivo){ if(J().pasta&&!["Renúncia"].includes(motivo)){ sairPasta(motivo); return; } if(J().pasta){ sairPasta(motivo); return; } return _pc(motivo); }; }
+{ const _pc=perderCargo; perderCargo=function(motivo){
+    const j=J();
+    // Se o cargo atual é uma pasta (secretaria/ministério), sair dela devolve
+    // a cadeira licenciada, se houver. Isso não é renúncia ao mandato — por isso
+    // não chamamos o perderCargo original aqui. Sem essa separação, o botão
+    // "Renunciar" apenas trocava a pasta pela cadeira e parecia não funcionar.
+    if(j.pasta){ sairPasta(motivo||"Renúncia"); atualizarPopularidade(); return; }
+    return _pc(motivo);
+  }; }
 function probConvite(nivel){
   const j=J(), exe=execDoNivel(nivel); if(!exe) return 0; const same=exe.partidoBase===j.partido_atual||(fedDe(j.partido_atual)||{partidos:[]}).partidos.includes(exe.partidoBase); const col=coligacaoAtual&&coligacaoAtual();
   const P=M().partidos[j.partido_atual]; const dono=P&&P.cacique_id==="JOGADOR"; const gov=P&&P.posicao==="governo";
@@ -8179,6 +8203,10 @@ const limiteExec=n=>(n.mandatosSeguidos||1)>=2;
   const _ee=eleicaoEstado; eleicaoEstado=function(uf){ const inc=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n)); const r=_ee(uf); const novo=bancoDeNPCs.find(n=>n.vivo&&n.cargo==="Governador"&&n.uf===uf&&!ehSemPartido(n)); if(novo) novo.mandatosSeguidos=(inc&&novo===inc)?(novo.mandatosSeguidos||1)+1:1; return r; };
   const _pc2=podeCandidatar; podeCandidatar=function(){ const r=_pc2(); if(!r.ok) return r; const j=J(); const alvo=cargoIdPorNome(j.campanha.cargo_alvo);
     if(["PREF","GOV","PRES"].includes(alvo)&&cargoAtualId()===alvo&&j.reeleicoes>=1) return {ok:false,motivo:`Limite de reeleição: o ${NOME_CARGO[alvo]} só pode ficar dois mandatos seguidos.`};
+    // Desincompatibilização: chefe do Executivo só precisa deixar o cargo para
+    // disputar OUTRO cargo; o prazo legal é abril do ano eleitoral. Reeleição
+    // no mesmo cargo não exige renúncia.
+    if(emExecutivo()&&alvo&&alvo!==cargoAtualId()&&tipoEleicao(dt().ano)&&dt().mes>4) return {ok:false,motivo:"Desincompatibilização: para concorrer a outro cargo, o chefe do Executivo precisa renunciar até abril do ano da eleição."};
     if(j.pasta&&tipoEleicao(dt().ano)&&dt().mes>4) return {ok:false,motivo:"Desincompatibilização: secretários e ministros precisam deixar a pasta até abril do ano da eleição."};
     const pf=PARTIDOS[j.partido_atual]&&PARTIDOS[j.partido_atual].fundado; if(pf&&pf.ano===dt().ano&&tipoEleicao(dt().ano)&&pf.mes>4) return {ok:false,motivo:"O partido foi registrado depois de abril: não pode lançar candidatos nesta eleição."}; return r; };
   const _emp=empossar; empossar=function(){ const j=J(); const e=j.campanha.eleito; const era=j.cargo_atual; if(j.licenca&&j.licenca.mandato_fim&&dt().mes===1&&dt().ano>j.licenca.mandato_fim){ const sup=npcPorId(j.licenca.suplente); if(sup){ sup.cargo="Liderança / Ex-Titular"; sup.papel="Ex-suplente"; } j.licenca=null; }
@@ -8464,7 +8492,9 @@ A.vertodas=()=>{S.verTodas=!S.verTodas;};
 
 /* ---------- Campanha ---------- */
 const ALVOS=["VER","PREF","DEPE","DEPF","SEN","GOV","PRES"];
-A.alvo=id=>{ if(J().campanha.candidatura_ativa){toast("Você já está registrado(a) para este ano. Mude depois da eleição.","err");return;} J().campanha.cargo_alvo=NOME_CARGO[id]; atualizarPopularidade(); atualizarPesquisa(); };
+A.alvo=id=>{ if(J().campanha.candidatura_ativa){toast("Você já está registrado(a) para este ano. Mude depois da eleição.","err");return;} J().campanha.cargo_alvo=NOME_CARGO[id]; atualizarPopularidade(); atualizarPesquisa();
+  try{ if(typeof convencaoReabrivel==="function"&&convencaoReabrivel()) abrirConvencao(); }catch(e){ console.error("convencao",e); }
+};
 A.agencia=id=>contratarAgencia(id); A.dispensa=id=>dispensarAgencia(id);
 A.traf=(tid,d)=>{ const c=J().campanha; c.trafego_auto=false; setTrafego(tid,(c.trafego[tid]||0)+d); c.trafego_total=c.investimento_trafego_mensal; };
 A.trafTotal=(v)=>{ const c=J().campanha; c.trafego_auto=true; distribuirTrafegoAuto(v); };
@@ -8479,10 +8509,11 @@ function rivaisSujos(alvoId){
   return out;
 }
 function vCamp(){
-  const j=J(),c=j.campanha; const alvo=cargoIdPorNome(c.cargo_alvo)||"DEPE"; const ts=territoriosDoCargo(alvo); const P=M().pesquisaAtual; const pc=podeCandidatar();
+  const j=J(),c=j.campanha; try{ candidaturaOficial(); }catch(e){}
+  const alvo=cargoIdPorNome(c.cargo_alvo)||"DEPE"; const ts=territoriosDoCargo(alvo); const P=M().pesquisaAtual; const pc=podeCandidatar();
   const alvos=card("Cargo-alvo",`<div class="chips">${ALVOS.map(id=>`<button class="chip ${alvo===id?"on":""}" data-a="alvo" data-p='["${id}"]'>${NOME_CARGO[id]}<small>eleição ${proximaEleicaoAno(id)}, mín. ${IDADE_MIN[id]} anos</small></button>`).join("")}<button class="chip ${!cargoIdPorNome(c.cargo_alvo)?"on":""}" data-a="alvoNenhum">Não disputar<small>Articular o poder, estilo Kassab</small></button></div>${pc.ok?"":`<p class="warn-txt">${esc(pc.motivo)}</p>`}`);
   let pesq=""; if(P){ if(P.tipo==="LEG") pesq=card("Pesquisa de intenção",`<div class="row"><span class="grow">Sua projeção</span><b>${fmtV(P.jv)} votos</b></div><div class="row"><span class="grow">Posição</span><b>${P.pos}º de ${P.N} vagas</b></div><div class="row"><span class="grow">Corte estimado</span><b>${fmtV(P.corte)} votos</b></div>${bar(Math.min(P.jv,P.corte*2),P.corte*2,P.vence?"ok":"neg")}<p class="txt">${P.vence?"Você está dentro, mas a margem muda todo mês.":"Você precisa de mais base: tráfego pago, padrinho e fundo eleitoral."}${P.qeLinha?` ${esc(P.qeLinha)}`:""}</p>`);
-    else pesq=card("Pesquisa de intenção",P.lista.map(x=>`<div class="row"><span class="grow ${x.jogador?"eu":""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share,60,x.jogador?"eu":"")}`).join("")+`<p class="txt">${(typeof window.textoAusenciaPesquisa==="function")?window.textoAusenciaPesquisa(P):(P.lista.some(x=>x.jogador)?"":"Você só aparece na pesquisa quando tem o cargo como alvo.")}</p>`); }
+    else pesq=card("Pesquisa de intenção",P.lista.map(x=>`<div class="row"><span class="grow ${x.jogador?"eu":""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share,60,x.jogador?"eu":"")}`).join("")+`<p class="txt">${(typeof window.textoAusenciaPesquisa==="function")?window.textoAusenciaPesquisa(P):(P.lista.some(x=>x.jogador)?"":"Você só aparece na pesquisa quando tem o cargo como alvo.")}</p>${P.lista.some(x=>x.jogador)&&!c.candidatura_ativa?`<p class="warn-txt">Projeção sem registro: sua candidatura ainda não foi homologada na convenção.</p>`:""}`); }
   const apr=cardTrafegoHTML();
   const pau=card("Segmentação por pauta",PAUTAS.map(p=>`<label class="f rng">${p.nome}: <b id="pv-${p.id}">${c.pautas[p.id]}</b><input type="range" min="0" max="100" step="5" value="${c.pautas[p.id]}" data-i="pauta" data-k="${p.id}"></label>`).join("")+`<p class="txt">Cada território reage diferente. Partidos de esquerda rendem mais em auxílio e obras; de direita, em segurança e costumes.</p>`);
   const ag=card("Agências de marketing",AGENCIAS.map(a=>{const on=c.agencias.includes(a.id);return `<div class="ag ${on?"on":""}"><div class="row"><b class="grow">${a.nome}</b><span>${fmt(a.custo)}/mês ${a.cx===2?tag("Caixa 2","warn"):""}</span></div><p class="txt">${esc(a.entrega)}. <i>Risco: ${esc(a.risco)}.</i></p>${on?btn("Rescindir","dispensa",[a.id],"branco"):btn("Contratar","agencia",[a.id],"confirma mini")}</div>`;}).join("")+`<p class="txt">Até 2 agências ao mesmo tempo (uma oficial e uma clandestina). A Marqueteiro Presidencial cobra ministérios depois.</p>`);
@@ -8493,14 +8524,20 @@ function vCamp(){
   const d=dt(); const janela=tipoEleicao(d.ano)&&(d.mes===3||d.mes===4);
   const jan=card("Janela partidária",janela?`<p class="txt">Aberta agora. Trocar de sigla zera seu padrinho e a relação com o diretório.</p><div class="row"><select id="sel-partido">${PARTIDOS_JOGAVEIS.filter(p=>p!==j.partido_atual).map(p=>`<option>${p}</option>`).join("")}</select>${btn("Trocar de partido","trocapart","","corrige mini")}</div>`:`<p class="txt">Fechada. Abre em março e abril de anos eleitorais.</p>`);
   let corr="";
-  if(modoCampanha()&&c.candidatura_ativa){ const as=acoesSem(); const mk=mark(); const ok=k=>as[k]===mk;
+  if(modoCampanha()&&candidaturaOficial()){ const as=acoesSem(); const mk=mark(); const ok=k=>as[k]===mk;
     corr=card(`A Corrida Eleitoral Começou: semana ${dt().semana||1}/4`,`<p class="txt">De 1º de agosto ao fim de outubro as rodadas são semanais. Energia e ações recomeçam a cada semana.</p><h4>Ativações de rua</h4>`+ts.filter(t=>t.grupo!=="BR"||true).slice(0,40).map(t=>`<div class="row"><span class="grow">${t.nome} <small>${Math.round(j.aprovacao[t.id])}%</small></span>${btn("Visita","camp",["visita",t.id],"mini")}${btn("Carreata","camp",["carreata",t.id],"mini")}${btn("Comício","camp",["comicio",t.id],"mini confirma")}</div>`).join("")+`<h4>Mídia e debates</h4><div class="stack">${btn(ok("debate")?"Debate já feito nesta semana":"Participar de debate na TV","camp",["debate"],"corrige",ok("debate"))}${btn(ok("sabatina")?"Sabatina já feita nesta semana":"Sabatina na imprensa","camp",["sabatina"],"corrige",ok("sabatina"))}${btn(ok("hgpe")?"HGPE já gravado nesta semana":"Gravar programa eleitoral (HGPE)","camp",["hgpe"],"confirma",ok("hgpe"))}</div>${c.dobradinha?`<p class="txt">Dobradinha ativa: custos de campanha caem pela metade.</p>`:""}`,"fase warn"); }
   let dob=""; const alvoP=["VER","DEPE","DEPF"].includes(alvo);
   if(alvoP){ const cd=c.dobradinha?npcPorId(c.dobradinha.id):null; dob=card("Dobradinha e santinho conjunto",cd?`<p class="txt">Parceiro: <b>${nome$(cd)}</b> (${esc(cd.papel||cd.cargo)}). Custos meio a meio e impacto de votos compartilhado no colégio de ${esc((TERRITORIOS.find(t=>t.id===c.dobradinha.terr)||{}).nome||"")}.</p>${btn("Desfazer dobradinha","dobrompe","","branco mini")}`:(c.candidatura_ativa?candidatosDobradinha().map(n=>`<div class="row"><span class="grow">${nome$(n)} <small>${esc(n.papel||n.cargo)} — ${esc(n.partido)}</small></span>${btn("Selar","dob",[n.id],"mini confirma")}</div>`).join("")||"<p class='txt'>Sem parceiros viáveis agora.</p>":"<p class='txt'>Disponível depois que a candidatura for registrada.</p>")+"<p class='txt'>Cargos proporcionais podem dividir material e votos com candidatos federais ou majoritários da coligação.</p>"); }
   const fin=card("Fontes legítimas de dinheiro",`<div class="grid2">${kv("Salário oficial",fmt(j.financas.salario_oficial))}${kv("Cota do fundo partidário",fmt(j.cota_mes||cotaFundoPartidario()))}${kv("Doações de campanha (mês)",fmt(j.doacao_mes||0))}${kv("Fundo eleitoral recebido",fmt(c.fundo_recebido||0))}</div><div class="stack">${btn("Fazer vaquinha virtual (dentro do limite legal)","vaq","","confirma")}</div><p class="txt">Doações crescem na campanha, proporcionais à sua popularidade e ao seu carisma.</p>`);
   const mkt=typeof window.renderTelaMarqueteiros==="function"?card("Marqueteiro",window.renderTelaMarqueteiros(),"wide"):"";
   const hist=(M().pesqHist||[]).filter(x=>x).slice(-12); const histH=hist.length>1?card("Pesquisas ao longo da campanha",spark(hist.map(x=>x.v))+`<p class="txt">${hist.map(x=>x.t+": "+x.v+(x.tipo==="MAJ"?"%":"")).join(" · ")}</p>`):"";
-  return alvos+cardUrna()+cardCofres()+cardDiag()+cardPesquisas()+cardPerfil()+corr+pesq+histH+dob+apr+pau+fin+mkt+ag+suja+padH+jan;
+  let reg="";
+  if(!c.candidatura_ativa&&cargoIdPorNome(c.cargo_alvo)){ const cv=M().convencao;
+    if(cv&&cv.aberta&&cv.elegivel) reg=card("Candidatura ainda não registrada",`<p class="txt">Sua convenção está aberta. Registre a candidatura para liberar a campanha de rua, os debates e o HGPE.</p>${btn("Registrar candidatura agora","registrar","","confirma")}`);
+    else if(convencaoReabrivel()) reg=card("Candidatura ainda não registrada",`<p class="txt">Você escolheu <b>${esc(c.cargo_alvo)}</b>, mas a convenção ainda não homologou o nome. Abra a convenção e registre.</p>${btn("Abrir convenção","abrirconv","","confirma")}`);
+    else if(cv&&cv.permiteNanico&&dt().mes===8) reg=card("Candidatura ainda não registrada",`<p class="txt">A convenção não homologou seu nome. Resta comprar uma legenda nanica.</p>${btn("Comprar legenda nanica","nanica","","corrige")}`);
+  }
+  return alvos+reg+cardDesincompatibilizacao()+cardUrna()+cardCofres()+cardDiag()+cardPesquisas()+cardPerfil()+corr+pesq+histH+dob+apr+pau+fin+mkt+ag+suja+padH+jan;
 }
 
 /* ===================== CADEIRA — INTERFACE 2 ===================== */
@@ -8518,9 +8555,9 @@ function vPartido(){
   const anoE=tipoEleicao(dt().ano);
   let conv=""; if(c.ano===dt().ano&&(c.aberta||c.resolvida)){
     if(!c.elegivel) conv=`<p class="warn-txt">${esc(c.motivo)}</p>`;
-    else if(c.aberta){ const alvo=cargoIdPorNome(j.campanha.cargo_alvo); conv=`<p class="txt">Convenção aberta até o fim de julho. Cargo: <b>${esc(j.campanha.cargo_alvo)}</b>.</p><div class="grid2">${kv("Fundo previsto",fmt(c.fundo))}${kv("Faixa",esc(c.tier||"-"))}</div>${c.tier==="REBELDE"&&c.rival?`<p class="warn-txt">O cacique reservou ${fmt(c.rival.valor)} para ${esc(c.rival.nome)} (${esc(c.rival.arq)}) e deixou R$ 20.000 para você.</p>`:""}${c.tier==="BLOQUEADO"?`<p class="warn-txt">Fundo bloqueado pela Guerra Fratricida.</p>`:""}<div class="stack">${btn("Negociar com a executiva","negociar","","confirma")}${btn(c.compraLegenda?"Legenda comprada":`Pagar o tesoureiro: furar a fila (${fmtK(PRECO_LEGENDA[alvo])} de Caixa 2)`,"legenda","","corrige",c.compraLegenda)}${MAJORITARIAS.includes(alvo)?btn(`Blindar delegados contra a Rasteira (${c.blindados||0}/2, ${fmtK(PRECO_LEGENDA[alvo]*.25)} de Caixa 2)`,"blindar","","corrige"):""}</div>`; }
+    else if(c.aberta){ const alvo=cargoIdPorNome(j.campanha.cargo_alvo); conv=`<p class="txt">Convenção aberta até o fim de julho. Cargo: <b>${esc(j.campanha.cargo_alvo)}</b>.</p><div class="grid2">${kv("Fundo previsto",fmt(c.fundo))}${kv("Faixa",esc(c.tier||"-"))}</div>${c.tier==="REBELDE"&&c.rival?`<p class="warn-txt">O cacique reservou ${fmt(c.rival.valor)} para ${esc(c.rival.nome)} (${esc(c.rival.arq)}) e deixou R$ 20.000 para você.</p>`:""}${c.tier==="BLOQUEADO"?`<p class="warn-txt">Fundo bloqueado pela Guerra Fratricida.</p>`:""}<div class="stack">${btn("Negociar com a executiva","negociar","","confirma")}${btn(c.compraLegenda?"Legenda comprada":`Pagar o tesoureiro: furar a fila (${fmtK(PRECO_LEGENDA[alvo])} de Caixa 2)`,"legenda","","corrige",c.compraLegenda)}${MAJORITARIAS.includes(alvo)?btn(`Blindar delegados contra a Rasteira (${c.blindados||0}/2, ${fmtK(PRECO_LEGENDA[alvo]*.25)} de Caixa 2)`,"blindar","","corrige"):""}${btn("Registrar candidatura (fechar convenção)","registrar","","confirma")}</div>`; }
     else { conv=`<p class="txt">${(c.log||[]).map(esc).join("<br>")||"Sem registro."}</p>${c.permiteNanico&&dt().mes===8?`<p class="warn-txt">Você ficou sem legenda. Há um último recurso: comprar uma legenda nanica por 120% do preço (Caixa 2).</p>${btn("Comprar legenda nanica","nanica","","corrige")}`:""}`; }
-  } else conv=`<p class="txt">${anoE?"As convenções abrem em junho.":"Sem convenções neste ano."}</p>`;
+  } else conv=`<p class="txt">${anoE?"As convenções abrem em junho.":"Sem convenções neste ano."}</p>${convencaoReabrivel()?`<p class="warn-txt">O prazo está aberto: sua candidatura ainda não foi registrada.</p>${btn("Abrir convenção","abrirconv","","confirma")}`:""}`;
   h+=card("Convenção partidária",conv);
   h+=card("Fundão eleitoral, por partido",Object.keys(PARTIDOS).filter(x=>x!=="Sem Partido").sort((a,b)=>PARTIDOS[b].fundo-PARTIDOS[a].fundo).map(x=>{
     const bg = (typeof window.badgePartido==="function") ? window.badgePartido(x) : esc(x);
@@ -8537,7 +8574,72 @@ A.demite=id=>demitir(id);
 A.voto=(id)=>votar(id,S.extra); A.extra=()=>{S.extra=!S.extra;};
 A.comissao=()=>comprarComissao(); A.relator=()=>comprarRelator();
 A.articular=b=>{ if(!gastarEnergia(10)) return; bancoDeNPCs.filter(n=>n.vivo&&n.bancadas.includes(b)).forEach(n=>relNPC(n,R.i(1,4))); toast(`Você articulou com a bancada ${BANCADA_CURTA[b]}: as relações melhoraram.`,"ok"); };
-A.renunciar=()=>{ if(S.conf!=="ren"){ S.conf="ren"; toast("Toque de novo em Renunciar para confirmar.","err"); return; } S.conf=null; perderCargo("Renúncia"); };
+function candidaturaOficial(){
+  try{
+    const j=J(), c=j.campanha, alvo=cargoIdPorNome(c.cargo_alvo);
+    if(c.candidatura_ativa) return true;
+    if(!alvo) return false;
+    const P=M().previas&&M().previas.atual;
+    if(!P||Number(P.ano)!==Number(dt().ano)) return false;
+    const g=P.grupos&&P.grupos[alvo]&&P.grupos[alvo][j.partido_atual];
+    if(g&&g.venc==="JOGADOR"){ c.candidatura_ativa=true; c.registro_ok=true; return true; }
+    return false;
+  }catch(e){ return false; }
+}
+function convencaoReabrivel(){
+  try{
+    candidaturaOficial();
+    const d=dt(), c=M().convencao, j=J();
+    if(!tipoEleicao(d.ano)||j.campanha.candidatura_ativa) return false;
+    if(d.mes<6||d.mes>10) return false;
+    if(!cargoIdPorNome(j.campanha.cargo_alvo)) return false;
+    if(!c||c.ano!==d.ano) return true;
+    if(!c.aberta&&!c.resolvida) return true;
+    if(c.resolvida&&c.motivo&&/perdeu a prévia/i.test(c.motivo)) return false;
+    if(!c.elegivel) return true;
+    return false;
+  }catch(e){ return false; }
+}
+function cardDesincompatibilizacao(){
+  try{
+    const j=J(), d=dt(), alvo=cargoIdPorNome(j.campanha.cargo_alvo), atual=cargoAtualId();
+    if(!alvo||!tipoEleicao(d.ano)) return "";
+    const executivo=emExecutivo(), pasta=!!j.pasta;
+    if(!executivo&&!pasta) return "";
+    if(executivo&&alvo===atual) return card("Desincompatibilização",`<p class="txt">Reeleição no mesmo cargo: você <b>não</b> precisa renunciar para disputar ${esc(NOME_CARGO[alvo])}.</p>`);
+    if(d.mes<=4) return card("Desincompatibilização",`<p class="txt">Você pode disputar ${esc(NOME_CARGO[alvo])} sem renunciar agora. O prazo legal para deixar ${pasta?"a pasta":"o cargo executivo"} é <b>abril de ${d.ano}</b>.</p>`);
+    return card("Desincompatibilização",`<p class="txt">Para concorrer a ${esc(NOME_CARGO[alvo])}, você precisava ter deixado ${pasta?"a pasta":"o cargo executivo"} até <b>abril de ${d.ano}</b>. Renuncie agora para regularizar sua situação.</p><div class="stack">${btn(pasta?"Renunciar à pasta":"Renunciar ao cargo","renunciar","","confirma")}${pasta&&j.licenca?btn("Renunciar também ao mandato","renunciarMandato","","branco"):""}</div>`,"warn");
+  }catch(e){ return ""; }
+}
+A.renunciar=()=>{
+  if(S.conf!=="ren"){ S.conf="ren"; toast("Toque de novo em Renunciar para confirmar.","err"); return; }
+  S.conf=null;
+  const j=J();
+  if(j.pasta){
+    sairPasta("Renúncia");
+    if(j.cargo_atual!=="Cidadão Comum") toast("Você deixou a pasta e reassumiu a cadeira. Use 'Renunciar ao mandato' para deixar também o cargo eletivo.","ok");
+  } else perderCargo("Renúncia");
+};
+A.renunciarMandato=()=>{
+  if(S.conf!=="renM"){ S.conf="renM"; toast("Toque de novo para renunciar também ao mandato eletivo.","err"); return; }
+  S.conf=null;
+  const j=J(); if(j.pasta) sairPasta("Renúncia");
+  perderCargo("Renúncia");
+};
+A.abrirconv=()=>{ abrirConvencao(); render(); };
+A.registrar=()=>{
+  const j=J(), d=dt();
+  if(j.campanha.candidatura_ativa){ toast("Sua candidatura já está registrada.","err"); return; }
+  if(!cargoIdPorNome(j.campanha.cargo_alvo)){ toast("Defina um cargo-alvo antes de registrar.","err"); return; }
+  if(!tipoEleicao(d.ano)){ toast("Não há eleição neste ano.","err"); return; }
+  let c=M().convencao;
+  if(c&&c.ano===d.ano&&c.resolvida&&c.motivo&&/perdeu a prévia/i.test(c.motivo)){ toast(c.motivo,"err"); render(); return; }
+  if(!c||c.ano!==d.ano||(!c.aberta&&!c.resolvida)||!c.elegivel){ abrirConvencao(); c=M().convencao; }
+  if(!c||!c.elegivel){ toast((c&&c.motivo)||"A convenção não está aberta para o seu cargo-alvo.","err"); render(); return; }
+  if(!c.aberta){ toast("A convenção já foi encerrada.","err"); render(); return; }
+  fecharConvencao(); render();
+  toast(J().campanha.candidatura_ativa?"Candidatura registrada na convenção.":"A convenção não homologou sua candidatura.", J().campanha.candidatura_ativa?"ok":"err");
+};
 function vPoder(){
   const j=J(), cid=cargoAtualId(), exe=emExecutivo(); let h=cardPastaTopo();
   if(exe){
@@ -8558,7 +8660,7 @@ function vPoder(){
   const cont=Object.fromEntries(BANCADAS.map(b=>[b,bancoDeNPCs.filter(n=>n.vivo&&n.bancadas.includes(b)&&(/Deputado Federal|Senador/.test(n.cargo))).length]));
   h+=card("Anatomia do Congresso: as bancadas",`<div class="scroll"><table class="tb"><thead><tr><th>Bancada</th><th>Peso</th><th>No Congresso</th><th>Pauta central</th><th>Moeda de troca</th><th>Se traída</th></tr></thead><tbody>${BANCADAS.map(b=>{const i=BANCADAS_INFO[b];return `<tr><td><b>${esc(b)}</b></td><td>~${i.peso}</td><td>${cont[b]}</td><td>${esc(i.pauta)}</td><td>${esc(i.moeda)}</td><td>${esc(i.traicao)}</td></tr>`;}).join("")}</tbody></table></div><p class="txt">Partidos são rótulos de aluguel: cada parlamentar tem até duas bancadas, e é nelas que a governabilidade se decide.</p>`);
   h+=cardEquipe();
-  if(nivelAtual()>=1) h+=btn("Renunciar ao cargo","renunciar","","branco");
+  if(nivelAtual()>=1) h+=btn(J().pasta?"Renunciar à pasta":"Renunciar ao cargo","renunciar","","branco")+(J().pasta&&J().licenca?btn("Renunciar também ao mandato","renunciarMandato","","branco"):"");
   return h;
 }
 
@@ -11864,10 +11966,11 @@ const regEst=()=>{ const E=M().eleicao; if(!E.regEst||E.regEst.ano!==dt().ano) E
 /* --- disputas estaduais: 1 candidatura por pessoa e 1 por partido --- */
 function filtrarDisputa(uf,d){ const ids=regEst(); candidatosMajoritarios("PRES"); const r=M().eleicao.reg||{npc:{}}; const usado=(id,cg)=>!!r.npc[id]||(ids[id]&&ids[id]!==cg);
   const cgG="GOV:"+uf, cgS="SEN:"+uf, partG={};
-  d.gov=d.gov.filter(c=>{ const n=npcPorId(c.id); if(!n||!n.vivo) return false; const p=n.partidoBase; if(usado(c.id,cgG)||partG[p]) return false; partG[p]=1; return true; });
-  let g=0; while(d.gov.length<2&&g++<6){ const t=gerarNovoPoliticoProcedural(LIVRE,"ESTADUAL",null,{uf,idade:R.i(40,66)}); t.popularidade=R.c(t.popularidade+10,10,80); if(partG[t.partidoBase]) continue; partG[t.partidoBase]=1; d.gov.push({id:t.id,score:scoreCand(t,false),inc:false}); }
+  const chaveFedP=p=>{ try{ if(typeof fedDe==="function"){ const f=fedDe(p); if(f&&(!f.ate||Number(f.ate)>=dt().ano)) return "F:"+f.id; } }catch(e){} return "P:"+p; };
+  d.gov=d.gov.filter(c=>{ const n=npcPorId(c.id); if(!n||!n.vivo) return false; const p=chaveFedP(n.partidoBase); if(usado(c.id,cgG)||partG[p]) return false; partG[p]=1; return true; });
+  let g=0; while(d.gov.length<2&&g++<6){ const t=gerarNovoPoliticoProcedural(LIVRE,"ESTADUAL",null,{uf,idade:R.i(40,66)}); t.popularidade=R.c(t.popularidade+10,10,80); const p=chaveFedP(t.partidoBase); if(partG[p]) continue; partG[p]=1; d.gov.push({id:t.id,score:scoreCand(t,false),inc:false}); }
   d.gov.forEach(c=>{ ids[c.id]=cgG; });
-  if(d.sen&&d.sen.vagas>0){ const govIds=new Set(d.gov.map(c=>c.id)), cont={}, vs=new Set(); d.sen.lista=d.sen.lista.slice().sort((a,b)=>(b.inc?1:0)-(a.inc?1:0)).filter(c=>{ if(vs.has(c.id)) return false; vs.add(c.id); return true; }).filter(c=>{ const n=npcPorId(c.id); if(!n||!n.vivo) return false; if(govIds.has(c.id)||usado(c.id,cgS)) return false; const p=n.partidoBase; cont[p]=(cont[p]||0)+1; return cont[p]<=d.sen.vagas; });
+  if(d.sen&&d.sen.vagas>0){ const govIds=new Set(d.gov.map(c=>c.id)), cont={}, vs=new Set(); d.sen.lista=d.sen.lista.slice().sort((a,b)=>(b.inc?1:0)-(a.inc?1:0)).filter(c=>{ if(vs.has(c.id)) return false; vs.add(c.id); return true; }).filter(c=>{ const n=npcPorId(c.id); if(!n||!n.vivo) return false; if(govIds.has(c.id)||usado(c.id,cgS)) return false; const p=chaveFedP(n.partidoBase); cont[p]=(cont[p]||0)+1; return cont[p]<=d.sen.vagas; });
     let h=0; while(d.sen.lista.length<d.sen.vagas+1&&h++<8){ const t=gerarNovoPoliticoProcedural(LIVRE,"ESTADUAL",null,{uf,idade:R.i(42,68)}); d.sen.lista.push({id:t.id,score:scoreCand(t,false),inc:false}); }
     d.sen.lista.forEach(c=>{ ids[c.id]=cgS; }); }
   return d; }
@@ -14596,7 +14699,7 @@ window.v24Relatorio=relHTML;
         body += cardPresidente();
       }
       if (nivelAtual() >= 1) {
-        body += card("Renúncia ao Mandato", `<p class="txt">Renunciar encerra imediatamente o cargo que você ocupa hoje. O vice ou suplente assume a vaga.</p>${btn("Renunciar ao cargo", "renunciar", "", "branco")}`);
+        body += card("Renúncia ao Mandato", `<p class="txt">${J().pasta?"Você está em uma pasta. Sair dela devolve a cadeira licenciada, se houver. Para encerrar também o mandato eletivo, use o segundo botão.":"Renunciar encerra imediatamente o cargo que você ocupa hoje. O vice ou suplente assume a vaga."}</p><div class="stack">${btn(J().pasta?"Renunciar à pasta":"Renunciar ao cargo", "renunciar", "", "branco")}${J().pasta&&J().licenca?btn("Renunciar também ao mandato", "renunciarMandato", "", "branco"):""}</div>`);
       }
     } else if (sub === "crises") {
       if (typeof window.renderAbaCrisesExecutivo === "function") {
@@ -14667,11 +14770,11 @@ window.v24Relatorio=relHTML;
         if (!c.elegivel) conv = `<p class="warn-txt">${esc(c.motivo)}</p>`;
         else if (c.aberta) {
           const alvo = cargoIdPorNome(j.campanha.cargo_alvo);
-          conv = `<p class="txt">Convenção aberta até o fim de julho. Cargo: <b>${esc(j.campanha.cargo_alvo)}</b>.</p><div class="grid2">${kv("Fundo previsto", fmt(c.fundo))}${kv("Faixa", esc(c.tier || "-"))}</div>${c.tier === "REBELDE" && c.rival ? `<p class="warn-txt">O cacique reservou ${fmt(c.rival.valor)} para ${esc(c.rival.nome)} (${esc(c.rival.arq)}) e deixou R$ 20.000 para você.</p>` : ""}${c.tier === "BLOQUEADO" ? `<p class="warn-txt">Fundo bloqueado pela Guerra Fratricida.</p>` : ""}<div class="stack">${btn("Negociar com a executiva", "negociar", "", "confirma")}${btn(c.compraLegenda ? "Legenda comprada" : `Pagar o tesoureiro: furar a fila (${fmtK(PRECO_LEGENDA[alvo])} de Caixa 2)`, "legenda", "", "corrige", c.compraLegenda)}${MAJORITARIAS.includes(alvo) ? btn(`Blindar delegados contra a Rasteira (${c.blindados || 0}/2, ${fmtK(PRECO_LEGENDA[alvo] * .25)} de Caixa 2)`, "blindar", "", "corrige") : ""}</div>`;
+          conv = `<p class="txt">Convenção aberta até o fim de julho. Cargo: <b>${esc(j.campanha.cargo_alvo)}</b>.</p><div class="grid2">${kv("Fundo previsto", fmt(c.fundo))}${kv("Faixa", esc(c.tier || "-"))}</div>${c.tier === "REBELDE" && c.rival ? `<p class="warn-txt">O cacique reservou ${fmt(c.rival.valor)} para ${esc(c.rival.nome)} (${esc(c.rival.arq)}) e deixou R$ 20.000 para você.</p>` : ""}${c.tier === "BLOQUEADO" ? `<p class="warn-txt">Fundo bloqueado pela Guerra Fratricida.</p>` : ""}<div class="stack">${btn("Negociar com a executiva", "negociar", "", "confirma")}${btn(c.compraLegenda ? "Legenda comprada" : `Pagar o tesoureiro: furar a fila (${fmtK(PRECO_LEGENDA[alvo])} de Caixa 2)`, "legenda", "", "corrige", c.compraLegenda)}${MAJORITARIAS.includes(alvo) ? btn(`Blindar delegados contra a Rasteira (${c.blindados || 0}/2, ${fmtK(PRECO_LEGENDA[alvo] * .25)} de Caixa 2)`, "blindar", "", "corrige") : ""}${btn("Registrar candidatura (fechar convenção)", "registrar", "", "confirma")}</div>`;
         } else {
           conv = `<p class="txt">${(c.log || []).map(esc).join("<br>") || "Sem registro."}</p>${c.permiteNanico && dt().mes === 8 ? `<p class="warn-txt">Você ficou sem legenda. Há um último recurso: comprar uma legenda nanica por 120% do preço (Caixa 2).</p>${btn("Comprar legenda nanica", "nanica", "", "corrige")}` : ""}`;
         }
-      } else conv = `<p class="txt">${anoE ? "As convenções abrem em junho." : "Sem convenções neste ano."}</p>`;
+      } else conv = `<p class="txt">${anoE ? "As convenções abrem em junho." : "Sem convenções neste ano."}</p>${convencaoReabrivel() ? `<p class="warn-txt">O prazo está aberto: sua candidatura ainda não foi registrada.</p>${btn("Abrir convenção", "abrirconv", "", "confirma")}` : ""}`;
 
       body += card("Convenção partidária", conv);
       if (P && P.guerra) {
@@ -14719,6 +14822,7 @@ window.v24Relatorio=relHTML;
 
   function viewCampModular() {
     const j = J(), c = j.campanha, alvo = cargoIdPorNome(c.cargo_alvo) || "DEPE", ts = territoriosDoCargo(alvo), P = M().pesquisaAtual, pc = podeCandidatar();
+    try { candidaturaOficial(); } catch (e) {}
     const sub = (S.subtab && S.subtab.camp) || "hub";
 
     if (sub === "hub") {
@@ -14746,6 +14850,7 @@ window.v24Relatorio=relHTML;
       return body;
     } else if (sub === "estrategia") {
       body += card("Cargo-alvo", `<div class="chips">${ALVOS.map(id => `<button class="chip ${alvo === id ? "on" : ""}" data-a="alvo" data-p='["${id}"]'>${NOME_CARGO[id]}<small>eleição ${proximaEleicaoAno(id)}, mín. ${IDADE_MIN[id]} anos</small></button>`).join("")}<button class="chip ${!cargoIdPorNome(c.cargo_alvo) ? "on" : ""}" data-a="alvoNenhum">Não disputar<small>Articular o poder, estilo Kassab</small></button></div>${pc.ok ? "" : `<p class="warn-txt">${esc(pc.motivo)}</p>`}`);
+      body += cardDesincompatibilizacao();
       body += cardUrna();
       if (typeof cardChapaJogador === "function") body += cardChapaJogador();
       const pads = bancoDeNPCs.filter(n => n.vivo && n.partidoBase === j.partido_atual && (CARGO_NIVEL[n.cargo] || 2) >= 3 && n.cargo !== "Falecido(a)").sort((a, b) => b.popularidade - a.popularidade).slice(0, 6);
@@ -14759,7 +14864,7 @@ window.v24Relatorio=relHTML;
         if (P.tipo === "LEG") {
           body += card("Pesquisa de intenção", `<div class="row"><span class="grow">Sua projeção</span><b>${fmtV(P.jv)} votos</b></div><div class="row"><span class="grow">Posição</span><b>${P.pos}º de ${P.N} vagas</b></div><div class="row"><span class="grow">Corte estimado</span><b>${fmtV(P.corte)} votos</b></div>${bar(Math.min(P.jv, P.corte * 2), P.corte * 2, P.vence ? "ok" : "neg")}<p class="txt">${P.vence ? "Você está dentro, mas a margem muda todo mês." : "Você precisa de mais base: tráfego pago, padrinho e fundo eleitoral."}${P.qeLinha ? " " + esc(P.qeLinha) : ""}</p>`);
         } else {
-          body += card("Pesquisa de intenção", P.lista.map(x => `<div class="row"><span class="grow ${x.jogador ? "eu" : ""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share, 60, x.jogador ? "eu" : "")}`).join("") + `<p class="txt">${(typeof window.textoAusenciaPesquisa==="function")?window.textoAusenciaPesquisa(P):(P.lista.some(x => x.jogador) ? "" : "Você só aparece na pesquisa quando tem o cargo como alvo.")}</p>`);
+          body += card("Pesquisa de intenção", P.lista.map(x => `<div class="row"><span class="grow ${x.jogador ? "eu" : ""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share, 60, x.jogador ? "eu" : "")}`).join("") + `<p class="txt">${(typeof window.textoAusenciaPesquisa==="function")?window.textoAusenciaPesquisa(P):(P.lista.some(x => x.jogador) ? "" : "Você só aparece na pesquisa quando tem o cargo como alvo.")}</p>${P.lista.some(x=>x.jogador)&&!c.candidatura_ativa?`<p class="warn-txt">Projeção sem registro: sua candidatura ainda não foi homologada na convenção.</p>`:""}`);
         }
       }
       const hist = (M().pesqHist || []).filter(x => x).slice(-12);
@@ -14781,7 +14886,17 @@ window.v24Relatorio=relHTML;
       }
       if (typeof cardRetaFinal === "function") body += cardRetaFinal();
     } else if (sub === "rua") {
-      if (modoCampanha() && c.candidatura_ativa) {
+      if (!c.candidatura_ativa && cargoIdPorNome(c.cargo_alvo)) {
+        const cv = M().convencao;
+        if (cv && cv.aberta && cv.elegivel) {
+          body += card("Candidatura ainda não registrada", `<p class="txt">Sua convenção está aberta. Registre a candidatura para liberar a campanha de rua, os debates e o HGPE.</p>${btn("Registrar candidatura agora", "registrar", "", "confirma")}`);
+        } else if (convencaoReabrivel()) {
+          body += card("Candidatura ainda não registrada", `<p class="txt">Você escolheu <b>${esc(c.cargo_alvo)}</b>, mas a convenção do seu partido ainda não homologou o nome. Abra a convenção e registre a candidatura.</p>${btn("Abrir convenção", "abrirconv", "", "confirma")}`);
+        } else if (cv && cv.permiteNanico && dt().mes === 8) {
+          body += card("Candidatura ainda não registrada", `<p class="txt">A convenção não homologou seu nome. Resta comprar uma legenda nanica.</p>${btn("Comprar legenda nanica", "nanica", "", "corrige")}`);
+        }
+      }
+      if (modoCampanha() && candidaturaOficial()) {
         const as = acoesSem(), mk = mark(), ok = k => as[k] === mk;
         body += card(`A Corrida Eleitoral Começou: semana ${dt().semana || 1}/4`, `<p class="txt">De 1º de agosto ao fim de outubro as rodadas são semanais. Energia e ações recomeçam a cada semana.</p><h4>Ativações de rua</h4>` + ts.filter(t => t.grupo !== "BR" || true).slice(0, 40).map(t => `<div class="row"><span class="grow">${t.nome} <small>${Math.round(j.aprovacao[t.id])}%</small></span>${btn("Visita", "camp", ["visita", t.id], "mini")}${btn("Carreata", "camp", ["carreata", t.id], "mini")}${btn("Comício", "camp", ["comicio", t.id], "mini confirma")}</div>`).join("") + `<h4>Mídia e debates</h4><div class="stack">${btn(ok("debate") ? "Debate já feito nesta semana" : "Participar de debate na TV", "camp", ["debate"], "corrige", ok("debate"))}${btn(ok("sabatina") ? "Sabatina já feita nesta semana" : "Sabatina na imprensa", "camp", ["sabatina"], "corrige", ok("sabatina"))}${btn(ok("hgpe") ? "HGPE já gravado nesta semana" : "Gravar programa eleitoral (HGPE)", "camp", ["hgpe"], "confirma", ok("hgpe"))}</div>${c.dobradinha ? `<p class="txt">Dobradinha ativa: custos de campanha caem pela metade.</p>` : ""}`, "fase warn");
       }
@@ -47949,6 +48064,18 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
     }
     return siglaRaw(x.partido || "");
   }
+  // Federação vale como um partido só nas disputas majoritárias: no máximo
+  // um candidato por federação (dois no Senado). Sem isso, aliados de uma
+  // mesma federação apareciam disputando entre si na mesma urna.
+  function chaveFed(sig) {
+    try {
+      if (typeof fedDe === "function") {
+        var f = fedDe(siglaRaw(sig));
+        if (f && (!f.ate || Number(f.ate) >= anoAgora())) return "FED:" + f.id;
+      }
+    } catch (e) {}
+    return "PART:" + sig;
+  }
   function grupoPrevia(cargo, sig) {
     try {
       var P = M().previas && M().previas.atual;
@@ -48031,6 +48158,7 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
     var lim = limite(cargo);
     var deve = jogadorNaChapa(cargo);
     var sigJ = deve ? siglaJog() : "";
+    var chJ = deve ? chaveFed(sigJ) : "";
     var por = {};
     (lista || []).forEach(function (x) {
       if (!x) return;
@@ -48038,6 +48166,7 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
       var jog = id === "JOGADOR";
       var n = npcDe(x);
       var sig = siglaItem(x);
+      var ch = chaveFed(sig);
       if (!jog && n && perdeuPrevia(n, cargo)) { tirarDoRegistro(n.id, cargo); return; }
       var g = grupoPrevia(cargo, sig);
       if (g && g.venc) {
@@ -48050,27 +48179,23 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
           return;
         }
       }
-      if (deve && !jog && sig === sigJ && lim === 1) {
+      if (deve && !jog && ch === chJ && lim === 1) {
         if (n) tirarDoRegistro(n.id, cargo);
         return;
       }
-      var chave = jog ? (sig + "|JOGADOR") : (sig + "|" + (id || Math.random()));
-      if (!por[sig]) por[sig] = [];
-      por[sig].push(x);
+      if (!por[ch]) por[ch] = [];
+      por[ch].push(x);
     });
     var out = [];
-    Object.keys(por).forEach(function (sig) {
-      var arr = por[sig].slice().sort(function (a, b) { return scoreDe(b) - scoreDe(a); });
-      var g = grupoPrevia(cargo, sig);
-      if (g && g.venc && g.venc !== "JOGADOR") {
-        arr.sort(function (a, b) {
-          var ia = idDe(a) === g.venc ? 1 : 0;
-          var ib = idDe(b) === g.venc ? 1 : 0;
-          if (ia !== ib) return ib - ia;
-          return scoreDe(b) - scoreDe(a);
-        });
-      }
-      if (deve && sig === sigJ) {
+    Object.keys(por).forEach(function (ch) {
+      var arr = por[ch].slice().sort(function (a, b) { return scoreDe(b) - scoreDe(a); });
+      arr.sort(function (a, b) {
+        var ga = grupoPrevia(cargo, siglaItem(a)), gb = grupoPrevia(cargo, siglaItem(b));
+        var wa = ga && ga.venc && ga.venc === idDe(a) ? 1 : 0;
+        var wb = gb && gb.venc && gb.venc === idDe(b) ? 1 : 0;
+        return wb - wa || scoreDe(b) - scoreDe(a);
+      });
+      if (deve && ch === chJ) {
         arr.sort(function (a, b) {
           var ia = idDe(a) === "JOGADOR" ? 1 : 0;
           var ib = idDe(b) === "JOGADOR" ? 1 : 0;
@@ -48196,6 +48321,15 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
     if (n) return siglaNpc(n);
     return siglaRaw(x.partido || "");
   }
+  function chaveFed(sig) {
+    try {
+      if (typeof fedDe === "function") {
+        var f = fedDe(siglaRaw(sig));
+        if (f && (!f.ate || Number(f.ate) >= anoAgora())) return "FED:" + f.id;
+      }
+    } catch (e) {}
+    return "PART:" + sig;
+  }
   function limite(cargo) {
     if (cargo === "SEN") { try { return dt().ano % 8 === 2 ? 2 : 1; } catch (e) { return 1; } }
     return 1;
@@ -48227,30 +48361,34 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
     var lim = limite(cargo);
     var deve = jogadorEntra(cargo);
     var sigJ = deve ? siglaJog() : "";
+    var chJ = deve ? chaveFed(sigJ) : "";
     var por = {};
     (lista || []).forEach(function (x) {
       if (!x) return;
       var id = idDe(x);
       var jog = id === "JOGADOR";
       var sig = siglaItem(x);
+      var ch = chaveFed(sig);
       var g = grupo(cargo, sig);
       if (g && g.venc) {
         if (g.venc === "JOGADOR" && !jog) return;
         if (g.venc !== "JOGADOR" && jog) return;
         if (g.venc !== "JOGADOR" && !jog && id && id !== g.venc && ((g.final && g.final.indexOf(id) >= 0) || (g.ids && g.ids.indexOf(id) >= 0))) return;
       }
-      if (deve && !jog && sig === sigJ && lim === 1) return;
-      if (!por[sig]) por[sig] = [];
-      por[sig].push(x);
+      if (deve && !jog && ch === chJ && lim === 1) return;
+      if (!por[ch]) por[ch] = [];
+      por[ch].push(x);
     });
     var out = [];
-    Object.keys(por).forEach(function (sig) {
-      var arr = por[sig].slice().sort(function (a, b) { return scoreDe(b) - scoreDe(a); });
-      var g = grupo(cargo, sig);
-      if (g && g.venc && g.venc !== "JOGADOR") {
-        arr.sort(function (a, b) { return (idDe(b) === g.venc ? 1 : 0) - (idDe(a) === g.venc ? 1 : 0) || (scoreDe(b) - scoreDe(a)); });
-      }
-      if (deve && sig === sigJ) {
+    Object.keys(por).forEach(function (ch) {
+      var arr = por[ch].slice().sort(function (a, b) { return scoreDe(b) - scoreDe(a); });
+      arr.sort(function (a, b) {
+        var ga = grupo(cargo, siglaItem(a)), gb = grupo(cargo, siglaItem(b));
+        var wa = ga && ga.venc && ga.venc === idDe(a) ? 1 : 0;
+        var wb = gb && gb.venc && gb.venc === idDe(b) ? 1 : 0;
+        return wb - wa || scoreDe(b) - scoreDe(a);
+      });
+      if (deve && ch === chJ) {
         arr.sort(function (a, b) { return (idDe(b) === "JOGADOR" ? 1 : 0) - (idDe(a) === "JOGADOR" ? 1 : 0) || (scoreDe(b) - scoreDe(a)); });
       }
       arr.slice(0, lim).forEach(function (x) { out.push(x); });
@@ -48413,8 +48551,10 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
             if (!c) return;
             var n = c.id && typeof npcPorId === "function" ? npcPorId(c.id) : null;
             var sig = n ? siglaNpc(n) : siglaRaw(c.partido || "");
-            var atual = melhor[sig];
-            if (!atual || (c.score || 0) > (atual.score || 0)) melhor[sig] = c;
+            var ch = chaveFed(sig);
+            var jog = c.id === "JOGADOR" || c.jogador;
+            var atual = melhor[ch];
+            if (!atual || jog || (!(atual.id === "JOGADOR" || atual.jogador) && (c.score || 0) > (atual.score || 0))) melhor[ch] = c;
           });
           d.gov = Object.keys(melhor).map(function (k) { return melhor[k]; });
         }
