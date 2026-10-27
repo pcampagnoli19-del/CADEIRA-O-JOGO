@@ -8451,7 +8451,7 @@ function vMes(){
   const alvo=cargoIdPorNome(j.campanha.cargo_alvo); const P=M().pesquisaAtual;
   let meta=`<p class="txt">Alvo: <b>${esc(j.campanha.cargo_alvo)}</b>, eleição em <b>${alvo?proximaEleicaoAno(alvo):"?"}</b>.</p>`;
   if(P&&P.tipo==="LEG") meta+=`<p class="txt">Projeção: ${fmtV(P.jv)} votos, ${P.pos}º lugar para ${P.N} vagas (corte aproximado ${fmtV(P.corte)}). ${P.vence?tag("Dentro","ok"):tag("Fora","bad")}${P.qeLinha?` ${P.qeLinha}`:""}</p>`;
-  if(P&&P.tipo==="MAJ") meta+=(P.lista||[]).slice(0,4).map(x=>`<div class="row"><span class="grow ${x.jogador?"eu":""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${Number(x.share||0).toFixed(1)}%</b></div>${bar(x.share,60,x.jogador?"eu":"")}`).join("");
+  if(P&&P.tipo==="MAJ"){ const Lm=P.lista||[]; const top=Lm.slice(0,4); if(!top.some(x=>x.jogador)){ const euL=Lm.find(x=>x.jogador); if(euL) top.push(euL); } meta+=top.map(x=>`<div class="row"><span class="grow ${x.jogador?"eu":""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${Number(x.share||0).toFixed(1)}%</b></div>${bar(x.share,60,x.jogador?"eu":"")}`).join(""); }
   const mesNome=x=>{ const mm=MESES&&MESES[x&&x.mes]; return mm?String(mm).slice(0,3):"—"; };
   const atr=j.atributos||{};
   return `${card(esc(fase.t),`<p class="txt">${esc(fase.x)}</p>`,"fase "+fase.c)}${evH}${cardMetas()}${cardRelatorio()}
@@ -8482,7 +8482,7 @@ function vCamp(){
   const j=J(),c=j.campanha; const alvo=cargoIdPorNome(c.cargo_alvo)||"DEPE"; const ts=territoriosDoCargo(alvo); const P=M().pesquisaAtual; const pc=podeCandidatar();
   const alvos=card("Cargo-alvo",`<div class="chips">${ALVOS.map(id=>`<button class="chip ${alvo===id?"on":""}" data-a="alvo" data-p='["${id}"]'>${NOME_CARGO[id]}<small>eleição ${proximaEleicaoAno(id)}, mín. ${IDADE_MIN[id]} anos</small></button>`).join("")}<button class="chip ${!cargoIdPorNome(c.cargo_alvo)?"on":""}" data-a="alvoNenhum">Não disputar<small>Articular o poder, estilo Kassab</small></button></div>${pc.ok?"":`<p class="warn-txt">${esc(pc.motivo)}</p>`}`);
   let pesq=""; if(P){ if(P.tipo==="LEG") pesq=card("Pesquisa de intenção",`<div class="row"><span class="grow">Sua projeção</span><b>${fmtV(P.jv)} votos</b></div><div class="row"><span class="grow">Posição</span><b>${P.pos}º de ${P.N} vagas</b></div><div class="row"><span class="grow">Corte estimado</span><b>${fmtV(P.corte)} votos</b></div>${bar(Math.min(P.jv,P.corte*2),P.corte*2,P.vence?"ok":"neg")}<p class="txt">${P.vence?"Você está dentro, mas a margem muda todo mês.":"Você precisa de mais base: tráfego pago, padrinho e fundo eleitoral."}${P.qeLinha?` ${esc(P.qeLinha)}`:""}</p>`);
-    else pesq=card("Pesquisa de intenção",P.lista.map(x=>`<div class="row"><span class="grow ${x.jogador?"eu":""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share,60,x.jogador?"eu":"")}`).join("")+`<p class="txt">${P.lista.some(x=>x.jogador)?"":"Você só aparece na pesquisa quando tem o cargo como alvo."}</p>`); }
+    else pesq=card("Pesquisa de intenção",P.lista.map(x=>`<div class="row"><span class="grow ${x.jogador?"eu":""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share,60,x.jogador?"eu":"")}`).join("")+`<p class="txt">${(typeof window.textoAusenciaPesquisa==="function")?window.textoAusenciaPesquisa(P):(P.lista.some(x=>x.jogador)?"":"Você só aparece na pesquisa quando tem o cargo como alvo.")}</p>`); }
   const apr=cardTrafegoHTML();
   const pau=card("Segmentação por pauta",PAUTAS.map(p=>`<label class="f rng">${p.nome}: <b id="pv-${p.id}">${c.pautas[p.id]}</b><input type="range" min="0" max="100" step="5" value="${c.pautas[p.id]}" data-i="pauta" data-k="${p.id}"></label>`).join("")+`<p class="txt">Cada território reage diferente. Partidos de esquerda rendem mais em auxílio e obras; de direita, em segurança e costumes.</p>`);
   const ag=card("Agências de marketing",AGENCIAS.map(a=>{const on=c.agencias.includes(a.id);return `<div class="ag ${on?"on":""}"><div class="row"><b class="grow">${a.nome}</b><span>${fmt(a.custo)}/mês ${a.cx===2?tag("Caixa 2","warn"):""}</span></div><p class="txt">${esc(a.entrega)}. <i>Risco: ${esc(a.risco)}.</i></p>${on?btn("Rescindir","dispensa",[a.id],"branco"):btn("Contratar","agencia",[a.id],"confirma mini")}</div>`;}).join("")+`<p class="txt">Até 2 agências ao mesmo tempo (uma oficial e uma clandestina). A Marqueteiro Presidencial cobra ministérios depois.</p>`);
@@ -8669,7 +8669,7 @@ function vEu(){
   const j=J(), st=j.stats;
   let h=card("Ficha",`<div class="grid2">${kv("Origem",esc(j.profissao_origem))}${kv("Partido",esc(j.partido_atual))}${kv("Bairro",esc((TERRITORIOS.find(t=>t.id===j.bairro)||{nome:j.bairro}).nome))}${kv("Fraqueza oculta",esc(j.vulnerabilidade))}${kv("Eleições vencidas",st.eleicoes_vencidas)}${kv("Mandatos",st.mandatos)}${kv("Prisões",st.prisoes)}${kv("Turnos jogados",dt().turno_total)}${kv("Salário oficial",fmt(j.financas.salario_oficial))}${kv("Custo de vida e gabinete",fmt(j.financas.custo_vida_mensal))}</div>`);
   h+=cardLegado(); h+=cardMemorias()+cardSlots()+cardAcess()+cardProblema()+cardElenco(); const hh=(j.historico||[]); if(hh.length>2) h+=card("Sua trajetória",`<p class="txt">Popularidade</p>${spark(hh.map(x=>x.pop))}<p class="txt">Caixa 1</p>${spark(hh.map(x=>x.cx))}${hh.some(x=>x.cg!=null)?`<p class="txt">Governabilidade</p>${spark(hh.filter(x=>x.cg!=null).map(x=>x.cg))}`:""}`);
-  h+=card("Salvar e carregar",`<div class="stack">${btn("Salvar agora","salvar","","confirma mini")}${btn("Gerar texto do save (JSON)","exportar","","branco mini")}</div>${S.exportTxt?`<textarea readonly rows="4" onclick="this.select()">${esc(S.exportTxt)}</textarea><p class="txt">Copie este texto para guardar a carreira.</p>`:""}<textarea id="imp-txt" rows="3" placeholder="Cole aqui o JSON de um save para importar"></textarea>${btn("Importar save","importar","","branco mini")}<p class="txt">O jogo salva sozinho a cada mês, no armazenamento do navegador.</p>`);
+  h+=card("Salvar e carregar",`<div class="stack">${btn("Salvar agora","salvar","","confirma mini")}${btn("Baixar o save","baixarSave","","confirma mini")}${btn("Gerar texto do save (JSON)","exportar","","branco mini")}</div>${S.exportTxt?`<textarea readonly rows="4" onclick="this.select()">${esc(S.exportTxt)}</textarea><p class="txt">Copie este texto para guardar a carreira.</p>`:""}<textarea id="imp-txt" rows="3" placeholder="Cole aqui o JSON de um save para importar"></textarea><div class="stack">${btn("Importar save","importar","","branco mini")}<label class="b branco mini" style="width:100%;white-space:normal;position:relative">Carregar arquivo de save<input id="imp-arquivo" type="file" accept=".json,application/json,text/plain" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0"></label></div><p class="txt">Baixar o save grava um arquivo. Carregar esse arquivo devolve a carreira só neste slot. Os outros slots não são apagados.</p><p class="txt">O jogo salva sozinho a cada mês, no armazenamento do navegador.</p>`);
   h+=card("Configurações",`<div class="row"><span class="grow">Mortalidade dos políticos (hoje ${gameState.config.mortalidade}x)</span>${[1,2,4].map(v=>btn(v+"x","mort",[v],"mini "+(gameState.config.mortalidade===v?"confirma":"branco"))).join("")}</div><div class="row"><span class="grow">Tema</span>${btn("Claro","tema",["light"],"mini branco")}${btn("Escuro","tema",["dark"],"mini branco")}</div>${btn("Começar nova carreira","nova","","corrige")}`);
   h+=card("Como jogar",`<p class="txt">Cada turno é um mês. Responda ao evento, mexa nas abas (campanha, partido, poder, submundo) e aperte Confirma. Eleja-se, negocie com as bancadas, lave o dinheiro e sobreviva à PF. Dica: as convenções definem o fundão em junho e julho, e a eleição é apurada ao virar outubro.</p><p class="txt">Console do operador: Ctrl+Shift+C ou o botão Cheats. No console do navegador, use window.cheats.ajuda().</p>`);
   h+=`<div class="aviso">${esc(NOTA_FICCAO)}</div>`;
@@ -10738,7 +10738,7 @@ function cardMemorias(){
   return card("Memórias da carreira",(m.length?m.map(x=>`<p class="news"><small>${MESES[x.m].slice(0,3)}/${x.a}</small> ${esc(x.t)}</p>`).join(""):"<p class='txt'>Sua história começa a ser escrita.</p>")+`<div class="stack">${btn("Gerar resumo para compartilhar","resumo","","branco mini")}</div>${S.resumoTxt?`<textarea readonly rows="8" onclick="this.select()">${esc(S.resumoTxt)}</textarea>`:""}`);
 }
 function cardSlots(){
-  return card("Slots de salvamento",[1,2,3].map(n=>{ const m=metaSlot(n); return `<div class="row"><span class="grow"><b>Slot ${n}${n===SLOT?" (atual)":""}</b><br><small>${m?`${esc(m.n)} · ${esc(m.c)} · ${MESES[m.m].slice(0,3)}/${m.a}${m.g>1?` · ${m.g}ª geração`:""}`:"vazio"}</small></span>${btn("Salvar aqui","slotSalv",[n],"mini confirma")}${m?btn("Carregar","slotCarr",[n],"mini"):""}${m?btn("Apagar","slotApag",[n],"mini branco"):""}</div>`; }).join("")+`<p class="txt"><small>Os saves ficam comprimidos no navegador. Para uma cópia fora do navegador, use "Gerar texto do save" mais abaixo.</small></p>`);
+  return card("Slots de salvamento",[1,2,3].map(n=>{ const m=metaSlot(n); return `<div class="row"><span class="grow"><b>Slot ${n}${n===SLOT?" (atual)":""}</b><br><small>${m?`${esc(m.n)} · ${esc(m.c)} · ${MESES[m.m].slice(0,3)}/${m.a}${m.g>1?` · ${m.g}ª geração`:""}`:"vazio"}</small></span>${btn("Salvar aqui","slotSalv",[n],"mini confirma")}${m?btn("Carregar","slotCarr",[n],"mini"):""}${m?btn("Apagar","slotApag",[n],"mini branco"):""}</div>`; }).join("")+`<p class="txt"><small>Os saves ficam comprimidos no navegador. Para uma cópia fora do jogo, use Baixar o save e Carregar arquivo de save mais abaixo. Isso não apaga os outros slots.</small></p>`);
 }
 function cardAcess(){
   const a=ACESS; const op=(k,v,t)=>btn(t,"acess",[k,v],"mini "+(a[k]===v?"confirma":"branco"));
@@ -11282,7 +11282,7 @@ function formar(){ const P=PV().atual; if(P.formado) return P; const cs=cargosAn
     P.grupos[c]={};
     Object.keys(por).forEach(p=>{ const arr=por[p].map(n=>({n,s:scoreNPC(n,c,P)})).sort((a,b)=>b.s-a.s); arr.forEach(x=>usados.add(x.n.id)); P.grupos[c][p]={ids:arr.slice(0,4).map(x=>x.n.id),ret:[],venc:null,votos:null,final:null}; }); });
   P.formado=true; return P; }
-function jogNo(c,p){ const j=J(); return alvoJ()===c&&partJ()===p&&j.partido_atual!=="Sem Partido"; }
+function jogNo(c,p){ const j=J(); if(!(alvoJ()===c&&j.partido_atual!=="Sem Partido")) return false; if(partJ()===p) return true; try{ const n=normPartido(p); return !!(n&&n!=="Sem Partido"&&n===partJ()); }catch(e){ return false; } }
 function ativos(c,p){ const e=formar().grupos[c]&&formar().grupos[c][p]; if(!e) return []; const l=e.ids.filter(id=>!e.ret.includes(id)).map(npcPorId).filter(n=>n&&n.vivo&&!n.inelegivel); if(jogNo(c,p)) l.push("JOGADOR"); return l; }
 const idDe=x=>x==="JOGADOR"?"JOGADOR":x.id;
 function disputa(c,p){ return ativos(c,p).length>=2; }
@@ -11347,9 +11347,14 @@ function cardPrevias(){ try{ const cs=cargosAno(); if(!cs.length) return card("�
     if(meu){ h+=`<p class="txt">Há disputa interna no seu partido pela vaga de <b>${esc(NC(meu.c))}</b>. O vencedor será o único candidato oficial e é definido na convenção, no fim de julho. Pesam popularidade, influência, relação com a direção, histórico e o apoio interno que você conquistar.</p><div class="row">${btn("Campanha interna (−10 energia)","prevCamp","","mini")}${btn("Procurar a direção (−6)","prevDir","","mini")}${btn("Debate interno (−8)","prevDeb","","mini")}</div>`; }
     const lista=[]; Object.keys(P.grupos).forEach(c=>Object.keys(P.grupos[c]).forEach(p=>{ const e=P.grupos[c][p]; if(e.venc?(e.final&&e.final.length>=2):disputa(c,p)) lista.push({c,p}); }));
     lista.sort((a,b)=>((b.p===pj)-(a.p===pj))||((MAJP.indexOf(a.c))-(MAJP.indexOf(b.c)))||(((PARTIDOS[b.p]||{}).fundo||0)-((PARTIDOS[a.p]||{}).fundo||0)));
-    if(!lista.length) h+=`<p class="txt">Nenhum partido tem disputa interna aberta: cada legenda já tem um nome só para cada cargo.</p>`;
-    else{ const mostrar=lista.slice(0,4), resto=lista.slice(4); h+=mostrar.map(x=>linhaGrupo(x.c,x.p,true)).join(""); if(resto.length) h+=`<details><summary>Outras prévias (${resto.length})</summary>${resto.map(x=>linhaGrupo(x.c,x.p,false)).join("")}</details>`; }
-    const hist=(M().previas.hist||[]).slice(-1)[0]; if(hist&&!lista.length){ h+=`<p class="txt"><small>Última temporada de prévias: ${hist.ano}.</small></p>`; }
+    const sit=(typeof window.situacaoPreviaJogador==="function")?window.situacaoPreviaJogador():null;
+    const ja=(c,p)=>lista.some(x=>x.c===c&&(x.p===p||(sit&&x.p===sit.partido)));
+    if(sit&&sit.tipo==="perda"&&!ja(sit.cargo,sit.chave)){ h+=`<p class="txt">Você perdeu a prévia do <b>${esc(sit.partido)}</b> para <b>${esc(sit.vencedor)}</b>. O partido não leva o seu nome a ${esc(sit.cargoNome)}.</p>`; try{ h+=linhaGrupo(sit.cargo,sit.chave,true); }catch(err){} }
+    else if(sit&&sit.tipo==="aberta"&&!ja(sit.cargo,sit.chave)){ h+=`<p class="txt">A prévia do <b>${esc(sit.partido)}</b> para <b>${esc(sit.cargoNome)}</b> ainda está aberta. Você entra na pesquisa quando for o nome oficial do partido.</p>`; try{ h+=linhaGrupo(sit.cargo,sit.chave,true); }catch(err){} }
+    else if(sit&&sit.tipo==="nome"){ h+=`<p class="txt">Não há disputa interna aberta contra você: o <b>${esc(sit.partido)}</b> leva o seu nome para <b>${esc(sit.cargoNome)}</b>. A pesquisa de intenção usa esse nome.</p>`; }
+    if(!lista.length && !(sit&&(sit.tipo==="nome"||sit.tipo==="perda"||sit.tipo==="aberta"))) h+=`<p class="txt">Nenhum partido tem disputa interna aberta: cada legenda já tem um nome só para cada cargo.</p>`;
+    else if(lista.length){ const mostrar=lista.slice(0,4), resto=lista.slice(4); h+=mostrar.map(x=>linhaGrupo(x.c,x.p,true)).join(""); if(resto.length) h+=`<details><summary>Outras prévias (${resto.length})</summary>${resto.map(x=>linhaGrupo(x.c,x.p,false)).join("")}</details>`; }
+    const hist=(M().previas.hist||[]).slice(-1)[0]; if(hist&&!lista.length&&!(sit&&(sit.tipo==="nome"||sit.tipo==="perda"||sit.tipo==="aberta"))){ h+=`<p class="txt"><small>Última temporada de prévias: ${hist.ano}.</small></p>`; }
     return card("🗳️ Prévias partidárias",h); }catch(e){ console.error("cardPrevias",e); return ""; } }
 window.cardPrevias=cardPrevias; window.formarPrevias=formar; window.previasPV=PV; window.resolverPrevias=resolverTodas;
 { const _vp=VIEWS.partido; VIEWS.partido=function(){ return cardPrevias()+_vp(); }; }
@@ -14752,7 +14757,7 @@ window.v24Relatorio=relHTML;
         if (P.tipo === "LEG") {
           body += card("Pesquisa de intenção", `<div class="row"><span class="grow">Sua projeção</span><b>${fmtV(P.jv)} votos</b></div><div class="row"><span class="grow">Posição</span><b>${P.pos}º de ${P.N} vagas</b></div><div class="row"><span class="grow">Corte estimado</span><b>${fmtV(P.corte)} votos</b></div>${bar(Math.min(P.jv, P.corte * 2), P.corte * 2, P.vence ? "ok" : "neg")}<p class="txt">${P.vence ? "Você está dentro, mas a margem muda todo mês." : "Você precisa de mais base: tráfego pago, padrinho e fundo eleitoral."}${P.qeLinha ? " " + esc(P.qeLinha) : ""}</p>`);
         } else {
-          body += card("Pesquisa de intenção", P.lista.map(x => `<div class="row"><span class="grow ${x.jogador ? "eu" : ""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share, 60, x.jogador ? "eu" : "")}`).join("") + `<p class="txt">${P.lista.some(x => x.jogador) ? "" : "Você só aparece na pesquisa quando tem o cargo como alvo."}</p>`);
+          body += card("Pesquisa de intenção", P.lista.map(x => `<div class="row"><span class="grow ${x.jogador ? "eu" : ""}">${esc(x.nome)} <small>${esc(x.partido)}</small></span><b>${x.share.toFixed(1)}%</b></div>${bar(x.share, 60, x.jogador ? "eu" : "")}`).join("") + `<p class="txt">${(typeof window.textoAusenciaPesquisa==="function")?window.textoAusenciaPesquisa(P):(P.lista.some(x => x.jogador) ? "" : "Você só aparece na pesquisa quando tem o cargo como alvo.")}</p>`);
         }
       }
       const hist = (M().pesqHist || []).filter(x => x).slice(-12);
@@ -48426,6 +48431,200 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
   }
   instalar();
   window.addEventListener("DOMContentLoaded", instalar);
+})();
+</script>
+
+<script>
+/* Prévia fechada: quem escolheu o cargo e não perdeu a disputa é o nome do partido. */
+(function () {
+  if (window.__previaNome) return;
+  window.__previaNome = true;
+
+  function anoAgora() { try { return dt().ano; } catch (e) { return 0; } }
+  function sigla(raw) {
+    raw = raw || "";
+    try {
+      if (typeof normPartido === "function") {
+        var n = normPartido(raw);
+        if (n && n !== "Sem Partido") return n;
+      }
+    } catch (e) {}
+    return raw || "";
+  }
+  function alvoId() {
+    try {
+      if (!J() || !J().campanha) return null;
+      return typeof cargoIdPorNome === "function" ? cargoIdPorNome(J().campanha.cargo_alvo) : null;
+    } catch (e) { return null; }
+  }
+  function sigJ() { try { return sigla(J().partido_atual || ""); } catch (e) { return ""; } }
+  function previa() {
+    try {
+      var P = M().previas && M().previas.atual;
+      if (!P || Number(P.ano) !== Number(anoAgora())) return null;
+      return P;
+    } catch (e) { return null; }
+  }
+  function grupo(cargo, sig) {
+    var P = previa();
+    if (!P || !P.grupos || !P.grupos[cargo] || !sig) return null;
+    var g = P.grupos[cargo];
+    if (g[sig]) return { chave: sig, e: g[sig] };
+    var keys = Object.keys(g);
+    for (var i = 0; i < keys.length; i++) {
+      if (sigla(keys[i]) === sig) return { chave: keys[i], e: g[keys[i]] };
+    }
+    return null;
+  }
+  function nomeDe(id) {
+    if (!id) return "?";
+    if (id === "JOGADOR") { try { return J().nome; } catch (e) { return "você"; } }
+    try {
+      var n = typeof npcPorId === "function" ? npcPorId(id) : null;
+      return n && n.nome ? n.nome : String(id);
+    } catch (e2) { return String(id); }
+  }
+  function cargoNome(c) {
+    try { return (typeof NOME_CARGO !== "undefined" && NOME_CARGO[c]) || c; } catch (e) { return c; }
+  }
+  function vivos(e) {
+    return (e.ids || []).filter(function (id) {
+      if ((e.ret || []).indexOf(id) >= 0) return false;
+      if (id === "JOGADOR") return true;
+      try {
+        var n = typeof npcPorId === "function" ? npcPorId(id) : null;
+        return !!(n && n.vivo && !n.inelegivel);
+      } catch (err) { return false; }
+    });
+  }
+  function disputaAberta(hit) {
+    if (!hit || !hit.e || hit.e.venc) return false;
+    var ids = vivos(hit.e);
+    var n = ids.length;
+    if (ids.indexOf("JOGADOR") < 0) n += 1;
+    return n >= 2;
+  }
+  function perda(hit) {
+    if (!hit || !hit.e || !hit.e.venc || hit.e.venc === "JOGADOR") return false;
+    var fin = hit.e.final || [];
+    return fin.indexOf("JOGADOR") >= 0;
+  }
+
+  window.situacaoPreviaJogador = function () {
+    var j;
+    try { j = J(); } catch (e) { return null; }
+    if (!j || !j.campanha) return null;
+    var cargo = alvoId();
+    if (!cargo) return null;
+    if (typeof MAJP !== "undefined" && MAJP.indexOf(cargo) < 0) return null;
+    try { if (typeof tipoEleicao === "function" && !tipoEleicao(anoAgora())) return null; } catch (e2) {}
+    var partido = sigJ();
+    if (!partido || partido === "Sem Partido" || partido === "?") return null;
+    var hit = grupo(cargo, partido);
+    var base = { cargo: cargo, partido: partido, cargoNome: cargoNome(cargo), chave: hit ? hit.chave : partido };
+    if (perda(hit)) {
+      base.tipo = "perda";
+      base.vencedor = nomeDe(hit.e.venc);
+      return base;
+    }
+    if (hit && hit.e && hit.e.venc === "JOGADOR") { base.tipo = "nome"; return base; }
+    if (disputaAberta(hit)) { base.tipo = "aberta"; return base; }
+    base.tipo = "nome";
+    return base;
+  };
+
+  window.jogadorPodeNaUrna = function (cargo) {
+    var j;
+    try { j = J(); } catch (e) { return false; }
+    if (!j || !j.campanha) return false;
+    if (alvoId() !== cargo) return false;
+    var partido = sigJ();
+    if (!partido || partido === "Sem Partido" || partido === "?") return false;
+    var hit = grupo(cargo, partido);
+    if (perda(hit)) return false;
+    if (hit && hit.e && hit.e.venc === "JOGADOR") return true;
+    if (disputaAberta(hit)) return !!j.campanha.candidatura_ativa;
+    return true;
+  };
+
+  window.textoAusenciaPesquisa = function (P) {
+    if (P && P.lista && P.lista.some(function (x) { return x && x.jogador; })) return "";
+    var sit = null;
+    try { sit = window.situacaoPreviaJogador(); } catch (e) {}
+    if (!sit) {
+      var tem = false;
+      try { tem = !!alvoId(); } catch (e2) {}
+      if (!tem) return "Você só aparece na pesquisa quando tem o cargo como alvo.";
+      return "";
+    }
+    if (sit.tipo === "perda") return "Você perdeu a prévia do " + sit.partido + " para " + sit.vencedor + " e não entra nesta pesquisa.";
+    if (sit.tipo === "aberta") return "A prévia do " + sit.partido + " ainda está aberta. Você entra na pesquisa quando for o nome oficial do partido.";
+    return "";
+  };
+
+  A.baixarSave = function () {
+    if (typeof gameState === "undefined" || !gameState) { toast("Não há carreira para baixar.", "err"); return; }
+    var s = snapshot();
+    var blob = new Blob([s], { type: "application/json" });
+    var a = document.createElement("a");
+    var nome = "carreira";
+    try { nome = String(J().nome || "carreira").replace(/[^\w\-]+/g, "-").slice(0, 40) || "carreira"; } catch (e) {}
+    var ano = "";
+    try { ano = "-" + dt().ano; } catch (e2) {}
+    a.href = URL.createObjectURL(blob);
+    a.download = "cadeira-" + nome + ano + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (e3) {} }, 2000);
+    toast("Arquivo do save baixado. Os outros slots continuam no navegador.", "ok");
+  };
+
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (!t || t.id !== "imp-arquivo") return;
+    var f = t.files && t.files[0];
+    t.value = "";
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var txt = String(reader.result || "");
+      try {
+        if (txt.indexOf("LZ:") === 0 && typeof LZString !== "undefined") txt = LZString.decompressFromUTF16(txt.slice(3)) || "";
+      } catch (err) { txt = ""; }
+      if (typeof carregarStr === "function" && carregarStr(txt)) {
+        try { salvar(); } catch (e2) {}
+        toast("Arquivo carregado neste slot. Os outros slots não foram apagados.", "ok");
+        try { S.tab = "mes"; } catch (e4) {}
+      } else toast("Arquivo de save inválido.", "err");
+      try { render(); } catch (e3) {}
+    };
+    reader.onerror = function () { toast("Não foi possível ler o arquivo.", "err"); try { render(); } catch (e5) {} };
+    reader.readAsText(f);
+  });
+
+  function htmlSave() {
+    var botoes = btn("Salvar agora", "salvar", "", "confirma mini") + btn("Baixar o save", "baixarSave", "", "confirma mini") + btn("Gerar texto do save (JSON)", "exportar", "", "branco mini");
+    var extra = "";
+    try {
+      if (S.exportTxt) extra = "<textarea readonly rows=\"4\" onclick=\"this.select()\">" + esc(S.exportTxt) + "</textarea><p class=\"txt\">Copie este texto para guardar a carreira.</p>";
+    } catch (e) {}
+    var arquivo = "<label class=\"b branco mini\" style=\"width:100%;white-space:normal;position:relative\">Carregar arquivo de save<input id=\"imp-arquivo\" type=\"file\" accept=\".json,application/json,text/plain\" style=\"position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0\"></label>";
+    return card("Salvar e carregar", "<div class=\"stack\">" + botoes + "</div>" + extra + "<textarea id=\"imp-txt\" rows=\"3\" placeholder=\"Cole aqui o JSON de um save para importar\"></textarea><div class=\"stack\">" + btn("Importar save", "importar", "", "branco mini") + arquivo + "</div><p class=\"txt\">Baixar o save grava um arquivo. Carregar esse arquivo devolve a carreira só neste slot. Os outros slots não são apagados.</p><p class=\"txt\">O jogo salva sozinho a cada mês, no armazenamento do navegador.</p>");
+  }
+  function instalarSave() {
+    if (typeof VIEWS === "undefined" || !VIEWS || typeof VIEWS.eu !== "function" || VIEWS.eu._saveArq) return;
+    var _eu = VIEWS.eu;
+    VIEWS.eu = function () {
+      var h = "";
+      try { h = _eu.apply(this, arguments) || ""; } catch (e) { console.error(e); }
+      try { h += htmlSave(); } catch (e2) { console.error(e2); }
+      return h;
+    };
+    VIEWS.eu._saveArq = true;
+  }
+  instalarSave();
+  window.addEventListener("DOMContentLoaded", instalarSave);
 })();
 </script>
 
