@@ -21103,16 +21103,7 @@ function viewPerfilWikipedia() {
             No parlamento, ${esc(j.nome)} registrou <b>${projTotal}</b> propostas legislativas protocoladas de autoria pr\u00F3pria. Dessas mat\u00E9rias, <b>${projSan}</b> j\u00E1 foram plenamente sancionadas e promulgadas, <b>${projApr}</b> foram aprovadas aguardando san\u00E7\u00E3o, <b>${projTram}</b> encontram-se em tramita\u00E7\u00E3o regular nas comiss\u00F5es de m\u00E9rito e <b>${projVet}</b> foram vetadas pelo Poder Executivo.
           </p>
 
-          ${(function () {
-            var leis = proj.filter(function (p) { return p && p.status === "SANCIONADO"; });
-            if (!leis.length) return "";
-            var itens = leis.map(function (p) {
-              var casa = p.casaNome || (p.esfera === "M" ? "Câmara Municipal de Mauá" : p.esfera === "E" ? "Assembleia Legislativa de São Paulo" : p.esfera === "S" ? "Senado Federal" : "Câmara dos Deputados");
-              var cargo = p.cargo || (p.esfera === "M" ? "Vereador de Mauá" : "");
-              return "<li style=\"margin:4px 0\"><b>" + esc(p.nome) + "</b> — lei aprovada e sancionada na <b>" + esc(casa) + "</b>" + (cargo ? ", no mandato de <b>" + esc(cargo) + "</b>" : "") + (p.ano ? " (" + p.ano + ")" : "") + (p.voto != null ? ", com " + p.voto + "% dos votos" : "") + ".</li>";
-            }).join("");
-            return "<ul id=\"wiki-leis-mandato\" style=\"margin:8px 0 14px 18px;line-height:1.45\">" + itens + "</ul>";
-          })()}
+          ${(typeof window.htmlBlocoLeisJogador === "function" ? window.htmlBlocoLeisJogador("wiki") : "")}
 
           ${comissoesList.length > 0 ? `
             <div style="background:#1e293b;border-left:4px solid #38bdf8;padding:8px 12px;margin:10px 0;font-size:12px">
@@ -47667,6 +47658,93 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
 })();
 
 </script>
+
+<script>
+/* Filtro por ano das leis do jogador. Só esconde ou mostra a lista.
+   O texto de cada lei e o resultado no jogo não mudam. */
+(function () {
+  function escLei(s) {
+    return typeof esc === "function" ? esc(s) : String(s == null ? "" : s);
+  }
+  function leisSancionadas() {
+    var j = null;
+    try { j = (typeof J === "function") ? J() : null; } catch (e) { j = null; }
+    var proj = (j && j.carreira && j.carreira.projetos) || [];
+    return proj.filter(function (p) { return p && p.status === "SANCIONADO"; });
+  }
+  function htmlItemLei(p) {
+    var casa = p.casaNome || (p.esfera === "M" ? "Câmara Municipal de Mauá" : p.esfera === "E" ? "Assembleia Legislativa de São Paulo" : p.esfera === "S" ? "Senado Federal" : "Câmara dos Deputados");
+    var cargo = p.cargo || (p.esfera === "M" ? "Vereador de Mauá" : "");
+    return "<li style=\"margin:4px 0\"><b>" + escLei(p.nome) + "</b> — lei aprovada e sancionada na <b>" + escLei(casa) + "</b>" + (cargo ? ", no mandato de <b>" + escLei(cargo) + "</b>" : "") + (p.ano ? " (" + p.ano + ")" : "") + (p.voto != null ? ", com " + p.voto + "% dos votos" : "") + ".</li>";
+  }
+  function anosDasLeis(leis) {
+    var seen = {};
+    var anos = [];
+    (leis || []).forEach(function (p) {
+      if (!p || p.ano == null || p.ano === "" || !isFinite(Number(p.ano))) return;
+      var n = Number(p.ano);
+      if (seen[n]) return;
+      seen[n] = true;
+      anos.push(n);
+    });
+    anos.sort(function (a, b) { return a - b; });
+    return anos;
+  }
+  function selAno(chave, anos) {
+    S.leisAno = S.leisAno || {};
+    var sel = S.leisAno[chave] == null || S.leisAno[chave] === "" ? "todos" : String(S.leisAno[chave]);
+    if (sel !== "todos" && anos.indexOf(Number(sel)) < 0) sel = "todos";
+    return sel;
+  }
+  function htmlFiltro(chave, anos, sel) {
+    function botao(valor) {
+      var on = String(sel) === String(valor);
+      var rot = valor === "todos" ? "todos" : String(valor);
+      return '<button type="button" class="b mini ' + (on ? "confirma" : "branco") + '" data-a="leisAno" data-p=\'' + JSON.stringify([chave, rot]) + '\'>' + rot + '</button>';
+    }
+    var parts = [botao("todos")];
+    anos.forEach(function (a) { parts.push(botao(a)); });
+    return '<div class="leis-anos" id="leis-filtro-' + chave + '">' + parts.join("") + '</div>';
+  }
+  function filtrar(leis, sel) {
+    if (sel === "todos") return (leis || []).slice();
+    return (leis || []).filter(function (p) { return p && String(p.ano) === String(sel); });
+  }
+  window.htmlItemLeiJogador = htmlItemLei;
+  window.htmlBlocoLeisJogador = function (chave) {
+    var leis = leisSancionadas();
+    var anos = anosDasLeis(leis);
+    var sel = selAno(chave, anos);
+    var vis = filtrar(leis, sel);
+    var ulId = chave === "wiki" ? "wiki-leis-mandato" : "poder-leis-mandato";
+    var ul = vis.length ? '<ul id="' + ulId + '" style="margin:8px 0 14px 18px;line-height:1.45">' + vis.map(htmlItemLei).join("") + "</ul>" : "";
+    return htmlFiltro(chave, anos, sel) + ul;
+  };
+  A.leisAno = function (chave, ano) {
+    S.leisAno = S.leisAno || {};
+    S.leisAno[chave] = String(ano);
+  };
+  if (typeof VIEWS !== "undefined" && typeof VIEWS.poder === "function" && !VIEWS.poder._leisAno) {
+    var prev = VIEWS.poder;
+    VIEWS.poder = function () {
+      var h = prev.apply(this, arguments) || "";
+      if (String(h).indexOf("leis-filtro-poder") >= 0) return h;
+      var bloco = "";
+      try { bloco = window.htmlBlocoLeisJogador("poder"); } catch (e) { console.warn("leisAno", e); }
+      var cardHtml = (typeof card === "function") ? card("Minhas leis", bloco) : bloco;
+      return cardHtml + h;
+    };
+    ["_fase1", "_fase2", "_fase3", "_fase4", "_obras", "_dipEntry", "_legfPrep"].forEach(function (f) {
+      if (prev[f]) VIEWS.poder[f] = true;
+    });
+    VIEWS.poder._leisAno = true;
+  }
+  var st = document.createElement("style");
+  st.textContent = ".leis-anos{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;align-items:center}.leis-anos .b{flex:0 0 auto;white-space:nowrap}";
+  document.head.appendChild(st);
+})();
+</script>
+
 </body>
 </html>
 
