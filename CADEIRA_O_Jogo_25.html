@@ -11307,9 +11307,14 @@ function prevMensal(){ const d=dt(); if(!cargosAno().length) return; const P=for
 /* o vencedor (ou favorito provisório) ocupa a vaga do partido na lista oficial de candidatos */
 { const _cm=candidatosMajoritarios; candidatosMajoritarios=function(c){ const base=_cm(c);
     try{ if(!MAJP.includes(c)||!cargosAno().includes(c)) return base; const E=M().eleicao, r=E.reg; if(!r||r.ano!==dt().ano||!r.lista||!r.lista[c]) return base; const L=r.lista[c], g=formar().grupos[c]; if(!g) return base; let mudou=false;
-      Object.keys(g).forEach(p=>{ const e=g[p]; if(!disputa(c,p)&&!e.venc) return; const w=lider(c,p); if(!w||w==="JOGADOR") return; const wn=npcPorId(w); if(!wn||!wn.vivo||wn.inelegivel) return;
-        const mesmo=L.filter(id=>{ const n=npcPorId(id); return n&&partOf(n)===p; }); if(mesmo.length===1&&mesmo[0]===w) return; if(r.npc[w]&&r.npc[w]!==c) return; if(L.includes("JOGADOR")&&partJ()===p) return;
-        mesmo.forEach(id=>{ if(id===w||!e.ids.includes(id)) return; L.splice(L.indexOf(id),1); delete r.npc[id]; const k=c+"|"+p; if(r.part[k]) r.part[k]=r.part[k].filter(x=>x!==id); mudou=true; });
+      Object.keys(g).forEach(p=>{ const e=g[p]; if(!disputa(c,p)&&!e.venc) return; const w=lider(c,p); if(!w) return;
+        const mesma=id=>{ const n=npcPorId(id); if(!n) return false; const raw=partOf(n); if(raw===p) return true; try{ const a=normPartido(raw), b=normPartido(p); return !!(a&&a!=="Sem Partido"&&a===b); }catch(err){ return false; } };
+        const mesmo=L.filter(mesma);
+        const tirar=id=>{ const i=L.indexOf(id); if(i<0) return; L.splice(i,1); delete r.npc[id]; const k=c+"|"+p; if(r.part[k]) r.part[k]=r.part[k].filter(x=>x!==id); mudou=true; };
+        if(w==="JOGADOR"){ mesmo.forEach(tirar); return; }
+        const wn=npcPorId(w); if(!wn||!wn.vivo||wn.inelegivel) return;
+        if(mesmo.length===1&&mesmo[0]===w) return; if(r.npc[w]&&r.npc[w]!==c) return;
+        mesmo.forEach(id=>{ if(id!==w) tirar(id); });
         if(!L.includes(w)){ const res=tentarRegistrar(wn,c); if(res.ok){ L.push(w); mudou=true; } } });
       if(mudou) return _cm(c);
     }catch(e){ console.error("prévias/lista",e); } return base; }; }
@@ -11346,7 +11351,7 @@ function cardPrevias(){ try{ const cs=cargosAno(); if(!cs.length) return card("�
     else{ const mostrar=lista.slice(0,4), resto=lista.slice(4); h+=mostrar.map(x=>linhaGrupo(x.c,x.p,true)).join(""); if(resto.length) h+=`<details><summary>Outras prévias (${resto.length})</summary>${resto.map(x=>linhaGrupo(x.c,x.p,false)).join("")}</details>`; }
     const hist=(M().previas.hist||[]).slice(-1)[0]; if(hist&&!lista.length){ h+=`<p class="txt"><small>Última temporada de prévias: ${hist.ano}.</small></p>`; }
     return card("🗳️ Prévias partidárias",h); }catch(e){ console.error("cardPrevias",e); return ""; } }
-window.cardPrevias=cardPrevias; window.formarPrevias=formar; window.previasPV=PV;
+window.cardPrevias=cardPrevias; window.formarPrevias=formar; window.previasPV=PV; window.resolverPrevias=resolverTodas;
 { const _vp=VIEWS.partido; VIEWS.partido=function(){ return cardPrevias()+_vp(); }; }
 }
 
@@ -48027,6 +48032,290 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
     };
     projetarMajoritaria._chapaUnica = true;
   }
+})();
+</script>
+
+
+<script>
+/* A urna e a pesquisa leem a chapa oficial: um partido por cargo e território. */
+(function () {
+  if (window.__chapaLeitura) return;
+  window.__chapaLeitura = true;
+
+  function anoAgora() { try { return dt().ano; } catch (e) { return 0; } }
+  function siglaRaw(raw) {
+    raw = raw || "";
+    try {
+      if (typeof normPartido === "function") {
+        var n = normPartido(raw);
+        if (n && n !== "Sem Partido") return n;
+      }
+    } catch (e) {}
+    return raw || "?";
+  }
+  function siglaNpc(n) {
+    if (!n) return "?";
+    return siglaRaw(n.partidoBase || n.partido || "");
+  }
+  function siglaJog() {
+    try { return siglaRaw(J().partido_atual || ""); } catch (e) { return "?"; }
+  }
+  function idDe(x) {
+    if (!x) return "";
+    if (x.jogador || x.id === "JOGADOR") return "JOGADOR";
+    if (x.npc && x.npc.id) return x.npc.id;
+    return x.id || "";
+  }
+  function npcDe(x) {
+    if (!x || x.jogador || x.id === "JOGADOR") return null;
+    if (x.npc) return x.npc;
+    if (x.id && typeof npcPorId === "function") return npcPorId(x.id);
+    return null;
+  }
+  function siglaItem(x) {
+    if (!x) return "?";
+    if (x.jogador || x.id === "JOGADOR") return siglaJog();
+    var n = npcDe(x);
+    if (n) return siglaNpc(n);
+    return siglaRaw(x.partido || "");
+  }
+  function limite(cargo) {
+    if (cargo === "SEN") { try { return dt().ano % 8 === 2 ? 2 : 1; } catch (e) { return 1; } }
+    return 1;
+  }
+  function grupo(cargo, sig) {
+    try {
+      var P = M().previas && M().previas.atual;
+      if (!P || Number(P.ano) !== Number(anoAgora()) || !P.grupos || !P.grupos[cargo]) return null;
+      var g = P.grupos[cargo];
+      if (g[sig]) return g[sig];
+      var keys = Object.keys(g);
+      for (var i = 0; i < keys.length; i++) if (siglaRaw(keys[i]) === sig) return g[keys[i]];
+    } catch (e) {}
+    return null;
+  }
+  function jogadorEntra(cargo) {
+    if (typeof window.jogadorPodeNaUrna === "function") {
+      try { return !!window.jogadorPodeNaUrna(cargo); } catch (e) {}
+    }
+    return false;
+  }
+  function scoreDe(x) {
+    if (x && x.score != null && isFinite(x.score)) return x.score;
+    if (x && x.share != null) return x.share;
+    var n = npcDe(x);
+    return n ? (n.popularidade || 0) : 0;
+  }
+  function colapsar(lista, cargo) {
+    var lim = limite(cargo);
+    var deve = jogadorEntra(cargo);
+    var sigJ = deve ? siglaJog() : "";
+    var por = {};
+    (lista || []).forEach(function (x) {
+      if (!x) return;
+      var id = idDe(x);
+      var jog = id === "JOGADOR";
+      var sig = siglaItem(x);
+      var g = grupo(cargo, sig);
+      if (g && g.venc) {
+        if (g.venc === "JOGADOR" && !jog) return;
+        if (g.venc !== "JOGADOR" && jog) return;
+        if (g.venc !== "JOGADOR" && !jog && id && id !== g.venc && ((g.final && g.final.indexOf(id) >= 0) || (g.ids && g.ids.indexOf(id) >= 0))) return;
+      }
+      if (deve && !jog && sig === sigJ && lim === 1) return;
+      if (!por[sig]) por[sig] = [];
+      por[sig].push(x);
+    });
+    var out = [];
+    Object.keys(por).forEach(function (sig) {
+      var arr = por[sig].slice().sort(function (a, b) { return scoreDe(b) - scoreDe(a); });
+      var g = grupo(cargo, sig);
+      if (g && g.venc && g.venc !== "JOGADOR") {
+        arr.sort(function (a, b) { return (idDe(b) === g.venc ? 1 : 0) - (idDe(a) === g.venc ? 1 : 0) || (scoreDe(b) - scoreDe(a)); });
+      }
+      if (deve && sig === sigJ) {
+        arr.sort(function (a, b) { return (idDe(b) === "JOGADOR" ? 1 : 0) - (idDe(a) === "JOGADOR" ? 1 : 0) || (scoreDe(b) - scoreDe(a)); });
+      }
+      arr.slice(0, lim).forEach(function (x) { out.push(x); });
+    });
+    return out;
+  }
+  function porPartido(lista) {
+    var m = {};
+    (lista || []).forEach(function (x) {
+      var s = siglaItem(x);
+      m[s] = (m[s] || 0) + 1;
+    });
+    return m;
+  }
+  function sincronizarJogador() {
+    try {
+      var j = J();
+      if (!j || !j.campanha) return;
+      var c = typeof cargoIdPorNome === "function" ? cargoIdPorNome(j.campanha.cargo_alvo) : null;
+      if (!c) return;
+      var g = grupo(c, siglaJog());
+      if (!g || !g.venc || !g.final || g.final.indexOf("JOGADOR") < 0) return;
+      if (g.venc === "JOGADOR" && g.final.length >= 2) {
+        j.campanha.candidatura_ativa = true;
+        j.campanha.registro_ok = true;
+      } else if (g.venc !== "JOGADOR") {
+        j.campanha.candidatura_ativa = false;
+        j.campanha.registro_ok = false;
+      }
+    } catch (e) {}
+  }
+  function previaResolvida() {
+    try {
+      var P = M().previas && M().previas.atual;
+      return !!(P && Number(P.ano) === Number(anoAgora()) && P.resolvida);
+    } catch (e) { return false; }
+  }
+  function oficializarChapa() {
+    if (window.__blkApur) return;
+    try {
+      if (typeof tipoEleicao !== "function" || !tipoEleicao(dt().ano)) return;
+      if (previaResolvida()) { sincronizarJogador(); return; }
+      var cv = M().convencao;
+      if (cv && cv.resolvida && !cv.aberta && typeof window.resolverPrevias === "function") {
+        window.resolverPrevias();
+        sincronizarJogador();
+        return;
+      }
+      if (typeof abrirConvencao === "function" && (!cv || !cv.aberta)) abrirConvencao();
+      if (typeof fecharConvencao === "function") fecharConvencao();
+      sincronizarJogador();
+    } catch (e) { console.error("chapa oficial", e); }
+  }
+  function pleitoAindaAberto() {
+    try {
+      var E = M().eleicao;
+      if (!E) return true;
+      if (E.segundo_turno) return false;
+      if (E.resultados && E.resultados.length && Number(E.ano) === Number(anoAgora())) return false;
+      return true;
+    } catch (e) { return false; }
+  }
+  function refrescarPesquisa() {
+    if (!pleitoAindaAberto()) return;
+    try { if (typeof atualizarPesquisa === "function") atualizarPesquisa(); } catch (e) {}
+  }
+  function gravarSnap(cargo, lista, ruido) {
+    if (!(ruido >= 5) || typeof gameState === "undefined" || !gameState) return;
+    try {
+      var E = M().eleicao;
+      var snap = lista.map(function (y) {
+        return { id: y.id || (y.jogador ? "JOGADOR" : (y.npc && y.npc.id)), nome: y.nome, partido: siglaItem(y), share: y.share, jogador: !!y.jogador || y.id === "JOGADOR" };
+      });
+      (E._ult2 = E._ult2 || {})[cargo] = snap;
+      (E._ult = E._ult || {})[cargo] = snap.map(function (y) { return { nome: y.nome, partido: y.partido, share: y.share, jogador: y.jogador }; });
+    } catch (e) {}
+  }
+  function embrulharProjetar() {
+    if (typeof projetarMajoritaria !== "function" || projetarMajoritaria._chapaLeitura) return;
+    var _pm = projetarMajoritaria;
+    projetarMajoritaria = function (cargo, ruido) {
+      var lista = _pm.apply(this, arguments) || [];
+      try {
+        if (["PRES", "GOV", "SEN", "PREF"].indexOf(cargo) < 0) return lista;
+        var antes = lista.map(idDe).join("|");
+        lista = colapsar(lista, cargo);
+        var deve = jogadorEntra(cargo);
+        if (deve && !lista.some(function (x) { return idDe(x) === "JOGADOR"; })) {
+          var item = { id: "JOGADOR", nome: J().nome, partido: siglaJog(), score: (typeof scoreJogadorMaj === "function" ? scoreJogadorMaj(cargo) : (J().popularidade || 30)), jogador: true, share: 0 };
+          try {
+            if (typeof garantirVice === "function" && (cargo === "PRES" || cargo === "GOV" || cargo === "PREF")) {
+              var base = typeof candJog === "function" ? candJog() : { id: "JOGADOR", partido: J().partido_atual, partidoBase: J().partido_atual, nome: J().nome };
+              var v = garantirVice(base, cargo, "JOGADOR");
+              if (v && v.nome) { item.vice = v.nome; item.nome = J().nome + " (vice: " + v.nome + ")"; }
+            }
+          } catch (eV) {}
+          lista.push(item);
+        }
+        if (!deve) lista = lista.filter(function (x) { return idDe(x) !== "JOGADOR"; });
+        var depois = lista.map(idDe).join("|");
+        if (antes !== depois && lista.length) {
+          var w = lista.map(function (x) { return Math.exp(scoreDe(x) / 16); });
+          var tot = w.reduce(function (s, x) { return s + x; }, 0) || 1;
+          lista.forEach(function (x, i) { x.share = w[i] / tot * 100; x.partido = siglaItem(x); });
+          lista.sort(function (a, b) { return (b.share || 0) - (a.share || 0); });
+        } else {
+          lista.forEach(function (x) { x.partido = siglaItem(x); });
+        }
+        gravarSnap(cargo, lista, ruido);
+      } catch (e) { console.error("chapa leitura", e); }
+      return lista;
+    };
+    projetarMajoritaria._chapaLeitura = true;
+    window.projetarMajoritaria = projetarMajoritaria;
+  }
+  function embrulharCandidatos() {
+    if (typeof candidatosMajoritarios !== "function" || candidatosMajoritarios._chapaLeitura) return;
+    var _cm = candidatosMajoritarios;
+    candidatosMajoritarios = function (c) {
+      var lista = _cm.apply(this, arguments) || [];
+      try {
+        if (["PRES", "GOV", "SEN", "PREF"].indexOf(c) >= 0) lista = colapsar(lista, c);
+      } catch (e) { console.error("chapa leitura", e); }
+      return lista;
+    };
+    candidatosMajoritarios._chapaLeitura = true;
+    window.candidatosMajoritarios = candidatosMajoritarios;
+  }
+  function embrulharApurar() {
+    if (typeof apurarEleicao !== "function" || apurarEleicao._chapaOficial) return;
+    var _ap = apurarEleicao;
+    apurarEleicao = function () {
+      oficializarChapa();
+      refrescarPesquisa();
+      return _ap.apply(this, arguments);
+    };
+    apurarEleicao._chapaOficial = true;
+    window.apurarEleicao = apurarEleicao;
+  }
+  function embrulharCarregar() {
+    if (typeof carregarStr !== "function" || carregarStr._chapaLeitura) return;
+    var _cs = carregarStr;
+    carregarStr = function (s) {
+      var ok = _cs.apply(this, arguments);
+      try { if (ok !== false) refrescarPesquisa(); } catch (e) {}
+      return ok;
+    };
+    carregarStr._chapaLeitura = true;
+    window.carregarStr = carregarStr;
+  }
+  function embrulharTerritorio() {
+    var fn = window.montarDisputaUF;
+    if (typeof fn !== "function" || fn._chapaTerritorio) return;
+    window.montarDisputaUF = function (uf) {
+      var d = fn.apply(this, arguments);
+      try {
+        if (d && d.gov && d.gov.length) {
+          var melhor = {};
+          d.gov.forEach(function (c) {
+            if (!c) return;
+            var n = c.id && typeof npcPorId === "function" ? npcPorId(c.id) : null;
+            var sig = n ? siglaNpc(n) : siglaRaw(c.partido || "");
+            var atual = melhor[sig];
+            if (!atual || (c.score || 0) > (atual.score || 0)) melhor[sig] = c;
+          });
+          d.gov = Object.keys(melhor).map(function (k) { return melhor[k]; });
+        }
+      } catch (e) { console.error("chapa território", e); }
+      return d;
+    };
+    window.montarDisputaUF._chapaTerritorio = true;
+    try { montarDisputaUF = window.montarDisputaUF; } catch (e2) {}
+  }
+  function instalar() {
+    embrulharCandidatos();
+    embrulharProjetar();
+    embrulharApurar();
+    embrulharCarregar();
+    embrulharTerritorio();
+  }
+  instalar();
+  window.addEventListener("DOMContentLoaded", instalar);
 })();
 </script>
 
