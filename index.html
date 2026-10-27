@@ -12154,6 +12154,12 @@ function construirV2(turno,lst){
     ["PRES","GOV","SEN","PREF"].forEach(c=>{ if(mun&&c!=="PREF") return; if(!mun&&c==="PREF") return; const l=(U[c]||[]).map(mkCand); if(l.length) listas[c]=normalizar(l); });
   }else{
     (lst||[]).forEach(st=>{
+      if(!st||!st.cargo) return;
+      const campo=(st.candidatos||[]).slice().sort((a,b)=>(b.share||0)-(a.share||0));
+      if(campo[0]&&campo[0].share>50) return;
+      const base=(E._mapaNac&&(st.cargo==="PRES"?E._mapaNac.pres:st.cargo==="GOV"?E._mapaNac.spGov:null))||(E._ult2&&E._ult2[st.cargo])||[];
+      const lider=base.slice().sort((a,b)=>(b.share||0)-(a.share||0))[0];
+      if(lider&&lider.share>50&&base.length>2) return;
       const res=(E._r2res||{})[st.cargo]; if(!res) return; const sh=Math.max(50.01,Math.min(99,res.share));
       const cs=st.candidatos.map(x=>mkCand({id:x.id,nome:x.nome,jogador:x.jogador,share:50}));
       const wi=cs.findIndex(x=>x.nome===res.nome); const w=wi>=0?wi:0; cs.forEach((x,i)=>x.share=i===w?sh:100-sh);
@@ -12186,7 +12192,7 @@ function estadosPainel(turno){
     rows=(E.estados||[]).map(x=>{ const l=(x.lista||[]).slice(0,4).map(y=>({nome:y.nome,partido:y.partido,share:y.share})); if(!l.length) l.push({nome:x.gov.nome,partido:x.gov.partido,share:x.gov.share});
       const t2=!!x.gov.turno2; return {uf:x.uf,nome:UF_NOME[x.uf]||x.uf,cands:normalizar(l),status:t2?"2T":"ELEITO",venc:t2?null:x.gov.nome,mudou:!!x.gov.mudou}; });
   }else{
-    rows=(E.runoffs||[]).map(r=>{ const sh=Math.max(50.01,Math.min(99,r.share)); const A=bancoDeNPCs.find(n=>n.nome===r.a), B=bancoDeNPCs.find(n=>n.nome===r.b);
+    rows=(E.runoffs||[]).filter(r=>{ const est=(E.estados||[]).find(x=>x.uf===r.uf); if(est&&est.gov&&est.gov.share>50&&!est.gov.turno2) return false; const ap=E._mapaAp&&E._mapaAp[r.uf]; if(ap&&ap.gov&&ap.gov.length>2&&(ap.gov[0].share||0)>50) return false; return true; }).map(r=>{ const sh=Math.max(50.01,Math.min(99,r.share)); const A=bancoDeNPCs.find(n=>n.nome===r.a), B=bancoDeNPCs.find(n=>n.nome===r.b);
       const l=[{nome:r.venceu,partido:((r.venceu===r.a?A:B)||{}).partido||"",share:sh},{nome:r.venceu===r.a?r.b:r.a,partido:((r.venceu===r.a?B:A)||{}).partido||"",share:100-sh}];
       return {uf:r.uf,nome:UF_NOME[r.uf]||r.uf,cands:l,status:"ELEITO",venc:r.venceu,mudou:false}; });
   }
@@ -41159,7 +41165,7 @@ document.addEventListener("click", function(e){
     gov = gov.map(function (c) { return comDinheiro(c, "GOV", el); });
 
     // Regra constitucional estrita: 50% + 1 voto para vencer no 1º turno; caso contrário, 2º turno!
-    var foiSegundoTurno = !!(r && r.gov && r.gov.turno2) || (gov.length > 1 && (gov[0].share || 0) <= 50);
+    var foiSegundoTurno = gov.length > 1 && (gov[0].share || 0) <= 50;
     var govRun = foiSegundoTurno;
     gov.forEach(function (c, idx) {
       c.eleito = !govRun && idx === 0;
@@ -41318,53 +41324,81 @@ document.addEventListener("click", function(e){
     try { return !!(M().eleicao && M().eleicao.noite && M().eleicao.noite.turno === 2); }
     catch (e) { return false; }
   }
+  function rodadaMaj(lista, marcada2) {
+    if (!lista || lista.length < 2) return "1";
+    var lider = lista[0].share || 0;
+    if (lider > 50 && lista.length > 2) return "1";
+    if (lider > 50 && lista.length === 2 && marcada2) return "2";
+    if (lider > 50) return "1";
+    return "2";
+  }
+  function segundoAindaAberto(st) {
+    var cs = (st && st.candidatos) || [];
+    if (cs.length < 2) return false;
+    var top = cs[0];
+    cs.forEach(function (c) { if ((c.share || 0) > (top.share || 0)) top = c; });
+    return (top.share || 0) <= 50;
+  }
+  function limparSegundosEncerrados(E) {
+    if (!E || !E.segundos) return;
+    E.segundos = E.segundos.filter(segundoAindaAberto);
+    if (E.segundo_turno && !segundoAindaAberto(E.segundo_turno)) E.segundo_turno = E.segundos[0] || null;
+  }
   function aplicarSegundoTurnoVisual() {
     if (!turno2Agora()) return;
     var E = M().eleicao;
     if (!E || !E._mapaNac) return;
+    limparSegundosEncerrados(E);
     var N = E._mapaNac;
     var fin = E._finais || {};
     var r2 = E._r2res || {};
-    function precisa(lista, corre, chave) {
-      if (!lista || lista.length < 2) return false;
-      if (lista.length === 2 && (lista[0].share || 0) > 50) return false;
-      if (corre) return true;
-      if (fin[chave] && fin[chave].length >= 2) return true;
-      return (lista[0].share || 0) <= 50;
+    if (N.pres && N.pres.length && !N.presRodada) {
+      var marcadaP = !!(N.pres2 || N.presRun || r2.PRES || (fin.PRES && fin.PRES.length >= 2));
+      N.presRodada = rodadaMaj(N.pres, marcadaP);
     }
-    if (precisa(N.pres, N.presRun || r2.PRES, "PRES")) {
-      N.pres = fecharPar(N.pres, "PRES", N.elBR || eleitoresBR(), r2.PRES, fin.PRES);
-      N.presRun = false;
-    }
-    if (precisa(N.spGov, N.govRun || r2.GOV, "GOV")) {
-      N.spGov = fecharPar(N.spGov, "GOV", N.elSP || eleitoresUF("SP"), r2.GOV, fin.GOV);
-      N.govRun = false;
-      if (E._mapaAp && E._mapaAp.SP) {
-        E._mapaAp.SP.gov = N.spGov;
-        E._mapaAp.SP.govRun = false;
+    if (N.presRodada === "2") {
+      N.pres2 = true;
+      if (N.pres && (N.pres.length > 2 || (N.pres[0].share || 0) <= 50)) {
+        N.pres = fecharPar(N.pres, "PRES", N.elBR || eleitoresBR(), r2.PRES, fin.PRES);
       }
+    }
+    N.presRun = false;
+    function classificarGov(p, uf) {
+      if (!p || !p.gov || !p.gov.length) return;
+      var rf = (E.runoffs || []).find(function (r) { return r && r.uf === uf; });
+      if (!p.rodadaGov) {
+        var marcada = !!(p._foi2 || p.govRun || rf || (fin["GOV:" + uf] && fin["GOV:" + uf].length >= 2));
+        p.rodadaGov = rodadaMaj(p.gov, marcada);
+      }
+      if (p.rodadaGov === "2") {
+        p._foi2 = true;
+        if (p.gov.length > 2 || (p.gov[0].share || 0) <= 50) {
+          var resUF = null;
+          var parUF = fin["GOV:" + uf];
+          if (rf) {
+            resUF = {nome: rf.venceu, share: Math.max(50.1, Math.min(99, rf.share || 54)), jog: false};
+            if (!parUF) parUF = [{nome: rf.venceu}, {nome: rf.venceu === rf.a ? rf.b : rf.a}];
+          } else if (uf === "SP") {
+            resUF = r2.GOV || null;
+            parUF = parUF || fin.GOV;
+          }
+          p.gov = fecharPar(p.gov, "GOV", eleitoresUF(uf), resUF, parUF);
+        }
+      }
+      p.govRun = false;
     }
     var ap = E._mapaAp || {};
-    Object.keys(ap).forEach(function (uf) {
-      if (uf === "SP") return;
-      var p = ap[uf];
-      if (!p || !p.gov || p.gov.length < 2) return;
-      var rf = (E.runoffs || []).find(function (r) { return r && r.uf === uf; });
-      var chave = "GOV:" + uf;
-      if (!precisa(p.gov, !!p.govRun || !!rf, chave)) return;
-      var resUF = null;
-      var parUF = fin[chave];
-      if (rf) {
-        resUF = {nome: rf.venceu, share: Math.max(50.1, Math.min(99, rf.share || 54)), jog: false};
-        if (!parUF) parUF = [{nome: rf.venceu}, {nome: rf.venceu === rf.a ? rf.b : rf.a}];
-      }
-      p.gov = fecharPar(p.gov, "GOV", eleitoresUF(uf), resUF, parUF);
-      p.govRun = false;
-    });
-    if (r2.SEN && fin.SEN && fin.SEN.length >= 2 && N.spSen && N.spSen.length > 2) {
-      N.spSen = fecharPar(N.spSen, "SEN", N.elSP || eleitoresUF("SP"), r2.SEN, fin.SEN);
-      if (E._mapaAp && E._mapaAp.SP) E._mapaAp.SP.sen = N.spSen;
+    Object.keys(ap).forEach(function (uf) { classificarGov(ap[uf], uf); });
+    if (ap.SP) {
+      N.spGov = ap.SP.gov;
+      N.govRodada = ap.SP.rodadaGov;
+    } else if (N.spGov && N.spGov.length) {
+      var boxSP = {gov: N.spGov, govRun: N.govRun};
+      classificarGov(boxSP, "SP");
+      N.spGov = boxSP.gov;
+      N.govRodada = boxSP.rodadaGov;
     }
+    N.govRun = false;
   }
 
   function gravarNacional() {
@@ -41386,9 +41420,9 @@ document.addEventListener("click", function(e){
     var spSen = conv(U.SEN, "SEN", elSP);
     if (jogadorCandDo("SEN")) spSen = garantirJogador(spSen, "SEN", elSP);
     spSen.forEach(function (c, i) { c.eleito = i < vagas; });
-    var sts = E.segundos || (E.segundo_turno ? [E.segundo_turno] : []);
-    var presRun = sts.some(function (s) { return s.cargo === "PRES"; }) || !!(pres[0] && pres.length > 1 && pres[0].share <= 50);
-    var govRun = sts.some(function (s) { return s.cargo === "GOV"; }) || !!(spGov[0] && spGov.length > 1 && spGov[0].share <= 50);
+    var sts = (E.segundos || (E.segundo_turno ? [E.segundo_turno] : [])).filter(segundoAindaAberto);
+    var presRun = !!(pres[0] && pres.length > 1 && pres[0].share <= 50);
+    var govRun = !!(spGov[0] && spGov.length > 1 && spGov[0].share <= 50);
     pres.forEach(function (c, idx) { c.eleito = !presRun && idx === 0; });
     spGov.forEach(function (c, idx) { c.eleito = !govRun && idx === 0; });
     var ids = {};
@@ -41408,7 +41442,7 @@ document.addEventListener("click", function(e){
     Object.keys(E._mapaAp).forEach(function (uf) {
       var p = E._mapaAp[uf];
       if (!p || uf === "SP" || !p.gov) return;
-      guardar("GOV:" + uf, p.gov, !!p.govRun || !!(p.gov[0] && p.gov[0].share <= 50));
+      guardar("GOV:" + uf, p.gov, !!(p.gov.length > 1 && p.gov[0] && p.gov[0].share <= 50));
     });
     E._finais = fin;
   }
@@ -41491,8 +41525,9 @@ document.addEventListener("click", function(e){
   var _ap2 = apurarSegundoTurno;
   apurarSegundoTurno = function () {
     var E = M().eleicao;
+    limparSegundosEncerrados(E);
     var lst0 = (E && E.segundos && E.segundos.length) ? E.segundos.slice() : (E && E.segundo_turno ? [E.segundo_turno] : []);
-    var lstCopy = JSON.parse(JSON.stringify(lst0));
+    var lstCopy = JSON.parse(JSON.stringify(lst0)).filter(segundoAindaAberto);
     var r = _ap2.apply(this, arguments);
     try { gravarSegundoTurno(lstCopy); } catch (e) { console.error("apuracao 2o turno hook", e); }
     return r;
@@ -41669,6 +41704,12 @@ document.addEventListener("click", function(e){
     "#apurMapa .ap-run{font-size:19px;font-weight:800;margin:8px 0 10px;padding:8px 12px;background:#101c33;border-left:4px solid #3dce7a;border-radius:6px;line-height:1.3}",
     "#apurMapa .ap-run.t2{border-left-color:#f5c542}",
     "#apurMapa .ap-run.live{border-left-color:#38bdf8;font-size:16px}",
+    "#apurMapa .ap-run.hist{border-left-color:#8b93a7;background:#222836;color:#e4e8f0;font-size:16px}",
+    "#apurMapa .ap-hist{background:#1c2230;border:1px solid #3d465c;border-radius:12px;padding:12px 14px;margin:8px 0 12px;color:#d5dbe8}",
+    "#apurMapa .ap-hist .nm{font-weight:800;font-size:18px;line-height:1.25}",
+    "#apurMapa .ap-hist .ap-sec{color:#c5cedf;font-size:14px;line-height:1.35;white-space:normal}",
+    "#apurMapa .ap-map path.hist{fill:#5c6578;fill-opacity:1;cursor:pointer}",
+    "#apurMapa .ap-uf.hist .g small{white-space:normal;overflow:visible;text-overflow:clip;color:#c5cedf}",
     "#apurMapa .ap-big{font-size:28px;line-height:1.1;font-weight:800;font-variant-numeric:tabular-nums}",
     "#apurMapa .ap-diff{display:flex;justify-content:space-between;gap:12px;color:#9eb0ce;font-size:13px;margin:2px 0 8px}",
     "#apurMapa .ap-diff b{color:#eef3fb}",
@@ -41750,10 +41791,38 @@ document.addEventListener("click", function(e){
     return lg[0] || null;
   }
 
+  function histDe(cands, cargo) {
+    var a = (cands || [])[0];
+    if (!a) return "Eleito no 1º turno";
+    return "Eleito no 1º turno · " + (a.nome || "") + " · " + pct(a.share) + " · " + fmtV(a.votos) + " votos" + (cargo ? " · " + cargo : "");
+  }
+  function presEncerrado() { return turno2Agora() && nac().presRodada === "1"; }
+  function govEncerradoUF(uf) {
+    if (!turno2Agora()) return false;
+    var p = painelUF(uf);
+    return !!(p && p.rodadaGov === "1");
+  }
+  function mapaHist(tab, uf) {
+    if (tab === "pres") return presEncerrado();
+    if (tab === "gov") return govEncerradoUF(uf);
+    return false;
+  }
+  function cartaoHistorico(cands, cargoLabel) {
+    var a = (cands || [])[0];
+    if (!a) return '<div class="ap-hist" data-hist="1"><div class="ap-run hist">Eleito no 1º turno</div></div>';
+    var tip = histDe([a], cargoLabel || "");
+    return '<div class="ap-hist" data-hist="1" title="' + esc(tip) + '"><div class="ap-run hist">Eleito no 1º turno</div><div class="nm">' + esc(a.nome) + '</div><p class="ap-sec">' + esc(partidoCurto(a.partido) || "—") + " · " + pct(a.share) + " · " + fmtV(a.votos) + " votos do 1º turno" + (cargoLabel ? " · " + esc(cargoLabel) : "") + ". Resultado definitivo, sem nova apuração.</p></div>";
+  }
   function mapaHTML(tab) {
     if (typeof GEO === "undefined" || !GEO.br) return "<p>Mapa indisponível.</p>";
     var g = GEO.br;
     var paths = Object.keys(g.p).map(function (uf) {
+      if (mapaHist(tab, uf)) {
+        var fonte = tab === "pres" ? (nac().pres || []) : ((painelUF(uf) || {}).gov || []);
+        var tip = histDe(fonte, tab === "pres" ? "Presidente" : "Governador");
+        var onH = AP.uf === uf ? " on" : "";
+        return '<path class="hist' + onH + '" data-ap="uf" data-u="' + uf + '" data-hist="1" d="' + g.p[uf] + '" fill="#5c6578" fill-opacity="1"><title>' + esc(tip) + "</title></path>";
+      }
       var f = fracUF(uf);
       var ld = f > 0.03 ? lider(tab, uf) : null;
       var cor = ld ? corDe(ld.partido, 0) : "#1c2c4a";
@@ -41770,11 +41839,17 @@ document.addEventListener("click", function(e){
   function listaEstados(tab) {
     var ufs = UFS.slice().sort(function (a, b) { return UF_NOME[a].localeCompare(UF_NOME[b], "pt"); });
     return ufs.map(function (uf) {
+      if (mapaHist(tab, uf)) {
+        var fonte = tab === "pres" ? (nac().pres || []) : ((painelUF(uf) || {}).gov || []);
+        var tip = histDe(fonte, tab === "pres" ? "Presidente" : "Governador");
+        return '<button class="ap-uf hist" data-ap="uf" data-u="' + uf + '" data-hist="1" title="' + esc(tip) + '"><b>' + uf + '</b><span class="g">' + esc(UF_NOME[uf]) + "<small>" + esc(tip) + '</small></span><i style="width:10px;height:10px;border-radius:50%;background:#5c6578"></i></button>';
+      }
       var f = fracUF(uf);
       var ld = f > 0.02 ? lider(tab, uf) : null;
       var cor = ld ? corDe(ld.partido, 0) : "#1c2c4a";
       var pTxt = pct(f * 100);
-      return '<button class="ap-uf" data-ap="uf" data-u="' + uf + '"><b>' + uf + '</b><span class="g">' + esc(UF_NOME[uf]) + (ld ? "<small>" + esc(ld.nome) + " · " + esc(partidoCurto(ld.partido)) + " (" + pTxt + " apurado)</small>" : "<small>aguardando abertura das urnas…</small>") + '</span><i style="width:10px;height:10px;border-radius:50%;background:' + cor + '"></i></button>';
+      var extra = (turno2Agora() && tab === "gov" && ld) ? " · 2º turno" : "";
+      return '<button class="ap-uf" data-ap="uf" data-u="' + uf + '"><b>' + uf + '</b><span class="g">' + esc(UF_NOME[uf]) + (ld ? "<small>" + esc(ld.nome) + " · " + esc(partidoCurto(ld.partido)) + " (" + pTxt + " apurado)" + extra + "</small>" : "<small>aguardando abertura das urnas…</small>") + '</span><i style="width:10px;height:10px;border-radius:50%;background:' + cor + '"></i></button>';
     }).join("");
   }
   function shapeUF(uf, cor) {
@@ -41852,7 +41927,7 @@ document.addEventListener("click", function(e){
   }
   function blocoSenado(p) {
     if (!p || !(p.sen || []).length) return "<p>Sem disputa de Senado neste estado.</p>";
-    var f = fracUF(p.uf);
+    var f = turno2Agora() ? 1 : fracUF(p.uf);
     var definido = f >= 0.96 || AP.pct >= 100;
     var senParcial = parcialCands(p.sen, f);
     var vagas = p.vagas || 1;
@@ -41893,6 +41968,7 @@ document.addEventListener("click", function(e){
   }
   function blocoGov(p) {
     if (!p || !(p.gov || []).length) return "";
+    if (govEncerradoUF(p.uf)) return '<div class="ap-rowh"><h3>Governador</h3></div>' + cartaoHistorico(p.gov, "Governador(a) de " + (UF_NOME[p.uf] || p.uf));
     var f = fracUF(p.uf);
     var govParcial = parcialCands(p.gov, f);
     // Verifica se há 2º turno (nenhum candidato atingiu > 50% no 1º turno)
@@ -41909,12 +41985,16 @@ document.addEventListener("click", function(e){
     return '<div class="ap-rowh"><h3>Governador</h3></div>' + duo(govParcial, run, "Governador(a) de " + (UF_NOME[p.uf] || p.uf), f, false) + extra + htmlGasto(p.gov);
   }
   function cabecaUF(uf, cor) {
+    var hist = mapaHist(AP.tab, uf);
     var f = fracUF(uf);
-    var locP = (AP.tab === "pres") ? parcialCands(presLocal(uf), f) : null;
-    var ld = locP ? locP[0] : lider(AP.tab, uf);
-    return '<button class="ap-back" data-ap="voltar">← Voltar ao Mapa do Brasil</button><div class="ap-head">' + shapeUF(uf, ld ? corDe(ld.partido, 0) : (cor || "#2f6fe0")) + "<div><h2>" + esc(UF_NOME[uf] || uf) + '</h2><div class="ap-el">' + uf + " · " + fmtMilhoes(eleitoresUF(uf)) + " de eleitores</div></div></div>" + barraSecoes(f);
+    var locP = (!hist && AP.tab === "pres") ? parcialCands(presLocal(uf), f) : null;
+    var ld = locP ? locP[0] : (hist ? null : lider(AP.tab, uf));
+    var shapeCor = hist ? "#5c6578" : (ld ? corDe(ld.partido, 0) : (cor || "#2f6fe0"));
+    var barra = hist ? '<p class="ap-sec">1º turno · resultado definitivo, sem nova apuração.</p>' : barraSecoes(f);
+    return '<button class="ap-back" data-ap="voltar">← Voltar ao Mapa do Brasil</button><div class="ap-head">' + shapeUF(uf, shapeCor) + "<div><h2>" + esc(UF_NOME[uf] || uf) + '</h2><div class="ap-el">' + uf + " · " + fmtMilhoes(eleitoresUF(uf)) + " de eleitores</div></div></div>" + barra;
   }
   function blocoPresUF(uf) {
+    if (presEncerrado()) return "<h3>Presidente</h3>" + cartaoHistorico(nac().pres, "Presidente da República");
     var loc = parcialCands(presLocal(uf), fracUF(uf));
     if (!loc.length) return "";
     return "<h3>Presidente em " + esc(UF_NOME[uf] || uf) + "</h3>" + miniLista(loc, 0, 4);
@@ -41923,12 +42003,17 @@ document.addEventListener("click", function(e){
     var N = nac();
     var pres = N.pres || [];
     if (AP.uf) {
+      if (presEncerrado()) return cabecaUF(AP.uf, "#5c6578") + cartaoHistorico(pres, "Presidente da República");
       var f = fracUF(AP.uf);
       var loc = presLocal(AP.uf);
       var locParcial = parcialCands(loc, f);
       var ld = locParcial[0];
       var maisLoc = locParcial.length > 2 ? miniLista(locParcial, 2, locParcial.length) : "";
       return cabecaUF(AP.uf, ld ? corDe(ld.partido, 0) : "#2f6fe0") + "<h3>Presidente no estado</h3>" + duo(locParcial, false, null, f, true) + maisLoc + '<div class="ap-sec" style="margin-top:8px">Votação neste estado. O resultado oficial da Presidência é nacional.</div>';
+    }
+    if (presEncerrado()) {
+      return '<h2>Brasil</h2><p class="ap-el">' + fmtMilhoes(N.elBR || eleitoresBR()) + " de eleitores</p>" + cartaoHistorico(pres, "Presidente da República") +
+        '<div class="ap-grid" style="margin-top:16px"><div>' + mapaHTML("pres") + '</div><div>' + listaEstados("pres") + "</div></div>";
     }
     var fNac = fracAtual();
     var presParcial = parcialCands(pres, fNac);
