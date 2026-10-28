@@ -50,13 +50,15 @@ O motor puro fica em `js/quociente.js` e é copiado para dentro dos dois HTML (`
 11. **Cassação.** `recalcularCadeira(cargo, id)` zera o voto guardado na entrada da eleição, roda de novo e troca a cadeira do NPC quando o id existe no banco. O botão “Cassar um eleito e recalcular” usa o primeiro eleito que não é o jogador. Eleição `sistema: "antigo"` não entra de novo na urna.
 12. **Estimativa da pesquisa** não chama `projetarLegislativo` (isso gastaria `Math.random` e mudaria a apuração de verdade). É uma conta à parte, rotulada como estimativa. `P.vence` passa a significar “eleito pelo quociente”, não “entre os N mais votados”.
 
-## Piso de cinco candidatos a governador (2026-10-27)
+## Campo majoritário de 8 a 11 candidatos (2026-10-27)
 
-- Toda disputa estadual de governo passa a ter **pelo menos 5 candidatos** depois de aplicados os filtros de federação, prévia e exclusividade de registro. A ordem é: políticos reais elegíveis primeiro; só depois entram figurantes gerados.
-- São Paulo usa `candidatosMajoritarios("GOV")`; os outros estados usam `montarDisputaUF`/`filtrarDisputa`. O piso é aplicado nos dois caminhos e também no envelope final de chapa, para o caso de uma prévia derrubar um nome depois da montagem.
-- O registro oficial (`tentarRegistrar`) passou a contar a **federação** como uma só legenda em todos os cargos majoritários, não apenas no Senado. Assim, um aliado da mesma federação do jogador não ocupa uma vaga que depois seria removida pelo `colapsar`/`filtrarChapa` e deixaria a urna com 2 nomes.
-- O registro ganhou versão (`r.v = 2`): saves antigos que já tinham uma lista curta são reconstruídos uma vez ao abrir/atualizar a pesquisa, sem precisar começar uma carreira nova.
-- A pesquisa publicada passou a mostrar até 6 nomes por instituto (antes 4), garantindo que o jogador e os cinco candidatos de governo apareçam no card "Pesquisas publicadas".
+- Disputas de **presidente** e **governador** passam a montar um campo de **8 a 11 candidatos** depois de aplicados os filtros de federação, prévia e exclusividade de registro. A ordem é: políticos reais elegíveis primeiro; só depois entram figurantes gerados.
+- O alvo é calculado por `alvoCampoMaj(cargo)`: 8 a 11, variando por ciclo eleitoral e por cargo. Presidente e governador usam o mesmo intervalo.
+- São Paulo usa `candidatosMajoritarios("PRES"/"GOV")`; os outros estados usam `montarDisputaUF`/`filtrarDisputa`. O piso é aplicado no registro, nos dois caminhos estaduais e também no envelope final de chapa, para o caso de uma prévia derrubar um nome depois da montagem.
+- O registro oficial (`tentarRegistrar`) conta a **federação** como uma só legenda em todos os cargos majoritários, não apenas no Senado. Assim, um aliado da mesma federação do jogador não ocupa uma vaga que depois seria removida pelo `colapsar`/`filtrarChapa`.
+- O registro ganhou versão (`r.v = 3`): saves antigos com a lista curta de 3 ou 5 nomes são reconstruídos uma vez ao abrir/atualizar a pesquisa, sem precisar começar uma carreira nova.
+- A migração `migrarCampoMajoritario` (flag `campoMajV3`) recalcula a pesquisa salva na abertura, para o card não continuar mostrando os 3 nomes antigos até o próximo mês.
+- A pesquisa publicada passou a mostrar até 11 nomes por instituto, para refletir o campo majoritário ampliado. O jogador continua sendo incluído mesmo se ficar fora do recorte.
 
 ## Obras: lista completa e mobilidade separada (2026-10-27)
 
