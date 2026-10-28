@@ -521,15 +521,8 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
         if (paga > 0) {
           var sys = M().obrasSys;
           sys.gastoMes = (sys.gastoMes || 0) + paga;
-          // Espelha no miúdo de emendas só o que couber (UI de gabinete)
-          try {
-            var g = M().gab;
-            if (g && typeof orcamentoLivre === "function") {
-              var el = Math.max(0, orcamentoLivre() - (g.orcamento_gasto || 0));
-              var pe = Math.min(paga, el);
-              if (pe > 0) g.orcamento_gasto = (g.orcamento_gasto || 0) + pe;
-            }
-          } catch (eEm) {}
+          // Obras usam o caixa de investimento (ORC_BASE). Não consomem a
+          // verba mensal de emendas (GOVCFG.orc), que é separada.
         }
         if (resto > 0) {
           if (o) o.divida = (o.divida || 0) + resto;
@@ -730,14 +723,8 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
           var paga = Math.min(mensal, livre);
           var sys = M().obrasSys;
           sys.gastoMes = (sys.gastoMes || 0) + paga;
-          try {
-            var g = M().gab;
-            if (g && typeof orcamentoLivre === "function") {
-              var el = Math.max(0, orcamentoLivre() - (g.orcamento_gasto || 0));
-              var pe = Math.min(paga, el);
-              if (pe > 0) g.orcamento_gasto = (g.orcamento_gasto || 0) + pe;
-            }
-          } catch (eEm) {}
+          // Obras usam o caixa de investimento (ORC_BASE). Não consomem a
+          // verba mensal de emendas (GOVCFG.orc), que é separada.
           inst.manutencaoPagaMes = _agora();
           inst.manutencaoNivel = Math.min(1, (inst.manutencaoNivel || 1) + 0.05);
         } else {

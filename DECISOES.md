@@ -65,6 +65,14 @@ O motor puro fica em `js/quociente.js` e é copiado para dentro dos dois HTML (`
 - O estado dos filtros fica em `S.obras` (geral) e `S.obrasMob` (mobilidade), para trocar a categoria de um card não afetar o outro.
 - A mudança vale para saves existentes: não há migração, pois a separação é feita na leitura das instâncias e do catálogo.
 
+## Verba de emendas separada do caixa de obras (2026-10-27)
+
+- Obras e manutenções usam o caixa de investimento calculado em `ORC_BASE` (`OBRAS._caixaObras()`), não a verba mensal de emendas (`GOVCFG.orc`). O espelhamento antigo que somava cada parcela de obra em `M().gab.orcamento_gasto` foi removido de `_avancarExecucao` e `_tickManutencao`.
+- Com o espelhamento, qualquer obra ativa consumia todo o orçamento livre do mês e o card "Emendas do mês" ficava em R$ 0, obrigando o jogador a usar caixa 2 para governabilidade.
+- A verba mensal continua sendo consumida apenas por emendas, ações de Executivo (`pagar`) e crises.
+- Saves existentes recebem uma correção única (`m.verbaEmendasV1`): `orcamento_gasto` volta a ser a soma das emendas do mês. Isso remove o valor antigo que tinha sido espelhado pelas obras sem exigir carreira nova.
+- A regra vale para os dois cards de obras: o geral e o de Mobilidade Urbana.
+
 ## O que não foi mexido
 
 CPI, fases legislativas, fotos, aspas do bloco `ap-who` (o fechamento continua `votos</small></div></div>";`) e o tamanho da Câmara de Mauá.

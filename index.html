@@ -12130,7 +12130,19 @@ function migrarFederacoes(){ try{ const m=M(); if(m.fedsMig7) return; m.fedsMig7
 
 /* ---------- 7D. Avisos da atualização ---------- */
 function migrarCalendario(){ const m=M(); if(m.calMig7) return; m.calMig7=true; aviso("calendario","Calendário eleitoral novo","As rodadas viram semanais em agosto, setembro e outubro de ano eleitoral. O 1º turno acontece ao fim da semana 1 de outubro, com boca de urna e apuração. Se houver 2º turno, ele acontece ao fim da semana 4 de outubro, e você pode virar voto nas semanas entre os dois turnos."); }
-function migrarTudo(){ try{ if(!gameState||!J()||!J().aprovacao) return; migrarMapaSP(); migrarFederacoes(); migrarCalendario(); }catch(e){ console.error("migrarTudo",e); } }
+function migrarVerbaEmendas(){
+  try{
+    const m=M(); if(!m||m.verbaEmendasV1) return;
+    const g=m.gab; if(!g) return;
+    m.verbaEmendasV1=true;
+    const em=Object.keys(g.emendas||{}).reduce((s,k)=>s+(Number(g.emendas[k])||0),0);
+    // Versões anteriores espelhavam o caixa de obras em orcamento_gasto,
+    // consumindo a verba mensal de emendas. Remove esse valor antigo uma vez,
+    // preservando somente o que foi efetivamente distribuído em emendas.
+    if((Number(g.orcamento_gasto)||0) > em+1){ g.orcamento_gasto=em; console.log("[migração] verba de emendas separada do caixa de obras"); }
+  }catch(e){ console.error("migrarVerbaEmendas",e); }
+}
+function migrarTudo(){ try{ if(!gameState||!J()||!J().aprovacao) return; migrarMapaSP(); migrarFederacoes(); migrarCalendario(); migrarVerbaEmendas(); }catch(e){ console.error("migrarTudo",e); } }
 A.avisoOk=id=>{ const a=((M().avisos)||[]).find(x=>x.id===id); if(a) a.visto=true; };
 function cardAvisos(){ const l=((M().avisos)||[]).filter(a=>!a.visto); if(!l.length) return ""; return card("📢 Avisos da atualização",l.map(a=>`<h4>${esc(a.titulo)}</h4><p class="txt">${esc(a.texto)}</p><div class="row">${btn("Entendi","avisoOk",[a.id],"mini confirma")}</div>`).join(""),"diag"); }
 { const _vm=VIEWS.mes; VIEWS.mes=function(){ return cardAvisos()+_vm(); }; }
@@ -36008,15 +36020,8 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
         if (paga > 0) {
           var sys = M().obrasSys;
           sys.gastoMes = (sys.gastoMes || 0) + paga;
-          // Espelha no miúdo de emendas só o que couber (UI de gabinete)
-          try {
-            var g = M().gab;
-            if (g && typeof orcamentoLivre === "function") {
-              var el = Math.max(0, orcamentoLivre() - (g.orcamento_gasto || 0));
-              var pe = Math.min(paga, el);
-              if (pe > 0) g.orcamento_gasto = (g.orcamento_gasto || 0) + pe;
-            }
-          } catch (eEm) {}
+          // Obras usam o caixa de investimento (ORC_BASE). Não consomem a
+          // verba mensal de emendas (GOVCFG.orc), que é separada.
         }
         if (resto > 0) {
           if (o) o.divida = (o.divida || 0) + resto;
@@ -36217,14 +36222,8 @@ const OBRAS_DB_EMBED = [{"id":"OBR-PRE-001","esfera_executora":"Presidente","cat
           var paga = Math.min(mensal, livre);
           var sys = M().obrasSys;
           sys.gastoMes = (sys.gastoMes || 0) + paga;
-          try {
-            var g = M().gab;
-            if (g && typeof orcamentoLivre === "function") {
-              var el = Math.max(0, orcamentoLivre() - (g.orcamento_gasto || 0));
-              var pe = Math.min(paga, el);
-              if (pe > 0) g.orcamento_gasto = (g.orcamento_gasto || 0) + pe;
-            }
-          } catch (eEm) {}
+          // Obras usam o caixa de investimento (ORC_BASE). Não consomem a
+          // verba mensal de emendas (GOVCFG.orc), que é separada.
           inst.manutencaoPagaMes = _agora();
           inst.manutencaoNivel = Math.min(1, (inst.manutencaoNivel || 1) + 0.05);
         } else {
