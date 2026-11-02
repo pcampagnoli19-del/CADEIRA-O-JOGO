@@ -10,7 +10,16 @@ Depois acesse http://127.0.0.1:8765/
 
 ## Visual
 
-Tema **House of Cards** (thriller) + menu em 6 hubs em `cadeira-theme.css` (também embutido no HTML). Tipografia Fraunces + DM Sans; atmosfera institucional satírica. Não altera a lógica do jogo.
+Tema **República (v3)** em `cadeira-v3.css`: base escura grafite com acento dourado, modo claro em papel, Fraunces (títulos) + Source Sans 3 (texto) + IBM Plex Mono (números). É a última folha de estilo do documento e vence as camadas antigas (Executive, House of Cards e módulos) sem mexer na lógica do jogo. As cores fixas escritas no HTML são puxadas para a paleta.
+
+Para mudar o visual, edite `cadeira-v3.css` e rode:
+
+```bash
+python3 tools/aplicar_tema.py            # embute o CSS nos dois HTML (idempotente)
+python3 tools/aplicar_tema.py --imagens  # também recomprime fotos e logos embutidos para WebP
+```
+
+O script edita `index.html` e copia o resultado para `CADEIRA_O_Jogo_25.html`, mantendo os dois idênticos.
 
 ## Build / fonte de verdade
 
