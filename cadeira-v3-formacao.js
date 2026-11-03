@@ -165,34 +165,26 @@
   /* ---------------------------------------------------------------- data de nascimento */
   var INICIO = { ano: 2026, mes: 1 };
   function idadeEm(n, ref) { return ref.ano - n.ano - ((ref.mes < n.mes || (ref.mes === n.mes && (ref.dia || 1) < n.dia)) ? 1 : 0); }
+  var MESES_ = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
   function nascSetup() {
     var c = S.cfg, ini = document.querySelector("#app .inicio"); if (!c || !ini || ini.querySelector(".v3n-nasc")) return;
     var sel_ = ini.querySelector('select[data-k="idade"]'); if (!sel_) return;
-    var n = c.v3nasc;
-    if (n) {
-      c.idade = idadeEm(n, INICIO);
-      if (![].some.call(sel_.options, function (o) { return +(o.value || o.textContent) === c.idade; })) { var op = document.createElement("option"); op.textContent = c.idade; sel_.appendChild(op); }
-      [].forEach.call(sel_.options, function (o) { o.selected = +(o.value || o.textContent) === c.idade; });
-    }
-    var max = (INICIO.ano - 18) + "-12-31", min = (INICIO.ano - 90) + "-01-01";
-    var v = n ? n.ano + "-" + String(n.mes).padStart(2, "0") + "-" + String(n.dia).padStart(2, "0") : "";
-    var lab = document.createElement("label"); lab.className = "f v3n-nasc";
-    lab.innerHTML = 'Data de nascimento <input type="date" data-v3nasc="1" min="' + min + '" max="' + max + '" value="' + v + '"><small>' + (n ? "Em janeiro de " + INICIO.ano + " terá " + c.idade + " anos." : "Opcional: escolha o dia exato (a idade se ajusta sozinha).") + "</small>";
-    var alvo = sel_.closest("label"); (alvo && alvo.parentNode && alvo.parentNode.classList.contains("grid2") ? alvo.parentNode : alvo).insertAdjacentElement("afterend", lab);
+    if (!c.v3nasc) { var id0 = clamp(+c.idade || 32, 18, 90); c.v3nasc = { dia: 1, mes: 1, ano: INICIO.ano - id0 }; }
+    var n = c.v3nasc; c.idade = idadeEm(n, INICIO);
+    // a idade passa a ser calculada pela data: o seletor antigo fica escondido
+    var labIdade = sel_.closest("label"); if (labIdade) labIdade.style.display = "none";
+    var opts = function (de, ate, atual, nomes) { var h = ""; for (var v = de; nomes ? v <= ate : v >= ate; v += nomes ? 1 : -1) h += '<option value="' + v + '"' + (v === atual ? " selected" : "") + ">" + (nomes ? nomes[v - 1] || v : v) + "</option>"; return h; };
+    var dias = ""; for (var d = 1; d <= 31; d++) dias += '<option value="' + d + '"' + (d === n.dia ? " selected" : "") + ">" + d + "</option>";
+    var lab = document.createElement("div"); lab.className = "f v3n-nasc";
+    lab.innerHTML = '<span class="v3n-tit">Data de nascimento</span><div class="v3n-row"><select data-v3nasc="dia" aria-label="Dia">' + dias + '</select><select data-v3nasc="mes" aria-label="Mês">' + opts(1, 12, n.mes, MESES_) + '</select><select data-v3nasc="ano" aria-label="Ano">' + opts(INICIO.ano - 18, INICIO.ano - 90, n.ano) + "</select></div><small>Idade no início do jogo (jan/" + INICIO.ano + "): <b>" + c.idade + " anos</b></small>";
+    (labIdade || sel_).insertAdjacentElement("afterend", lab);
   }
   document.addEventListener("change", function (e) {
-    var t = e.target; if (!t || !t.getAttribute) return;
-    if (t.getAttribute("data-k") === "idade" && t.getAttribute("data-i") === "cfg") { try { S.cfg.v3nasc = null; } catch (err) {} return; }
-    if (!t.getAttribute("data-v3nasc")) return;
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t.value || "");
+    var t = e.target, campo = t && t.getAttribute && t.getAttribute("data-v3nasc"); if (!campo) return;
     try {
-      if (!m) S.cfg.v3nasc = null;
-      else {
-        var n = { ano: +m[1], mes: +m[2], dia: +m[3] }, id = idadeEm(n, INICIO);
-        if (id < 18 || id > 90) { toast_("A idade precisa ficar entre 18 e 90 anos.", "err"); }
-        else { S.cfg.v3nasc = n; S.cfg.idade = id; }
-      }
-      render();
+      var n = S.cfg.v3nasc || { dia: 1, mes: 1, ano: 1990 }; n[campo] = +t.value;
+      var lim_ = [31, (n.ano % 4 === 0 && (n.ano % 100 !== 0 || n.ano % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][n.mes - 1]; if (n.dia > lim_) n.dia = lim_;
+      S.cfg.v3nasc = n; S.cfg.idade = idadeEm(n, INICIO); render();
     } catch (err) {}
   });
   function aplicarNasc(j) {
