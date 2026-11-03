@@ -263,6 +263,25 @@
     iniciar(v("nivel"), v("area"), v("inst")); try { render(); } catch (err) {}
   });
 
+
+  function cardNasc() {
+    var j = ok(function () { return J(); }, null); if (!j) return "";
+    var n = ok(function () { return nasc(); }, j.nascimento) || { dia: 1, mes: 1, ano: 1990 };
+    var MES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+    var dias = ""; for (var i = 1; i <= 31; i++) dias += "<option" + (i === n.dia ? " selected" : "") + ">" + i + "</option>";
+    return '<section class="card v3n-card"><h3>🎂 Aniversário</h3><p class="txt">Nascido(a) em <b>' + n.dia + " de " + MES[n.mes - 1] + " de " + n.ano + "</b> · " + j.idade + ' anos.</p><div class="row v3n-row"><select data-v3nd="dia">' + dias + '</select><select data-v3nd="mes">' + MES.map(function (m, k) { return '<option value="' + (k + 1) + '"' + (k + 1 === n.mes ? " selected" : "") + ">" + m + "</option>"; }).join("") + '</select><button type="button" class="b mini confirma" data-v3ngo="1">Salvar data</button></div><small>O ano é definido pela sua idade atual. Para escolher o ano, use a data de nascimento ao criar um personagem novo.</small></section>';
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-v3ngo]"); if (!b) return;
+    var box = b.closest(".v3n-card"), g = function (k) { return +box.querySelector('[data-v3nd="' + k + '"]').value; };
+    try {
+      var j = J(), d = dataJ(), dia = g("dia"), mes = g("mes");
+      var lim_ = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mes - 1]; if (dia > lim_) dia = lim_;
+      j.nascimento = { dia: dia, mes: mes, ano: d.ano - j.idade - (mes > d.mes ? 1 : 0) };
+      toast_("Data de nascimento salva.", "ok"); render();
+    } catch (err) {}
+  });
+
   /* ---------------------------------------------------------------- Wiki */
   function wiki() {
     var j = ok(function () { return J(); }, null); var f = j && j.formacao3; if (!f || !f.itens.length) return;
@@ -311,6 +330,7 @@
       if (S.tab === "eu") {
         var main = document.getElementById("main");
         if (main && !main.querySelector(".v3f-card")) { var d = document.createElement("div"); d.innerHTML = cardPerfil(); var w = main.querySelector(".wiki-wrap"); if (w) w.insertAdjacentElement("afterend", d.firstElementChild); else main.appendChild(d.firstElementChild); }
+        if (main && !main.querySelector(".v3n-card")) { var d2 = document.createElement("div"); d2.innerHTML = cardNasc(); var c3 = main.querySelector(".v3f-card"); if (c3) c3.insertAdjacentElement("afterend", d2.firstElementChild); else main.appendChild(d2.firstElementChild); }
         wiki();
       }
     } catch (e) { console.warn("formacao", e); }
