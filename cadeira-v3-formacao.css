@@ -16,3 +16,4 @@
 .v3f-novo{margin-top:10px}
 .v3f-novo .row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .v3f-novo select{flex:1 1 150px;min-width:0}
+.v3n-nasc input{width:100%}.v3n-nasc small{display:block;opacity:.75;font-size:.78rem;margin-top:3px}

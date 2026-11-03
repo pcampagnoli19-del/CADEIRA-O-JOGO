@@ -20908,9 +20908,10 @@ function viewPerfilWikipedia() {
 
   // --- DADOS TEMPORAIS E BIOGRAFICOS ---
   const idade = j.idade || 32;
-  const anoNasc = d.ano - idade;
-  const diaNasc = ((idade * 7) % 27) + 1;
-  const mesNasc = MESES[((idade * 3) % 12) + 1] || "abril";
+  const _nj = (j.nascimento && j.nascimento.ano) ? j.nascimento : null;
+  const anoNasc = _nj ? _nj.ano : d.ano - idade;
+  const diaNasc = _nj ? _nj.dia : ((idade * 7) % 27) + 1;
+  const mesNasc = _nj ? (MESES[_nj.mes] || "janeiro") : (MESES[((idade * 3) % 12) + 1] || "abril");
   const dataNascimento = `${diaNasc} de ${mesNasc} de ${anoNasc}`;
   const municipio = j.municipio_domicilio || "Mau\u00E1";
   const bairro = j.bairro || "Jardim Za\u00EDra";
@@ -50642,6 +50643,7 @@ b.bom { color: var(--v3-verde2); } b.medio { color: var(--v3-ambar); } b.ruim { 
 .v3f-novo{margin-top:10px}
 .v3f-novo .row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .v3f-novo select{flex:1 1 150px;min-width:0}
+.v3n-nasc input{width:100%}.v3n-nasc small{display:block;opacity:.75;font-size:.78rem;margin-top:3px}
 
 </style>
 <script>
@@ -53754,6 +53756,47 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     try { render(); } catch (err) {}
   });
 
+
+  /* ---------------------------------------------------------------- data de nascimento */
+  var INICIO = { ano: 2026, mes: 1 };
+  function idadeEm(n, ref) { return ref.ano - n.ano - ((ref.mes < n.mes || (ref.mes === n.mes && (ref.dia || 1) < n.dia)) ? 1 : 0); }
+  function nascSetup() {
+    var c = S.cfg, ini = document.querySelector("#app .inicio"); if (!c || !ini || ini.querySelector(".v3n-nasc")) return;
+    var sel_ = ini.querySelector('select[data-k="idade"]'); if (!sel_) return;
+    var n = c.v3nasc;
+    if (n) {
+      c.idade = idadeEm(n, INICIO);
+      if (![].some.call(sel_.options, function (o) { return +(o.value || o.textContent) === c.idade; })) { var op = document.createElement("option"); op.textContent = c.idade; sel_.appendChild(op); }
+      [].forEach.call(sel_.options, function (o) { o.selected = +(o.value || o.textContent) === c.idade; });
+    }
+    var max = (INICIO.ano - 18) + "-12-31", min = (INICIO.ano - 90) + "-01-01";
+    var v = n ? n.ano + "-" + String(n.mes).padStart(2, "0") + "-" + String(n.dia).padStart(2, "0") : "";
+    var lab = document.createElement("label"); lab.className = "f v3n-nasc";
+    lab.innerHTML = 'Data de nascimento <input type="date" data-v3nasc="1" min="' + min + '" max="' + max + '" value="' + v + '"><small>' + (n ? "Em janeiro de " + INICIO.ano + " terá " + c.idade + " anos." : "Opcional: escolha o dia exato (a idade se ajusta sozinha).") + "</small>";
+    var alvo = sel_.closest("label"); (alvo && alvo.parentNode && alvo.parentNode.classList.contains("grid2") ? alvo.parentNode : alvo).insertAdjacentElement("afterend", lab);
+  }
+  document.addEventListener("change", function (e) {
+    var t = e.target; if (!t || !t.getAttribute) return;
+    if (t.getAttribute("data-k") === "idade" && t.getAttribute("data-i") === "cfg") { try { S.cfg.v3nasc = null; } catch (err) {} return; }
+    if (!t.getAttribute("data-v3nasc")) return;
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t.value || "");
+    try {
+      if (!m) S.cfg.v3nasc = null;
+      else {
+        var n = { ano: +m[1], mes: +m[2], dia: +m[3] }, id = idadeEm(n, INICIO);
+        if (id < 18 || id > 90) { toast_("A idade precisa ficar entre 18 e 90 anos.", "err"); }
+        else { S.cfg.v3nasc = n; S.cfg.idade = id; }
+      }
+      render();
+    } catch (err) {}
+  });
+  function aplicarNasc(j) {
+    if (j._v3nasc) return; j._v3nasc = true;
+    var n = ok(function () { return S.cfg && S.cfg.v3nasc; }, null); if (!n) return;
+    j.nascimento = { dia: n.dia, mes: n.mes, ano: n.ano };
+    var d = dataJ(); j.idade = idadeEm(n, { ano: d.ano, mes: d.mes, dia: 1 });
+  }
+
   /* ---------------------------------------------------------------- no jogo */
   function mesIdx() { var d = dataJ(); return d.ano * 12 + d.mes - 1; }
   function estado() { var j = ok(function () { return J(); }, null); if (!j) return null; return j.formacao3 || null; }
@@ -53899,8 +53942,9 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   function aposRender() {
     try {
       var jogo = ok(function () { return !!gameState; }, false);
-      if (!jogo) { setupPosRender(); return; }
+      if (!jogo) { nascSetup(); setupPosRender(); return; }
       var j = J();
+      aplicarNasc(j);
       if (!j.formacao3) criarDoSetup(j);
       consertarEleicoes();
       if (S.tab === "eu") {
