@@ -1,0 +1,50 @@
+/* =============================================================================
+   CADEIRA v3 — Brasões e cerimônia (par de cadeira-v3-brasoes.js)
+   ============================================================================= */
+.v3-brasao-h { height: 1.45em; width: auto; vertical-align: middle; margin-right: .35em; position: relative; top: -.1em; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+.v3-brasao-p { height: 72px; width: auto; margin-right: 6px; align-self: center; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+.v3-qg { margin: 4px 0 16px; padding: 14px 16px; border-radius: 14px; background: var(--v3-s1); border: 1px solid var(--v3-ln); }
+.v3-qg-h h2 { margin: 2px 0 10px !important; font-size: 1.25rem !important; }
+.v3-qg-g { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.v3-qg-i { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; background: var(--v3-s2); border: 1px solid var(--v3-ln); }
+.v3-qg-i.eu { border-color: var(--v3-ouro); background: var(--v3-ouro-bg); }
+.v3-qg-b { width: 52px; height: 52px; object-fit: contain; flex: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
+.v3-qg-i small { display: block; font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--v3-ouro); }
+.v3-qg-i b { display: block; font-family: var(--font-display); font-size: 1rem; }
+.v3-qg-i span { display: block; font-size: .76rem; color: var(--v3-tx3); }
+
+#v3-cerimonia { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px; background: rgba(5,6,8,.82); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: v3cVeu .4s ease-out both; overflow: auto; }
+#v3-cerimonia.sai { animation: v3cSai .4s ease-in both; }
+@keyframes v3cVeu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes v3cSai { to { opacity: 0; transform: scale(.98); } }
+.v3c-luz { position: absolute; inset: 0; background: radial-gradient(600px 400px at 50% 30%, rgba(236,201,119,.22), transparent 70%); pointer-events: none; }
+.v3c-pap {
+  position: relative; width: min(560px, 100%); padding: 28px 30px 24px; text-align: center; color: #2a2318;
+  background: linear-gradient(180deg, #fbf6e9, #f1e7cf); border-radius: 6px;
+  box-shadow: 0 0 0 1px #c9a54a, 0 0 0 7px #fbf6e9, 0 0 0 8px #c9a54a, 0 40px 90px -20px rgba(0,0,0,.8);
+  transform-origin: 50% 0; animation: v3cPapel .9s cubic-bezier(.2,.9,.3,1.05) .1s both;
+}
+@keyframes v3cPapel { 0% { transform: perspective(900px) rotateX(-75deg) translateY(-30px); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.v3c-bra { height: 110px; display: grid; place-items: center; animation: v3cBra .7s cubic-bezier(.2,.9,.3,1.3) .7s both; }
+.v3c-img { max-height: 110px; max-width: 150px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+@keyframes v3cBra { from { opacity: 0; transform: translateY(-20px) scale(.6); } to { opacity: 1; transform: none; } }
+.v3c-emi { margin: 10px 0 12px; font-size: .68rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #8a6d12; border-bottom: 1px solid #d8c48f; padding-bottom: 10px; animation: v3cIn .5s ease-out 1s both; }
+.v3c-txt p { margin: 4px 0; font-family: "Fraunces", Georgia, serif; font-size: .98rem; line-height: 1.5; color: #2a2318; animation: v3cIn .6s ease-out 1.2s both; }
+.v3c-txt b { color: #1d1a14; }
+.v3c-txt h2 { margin: 6px 0 !important; font-family: "Fraunces", Georgia, serif !important; font-size: 1.8rem !important; color: #1d1a14 !important; animation: v3cIn .6s ease-out 1.4s both; }
+.v3c-txt h3 { margin: 10px 0 4px !important; font-family: "Fraunces", Georgia, serif !important; font-size: 1.4rem !important; letter-spacing: .4em; color: #8a1c2b !important; animation: v3cIn .6s ease-out 1.8s both; }
+@keyframes v3cIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.v3c-ass { margin: 12px auto 4px; width: 220px; display: grid; justify-items: center; }
+.v3c-ass svg { width: 220px; height: 50px; overflow: visible; }
+.v3c-ass path { fill: none; stroke: #1b2a55; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 420; stroke-dashoffset: 420; animation: v3cAss 1.4s ease-in-out 2.2s forwards; }
+@keyframes v3cAss { to { stroke-dashoffset: 0; } }
+.v3c-ass span { border-top: 1px solid #7a6a4a; width: 100%; padding-top: 4px; font-size: .72rem; color: #6a5b40; }
+.v3c-selo { position: absolute; right: 22px; bottom: 74px; padding: 6px 12px; border: 3px double #a3192d; color: #a3192d; font-weight: 800; letter-spacing: .14em; font-size: .9rem; border-radius: 6px; transform: rotate(-14deg); opacity: 0; animation: v3cSelo .45s cubic-bezier(.2,1.4,.4,1) 3.5s forwards; mix-blend-mode: multiply; }
+@keyframes v3cSelo { 0% { opacity: 0; transform: rotate(-14deg) scale(2.4); } 100% { opacity: .85; transform: rotate(-14deg) scale(1); } }
+.v3c-ok { margin-top: 14px; min-width: 200px; animation: v3cIn .5s ease-out 3.8s both; }
+.v3c-conf { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.v3c-conf i { position: absolute; top: -20px; width: 8px; height: 14px; border-radius: 2px; background: #ecc977; opacity: 0; animation-name: v3cConf; animation-timing-function: linear; animation-iteration-count: 1; animation-fill-mode: forwards; }
+.v3c-conf i:nth-child(3n) { background: #2f9a68; } .v3c-conf i:nth-child(4n) { background: #f8f3e6; } .v3c-conf i:nth-child(5n) { background: #3e6fd8; }
+@keyframes v3cConf { 0% { opacity: 1; transform: translateY(0) rotate(0); } 100% { opacity: 0; transform: translateY(105vh) rotate(720deg); } }
+@media (max-width: 520px) { .v3c-pap { padding: 22px 18px 18px; } .v3c-txt h2 { font-size: 1.4rem !important; } .v3c-selo { bottom: 80px; right: 12px; font-size: .78rem; } }
+@media (prefers-reduced-motion: reduce) { #v3-cerimonia *, #v3-cerimonia { animation-duration: .01s !important; animation-delay: 0s !important; } .v3c-ass path { stroke-dashoffset: 0; } .v3c-selo { opacity: .85; } }
