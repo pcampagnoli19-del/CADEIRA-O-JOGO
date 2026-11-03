@@ -1,0 +1,66 @@
+/* =============================================================================
+   CADEIRA v3 — Gabinete da pasta (par de cadeira-v3-pasta.js)
+   ============================================================================= */
+.p3 { display: grid; gap: 14px; margin-top: 8px; }
+.p3-vazio { padding: 28px; text-align: center; border: 1px dashed var(--v3-ln2); border-radius: 16px; }
+.p3-vazio p { color: var(--v3-tx2); }
+.p3-cab { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-end; padding: 18px 20px; border-radius: 16px; background: linear-gradient(135deg, var(--v3-s2), var(--v3-s1)); border: 1px solid var(--v3-ln); }
+.p3-cab-t { flex: 1; min-width: 260px; }
+.p3-niv { font-size: .66rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--v3-ouro); }
+.p3-cab h2 { margin: 4px 0 4px !important; font-size: 1.7rem !important; }
+.p3-cab p { margin: 0; color: var(--v3-tx2); font-size: .88rem; }
+.p3-cab-n { display: flex; gap: 10px; }
+.p3-cab-n > div { display: grid; justify-items: center; padding: 8px 16px; border-radius: 12px; background: var(--v3-s1); border: 1px solid var(--v3-ln); min-width: 110px; }
+.p3-cab-n small { font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--v3-tx3); text-align: center; }
+.p3-cab-n b { font-family: var(--font-lcd); font-size: 1.7rem; }
+b.bom { color: var(--v3-verde2); } b.medio { color: var(--v3-ambar); } b.ruim { color: var(--v3-rubro); }
+.p3-alerta { padding: 10px 14px; border-radius: 12px; background: var(--v3-rubro-bg); border: 1px solid color-mix(in srgb, var(--v3-rubro) 45%, transparent); color: var(--v3-tx); font-weight: 600; font-size: .9rem; }
+.p3-sec { padding: 14px 16px; border-radius: 14px; background: var(--v3-s1); border: 1px solid var(--v3-ln); display: grid; gap: 8px; align-content: start; }
+.p3-sec h3 { margin: 0 !important; font-size: 1.12rem !important; display: flex; align-items: center; gap: 8px; }
+.p3-sec h4 { margin: 6px 0 0 !important; font-size: .74rem !important; letter-spacing: .1em; text-transform: uppercase; color: var(--v3-tx3); }
+.p3-sub { margin: -4px 0 2px; font-size: .82rem; color: var(--v3-tx3); }
+.p3-badge { font-family: var(--font-ui); font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: var(--v3-rubro); color: #fff; }
+.p3-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.p3-kpi { padding: 10px 12px; border-radius: 12px; background: var(--v3-s2); border: 1px solid var(--v3-ln); display: grid; gap: 3px; }
+.p3-kpi small { font-size: .74rem; color: var(--v3-tx2); }
+.p3-kpi b { font-family: var(--font-lcd); font-size: 1.4rem; }
+.p3-kpi b i { font-style: normal; font-family: var(--font-ui); font-size: .72rem; color: var(--v3-tx3); font-weight: 600; }
+.p3-kbar { height: 5px; border-radius: 99px; background: var(--v3-s3); overflow: hidden; }
+.p3-kbar span { display: block; height: 100%; border-radius: 99px; }
+.p3-kpi.bom .p3-kbar span { background: var(--v3-verde2); } .p3-kpi.medio .p3-kbar span { background: var(--v3-ambar); } .p3-kpi.ruim .p3-kbar span { background: var(--v3-rubro); }
+.p3-desp { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+.p3-d { padding: 12px 14px; border-radius: 12px; background: var(--v3-s2); border: 1px solid color-mix(in srgb, var(--v3-ambar) 40%, var(--v3-ln)); display: grid; gap: 6px; align-content: start; }
+.p3-d.feito { border-color: var(--v3-ln); opacity: .92; }
+.p3-d > b { font-family: var(--font-display); font-size: 1.02rem; }
+.p3-d > p { margin: 0; font-size: .86rem; color: var(--v3-tx2); }
+.p3-ops { display: grid; gap: 6px; }
+.p3-ops .b { text-align: left; justify-content: flex-start; }
+.p3-res { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.p3-res span { width: 100%; font-size: .84rem; font-weight: 600; }
+.p3-res small { width: 100%; font-size: .8rem; color: var(--v3-tx2); }
+.p3-res em { font-style: normal; font-family: var(--font-lcd); font-size: .72rem; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--v3-ln2); }
+.p3-res em.bom { color: var(--v3-verde2); } .p3-res em.ruim { color: var(--v3-rubro); }
+.p3-duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+.p3-col { display: grid; gap: 6px; }
+.p3-op { display: grid; gap: 2px; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--v3-ln2); background: var(--v3-s2); color: var(--v3-tx); cursor: pointer; }
+.p3-op:hover { border-color: var(--v3-ouro); }
+.p3-op small { color: var(--v3-tx3); font-size: .76rem; }
+.p3-feito { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--v3-s2); color: var(--v3-tx3); font-size: .82rem; }
+.p3-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 640px) { .p3-chips { grid-template-columns: 1fr; } }
+.p3-chip { display: grid; gap: 2px; text-align: left; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--v3-ln2); background: var(--v3-s2); color: var(--v3-tx); cursor: pointer; }
+.p3-chip b { font-size: .84rem; } .p3-chip small { font-size: .72rem; color: var(--v3-tx3); }
+.p3-chip.on { border-color: var(--v3-ouro); background: var(--v3-ouro-bg); }
+.p3-prog { display: grid; gap: 4px; padding: 12px; border-radius: 12px; background: var(--v3-ouro-bg); border: 1px solid color-mix(in srgb, var(--v3-ouro) 45%, transparent); }
+.p3-prog b { font-family: var(--font-display); font-size: 1.15rem; }
+.p3-prog small { color: var(--v3-tx3); }
+.p3-hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.p3-hist li { padding: 6px 10px; border-radius: 8px; background: var(--v3-s2); font-size: .84rem; border-left: 3px solid var(--v3-ln2); }
+.p3-hist li.bom { border-left-color: var(--v3-verde2); } .p3-hist li.ruim { border-left-color: var(--v3-rubro); } .p3-hist li.info { border-left-color: var(--v3-anil); }
+.p3-tat .card { margin: 0 !important; box-shadow: none !important; }
+.p3-tat summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; list-style: none; }
+.p3-tat summary::-webkit-details-marker { display: none; }
+.p3-tat summary b { font-family: var(--font-display); font-size: 1.12rem; }
+.p3-tat summary b::before { content: "▸ "; color: var(--v3-ouro); }
+.p3-tat[open] summary b::before { content: "▾ "; }
+.p3-tat summary small { color: var(--v3-tx3); font-size: .8rem; }

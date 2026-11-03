@@ -55,8 +55,19 @@ SCRIPT = """<script>
 
 
 # Camadas extras, embutidas nesta ordem depois do tema.
-EXTRAS_CSS = [RAIZ / "cadeira-v3-nav.css", RAIZ / "cadeira-v3-midia.css", RAIZ / "cadeira-v3-diplomacia.css", RAIZ / "cadeira-v3-pre.css"]
-EXTRAS_JS = [RAIZ / "cadeira-v3-nav.js", RAIZ / "cadeira-v3-midia.js", RAIZ / "cadeira-v3-geo.js", RAIZ / "cadeira-v3-diplomacia.js", RAIZ / "cadeira-v3-pre.js"]
+EXTRAS_CSS = [RAIZ / "cadeira-v3-nav.css", RAIZ / "cadeira-v3-midia.css", RAIZ / "cadeira-v3-diplomacia.css", RAIZ / "cadeira-v3-pre.css", RAIZ / "cadeira-v3-pasta.css"]
+EXTRAS_JS = [RAIZ / "cadeira-v3-nav.js", RAIZ / "cadeira-v3-midia.js", RAIZ / "cadeira-v3-geo.js", RAIZ / "cadeira-v3-diplomacia.js", RAIZ / "cadeira-v3-pre.js", RAIZ / "cadeira-v3-pasta.js"]
+
+
+def checar_sintaxe(arq: Path) -> None:
+    """Recusa embutir um JS com erro de sintaxe (quebraria o jogo inteiro)."""
+    import shutil
+    import subprocess
+    if not shutil.which("node"):
+        return
+    r = subprocess.run(["node", "--check", str(arq)], capture_output=True, text=True)
+    if r.returncode != 0:
+        raise SystemExit(f"erro de sintaxe em {arq.name}:\n{r.stderr}")
 
 
 def bloco_tema() -> str:
@@ -74,6 +85,7 @@ def bloco_tema() -> str:
     for arq in EXTRAS_JS:
         if arq.exists():
             txt = arq.read_text(encoding="utf-8")
+            checar_sintaxe(arq)
             if "</script" in txt:
                 raise SystemExit(f"fechamento de tag dentro de {arq.name}")
             partes.append(f'<script id="{arq.stem}-js">\n{txt}\n</script>')
