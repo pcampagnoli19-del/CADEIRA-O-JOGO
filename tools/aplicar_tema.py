@@ -54,22 +54,29 @@ SCRIPT = """<script>
 </script>"""
 
 
-NAV_CSS = RAIZ / "cadeira-v3-nav.css"
-NAV_JS = RAIZ / "cadeira-v3-nav.js"
+# Camadas extras, embutidas nesta ordem depois do tema.
+EXTRAS_CSS = [RAIZ / "cadeira-v3-nav.css", RAIZ / "cadeira-v3-midia.css"]
+EXTRAS_JS = [RAIZ / "cadeira-v3-nav.js", RAIZ / "cadeira-v3-midia.js"]
 
 
 def bloco_tema() -> str:
     css = CSS.read_text(encoding="utf-8")
-    nav_css = NAV_CSS.read_text(encoding="utf-8") if NAV_CSS.exists() else ""
-    nav_js = NAV_JS.read_text(encoding="utf-8") if NAV_JS.exists() else ""
-    if "</script" in nav_js or "</style" in nav_css or "</style" in css:
-        raise SystemExit("fechamento de tag dentro do CSS/JS embutido")
+    if "</style" in css:
+        raise SystemExit("fechamento de tag dentro do CSS embutido")
     partes = [INI, f'<style id="cadeira-v3">\n{css}\n</style>']
-    if nav_css:
-        partes.append(f'<style id="cadeira-v3-nav">\n{nav_css}\n</style>')
+    for arq in EXTRAS_CSS:
+        if arq.exists():
+            txt = arq.read_text(encoding="utf-8")
+            if "</style" in txt:
+                raise SystemExit(f"fechamento de tag dentro de {arq.name}")
+            partes.append(f'<style id="{arq.stem}">\n{txt}\n</style>')
     partes.append(SCRIPT)
-    if nav_js:
-        partes.append(f'<script id="cadeira-v3-nav-js">\n{nav_js}\n</script>')
+    for arq in EXTRAS_JS:
+        if arq.exists():
+            txt = arq.read_text(encoding="utf-8")
+            if "</script" in txt:
+                raise SystemExit(f"fechamento de tag dentro de {arq.name}")
+            partes.append(f'<script id="{arq.stem}-js">\n{txt}\n</script>')
     partes.append(FIM)
     return "\n".join(partes)
 
