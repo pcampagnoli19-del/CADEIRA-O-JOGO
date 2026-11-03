@@ -43,6 +43,15 @@ O script `tools/aplicar_tema.py` embute os dois arquivos junto com o tema.
 - **Acesso:** área **Mídia** no menu (Jornal do mês, Rede social, Arquivo de manchetes, Assessoria de imprensa) com aviso de edição nova; "Capa do mês" no Plano do mês; Jornal na barra de baixo do celular.
 - As edições ficam salvas em `M().v3midia` (até 12, sem fotos dentro do save). A aba Imprensa antiga continua como "Assessoria de imprensa".
 
+### Diplomacia (líderes mundiais, negociação e voo)
+
+`cadeira-v3-diplomacia.js` + `.css` (com o mapa em `cadeira-v3-geo.js`) corrigem e ampliam o módulo de Relações Exteriores (`window.DIP`):
+
+- **Relógio mundial:** o tick mensal da diplomacia nunca rodava (guarda `typeof` sempre verdadeira). Agora roda a cada mês.
+- **Sucessão:** cada país/organismo tem mês de eleição e de posse, limite de mandatos e candidatos reais (EUA 2028: Vance, Newsom, Rubio…; França 2027: Bardella, Philippe…; ONU 2026: Grynspan, Bachelet, Grossi…). Há pesquisas no ano da eleição, resultado e posse no jornal, e o calendário mundial aparece no mapa da diplomacia. Esgotados os nomes reais, entram sucessores com nomes do próprio país. A relação com o novo líder recomeça, pesando a afinidade ideológica.
+- **Negociação:** mesa com o que você leva e o que já cedeu, disposição do líder com a linha mínima para assinar, e quatro jogadas (ceder, pedir mais, jogada pessoal, endurecer) com chance visível quando você conhece o perfil. O acordo mexe no jogo (dólar, inflação, commodities, tarifa, PIB, aprovação, relação com blocos) e sai no jornal.
+- **Voo:** mapa-múndi real (Natural Earth 1:110m via world-atlas, domínio público), saída de Brasília (Presidente) ou de São Paulo (Governador), câmera que aproxima, acompanha e pousa, avião orientado pela rota. Governador agora pode viajar.
+
 ## Build / fonte de verdade
 
 O **HTML compilado é a fonte de verdade**. `index.html` e `CADEIRA_O_Jogo_25.html` devem ser idênticos: edite um e rode o script para sincronizar.

@@ -55,8 +55,8 @@ SCRIPT = """<script>
 
 
 # Camadas extras, embutidas nesta ordem depois do tema.
-EXTRAS_CSS = [RAIZ / "cadeira-v3-nav.css", RAIZ / "cadeira-v3-midia.css"]
-EXTRAS_JS = [RAIZ / "cadeira-v3-nav.js", RAIZ / "cadeira-v3-midia.js"]
+EXTRAS_CSS = [RAIZ / "cadeira-v3-nav.css", RAIZ / "cadeira-v3-midia.css", RAIZ / "cadeira-v3-diplomacia.css"]
+EXTRAS_JS = [RAIZ / "cadeira-v3-nav.js", RAIZ / "cadeira-v3-midia.js", RAIZ / "cadeira-v3-geo.js", RAIZ / "cadeira-v3-diplomacia.js"]
 
 
 def bloco_tema() -> str:
