@@ -34,6 +34,15 @@ O script edita `index.html` e copia o resultado para `CADEIRA_O_Jogo_25.html`, m
 
 O script `tools/aplicar_tema.py` embute os dois arquivos junto com o tema.
 
+### Mídia (jornal e rede social)
+
+`cadeira-v3-midia.js` + `cadeira-v3-midia.css` trocam o noticiário fixo por conteúdo montado a cada turno:
+
+- **Jornal do mês ("O Plenário"):** uma edição por turno com a sua decisão no evento e o efeito na aprovação, os motivos da variação (do relatório do mês), projeção de votos, troca de cargo/partido, escândalo, gastos, economia (dólar/Selic) e as manchetes do mundo agrupadas (janela partidária vira um placar por partido; internações e aposentadorias viram boletins). Tem coluna de opinião e dá para folhear as edições anteriores.
+- **Rede social:** os posts reagem às matérias da edição: rival de outro partido ataca, aliado defende, eleitor do seu bairro cobra ou elogia, imprensa e influenciadores comentam. Seus posts entram na linha do tempo com respostas; responder, compartilhar, acionar o jurídico e impulsionar ficam marcados.
+- **Acesso:** área **Mídia** no menu (Jornal do mês, Rede social, Arquivo de manchetes, Assessoria de imprensa) com aviso de edição nova; "Capa do mês" no Plano do mês; Jornal na barra de baixo do celular.
+- As edições ficam salvas em `M().v3midia` (até 12, sem fotos dentro do save). A aba Imprensa antiga continua como "Assessoria de imprensa".
+
 ## Build / fonte de verdade
 
 O **HTML compilado é a fonte de verdade**. `index.html` e `CADEIRA_O_Jogo_25.html` devem ser idênticos: edite um e rode o script para sincronizar.
