@@ -1,0 +1,13 @@
+.v3pf-item{border-top:1px solid var(--linha,#33415566);padding:10px 0}
+.v3pf-top small{opacity:.75}
+.v3pf-fases{display:flex;flex-wrap:wrap;gap:4px;list-style:none;margin:6px 0;padding:0;counter-reset:f}
+.v3pf-fases li{counter-increment:f;font-size:.72rem;padding:2px 8px;border-radius:99px;border:1px solid var(--linha,#475569);opacity:.55}
+.v3pf-fases li::before{content:counter(f) ". "}
+.v3pf-fases li.ok{opacity:.9;border-color:#22c55e;color:#22c55e}
+.v3pf-fases li.ok::before{content:"✓ "}
+.v3pf-fases li.on{opacity:1;border-color:#f59e0b;color:#f59e0b;font-weight:700}
+.v3pf-l{display:grid;grid-template-columns:1fr minmax(80px,40%);gap:8px;align-items:center;font-size:.82rem;margin:4px 0}
+.v3pf-bar{display:block;height:7px;border-radius:4px;background:rgba(148,163,184,.25);overflow:hidden}
+.v3pf-bar i{display:block;height:100%;background:#f59e0b}
+.v3pf-sit{margin:4px 0 0;font-size:.8rem;opacity:.85;font-style:italic}
+.v3pf-hist summary{cursor:pointer;margin-top:8px}
