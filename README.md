@@ -74,6 +74,14 @@ O script `tools/aplicar_tema.py` embute os dois arquivos junto com o tema.
 - **Mais pastas:** Mauá 6 → 15 (Educação, Assistência Social, Finanças, Mobilidade, Meio Ambiente, Cultura e Turismo, Esportes, Desenvolvimento Econômico, Defesa Civil), SP 8 → 21 (Saúde, Transportes Metropolitanos, Meio Ambiente, Desenvolvimento Econômico, Habitação/CDHU, Administração Penitenciária, Cultura, Esportes, Turismo, Ciência e Tecnologia, Justiça e Cidadania, Comunicação, Governo) e federal 10 → 34 (Saúde, Educação, Itamaraty, Defesa, Minas e Energia, Cidades, Transportes, Meio Ambiente, MDIC, Ciência e Tecnologia, Comunicações, Desenvolvimento Social, Integração, Esporte, Cultura, Turismo, Direitos Humanos, Povos Indígenas, SRI, Secom e as estatais Caixa, BB, BNDES e Correios). Valem para o jogador ocupar e para o chefe do Executivo nomear; as novas têm peso menor na governabilidade. Cada área nova tem indicadores, despachos e programas próprios no gabinete.
 - Estado em `J().pasta.v3`. O `tools/aplicar_tema.py` agora roda `node --check` em cada JS antes de embutir.
 
+### Brasões e cerimônia de posse
+
+`cadeira-v3-brasoes.js` + `.css` (brasões de Mauá, do Estado de SP e da República, enviados pelo dono, sem fundo, até 240 px):
+
+- Brasão ao lado do nome no cabeçalho conforme o nível do cargo (Mauá: vereador, prefeito, secretário municipal; SP: deputado estadual, governador, secretário estadual; República: deputado federal, senador, presidente, ministro).
+- **Quem governa** no topo de Poder › Executivo & pastas, com os três chefes do Executivo e a relação com o jogador; brasão no gabinete da pasta.
+- **Cerimônia:** ao ganhar um cargo eletivo, diploma da Justiça Eleitoral (Zona Eleitoral de Mauá / TRE-SP / TSE) com brasão, assinatura desenhada, carimbo "DIPLOMADO(A)" e confete; ao assumir pasta, termo de posse. Espera a apuração, o evento do mês e o jornal fecharem. `window.V3CERIMONIA(dados)` dispara manualmente.
+
 ## Build / fonte de verdade
 
 O **HTML compilado é a fonte de verdade**. `index.html` e `CADEIRA_O_Jogo_25.html` devem ser idênticos: edite um e rode o script para sincronizar.
