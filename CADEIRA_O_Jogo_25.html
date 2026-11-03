@@ -54284,10 +54284,10 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
       if (p.fase >= 1) {
         var assin = p.fase >= 3 ? p.validas : p.assin;
         h += '<div class="v3pf-l">' + (p.fase >= 3 ? "Assinaturas validadas " : "Assinaturas ") + fmtN(assin) + " / " + fmtN(M_) + " " + barra(assin, M_) + "</div>";
-        h += '<div class="v3pf-l">Estados com apoiamento mínimo ' + Math.min(p.ufs, 27) + "/9 " + barra(Math.min(p.ufs, 9), 9) + "</div>";
+        h += '<div class="v3pf-l">Estados com apoiamento mínimo: ' + Math.min(p.ufs, 27) + " (mín. 9) " + barra(Math.min(p.ufs, 9), 9) + "</div>";
         if (p.fase === 1) { var r = 24 - (i - p.coletaIni); h += '<div class="v3pf-l">Prazo: ' + r + " meses (até " + mesAno(p.coletaIni + 24) + ") " + barra(r, 24) + "</div>"; }
       }
-      if (p.fase >= 3) h += '<div class="v3pf-l">Diretórios estaduais ' + Math.min(p.dirs, 27) + "/9 " + barra(Math.min(p.dirs, 9), 9) + "</div>";
+      if (p.fase >= 3) h += '<div class="v3pf-l">Diretórios estaduais: ' + Math.min(p.dirs, 27) + " (mín. 9) " + barra(Math.min(p.dirs, 9), 9) + "</div>";
       h += '<p class="v3pf-sit">' + esc_(p.sit) + "</p></div>";
     });
     if (s.hist.length) h += '<details class="v3pf-hist"><summary>Processos encerrados (' + s.hist.length + ")</summary>" + s.hist.map(function (x) { return '<p class="txt">' + (x.ok ? "✅" : "❌") + " <b>" + esc_(x.nome) + "</b> · " + mesAno(x.quando) + " · " + esc_(x.motivo) + "</p>"; }).join("") + "</details>";
