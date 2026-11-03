@@ -10,7 +10,29 @@ Depois acesse http://127.0.0.1:8765/
 
 ## Visual
 
-Tema **House of Cards** (thriller) + menu em 6 hubs em `cadeira-theme.css` (também embutido no HTML). Tipografia Fraunces + DM Sans; atmosfera institucional satírica. Não altera a lógica do jogo.
+Tema **República (v3)** em `cadeira-v3.css`: base escura grafite com acento dourado, modo claro em papel, Fraunces (títulos) + Source Sans 3 (texto) + IBM Plex Mono (números). É a última folha de estilo do documento e vence as camadas antigas (Executive, House of Cards e módulos) sem mexer na lógica do jogo. As cores fixas escritas no HTML são puxadas para a paleta.
+
+Para mudar o visual, edite `cadeira-v3.css` e rode:
+
+```bash
+python3 tools/aplicar_tema.py            # embute o CSS nos dois HTML (idempotente)
+python3 tools/aplicar_tema.py --imagens  # também recomprime fotos e logos embutidos para WebP
+```
+
+O script edita `index.html` e copia o resultado para `CADEIRA_O_Jogo_25.html`, mantendo os dois idênticos.
+
+### Navegação (mapa do jogo)
+
+`cadeira-v3-nav.js` + `cadeira-v3-nav.css` reorganizam onde as coisas aparecem, sem remover nada:
+
+- **Desktop (≥1080 px):** menu lateral fixo com as 6 áreas (cada uma com uma linha dizendo para que serve) e as seções da área atual; busca, guia, salvar, editor, tema e console no rodapé do menu.
+- **Cabeçalho de página:** área › seção, título e descrição.
+- **Índice "Nesta tela":** uma linha rolável com os blocos da aba, que destaca o bloco visível e leva até ele (abrindo se estiver recolhido). Substitui a barra de filtros de várias linhas e a barra de modo compacto.
+- **Blocos recolhidos** abrem clicando no título (sanfona).
+- **Celular/tablet:** o botão "Mais" abre o mapa completo do jogo, agrupado por área.
+- **Criação de personagem** em 4 passos (Origem, Identidade, Retrato, Inspiração) com resumo da ficha.
+
+O script `tools/aplicar_tema.py` embute os dois arquivos junto com o tema.
 
 ## Build / fonte de verdade
 
