@@ -40,6 +40,7 @@ O script `tools/aplicar_tema.py` embute os dois arquivos junto com o tema.
 
 - **Jornal do mês ("O Plenário"):** uma edição por turno com a sua decisão no evento e o efeito na aprovação, os motivos da variação (do relatório do mês), projeção de votos, troca de cargo/partido, escândalo, gastos, economia (dólar/Selic) e as manchetes do mundo agrupadas (janela partidária vira um placar por partido; internações e aposentadorias viram boletins). Tem coluna de opinião e dá para folhear as edições anteriores.
 - **Rede social:** os posts reagem às matérias da edição: rival de outro partido ataca, aliado defende, eleitor do seu bairro cobra ou elogia, imprensa e influenciadores comentam. Seus posts entram na linha do tempo com respostas; responder, compartilhar, acionar o jurídico e impulsionar ficam marcados.
+- **O jornal chega sozinho:** quando o mês vira (e depois que o evento do mês é decidido), a edição nova aparece na tela com a manchete, as principais notícias e o post mais comentado sobre você. "Depois" vira um aviso flutuante até você ler; dá para trocar por "só avisar". Bolinha de novidade no menu e na barra do celular.
 - **Acesso:** área **Mídia** no menu (Jornal do mês, Rede social, Arquivo de manchetes, Assessoria de imprensa) com aviso de edição nova; "Capa do mês" no Plano do mês; Jornal na barra de baixo do celular.
 - As edições ficam salvas em `M().v3midia` (até 12, sem fotos dentro do save). A aba Imprensa antiga continua como "Assessoria de imprensa".
 

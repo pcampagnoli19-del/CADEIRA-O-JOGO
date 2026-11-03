@@ -206,7 +206,8 @@
     if (antes && antes.ev && antes.ev.titulo) {
       var ev = antes.ev, tom = dPopEv > 0.3 ? "fav" : dPopEv < -0.3 ? "crit" : "neu", tit, lead;
       if (ev.resolvido && ev.escolha) {
-        tit = pick(r, [ev.titulo + ": " + nome + " decide " + lc1(ev.escolha), nome + " opta por " + lc1(ev.escolha) + " no caso \u201C" + ev.titulo + "\u201D", ev.titulo + ": a escolha de " + nome + " foi " + lc1(ev.escolha)]);
+        var temDois = ev.titulo.indexOf(":") >= 0;
+        tit = temDois ? pick(r, [nome + " decide " + lc1(ev.escolha) + " no caso \u201C" + ev.titulo + "\u201D", "No caso \u201C" + ev.titulo + "\u201D, " + nome + " decide " + lc1(ev.escolha)]) : pick(r, [ev.titulo + ": " + nome + " decide " + lc1(ev.escolha), nome + " opta por " + lc1(ev.escolha) + " no caso \u201C" + ev.titulo + "\u201D", (temDois ? "No caso \u201C" + ev.titulo + "\u201D, " : ev.titulo + ": ") + "a escolha de " + nome + " foi " + lc1(ev.escolha)]);
         lead = semPonto(ev.texto) + ". " + (dPopEv > 0.3 ? "A decisão rendeu " + sinal(dPopEv) + " ponto(s) de aprovação." : dPopEv < -0.3 ? "O gesto custou " + sinal(dPopEv).replace("−", "") + " ponto(s) de aprovação." : "O efeito nas pesquisas ainda é discreto.");
       } else {
         tom = "crit";
@@ -483,6 +484,7 @@
     // seus posts do turno passam a pertencer a esta edição
     st.meus.forEach(function (x) { if (x.ed === "pend") x.ed = key; });
     st.eds[key] = ed;
+    if (antes) { st.ping = key; st.pingMin = false; }
     st.ordem.unshift(key);
     while (st.ordem.length > MAX_EDICOES) { var velho = st.ordem.pop(); delete st.eds[velho]; }
     st.meus = st.meus.filter(function (x) { return x.ed === "pend" || st.eds[x.ed]; }).slice(0, 60);
@@ -650,6 +652,10 @@
     A.midiaEd = function (k) { S.v3ed = k; S._top = true; };
     A.midiaFiltro = function (f) { S.v3feed = f; };
     A.midiaMais = function () { S.v3feedMais = !S.v3feedMais; };
+    A.midiaPingAbrir = function () { var st = estado(); if (st) { st.lido = st.ping; S.v3ed = st.ping; } S.tab = "jornal"; S._top = true; S.sheet = false; };
+    A.midiaPingRede = function () { var st = estado(); if (st) st.lido = st.ping; S.tab = "feed"; S.v3feed = "mencoes"; S._top = true; S.sheet = false; };
+    A.midiaPingDepois = function () { var st = estado(); if (st) st.pingMin = true; };
+    A.midiaPingPref = function () { try { localStorage.setItem("cadeira_ping_off", pingDesligado() ? "0" : "1"); } catch (e) {} var st = estado(); if (st && pingDesligado()) st.pingMin = true; var no = document.getElementById("v3m-ping"); if (no) no.removeAttribute("data-k"); };
     var energia = function () { return ok(function () { return J().energia; }, 0); };
     var caixa = function () { return ok(function () { return JSON.stringify(J().financas); }, ""); };
     var _pub = A.socialPublicarPost;
@@ -734,7 +740,47 @@
     window.avancarMes = novo;
     try { avancarMes = novo; } catch (e) {}
   }
+  /* ---------- "O jornal chegou": aviso na virada do mês ---------- */
+  function pingDesligado() { try { return localStorage.getItem("cadeira_ping_off") === "1"; } catch (e) { return false; } }
+  function bloqueado() {
+    if (document.querySelector(".evping, .dip-modal, .sheet, #apurMapa, #pfCmd:not([hidden])")) return true;
+    if (document.querySelector("#app .modal")) return true;
+    return ok(function () { return !!S.modal; }, false);
+  }
+  function mencoesNovas(ed) { return (ed && ed.posts || []).filter(function (p) { return p.cita; }).length; }
+  function pingHtml(ed, st, mini) {
+    var n = mencoesNovas(ed);
+    if (mini) return '<button type="button" class="v3m-pill" data-a="midiaPingAbrir"><span class="v3m-pill-i">📰</span><span><b>Jornal novo</b><small>' + esc_(rotuloEd(ed, st)) + (n ? " · " + n + " menções a você" : "") + '</small></span></button>';
+    var m = ed.materias, p0 = m[0], top = (ed.posts || []).filter(function (p) { return p.cita; }).sort(function (a, b) { return b.likes - a.likes; })[0];
+    return '<div class="v3m-ping-c" role="dialog" aria-label="Jornal do mês">' +
+      '<div class="v3m-ping-top"><span class="v3m-ping-nome">O Plenário</span><span class="v3m-ping-ed">Edição de ' + esc_(rotuloEd(ed, st)) + '</span><button type="button" class="v3m-ping-x" data-a="midiaPingDepois" aria-label="Minimizar">✕</button></div>' +
+      (p0 ? '<div class="v3m-ping-man"><div class="v3m-kick">' + esc_(p0.sec) + " " + chipTom(p0.tom) + "</div><h3>" + esc_(p0.tit) + "</h3>" + (p0.lead ? "<p>" + esc_(p0.lead) + "</p>" : "") + "</div>" : "") +
+      '<ul class="v3m-ping-l">' + m.slice(1, 4).map(function (x) { return "<li><small>" + esc_(x.sec) + "</small>" + esc_(x.tit) + "</li>"; }).join("") + "</ul>" +
+      (top ? '<div class="v3m-ping-post"><small>Na rede · ' + n + ' menções a você</small><p><b>' + esc_(top.conta.nome) + ":</b> " + esc_(top.texto.slice(0, 150)) + '</p><span>♥ ' + fmtK(top.likes) + "</span></div>" : "") +
+      '<div class="v3m-ping-b"><button type="button" class="b confirma" data-a="midiaPingAbrir">Ler o jornal</button><button type="button" class="b branco" data-a="midiaPingRede">Ver a rede</button><button type="button" class="b link" data-a="midiaPingDepois">Depois</button></div>' +
+      '<button type="button" class="v3m-ping-pref" data-a="midiaPingPref">' + (pingDesligado() ? "Voltar a abrir o jornal sozinho" : "Não abrir sozinho, só avisar") + "</button></div>";
+  }
+  function atualizarPing() {
+    try {
+      var no = document.getElementById("v3m-ping");
+      var st = ok(function () { return gameState ? estado() : null; }, null);
+      var ed = st && st.ping ? st.eds[st.ping] : null;
+      var naTela = ok(function () { return S.tab === "jornal" || S.tab === "feed"; }, false);
+      if (!st || !ed || st.lido === st.ping || naTela) { if (st && ed && naTela) st.lido = st.ping; if (no) no.remove(); return; }
+      var mini = st.pingMin || pingDesligado();
+      if (!mini && bloqueado()) { if (no && !no.classList.contains("mini")) no.remove(); return; }
+      var chave = st.ping + (mini ? "m" : "g");
+      if (no && no.getAttribute("data-k") === chave) return;
+      if (!no) { no = document.createElement("div"); no.id = "v3m-ping"; document.body.appendChild(no); }
+      no.className = mini ? "mini" : "grande";
+      no.setAttribute("data-k", chave);
+      no.innerHTML = pingHtml(ed, st, mini);
+    } catch (e) { console.warn("midia ping", e); }
+  }
+  setInterval(atualizarPing, 1200);
   function aposRender() {
+    atualizarPing();
+    try { document.body.classList.toggle("v3m-novidade", MID.novidade()); } catch (e) {}
     try {
       if (!ok(function () { return !!gameState; }, false)) return;
       if (S.tab !== "mes") return;
