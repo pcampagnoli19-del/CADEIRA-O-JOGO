@@ -53,6 +53,16 @@ O script `tools/aplicar_tema.py` embute os dois arquivos junto com o tema.
 - **Negociação:** mesa com o que você leva e o que já cedeu, disposição do líder com a linha mínima para assinar, e quatro jogadas (ceder, pedir mais, jogada pessoal, endurecer) com chance visível quando você conhece o perfil. O acordo mexe no jogo (dólar, inflação, commodities, tarifa, PIB, aprovação, relação com blocos) e sai no jornal.
 - **Voo:** mapa-múndi real (Natural Earth 1:110m via world-atlas, domínio público), saída de Brasília (Presidente) ou de São Paulo (Governador), câmera que aproxima, acompanha e pousa, avião orientado pela rota. Governador agora pode viajar.
 
+### Pré-candidaturas (corrida dentro dos partidos)
+
+`cadeira-v3-pre.js` + `.css`: durante o ciclo inteiro, cada partido tem até 5 nomes disputando a indicação para Presidente, Governador, Senador (eleições gerais) e Prefeito de Mauá (municipais).
+
+- **Força que muda todo mês:** volta para a base do político (aprovação, cargo, carisma, ambição, titular), reage à variação de aprovação e à troca de cargo, e sofre bastidores sorteados (apoio do cacique, evento com prefeitos, pesquisa interna, acordo com bancada, discurso que viraliza, polêmica, investigação, briga com a direção, perda de aliado). Nomes novos despontam e nomes sem chance desistem e apoiam o líder.
+- **Manchetes:** até dois lances por mês (um do partido do jogador, um dos demais) entram no jornal como "Bastidores".
+- **Prévias:** no ano da eleição, os grupos de `M().previas.atual` são montados a partir da corrida (até 4 por partido; titular com direito à reeleição vai sozinho; quem aparece em duas corridas vai à do cargo em que é mais forte), e a força vira apoio interno até a decisão em agosto. Saves com prévias já montadas pelo motor antigo são convertidos enquanto ninguém venceu.
+- **Jogador:** entra na corrida quando o cargo-alvo bate; ações de agenda de pré-campanha, conversa com a direção e lançamento público.
+- **Tela:** Partido › Pré-candidaturas, com fase do ciclo, contagem até as prévias, favoritos, força com tendência e o último fato de cada nome. Estado em `M().v3pre`.
+
 ## Build / fonte de verdade
 
 O **HTML compilado é a fonte de verdade**. `index.html` e `CADEIRA_O_Jogo_25.html` devem ser idênticos: edite um e rode o script para sincronizar.

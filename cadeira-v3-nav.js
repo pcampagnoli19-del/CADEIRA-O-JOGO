@@ -33,7 +33,7 @@
     partido: "Painel do partido", poder: "Executivo e pastas",
     cong: "Plenário e votações", artic: "Bancadas e acordos", jur: "Processos e defesa",
     inf: "Figuras e movimentos", todos: "Todos os personagens", imp: "Relações com veículos, notas e campanhas editoriais", sub: "O lado sombrio",
-    jornal: "O que a imprensa publicou sobre você e o país", feed: "O que estão dizendo e o que você responde"
+    pre: "Quem está ganhando força para ser candidato(a) em cada partido", jornal: "O que a imprensa publicou sobre você e o país", feed: "O que estão dizendo e o que você responde"
   };
 
   function esc(s) {
