@@ -794,3 +794,8 @@ img { image-rendering: auto; }
 .sbox .stack .b[data-a="cheatpanel"] {
   background: transparent !important; color: var(--v3-ambar) !important; border: 1px dashed color-mix(in srgb, var(--v3-ambar) 55%, transparent) !important;
 }
+
+/* ---------- Logos das casas legislativas ---------- */
+.v3-casa-logo { display: inline-block; width: 1.6em; height: 1.6em; vertical-align: middle; object-fit: contain; border-radius: 6px; margin-right: .25em; position: relative; top: -.08em; }
+h3:has(> .v3-casa-logo), h2:has(> .v3-casa-logo) { justify-content: flex-start !important; gap: 8px; }
+h3 > .v3-casa-logo, h2 > .v3-casa-logo { margin-right: 0; }
