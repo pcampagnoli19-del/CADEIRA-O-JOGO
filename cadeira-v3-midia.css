@@ -144,3 +144,51 @@
   .v3m-mast-c { grid-column: 1 / -1; order: -1; }
   .v3m-mast-l .v3m-nav, .v3m-mast-r .v3m-nav { white-space: nowrap; }
 }
+
+/* ---------- "O jornal chegou" (virada do mês) ---------- */
+#v3m-ping { position: fixed; z-index: 70; }
+#v3m-ping.grande { left: 0; right: 0; bottom: 0; top: 0; display: grid; place-items: center; padding: 16px; background: var(--v3-veu); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); animation: v3mVeu .25s ease-out both; }
+.v3m-ping-c {
+  width: min(560px, 100%); max-height: calc(100vh - 32px); overflow: auto;
+  background: var(--v3-s1); border-radius: 16px; box-shadow: var(--v3-sombra-alta);
+  padding: 18px 20px 14px; display: grid; gap: 12px;
+  transform-origin: 50% 0; animation: v3mJornal .65s cubic-bezier(.2,.9,.25,1.15) both;
+  border-top: 4px double var(--v3-ln2);
+}
+@keyframes v3mVeu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes v3mJornal { 0% { opacity: 0; transform: translateY(-40px) rotate(-4deg) scale(.92); } 70% { opacity: 1; transform: translateY(4px) rotate(.6deg) scale(1.01); } 100% { transform: none; } }
+.v3m-ping-top { display: flex; align-items: baseline; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--v3-ln2); }
+.v3m-ping-nome { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; }
+.v3m-ping-ed { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--v3-tx3); font-weight: 700; }
+.v3m-ping-x { margin-left: auto; border: 1px solid var(--v3-ln2); background: transparent; color: var(--v3-tx2); border-radius: 999px; width: 30px; height: 30px; cursor: pointer; }
+.v3m-ping-man h3 { font-size: 1.45rem !important; line-height: 1.15 !important; margin: 6px 0 6px !important; }
+.v3m-ping-man p { margin: 0; color: var(--v3-tx2); font-size: .92rem; }
+.v3m-ping-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.v3m-ping-l li { padding-top: 6px; border-top: 1px solid var(--v3-ln); font-size: .9rem; font-weight: 600; line-height: 1.3; }
+.v3m-ping-l small { display: block; font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--v3-ouro); font-weight: 700; }
+.v3m-ping-post { padding: 10px 12px; border-radius: 12px; background: var(--v3-s2); border: 1px solid var(--v3-ln); }
+.v3m-ping-post small { font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--v3-tx3); font-weight: 700; }
+.v3m-ping-post p { margin: 4px 0; font-size: .88rem; }
+.v3m-ping-post span { font-family: var(--font-lcd); font-size: .78rem; color: var(--v3-tx2); }
+.v3m-ping-b { display: flex; gap: 8px; flex-wrap: wrap; }
+.v3m-ping-b .confirma { flex: 1; }
+.v3m-ping-pref { justify-self: center; border: 0; background: transparent; color: var(--v3-tx3); font-size: .74rem; text-decoration: underline; cursor: pointer; }
+#v3m-ping.mini { left: 16px; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); animation: v3mPill .45s cubic-bezier(.2,.9,.3,1.3) both; }
+body.v3-shell #v3m-ping.mini { left: 284px; bottom: 90px; }
+@media (min-width: 760px) { #v3m-ping.mini { bottom: 90px; } }
+@keyframes v3mPill { from { opacity: 0; transform: translateY(20px) scale(.9); } to { opacity: 1; transform: none; } }
+.v3m-pill { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--v3-ouro) 60%, transparent); background: var(--v3-s1); color: var(--v3-tx); box-shadow: var(--v3-sombra-alta); cursor: pointer; text-align: left; }
+.v3m-pill-i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--v3-ouro-bg); animation: v3mPulso 1.8s ease-in-out infinite; }
+.v3m-pill b { display: block; font-size: .88rem; }
+.v3m-pill small { display: block; font-size: .72rem; color: var(--v3-tx3); }
+@keyframes v3mPulso { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--v3-ouro) 50%, transparent); } 50% { box-shadow: 0 0 0 7px transparent; } }
+/* contador na barra do celular */
+body.v3m-novidade .bnav button[data-p*="jornal"] { position: relative; }
+body.v3m-novidade .bnav button[data-p*="jornal"]::after { content: ""; position: absolute; top: 8px; right: calc(50% - 16px); width: 8px; height: 8px; border-radius: 50%; background: var(--v3-rubro); box-shadow: 0 0 0 2px var(--v3-s1); }
+@media (prefers-reduced-motion: reduce) { .v3m-ping-c, #v3m-ping, .v3m-pill-i { animation: none !important; } }
+@media (max-width: 640px) {
+  .v3m-ping-top { flex-wrap: wrap; }
+  .v3m-ping-nome { white-space: nowrap; font-size: 1.3rem; }
+  .v3m-ping-ed { order: 3; width: 100%; }
+  .v3m-ping-man h3 { font-size: 1.25rem !important; }
+}
