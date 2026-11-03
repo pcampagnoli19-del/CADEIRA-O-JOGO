@@ -36,6 +36,18 @@
   /* ---------------------------------------------------------------- áreas */
   function area(p) {
     var id = String(p.id || "").toLowerCase(), nm = String(p.nome || "").toLowerCase();
+    if (id === "exteriores" || /itamaraty|relações exteriores/.test(nm)) return "EXT";
+    if (id === "defesa" || /ministério da defesa/.test(nm)) return "DEF";
+    if (id === "minas" || /minas e energia/.test(nm)) return "ENERGIA";
+    if (id === "meioambiente" || /meio ambiente/.test(nm)) return "AMB";
+    if (["cultura", "esportes", "esporte", "turismo"].indexOf(id) >= 0 || /cultura|esporte|turismo/.test(nm)) return "CULT";
+    if (["ciencia", "comunicacoes"].indexOf(id) >= 0 || /ciência|comunicações/.test(nm)) return "TEC";
+    if (["desenv", "mdic", "bndes", "caixa", "bb"].indexOf(id) >= 0 || /desenvolvimento econômico|indústria|bndes|banco do brasil|caixa econômica/.test(nm)) return "DESENV";
+    if (["comunicacao", "secom"].indexOf(id) >= 0 || /secom|secretaria de comunicação/.test(nm)) return "COM";
+    if (["sri"].indexOf(id) >= 0 || /relações institucionais/.test(nm)) return "ART";
+    if (["penitenciaria", "defesacivil"].indexOf(id) >= 0 || /penitenciária|defesa civil/.test(nm)) return "SEG";
+    if (["mobilidade", "transportes", "cidades", "habitacao", "integracao", "correios"].indexOf(id) >= 0 || /mobilidade|transportes|cidades|habitação|integração|correios/.test(nm)) return "INFRA";
+    if (["direitos", "indigenas"].indexOf(id) >= 0 || /direitos humanos|indígenas/.test(nm)) return "SOC";
     if (id === "saude" || /saúde|saude/.test(nm)) return "SAUDE";
     if (id === "educ" || /educa/.test(nm)) return "EDUC";
     if (id === "fazenda" || /fazenda|economia|planejamento/.test(nm)) return "FAZ";
@@ -56,7 +68,15 @@
     ART: [["Votos da base no plenário", "%", 82, 45, 0], ["Projetos do governo aprovados", "%", 78, 30, 0], ["Aliados insatisfeitos", "", 3, 28, 0]],
     AGRO: [["Safra vs. ano anterior", "%", 108, 92, 0], ["Crédito rural liberado", "% da meta", 100, 55, 0], ["Conflitos no campo", "/ano", 5, 40, 0]],
     SOC: [["Famílias atendidas", "% da meta", 98, 60, 0], ["Cadastro atualizado", "%", 92, 55, 0], ["Fila de benefícios", "mil pedidos", 8, 120, 0]],
-    GEN: [["Metas cumpridas", "%", 90, 35, 0], ["Prazo médio de resposta", "dias", 5, 45, 0], ["Satisfação dos servidores", "%", 75, 30, 0]]
+    GEN: [["Metas cumpridas", "%", 90, 35, 0], ["Prazo médio de resposta", "dias", 5, 45, 0], ["Satisfação dos servidores", "%", 75, 30, 0]],
+    EXT: [["Acordos em vigor", "", 24, 6, 0], ["Imagem do Brasil no exterior", "%", 72, 30, 0], ["Exportações vs. ano anterior", "%", 112, 90, 0]],
+    DEF: [["Prontidão das Forças", "%", 88, 45, 0], ["Ocorrências na fronteira", "/mês", 20, 140, 0], ["Projetos militares no prazo", "%", 80, 30, 0]],
+    ENERGIA: [["Risco de apagão", "%", 2, 30, 0], ["Tarifa de energia vs. inflação", "p.p.", -1, 6, 1], ["Produção de petróleo", "mi barris/dia", 4.2, 2.8, 1]],
+    AMB: [["Desmatamento", "mil km²/ano", 3, 14, 1], ["Multas ambientais pagas", "%", 60, 8, 0], ["Recursos de fundos do clima", "US$ mi", 900, 50, 0]],
+    CULT: [["Público em eventos", "mil pessoas/mês", 900, 120, 0], ["Projetos incentivados", "", 1200, 200, 0], ["Avaliação do setor", "%", 70, 25, 0]],
+    TEC: [["Cobertura de internet", "% dos domicílios", 92, 70, 0], ["Investimento em pesquisa", "% da meta", 100, 45, 0], ["Startups apoiadas", "", 400, 40, 0]],
+    DESENV: [["Empregos gerados", "mil/mês", 45, -10, 0], ["Investimento atraído", "R$ bi/ano", 60, 8, 0], ["Crédito liberado", "% da meta", 100, 50, 0]],
+    COM: [["Aprovação do governo nas redes", "%", 55, 20, 0], ["Notícias positivas", "% do total", 45, 12, 0], ["Fake news derrubadas", "/mês", 80, 5, 0]]
   };
   var PROGRAMAS = {
     SAUDE: [["Mais Especialistas", "Mutirões de consultas com especialistas nos bairros"], ["Farmácia em Casa", "Entrega de remédios de uso contínuo"], ["Saúde Digital", "Prontuário e agendamento pelo celular"]],
@@ -67,7 +87,15 @@
     ART: [["Pacto pela Governabilidade", "Acordo de pautas com os partidos da base"], ["Governo Itinerante", "Reuniões do governo nas regiões"], ["Balcão do Prefeito/Governador", "Atendimento a lideranças locais"]],
     AGRO: [["Safra Forte", "Crédito barato para pequenos produtores"], ["Terra Legal", "Titulação de propriedades"], ["Agro Verde", "Recuperação de pastagens degradadas"]],
     SOC: [["Busca Ativa", "Equipes que encontram famílias fora do cadastro"], ["Primeiro Emprego", "Qualificação e vaga para jovens"], ["Cozinha Solidária", "Refeições a preço popular"]],
-    GEN: [["Governo Sem Papel", "Processos 100% digitais"], ["Meta Pública", "Painel online com as metas da pasta"], ["Servidor Nota 10", "Bônus por desempenho"]]
+    GEN: [["Governo Sem Papel", "Processos 100% digitais"], ["Meta Pública", "Painel online com as metas da pasta"], ["Servidor Nota 10", "Bônus por desempenho"]],
+    EXT: [["Brasil no Mundo", "Missões comerciais com empresários"], ["Diplomacia do Clima", "Liderança nas negociações climáticas"], ["Mercosul Já", "Acordos de livre comércio do bloco"]],
+    DEF: [["Fronteira Viva", "Bases e drones na faixa de fronteira"], ["Indústria de Defesa", "Encomendas para a indústria nacional"], ["Amazônia Protegida", "Forças Armadas contra o garimpo"]],
+    ENERGIA: [["Luz Para Todos 2.0", "Energia em comunidades isoladas"], ["Brasil Solar", "Painéis solares em casas populares"], ["Gás Barato", "Desconto no botijão para baixa renda"]],
+    AMB: [["Desmatamento Zero", "Monitoramento por satélite e embargo"], ["Florestas de Pé", "Pagamento por serviços ambientais"], ["Lixão Nunca Mais", "Aterros sanitários nas cidades"]],
+    CULT: [["Cultura Viva", "Pontos de cultura nas periferias"], ["Bolsa Atleta Plus", "Apoio a atletas de base"], ["Destino Brasil", "Campanha de turismo e calendário de eventos"]],
+    TEC: [["Internet nas Escolas", "Fibra e Wi-Fi em toda a rede"], ["Ciência Já", "Bolsas e laboratórios"], ["Startup Nação", "Fundo para empresas de tecnologia"]],
+    DESENV: [["Nova Indústria", "Crédito para modernizar fábricas"], ["Exporta Mais", "Apoio a pequenas empresas exportadoras"], ["Microcrédito Fácil", "Crédito para quem empreende"]],
+    COM: [["Governo Responde", "Canal único para dúvidas e denúncias"], ["Fato ou Fake", "Agência de checagem oficial"], ["Prestação de Contas Mensal", "Pronunciamento com números"]]
   };
 
   /* ---------------------------------------------------------------- despachos */
@@ -113,6 +141,38 @@
     ],
     GEN: [
       { t: "Sistema da pasta fora do ar", x: "Atendimento parado há dois dias.", ops: [["Contratação emergencial", { kpi: 2, verba: -.15, esc: 1 }, "Volta no dia seguinte."], ["Equipe interna resolve", { kpi: 1, idx: 1 }, "Volta em uma semana."]] }
+    ],
+    EXT: [
+      { t: "Brasileiros presos no exterior", x: "Um grupo foi detido num país em crise. As famílias pedem ajuda.", ops: [["Mandar avião da FAB e negociar", { ap: .7, verba: -.15, kpi: 1 }, "Repatriação comemorada."], ["Deixar com o consulado", { ap: -.3 }, "Famílias reclamam na TV."]] },
+      { t: "Voto polêmico na ONU", x: "A resolução divide aliados históricos.", ops: [["Votar com o Ocidente", { kpi: 1, partido: -1 }, "Elogios em Washington."], ["Abster-se", { kpi: 0, cap: 2 }, "Ninguém fica satisfeito, ninguém briga."], ["Votar com o Sul Global", { kpi: 1, chefe: 2 }, "Críticas da oposição."]] }
+    ],
+    DEF: [
+      { t: "Compra de caças", x: "A FAB quer fechar a compra de novos caças.", ops: [["Aprovar com contrapartida industrial", { kpi: 2, verba: -.4, esc: 1 }, "Fábrica brasileira participa."], ["Adiar", { kpi: -2, chefe: -1 }, "Comandantes reclamam."]] },
+      { t: "Militares na política", x: "Um general deu declarações políticas.", ops: [["Punir publicamente", { kpi: 1, ap: .3, partido: -1 }, "Recado dado."], ["Abafar", { esc: 1, kpi: -1 }, "A imprensa vê leniência."]] }
+    ],
+    ENERGIA: [
+      { t: "Risco de apagão", x: "Os reservatórios estão baixos e o calor aumenta o consumo.", ops: [["Acionar termelétricas", { kpi: 3, verba: -.3, ap: -.2 }, "Sem apagão; a conta sobe."], ["Campanha de economia", { kpi: 1, ap: -.1 }, "Consumo cai um pouco."], ["Esperar a chuva", { kpi: -4, ap: -.8 }, "Apagão em duas capitais."]] },
+      { t: "Leilão de petróleo", x: "Petroleiras querem novas áreas na margem equatorial.", ops: [["Leiloar com regras ambientais", { kpi: 2, cap: 2, partido: -1 }, "Investimento bilionário."], ["Suspender por questões ambientais", { kpi: -1, ap: .2 }, "Mercado reclama."]] }
+    ],
+    AMB: [
+      { t: "Queimadas recordes", x: "O satélite mostra focos de incêndio fora do normal.", ops: [["Brigadas e Forças Armadas", { kpi: 3, verba: -.3, ap: .4 }, "Focos caem pela metade."], ["Culpar o tempo seco", { kpi: -3, ap: -.6, esc: 1 }, "Repercussão internacional negativa."]] },
+      { t: "Licença polêmica", x: "Uma obra grande depende da sua licença ambiental.", ops: [["Licenciar com condicionantes", { kpi: 1, chefe: 3 }, "Obra liberada."], ["Negar", { kpi: 2, chefe: -4, ap: .2 }, "O chefe fica irritado."]] }
+    ],
+    CULT: [
+      { t: "Polêmica com edital", x: "Um projeto aprovado no edital virou guerra nas redes.", ops: [["Manter: decisão técnica", { kpi: 1, ap: -.2, partido: -1 }, "Ataques da oposição."], ["Cancelar o projeto", { kpi: -2, ap: .2, esc: 1 }, "Artistas acusam censura."]] },
+      { t: "Grande evento na cidade", x: "Produtores querem apoio para um festival gigante.", ops: [["Patrocinar", { verba: -.2, ap: .6, kpi: 2 }, "Festival lotado."], ["Recusar", { kpi: -1 }, "O evento vai para outra cidade."]] }
+    ],
+    TEC: [
+      { t: "Ataque hacker", x: "Sistemas do governo foram invadidos.", ops: [["Contratar força-tarefa de segurança", { kpi: 2, verba: -.2, esc: -1 }, "Sistemas voltam blindados."], ["Minimizar o ataque", { kpi: -2, esc: 2 }, "Dados vazados aparecem na internet."]] },
+      { t: "Concessão de rádio e TV", x: "Aliados pedem concessões de rádio em suas cidades.", ops: [["Conceder", { rel: 3, esc: 2 }, "Base agradece."], ["Seguir a fila técnica", { rel: -2, idx: 1 }, "Deputados reclamam."]] }
+    ],
+    DESENV: [
+      { t: "Fábrica ameaça fechar", x: "Uma montadora vai demitir 3 mil se não houver incentivo.", ops: [["Linha de crédito subsidiada", { verba: -.3, kpi: 2, ap: .5 }, "Empregos mantidos."], ["Deixar o mercado decidir", { kpi: -3, ap: -.6, chefe: -2 }, "Demissões em massa na TV."]] },
+      { t: "Pedido de empréstimo de amigo do chefe", x: "Um empresário próximo do chefe pede crédito facilitado.", ops: [["Aprovar", { chefe: 4, esc: 3, mp: 20 }, "O chefe agradece; o TCU vê."], ["Mandar para a análise técnica", { chefe: -3, idx: 1 }, "O empresário reclama."]] }
+    ],
+    COM: [
+      { t: "Fake news contra o governo", x: "Um vídeo manipulado viralizou.", ops: [["Desmentir com dados", { kpi: 2, ap: .3 }, "O desmentido viraliza também."], ["Processar os autores", { kpi: 1, partido: 1, ap: -.1 }, "Acusação de censura."]] },
+      { t: "Verba de publicidade", x: "Veículos aliados pedem mais anúncios oficiais.", ops: [["Distribuir aos aliados", { rel: 2, esc: 2 }, "Cobertura mais favorável."], ["Seguir critério técnico de audiência", { idx: 1, rel: -1 }, "Aliados reclamam."]] }
     ],
     GERAL: [
       { t: "Deputado pede nomeação", x: "{dep} quer emplacar um afilhado num cargo da pasta.", ops: [["Nomear", { rel: 3, esc: 1, kpi: -1 }, "{dep} vira aliado."], ["Recusar com elegância", { rel: -2, idx: 1 }, "{dep} fica magoado."]] },
