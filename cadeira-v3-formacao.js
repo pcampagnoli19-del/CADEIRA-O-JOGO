@@ -37,7 +37,51 @@
   var NIVEIS = [["grad", "Graduação"], ["pos", "Pós-graduação / MBA"], ["mest", "Mestrado"], ["dout", "Doutorado"]];
   var DUR = { pos: 2, mest: 2, dout: 4 };
   function durGrad(curso) { var c = CURSOS.filter(function (x) { return x[0] === curso; })[0]; return c ? c[1] : 4; }
-  var BONUS = { grad: { inteligencia: 3 }, pos: { inteligencia: 2, influencia: 1 }, mest: { inteligencia: 4, retorica: 1 }, dout: { inteligencia: 6, retorica: 2 } };
+  // perfil de atributos de cada área (car = carisma, int = inteligência, ret = retórica, ing = integridade, inf = influência)
+  var PERFIL = {
+    "Direito": { ret: 4, int: 3, inf: 1 }, "Administração": { inf: 3, int: 3 }, "Economia": { int: 5, inf: 1 }, "Ciência Política": { inf: 3, ret: 2, int: 2 },
+    "Ciências Sociais": { int: 3, ing: 2, car: 1 }, "Relações Internacionais": { inf: 3, ret: 2, int: 2 }, "Jornalismo": { ret: 4, car: 3 },
+    "Pedagogia": { ing: 3, car: 3 }, "Medicina": { int: 5, ing: 2, car: 2 }, "Enfermagem": { ing: 4, car: 2 }, "Engenharia Civil": { int: 5, ing: 1 },
+    "Engenharia de Produção": { int: 4, inf: 2 }, "Arquitetura e Urbanismo": { int: 3, car: 2 }, "Ciências Contábeis": { int: 3, ing: 3 },
+    "Serviço Social": { ing: 3, car: 3 }, "Psicologia": { car: 3, ret: 2, int: 1 }, "Agronomia": { int: 3, inf: 2, car: 1 }, "Teologia": { car: 4, ing: 2, ret: 1 },
+    "Educação Física": { car: 4, ing: 1 }, "Gestão Pública": { inf: 2, int: 2, ing: 2 }, "História": { int: 3, ret: 2, ing: 1 }, "Publicidade e Propaganda": { car: 3, ret: 3 },
+    "Direito Eleitoral": { ret: 2, int: 2, inf: 2 }, "Marketing Político": { car: 3, ret: 3 }, "Políticas Públicas": { int: 3, ing: 2, inf: 1 },
+    "MBA em Gestão": { inf: 4, int: 2 }, "Direito Constitucional": { ret: 3, int: 3 }, "Saúde Pública": { int: 3, ing: 3 }, "Segurança Pública": { inf: 2, car: 2, ing: 2 },
+    "Planejamento Urbano": { int: 4, inf: 2 }, "Comunicação Política": { ret: 4, car: 2 }
+  };
+  var ATR = { car: "carisma", int: "inteligencia", ret: "retorica", ing: "integridade", inf: "influencia" };
+  var NOME_ATR = { car: "Carisma", int: "Inteligência", ret: "Retórica", ing: "Integridade", inf: "Influência" };
+  // peso do nível e da instituição
+  var PESO_NIVEL = { grad: 1, pos: 0.6, mest: 0.9, dout: 1.3 };
+  var TIER = {
+    elite: { nome: "Elite", mult: 1.5, extra: { inf: 2 }, desc: "prestígio e rede de ex-alunos poderosa" },
+    publica: { nome: "Pública de excelência", mult: 1.3, extra: { ing: 1 }, desc: "formação sólida e respeitada" },
+    regional: { nome: "Tradição no ABC", mult: 1.0, extra: { car: 1, inf: 1 }, desc: "base local e contatos na região" },
+    massa: { nome: "Faculdade popular", mult: 0.8, extra: { car: 2 }, desc: "\"gente como a gente\": aproxima do eleitor" }
+  };
+  var INST_TIER = { "USP": "elite", "Unicamp": "elite", "FGV": "elite", "PUC-SP": "elite", "Mackenzie": "elite", "Unesp": "publica", "UFABC": "publica", "Unifesp": "publica",
+    "Fundação Santo André (FSA)": "regional", "Universidade Metodista (São Bernardo)": "regional", "Faculdade de Direito de São Bernardo": "regional", "Centro Universitário FEI": "regional",
+    "Universidade Municipal de São Caetano (USCS)": "regional", "Universidade São Judas": "regional", "UNIP": "massa", "Anhanguera": "massa", "FMU": "massa", "Uninove": "massa" };
+  function tierDe(inst) { return TIER[INST_TIER[inst] || "regional"]; }
+  function efeito(nivel, area, inst) {
+    var p = PERFIL[area] || { int: 3 }, t = tierDe(inst), m = PESO_NIVEL[nivel] * t.mult, out = {};
+    Object.keys(p).forEach(function (k) { out[k] = Math.round(p[k] * m); });
+    Object.keys(t.extra).forEach(function (k) { out[k] = (out[k] || 0) + t.extra[k]; });
+    Object.keys(out).forEach(function (k) { if (!out[k]) delete out[k]; });
+    return out;
+  }
+  function efeitoHtml(nivel, area, inst, prefixo) {
+    if (!area) return "";
+    var t = tierDe(inst);
+    return '<div class="v3f-ef"><span>' + (prefixo || "Ao concluir:") + " <b>" + esc_(efeitoTxt(efeito(nivel, area, inst))) + '</b></span><em>' + esc_(t.nome) + " · " + esc_(t.desc) + "</em></div>";
+  }
+  function efeitoTxt(e) { return Object.keys(e).map(function (k) { return "+" + e[k] + " " + NOME_ATR[k]; }).join(", "); }
+  function aplicarEfeito(j, it) {
+    if (it.b3) return; it.b3 = true;
+    var e = efeito(it.nivel, it.curso || it.area, it.inst);
+    Object.keys(e).forEach(function (k) { var a = ATR[k]; if (j.atributos && typeof j.atributos[a] === "number") j.atributos[a] = clamp(j.atributos[a] + e[k], 0, 100); });
+    return e;
+  }
   var TITULO = { grad: "Graduação", pos: "Pós-graduação", mest: "Mestrado", dout: "Doutorado" };
 
   /* ---------------------------------------------------------------- regras de idade */
@@ -89,11 +133,11 @@
     var avisos = validar(f, idade);
     var h = '<div class="v3f-box"><h4>Formação acadêmica</h4><p class="v3f-sub">Escolha o que o seu personagem já estudou. Com ' + idade + " anos, o que não couber na idade fica como <b>cursando</b> e você se forma durante o jogo.</p>";
     h += '<div class="v3f-linha"><b>Graduação</b>' + sel("grad.curso", f.grad ? f.grad.curso : "", CURSOS.map(function (c) { return [c[0], c[0] + " (" + c[1] + " anos)"]; }), "Sem graduação") +
-      (f.grad && f.grad.curso ? sel("grad.inst", f.grad.inst, INST) + sel("grad.status", f.grad.status, [["concluido", "Concluída"], ["cursando", "Cursando"]]) : "") + "</div>";
+      (f.grad && f.grad.curso ? sel("grad.inst", f.grad.inst, INST) + sel("grad.status", f.grad.status, [["concluido", "Concluída"], ["cursando", "Cursando"]]) + efeitoHtml("grad", f.grad.curso, f.grad.inst, f.grad.status === "concluido" ? "Já soma:" : "Ao se formar:") : "") + "</div>";
     var gradOk = f.grad && f.grad.curso && f.grad.status === "concluido";
     [["pos", "Pós / MBA", POS], ["mest", "Mestrado", POS.concat(CURSOS.map(function (c) { return c[0]; }))], ["dout", "Doutorado", POS.concat(CURSOS.map(function (c) { return c[0]; }))]].forEach(function (n) {
       var k = n[0], v = f[k], pode = k === "dout" ? f.mest && f.mest.status === "concluido" : gradOk;
-      h += '<div class="v3f-linha' + (pode ? "" : " off") + '"><b>' + n[1] + "</b>" + (pode ? sel(k + ".area", v ? v.area : "", n[2], "Não fez") + (v && v.area ? sel(k + ".inst", v.inst, INST) + sel(k + ".status", v.status, [["concluido", "Concluído"], ["cursando", "Cursando"]]) : "") : '<small>' + (k === "dout" ? "exige mestrado concluído" : "exige graduação concluída") + "</small>") + "</div>";
+      h += '<div class="v3f-linha' + (pode ? "" : " off") + '"><b>' + n[1] + "</b>" + (pode ? sel(k + ".area", v ? v.area : "", n[2], "Não fez") + (v && v.area ? sel(k + ".inst", v.inst, INST) + sel(k + ".status", v.status, [["concluido", "Concluído"], ["cursando", "Cursando"]]) + efeitoHtml(k, v.area, v.inst, v.status === "concluido" ? "Já soma:" : "Ao se formar:") : "") : '<small>' + (k === "dout" ? "exige mestrado concluído" : "exige graduação concluída") + "</small>") + "</div>";
     });
     if (avisos.length) h += '<div class="v3f-aviso">' + avisos.map(esc_).join("<br>") + "</div>";
     return h + "</div>";
@@ -182,7 +226,7 @@
         var it = { nivel: nivel, curso: nivel === "grad" ? o.curso : null, area: nivel === "grad" ? null : o.area, inst: o.inst || "USP", status: o.status };
         if (o.status === "concluido") {
           var anosAtras = nivel === "grad" ? idade - (18 + dg) : nivel === "dout" ? idade - (18 + dg + DUR.mest + DUR.dout) : idade - (18 + dg + dur);
-          it.ano = ano - Math.max(0, Math.min(anosAtras, 8));
+          it.ano = ano - Math.max(0, anosAtras);
         } else {
           var feitos = nivel === "grad" ? clamp(idade - 18, 0, dur - 1) : 0;
           it.fimIdx = m + Math.max(6, Math.round((dur - feitos) * 12));
@@ -191,13 +235,19 @@
         f.itens.push(it);
       };
       push("grad", c.grad, dg); push("pos", c.pos, DUR.pos); push("mest", c.mest, DUR.mest); push("dout", c.dout, DUR.dout);
-      f.itens.filter(function (x) { return x.status === "concluido"; }).forEach(function (x) { bonus(j, x.nivel, 0.5); });
+      f.itens.filter(function (x) { return x.status === "concluido"; }).forEach(function (x) { aplicarEfeito(j, x); });
     }
     j.formacao3 = f;
     if (f.itens.length) aplicarTexto(j, f);
   }
-  function bonus(j, nivel, mult) {
-    var b = BONUS[nivel] || {}; Object.keys(b).forEach(function (k) { if (j.atributos && typeof j.atributos[k] === "number") j.atributos[k] = clamp(j.atributos[k] + Math.round(b[k] * (mult || 1)), 0, 100); });
+  // saves anteriores: o bônus antigo era só +inteligência; aplica a diferença uma vez
+  function migrar(j) {
+    var f = j.formacao3; if (!f || f._b3) return; f._b3 = true;
+    f.itens.forEach(function (it) {
+      if (it.status !== "concluido" || it.b3) return;
+      var e = efeito(it.nivel, it.curso || it.area, it.inst); e.int = Math.max(0, (e.int || 0) - 2); it.b3 = true;
+      Object.keys(e).forEach(function (k) { var a = ATR[k]; if (j.atributos && typeof j.atributos[a] === "number") j.atributos[a] = clamp(j.atributos[a] + e[k], 0, 100); });
+    });
   }
   F3.mensal = function () {
     var j = ok(function () { return J(); }, null); if (!j) return;
@@ -205,14 +255,15 @@
     var m = mesIdx();
     f.itens.forEach(function (it) {
       if (it.status !== "cursando") return;
+      if (typeof j.energia === "number") j.energia = Math.max(0, j.energia - 3);
       var mens = PRIVADA[it.inst] || 0;
       if (mens) { var pago = ok(function () { return gastar(mens * (it.nivel === "grad" ? 1 : 1.4), 1); }, true); if (pago === false) { it.status = "trancado"; toast_("Sem dinheiro para a mensalidade: você trancou " + nomeItem(it) + ".", "err"); aplicarTexto(j, f); return; } }
       if (m >= it.fimIdx) {
-        it.status = "concluido"; it.ano = dataJ().ano; bonus(j, it.nivel, 1);
+        it.status = "concluido"; it.ano = dataJ().ano; var ef = aplicarEfeito(j, it);
         var tit = it.nivel === "dout" ? "Dr(a). " : "";
         ok(function () { manchete(tit + j.nome + " conclui " + (it.nivel === "grad" ? "a graduação em " + it.curso : nomeItem(it).charAt(0).toLowerCase() + nomeItem(it).slice(1)) + " pela " + it.inst + ".", "agenda"); });
         ok(function () { diario("Formatura: " + nomeItem(it) + " (" + it.inst + ")."); });
-        toast_("Formatura! Você concluiu " + nomeItem(it) + ".", "ok");
+        toast_("Formatura! Você concluiu " + nomeItem(it) + (ef ? " — " + efeitoTxt(ef) : "") + ".", "ok");
         aplicarTexto(j, f);
       }
     });
@@ -239,7 +290,7 @@
     h += '<ul class="v3f-lista">' + f.itens.map(function (it) {
       var prog = it.status === "cursando" ? clamp(Math.round((m - (it.inicioIdx || m)) / Math.max(1, it.fimIdx - (it.inicioIdx || m)) * 100), 0, 99) : 100;
       var falta = it.status === "cursando" ? Math.max(0, it.fimIdx - m) : 0;
-      return '<li class="' + it.status + '"><b>' + esc_(nomeItem(it)) + "</b><small>" + esc_(TITULO[it.nivel]) + " · " + esc_(it.inst) + " · " + (it.status === "concluido" ? "concluído" + (it.ano ? " em " + it.ano : "") : it.status === "trancado" ? "trancado" : "cursando, faltam " + falta + " meses" + (PRIVADA[it.inst] ? " · mensalidade R$ " + Math.round(PRIVADA[it.inst] * (it.nivel === "grad" ? 1 : 1.4)).toLocaleString("pt-BR") : "")) + "</small>" + (it.status === "cursando" ? '<div class="v3f-bar"><i style="width:' + prog + '%"></i></div>' : "") + "</li>";
+      return '<li class="' + it.status + '"><b>' + esc_(nomeItem(it)) + "</b><small>" + esc_(TITULO[it.nivel]) + " · " + esc_(it.inst) + " · " + (it.status === "concluido" ? "concluído" + (it.ano ? " em " + it.ano : "") : it.status === "trancado" ? "trancado" : "cursando, faltam " + falta + " meses" + (PRIVADA[it.inst] ? " · mensalidade R$ " + Math.round(PRIVADA[it.inst] * (it.nivel === "grad" ? 1 : 1.4)).toLocaleString("pt-BR") : "")) + "</small>" + efeitoHtml(it.nivel, it.curso || it.area, it.inst, it.status === "concluido" ? "Rendeu:" : "Ao se formar:") + (it.status === "cursando" ? '<div class="v3f-bar"><i style="width:' + prog + '%"></i></div>' : "") + "</li>";
     }).join("") + "</ul>";
     var cursando = f.itens.some(function (x) { return x.status === "cursando"; });
     if (!cursando) {
@@ -248,15 +299,17 @@
       var nv = ok(function () { return S.v3fNivel; }, "") || opts[opts.length > 1 ? 1 : 0][0];
       if (!opts.some(function (o) { return o[0] === nv; })) nv = opts[0][0];
       var lista = nv === "grad" ? CURSOS.map(function (c) { return c[0]; }) : POS.concat(CURSOS.map(function (c) { return c[0]; }));
+      var ar = ok(function () { return S.v3fArea; }, ""); if (lista.indexOf(ar) < 0) ar = lista[0];
+      var ins = ok(function () { return S.v3fInst; }, "") || "USP";
       h += '<div class="v3f-novo"><b>Começar um curso</b><div class="row">' +
         '<select data-v3fj="nivel">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === nv ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select>" +
-        '<select data-v3fj="area">' + lista.map(function (x) { return "<option>" + esc_(x) + "</option>"; }).join("") + "</select>" +
-        '<select data-v3fj="inst">' + INST.map(function (x) { return "<option>" + esc_(x) + "</option>"; }).join("") + "</select>" +
-        '<button type="button" class="b mini confirma" data-v3fgo="1">Matricular (−10 energia)</button></div><small>Instituições privadas cobram mensalidade do seu caixa pessoal. Ao se formar, você ganha atributos e a notícia sai no jornal.</small></div>';
+        '<select data-v3fj="area">' + lista.map(function (x) { return "<option" + (x === ar ? " selected" : "") + ">" + esc_(x) + "</option>"; }).join("") + "</select>" +
+        '<select data-v3fj="inst">' + INST.map(function (x) { return "<option" + (x === ins ? " selected" : "") + ">" + esc_(x) + "</option>"; }).join("") + "</select>" +
+        '<button type="button" class="b mini confirma" data-v3fgo="1">Matricular (−10 energia)</button></div>' + efeitoHtml(nv, ar, ins, "Ao se formar:") + '<small>Cada curso desenvolve atributos diferentes; instituições de elite multiplicam o ganho e dão rede de contatos, as populares aproximam do eleitor. Enquanto estuda: −3 de energia por mês' + (PRIVADA[ins] ? " e mensalidade de R$ " + Math.round(PRIVADA[ins] * (nv === "grad" ? 1 : 1.4)).toLocaleString("pt-BR") : " (pública: sem mensalidade)") + ".</small></div>";
     }
     return h + "</section>";
   }
-  document.addEventListener("change", function (e) { var t = e.target; if (t && t.getAttribute && t.getAttribute("data-v3fj") === "nivel") { try { S.v3fNivel = t.value; render(); } catch (err) {} } });
+  document.addEventListener("change", function (e) { var t = e.target; var a = t && t.getAttribute && t.getAttribute("data-v3fj"); if (!a) return; try { if (a === "nivel") S.v3fNivel = t.value; if (a === "area") S.v3fArea = t.value; if (a === "inst") S.v3fInst = t.value; render(); } catch (err) {} });
   document.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("[data-v3fgo]"); if (!b) return;
     var box = b.closest(".v3f-novo"); var v = function (k) { var s = box.querySelector('[data-v3fj="' + k + '"]'); return s ? s.value : ""; };
@@ -326,6 +379,7 @@
       var j = J();
       aplicarNasc(j);
       if (!j.formacao3) criarDoSetup(j);
+      migrar(j);
       consertarEleicoes();
       if (S.tab === "eu") {
         var main = document.getElementById("main");
