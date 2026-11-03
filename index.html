@@ -50623,6 +50623,27 @@ b.bom { color: var(--v3-verde2); } b.medio { color: var(--v3-ambar); } b.ruim { 
 @media (prefers-reduced-motion: reduce) { #v3-cerimonia *, #v3-cerimonia { animation-duration: .01s !important; animation-delay: 0s !important; } .v3c-ass path { stroke-dashoffset: 0; } .v3c-selo { opacity: .85; } }
 
 </style>
+<style id="cadeira-v3-formacao">
+.v3f-box{margin-top:12px;padding:12px;border:1px solid var(--v3-line,#334155);border-radius:10px;background:rgba(15,23,42,.35)}
+.v3f-box h4{margin:0 0 4px;font-family:Fraunces,serif}
+.v3f-sub{margin:0 0 8px;font-size:.82rem;opacity:.85}
+.v3f-linha{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.v3f-linha>b{min-width:110px;font-size:.85rem}
+.v3f-linha select{flex:1 1 140px;min-width:0;max-width:100%}
+.v3f-linha.off{opacity:.55}
+.v3f-aviso{margin-top:8px;padding:8px;border-radius:8px;background:rgba(245,158,11,.12);color:#f59e0b;font-size:.8rem}
+.v3f-card .v3f-lista{list-style:none;margin:0;padding:0}
+.v3f-card .v3f-lista li{padding:8px 0;border-bottom:1px solid var(--v3-line,#33415555)}
+.v3f-card .v3f-lista li b{display:block}
+.v3f-card .v3f-lista li small{opacity:.8}
+.v3f-card li.trancado{opacity:.6}
+.v3f-bar{height:6px;border-radius:4px;background:rgba(148,163,184,.25);margin-top:5px;overflow:hidden}
+.v3f-bar i{display:block;height:100%;background:#22c55e}
+.v3f-novo{margin-top:10px}
+.v3f-novo .row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.v3f-novo select{flex:1 1 150px;min-width:0}
+
+</style>
 <script>
 (function(){
   var raf=0, ro=null, atual=null;
@@ -53607,6 +53628,302 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     }
   }
   setInterval(function () { try { if (fila) mostrar(); } catch (e) {} }, 1500);
+  instalar();
+  document.addEventListener("DOMContentLoaded", function () { setTimeout(instalar, 0); });
+  window.addEventListener("load", function () { setTimeout(instalar, 0); });
+})();
+
+</script>
+<script id="cadeira-v3-formacao-js">
+/* =============================================================================
+   CADEIRA v3 — Formação acadêmica + votos na Wiki
+   1. Na criação: graduação (curso e instituição), pós/MBA, mestrado e
+      doutorado, cada um "concluído" ou "cursando", coerente com a idade.
+   2. Durante o jogo: cursos em andamento avançam e geram formatura
+      (manchete, diário, bônus de atributos). No Perfil, card "Formação
+      acadêmica" para iniciar novos cursos.
+   3. Wiki do personagem: usa a formação escolhida (j.formacao) e ganha uma
+      lista detalhada na seção 1.
+   4. Correção: a Wiki perdia os votos a partir da 2ª eleição (dependia de
+      uma manchete que o motor novo não publica). Agora os votos vêm do texto
+      do resultado; a porcentagem errada (barreira de 10%) e o "2º turno"
+      marcado em toda eleição também foram corrigidos, inclusive em saves.
+   Estado em J().formacao3.
+   ============================================================================= */
+(function () {
+  "use strict";
+  if (window.FORM3) return;
+  var F3 = (window.FORM3 = {});
+  function esc_(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function pj(a) { return esc_(JSON.stringify(a)); }
+  function ok(f, d) { try { var v = f(); return v === undefined ? d : v; } catch (e) { return d; } }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function dataJ() { return ok(function () { return dt(); }, { ano: 2026, mes: 1 }); }
+  function toast_(m, t) { try { toast(m, t || "ok"); } catch (e) {} }
+
+  var CURSOS = [
+    ["Direito", 5], ["Administração", 4], ["Economia", 4], ["Ciência Política", 4], ["Ciências Sociais", 4], ["Relações Internacionais", 4],
+    ["Jornalismo", 4], ["Pedagogia", 4], ["Medicina", 6], ["Enfermagem", 5], ["Engenharia Civil", 5], ["Engenharia de Produção", 5],
+    ["Arquitetura e Urbanismo", 5], ["Ciências Contábeis", 4], ["Serviço Social", 4], ["Psicologia", 5], ["Agronomia", 5], ["Teologia", 4],
+    ["Educação Física", 4], ["Gestão Pública", 4], ["História", 4], ["Publicidade e Propaganda", 4]
+  ];
+  var INST = ["USP", "Unicamp", "Unesp", "UFABC", "Unifesp", "PUC-SP", "Mackenzie", "FGV", "Fundação Santo André (FSA)", "Universidade Metodista (São Bernardo)",
+    "Faculdade de Direito de São Bernardo", "Centro Universitário FEI", "Universidade São Judas", "UNIP", "Anhanguera", "FMU", "Uninove", "Universidade Municipal de São Caetano (USCS)"];
+  var PRIVADA = { "PUC-SP": 3500, "Mackenzie": 3200, "FGV": 5200, "Centro Universitário FEI": 3000, "Universidade Metodista (São Bernardo)": 1800, "Faculdade de Direito de São Bernardo": 1500, "Universidade São Judas": 1400, "UNIP": 900, "Anhanguera": 700, "FMU": 1100, "Uninove": 800, "Fundação Santo André (FSA)": 900, "Universidade Municipal de São Caetano (USCS)": 1000 };
+  var POS = ["Gestão Pública", "Direito Eleitoral", "Marketing Político", "Políticas Públicas", "MBA em Gestão", "Direito Constitucional", "Saúde Pública", "Segurança Pública", "Planejamento Urbano", "Comunicação Política"];
+  var NIVEIS = [["grad", "Graduação"], ["pos", "Pós-graduação / MBA"], ["mest", "Mestrado"], ["dout", "Doutorado"]];
+  var DUR = { pos: 2, mest: 2, dout: 4 };
+  function durGrad(curso) { var c = CURSOS.filter(function (x) { return x[0] === curso; })[0]; return c ? c[1] : 4; }
+  var BONUS = { grad: { inteligencia: 3 }, pos: { inteligencia: 2, influencia: 1 }, mest: { inteligencia: 4, retorica: 1 }, dout: { inteligencia: 6, retorica: 2 } };
+  var TITULO = { grad: "Graduação", pos: "Pós-graduação", mest: "Mestrado", dout: "Doutorado" };
+
+  /* ---------------------------------------------------------------- regras de idade */
+  // idade mínima para ter CONCLUÍDO cada nível (entra na faculdade aos 18)
+  function idadeMin(f, nivel) {
+    var g = 18 + durGrad(f.grad && f.grad.curso);
+    if (nivel === "grad") return g;
+    if (nivel === "pos") return g + DUR.pos;
+    if (nivel === "mest") return g + DUR.mest;
+    if (nivel === "dout") return g + DUR.mest + DUR.dout;
+    return 99;
+  }
+  function validar(f, idade) {
+    var avisos = [];
+    if (!f.grad || !f.grad.curso) { ["pos", "mest", "dout"].forEach(function (k) { f[k] = null; }); return avisos; }
+    if (idade < 18) { f.grad = null; avisos.push("Com menos de 18 anos não dá para estar na faculdade."); return avisos; }
+    if (f.grad.status === "concluido" && idade < idadeMin(f, "grad")) { f.grad.status = "cursando"; avisos.push(f.grad.curso + " dura " + durGrad(f.grad.curso) + " anos: com " + idade + " anos, você ainda está cursando."); }
+    var gradOk = f.grad.status === "concluido";
+    ["pos", "mest"].forEach(function (k) {
+      if (!f[k]) return;
+      if (!gradOk) { f[k] = null; avisos.push(TITULO[k] + " exige a graduação concluída."); return; }
+      if (f[k].status === "concluido" && idade < idadeMin(f, k)) { f[k].status = "cursando"; avisos.push(TITULO[k] + " concluído só a partir dos " + idadeMin(f, k) + " anos: ficou como cursando."); }
+    });
+    if (f.dout) {
+      if (!f.mest || f.mest.status !== "concluido") { f.dout = null; avisos.push("Doutorado exige mestrado concluído."); }
+      else if (f.dout.status === "concluido" && idade < idadeMin(f, "dout")) { f.dout.status = "cursando"; avisos.push("Doutorado concluído só a partir dos " + idadeMin(f, "dout") + " anos: ficou como cursando."); }
+    }
+    return avisos;
+  }
+
+  /* ---------------------------------------------------------------- criação do personagem */
+  function cfgForm() {
+    var c = ok(function () { return S.cfg; }, null); if (!c) return null;
+    if (!c.v3form) c.v3form = { grad: { curso: "", inst: "USP", status: "concluido" }, pos: null, mest: null, dout: null, _aberto: false };
+    return c.v3form;
+  }
+  function sugerirDaProfissao() {
+    var c = S.cfg, f = cfgForm(); if (!f || f.grad.curso) return;
+    var p = String(c.profissao || "") + " " + ok(function () { return (PROFISSOES.filter(function (x) { return x.id === c.profissao; })[0] || {}).titulo; }, "");
+    var mapa = [[/Advog|Jurist/, "Direito"], [/Médic/, "Medicina"], [/Professor/, "Pedagogia"], [/Engenh/, "Engenharia Civil"], [/Empresár/, "Administração"], [/Jornal|Comunic/, "Jornalismo"], [/Econom/, "Economia"], [/Enferm/, "Enfermagem"], [/Pastor|Religios/, "Teologia"], [/Policial|Militar|Delegad/, "Direito"], [/Contad/, "Ciências Contábeis"], [/Assistente social/, "Serviço Social"], [/Agr/, "Agronomia"], [/Arquitet/, "Arquitetura e Urbanismo"]];
+    for (var i = 0; i < mapa.length; i++) if (new RegExp(mapa[i][0].source, "i").test(p)) { f.grad.curso = mapa[i][1]; return; }
+  }
+  function sel(campo, valor, opcoes, vazio) {
+    return '<select data-v3f="' + campo + '">' + (vazio ? '<option value="">' + vazio + "</option>" : "") + opcoes.map(function (o) { var v = Array.isArray(o) ? o[0] : o, t = Array.isArray(o) ? o[1] : o; return '<option value="' + esc_(v) + '"' + (v === valor ? " selected" : "") + ">" + esc_(t) + "</option>"; }).join("") + "</select>";
+  }
+  function htmlSetup() {
+    var f = cfgForm(); if (!f) return "";
+    var idade = +S.cfg.idade || 32;
+    var avisos = validar(f, idade);
+    var h = '<div class="v3f-box"><h4>Formação acadêmica</h4><p class="v3f-sub">Escolha o que o seu personagem já estudou. Com ' + idade + " anos, o que não couber na idade fica como <b>cursando</b> e você se forma durante o jogo.</p>";
+    h += '<div class="v3f-linha"><b>Graduação</b>' + sel("grad.curso", f.grad ? f.grad.curso : "", CURSOS.map(function (c) { return [c[0], c[0] + " (" + c[1] + " anos)"]; }), "Sem graduação") +
+      (f.grad && f.grad.curso ? sel("grad.inst", f.grad.inst, INST) + sel("grad.status", f.grad.status, [["concluido", "Concluída"], ["cursando", "Cursando"]]) : "") + "</div>";
+    var gradOk = f.grad && f.grad.curso && f.grad.status === "concluido";
+    [["pos", "Pós / MBA", POS], ["mest", "Mestrado", POS.concat(CURSOS.map(function (c) { return c[0]; }))], ["dout", "Doutorado", POS.concat(CURSOS.map(function (c) { return c[0]; }))]].forEach(function (n) {
+      var k = n[0], v = f[k], pode = k === "dout" ? f.mest && f.mest.status === "concluido" : gradOk;
+      h += '<div class="v3f-linha' + (pode ? "" : " off") + '"><b>' + n[1] + "</b>" + (pode ? sel(k + ".area", v ? v.area : "", n[2], "Não fez") + (v && v.area ? sel(k + ".inst", v.inst, INST) + sel(k + ".status", v.status, [["concluido", "Concluído"], ["cursando", "Cursando"]]) : "") : '<small>' + (k === "dout" ? "exige mestrado concluído" : "exige graduação concluída") + "</small>") + "</div>";
+    });
+    if (avisos.length) h += '<div class="v3f-aviso">' + avisos.map(esc_).join("<br>") + "</div>";
+    return h + "</div>";
+  }
+  function setupPosRender() {
+    var ini = document.querySelector("#app .inicio"); if (!ini || ini.querySelector(".v3f-box")) return;
+    sugerirDaProfissao();
+    var alvo = ini.querySelector('select[data-k="profissao"]');
+    if (!alvo) return;
+    var lab = alvo.closest("label"), box = lab && lab.parentNode && lab.parentNode !== ini ? lab.parentNode : lab;
+    if (!box) return;
+    var div = document.createElement("div"); div.innerHTML = htmlSetup();
+    box.insertAdjacentElement("afterend", div.firstElementChild);
+  }
+  document.addEventListener("change", function (e) {
+    var t = e.target, campo = t && t.getAttribute && t.getAttribute("data-v3f"); if (!campo) return;
+    var f = cfgForm(); if (!f) return;
+    var k = campo.split(".")[0], prop = campo.split(".")[1];
+    if (k === "grad") { f.grad = f.grad || { curso: "", inst: "USP", status: "concluido" }; f.grad[prop] = t.value; if (prop === "curso" && !t.value) { f.pos = f.mest = f.dout = null; } }
+    else { if (prop === "area" && !t.value) f[k] = null; else { f[k] = f[k] || { area: "", inst: "USP", status: "concluido" }; f[k][prop] = t.value; } }
+    try { render(); } catch (err) {}
+  });
+
+  /* ---------------------------------------------------------------- no jogo */
+  function mesIdx() { var d = dataJ(); return d.ano * 12 + d.mes - 1; }
+  function estado() { var j = ok(function () { return J(); }, null); if (!j) return null; return j.formacao3 || null; }
+  function nomeItem(it) { return it.nivel === "grad" ? it.curso : (it.nivel === "pos" ? "Pós-graduação em " : it.nivel === "mest" ? "Mestrado em " : "Doutorado em ") + it.area; }
+  function texto(f) {
+    var ok_ = f.itens.filter(function (x) { return x.status === "concluido"; }), cur = f.itens.filter(function (x) { return x.status === "cursando"; });
+    if (!f.itens.length) return "Ensino médio completo";
+    var t = ok_.map(function (x) { return (x.nivel === "grad" ? "Bacharelado em " + x.curso : nomeItem(x)) + " — " + x.inst + (x.ano ? " (" + x.ano + ")" : ""); }).join("; ");
+    if (cur.length) t += (t ? "; " : "") + cur.map(function (x) { return (x.nivel === "grad" ? x.curso : nomeItem(x)) + " — " + x.inst + " (em curso)"; }).join("; ");
+    return t;
+  }
+  function aplicarTexto(j, f) { j.formacao = texto(f); }
+  function criarDoSetup(j) {
+    var c = ok(function () { return S.cfg.v3form; }, null);
+    var f = { itens: [] }, idade = j.idade || 32, ano = dataJ().ano, m = mesIdx();
+    if (c && c.grad && c.grad.curso) {
+      validar(c, idade);
+      var dg = durGrad(c.grad.curso);
+      var push = function (nivel, o, dur) {
+        if (!o) return;
+        var nome = nivel === "grad" ? o.curso : o.area; if (!nome) return;
+        var it = { nivel: nivel, curso: nivel === "grad" ? o.curso : null, area: nivel === "grad" ? null : o.area, inst: o.inst || "USP", status: o.status };
+        if (o.status === "concluido") {
+          var anosAtras = nivel === "grad" ? idade - (18 + dg) : nivel === "dout" ? idade - (18 + dg + DUR.mest + DUR.dout) : idade - (18 + dg + dur);
+          it.ano = ano - Math.max(0, Math.min(anosAtras, 8));
+        } else {
+          var feitos = nivel === "grad" ? clamp(idade - 18, 0, dur - 1) : 0;
+          it.fimIdx = m + Math.max(6, Math.round((dur - feitos) * 12));
+          it.inicioIdx = m - feitos * 12;
+        }
+        f.itens.push(it);
+      };
+      push("grad", c.grad, dg); push("pos", c.pos, DUR.pos); push("mest", c.mest, DUR.mest); push("dout", c.dout, DUR.dout);
+      f.itens.filter(function (x) { return x.status === "concluido"; }).forEach(function (x) { bonus(j, x.nivel, 0.5); });
+    }
+    j.formacao3 = f;
+    if (f.itens.length) aplicarTexto(j, f);
+  }
+  function bonus(j, nivel, mult) {
+    var b = BONUS[nivel] || {}; Object.keys(b).forEach(function (k) { if (j.atributos && typeof j.atributos[k] === "number") j.atributos[k] = clamp(j.atributos[k] + Math.round(b[k] * (mult || 1)), 0, 100); });
+  }
+  F3.mensal = function () {
+    var j = ok(function () { return J(); }, null); if (!j) return;
+    var f = j.formacao3; if (!f) return;
+    var m = mesIdx();
+    f.itens.forEach(function (it) {
+      if (it.status !== "cursando") return;
+      var mens = PRIVADA[it.inst] || 0;
+      if (mens) { var pago = ok(function () { return gastar(mens * (it.nivel === "grad" ? 1 : 1.4), 1); }, true); if (pago === false) { it.status = "trancado"; toast_("Sem dinheiro para a mensalidade: você trancou " + nomeItem(it) + ".", "err"); aplicarTexto(j, f); return; } }
+      if (m >= it.fimIdx) {
+        it.status = "concluido"; it.ano = dataJ().ano; bonus(j, it.nivel, 1);
+        var tit = it.nivel === "dout" ? "Dr(a). " : "";
+        ok(function () { manchete(tit + j.nome + " conclui " + (it.nivel === "grad" ? "a graduação em " + it.curso : nomeItem(it).charAt(0).toLowerCase() + nomeItem(it).slice(1)) + " pela " + it.inst + ".", "agenda"); });
+        ok(function () { diario("Formatura: " + nomeItem(it) + " (" + it.inst + ")."); });
+        toast_("Formatura! Você concluiu " + nomeItem(it) + ".", "ok");
+        aplicarTexto(j, f);
+      }
+    });
+  };
+  function iniciar(nivel, area, inst) {
+    var j = J(); j.formacao3 = j.formacao3 || { itens: [] }; var f = j.formacao3;
+    var tem = function (n, st) { return f.itens.some(function (x) { return x.nivel === n && (!st || x.status === st); }); };
+    if (f.itens.some(function (x) { return x.status === "cursando"; })) { toast_("Termine o curso atual antes de começar outro.", "err"); return; }
+    if (nivel !== "grad" && !tem("grad", "concluido")) { toast_("Precisa da graduação concluída.", "err"); return; }
+    if (nivel === "dout" && !tem("mest", "concluido")) { toast_("Doutorado exige mestrado concluído.", "err"); return; }
+    if (!area) { toast_("Escolha o curso.", "err"); return; }
+    if (typeof gastarEnergia === "function" && !gastarEnergia(10)) return;
+    var dur = nivel === "grad" ? durGrad(area) : DUR[nivel];
+    f.itens.push({ nivel: nivel, curso: nivel === "grad" ? area : null, area: nivel === "grad" ? null : area, inst: inst || "USP", status: "cursando", inicioIdx: mesIdx(), fimIdx: mesIdx() + dur * 12 });
+    aplicarTexto(j, f);
+    ok(function () { manchete(j.nome + " começa " + (nivel === "grad" ? "a faculdade de " + area : TITULO[nivel].toLowerCase() + " em " + area) + " na " + (inst || "USP") + ".", "agenda"); });
+    toast_("Matrícula feita: " + (nivel === "grad" ? area : TITULO[nivel] + " em " + area) + " (" + dur + " anos).", "ok");
+  }
+  function cardPerfil() {
+    var j = ok(function () { return J(); }, null); if (!j) return "";
+    var f = j.formacao3 || { itens: [] }, m = mesIdx();
+    var h = '<section class="card v3f-card"><h3>🎓 Formação acadêmica</h3>';
+    if (!f.itens.length) h += '<p class="txt">Sem curso superior registrado.</p>';
+    h += '<ul class="v3f-lista">' + f.itens.map(function (it) {
+      var prog = it.status === "cursando" ? clamp(Math.round((m - (it.inicioIdx || m)) / Math.max(1, it.fimIdx - (it.inicioIdx || m)) * 100), 0, 99) : 100;
+      var falta = it.status === "cursando" ? Math.max(0, it.fimIdx - m) : 0;
+      return '<li class="' + it.status + '"><b>' + esc_(nomeItem(it)) + "</b><small>" + esc_(TITULO[it.nivel]) + " · " + esc_(it.inst) + " · " + (it.status === "concluido" ? "concluído" + (it.ano ? " em " + it.ano : "") : it.status === "trancado" ? "trancado" : "cursando, faltam " + falta + " meses" + (PRIVADA[it.inst] ? " · mensalidade R$ " + Math.round(PRIVADA[it.inst] * (it.nivel === "grad" ? 1 : 1.4)).toLocaleString("pt-BR") : "")) + "</small>" + (it.status === "cursando" ? '<div class="v3f-bar"><i style="width:' + prog + '%"></i></div>' : "") + "</li>";
+    }).join("") + "</ul>";
+    var cursando = f.itens.some(function (x) { return x.status === "cursando"; });
+    if (!cursando) {
+      var temG = f.itens.some(function (x) { return x.nivel === "grad" && x.status === "concluido"; }), temM = f.itens.some(function (x) { return x.nivel === "mest" && x.status === "concluido"; });
+      var opts = [["grad", "Graduação"]].concat(temG ? [["pos", "Pós / MBA"], ["mest", "Mestrado"]] : []).concat(temM ? [["dout", "Doutorado"]] : []);
+      var nv = ok(function () { return S.v3fNivel; }, "") || opts[opts.length > 1 ? 1 : 0][0];
+      if (!opts.some(function (o) { return o[0] === nv; })) nv = opts[0][0];
+      var lista = nv === "grad" ? CURSOS.map(function (c) { return c[0]; }) : POS.concat(CURSOS.map(function (c) { return c[0]; }));
+      h += '<div class="v3f-novo"><b>Começar um curso</b><div class="row">' +
+        '<select data-v3fj="nivel">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === nv ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select>" +
+        '<select data-v3fj="area">' + lista.map(function (x) { return "<option>" + esc_(x) + "</option>"; }).join("") + "</select>" +
+        '<select data-v3fj="inst">' + INST.map(function (x) { return "<option>" + esc_(x) + "</option>"; }).join("") + "</select>" +
+        '<button type="button" class="b mini confirma" data-v3fgo="1">Matricular (−10 energia)</button></div><small>Instituições privadas cobram mensalidade do seu caixa pessoal. Ao se formar, você ganha atributos e a notícia sai no jornal.</small></div>';
+    }
+    return h + "</section>";
+  }
+  document.addEventListener("change", function (e) { var t = e.target; if (t && t.getAttribute && t.getAttribute("data-v3fj") === "nivel") { try { S.v3fNivel = t.value; render(); } catch (err) {} } });
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-v3fgo]"); if (!b) return;
+    var box = b.closest(".v3f-novo"); var v = function (k) { var s = box.querySelector('[data-v3fj="' + k + '"]'); return s ? s.value : ""; };
+    iniciar(v("nivel"), v("area"), v("inst")); try { render(); } catch (err) {}
+  });
+
+  /* ---------------------------------------------------------------- Wiki */
+  function wiki() {
+    var j = ok(function () { return J(); }, null); var f = j && j.formacao3; if (!f || !f.itens.length) return;
+    var h2 = document.getElementById("wiki-origens"); if (!h2 || h2.parentNode.querySelector(".v3f-wiki")) return;
+    var ps = h2.parentNode.querySelectorAll("p"), alvo = null;
+    for (var i = 0; i < ps.length; i++) if (/âmbito acadêmico|formação compreende/.test(ps[i].textContent)) { alvo = ps[i]; break; }
+    var ul = '<ul class="v3f-wiki" style="margin:0 0 14px 18px;padding:0">' + f.itens.map(function (it) {
+      return "<li style=\"margin:3px 0\"><b>" + esc_(TITULO[it.nivel]) + ":</b> " + esc_(it.curso || it.area) + ", " + esc_(it.inst) + " — " + (it.status === "concluido" ? "concluído" + (it.ano ? " em " + it.ano : "") : it.status === "trancado" ? "trancado" : "em andamento") + "</li>";
+    }).join("") + "</ul>";
+    if (alvo) alvo.insertAdjacentHTML("afterend", ul);
+  }
+
+  /* ---------------------------------------------------------------- votos na Wiki */
+  function consertarEleicoes() {
+    var c = ok(function () { return CAR(); }, null); if (!c || !c.eleicoes) return;
+    c.eleicoes.forEach(function (e) {
+      var t = String(e.texto || "");
+      if (e.segundo_turno && /^(DEPE|DEPF|VER|SEN)$|Deputad|Vereador|Senad/i.test(String(e.cargo || "")) && !/2º turno|segundo turno/i.test(t)) e.segundo_turno = false;
+      if (e._v3) return;
+      var mv = t.match(/(?:você teve|com|obteve)\s+([\d.]{3,})\s+votos/i) || t.match(/([\d.]{4,})\s+votos/);
+      if ((e.votos == null || e.votos === 0) && mv) e.votos = +mv[1].replace(/\./g, "");
+      if (e.pct && /barreira de\s*\d+%/.test(t) && !new RegExp("você[^.]*" + String(e.pct).replace(".", "\\.") + "%").test(t)) e.pct = null;
+      var mp = t.match(/você[^.]*?\(([\d.,]+)%\)|você[^.]*?com\s+([\d.,]+)%/i);
+      if (!e.pct && mp) e.pct = mp[1] || mp[2];
+      e._v3 = true;
+    });
+  }
+  function hookApuracao() {
+    ["apurarEleicao", "apurarSegundoTurno"].forEach(function (nm) {
+      var o = window[nm]; if (typeof o !== "function" || o.__v3f) return;
+      var n = function () { var r = o.apply(this, arguments); try { consertarEleicoes(); } catch (e) {} return r; };
+      for (var k in o) { try { n[k] = o[k]; } catch (e) {} } n.__v3f = true; window[nm] = n;
+      try { if (nm === "apurarEleicao") apurarEleicao = n; else apurarSegundoTurno = n; } catch (e) {}
+    });
+  }
+
+  /* ---------------------------------------------------------------- instalação */
+  function aposRender() {
+    try {
+      var jogo = ok(function () { return !!gameState; }, false);
+      if (!jogo) { setupPosRender(); return; }
+      var j = J();
+      if (!j.formacao3) criarDoSetup(j);
+      consertarEleicoes();
+      if (S.tab === "eu") {
+        var main = document.getElementById("main");
+        if (main && !main.querySelector(".v3f-card")) { var d = document.createElement("div"); d.innerHTML = cardPerfil(); var w = main.querySelector(".wiki-wrap"); if (w) w.insertAdjacentElement("afterend", d.firstElementChild); else main.appendChild(d.firstElementChild); }
+        wiki();
+      }
+    } catch (e) { console.warn("formacao", e); }
+  }
+  function instalar() {
+    hookApuracao();
+    if (typeof window.render === "function" && !window.render.__v3form) {
+      var o = window.render;
+      var n = function () { var r = o.apply(this, arguments); aposRender(); return r; };
+      for (var k in o) { try { n[k] = o[k]; } catch (e) {} }
+      n.__v3form = true; window.render = n; try { render = n; } catch (e) {}
+    }
+    if (typeof window.avancarMes === "function" && !window.avancarMes.__v3form) {
+      var a = window.avancarMes, ult = null;
+      var na = function () { var r = a.apply(this, arguments); try { var mm = mesIdx(); if (ult !== mm) { ult = mm; F3.mensal(); } } catch (e) {} return r; };
+      for (var k2 in a) { try { na[k2] = a[k2]; } catch (e) {} } na.__v3form = true; window.avancarMes = na; try { avancarMes = na; } catch (e) {}
+    }
+  }
   instalar();
   document.addEventListener("DOMContentLoaded", function () { setTimeout(instalar, 0); });
   window.addEventListener("load", function () { setTimeout(instalar, 0); });
