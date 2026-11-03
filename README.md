@@ -21,6 +21,19 @@ python3 tools/aplicar_tema.py --imagens  # também recomprime fotos e logos embu
 
 O script edita `index.html` e copia o resultado para `CADEIRA_O_Jogo_25.html`, mantendo os dois idênticos.
 
+### Navegação (mapa do jogo)
+
+`cadeira-v3-nav.js` + `cadeira-v3-nav.css` reorganizam onde as coisas aparecem, sem remover nada:
+
+- **Desktop (≥1080 px):** menu lateral fixo com as 6 áreas (cada uma com uma linha dizendo para que serve) e as seções da área atual; busca, guia, salvar, editor, tema e console no rodapé do menu.
+- **Cabeçalho de página:** área › seção, título e descrição.
+- **Índice "Nesta tela":** uma linha rolável com os blocos da aba, que destaca o bloco visível e leva até ele (abrindo se estiver recolhido). Substitui a barra de filtros de várias linhas e a barra de modo compacto.
+- **Blocos recolhidos** abrem clicando no título (sanfona).
+- **Celular/tablet:** o botão "Mais" abre o mapa completo do jogo, agrupado por área.
+- **Criação de personagem** em 4 passos (Origem, Identidade, Retrato, Inspiração) com resumo da ficha.
+
+O script `tools/aplicar_tema.py` embute os dois arquivos junto com o tema.
+
 ## Build / fonte de verdade
 
 O **HTML compilado é a fonte de verdade**. `index.html` e `CADEIRA_O_Jogo_25.html` devem ser idênticos: edite um e rode o script para sincronizar.

@@ -49770,6 +49770,330 @@ img { image-rendering: auto; }
 }
 
 </style>
+<style id="cadeira-v3-nav">
+/* =============================================================================
+   CADEIRA v3 — Navegação "Mapa do jogo" (par de cadeira-v3-nav.js)
+   ============================================================================= */
+
+/* ---------- Menu lateral (desktop) ------------------------------------------ */
+.v3-side { display: none; }
+body.v3-shell .v3-side {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  z-index: 35;
+  left: 0; top: 0; bottom: 0;
+  width: 264px;
+  padding: 18px 12px 14px;
+  background: var(--v3-s1);
+  border-right: 1px solid var(--v3-ln);
+}
+body.v3-shell #app {
+  max-width: 1120px !important;
+  margin-left: calc(264px + max(0px, (100vw - 264px - 1120px) / 2)) !important;
+  margin-right: 0 !important;
+  padding: 0 28px 140px !important;
+}
+body.v3-shell #app > header.lcd { margin: 0 -28px !important; padding: 14px 28px 12px !important; }
+body.v3-shell #app > nav.tabs { display: none !important; }
+body.v3-shell .evchip { left: 280px !important; }
+body.v3-shell .lcd .tema-header-btn { display: none !important; }
+body.v3-shell .fab { right: 28px !important; }
+
+.v3-marca { padding: 4px 10px 16px; border-bottom: 1px solid var(--v3-ln); margin-bottom: 10px; }
+.v3-marca span {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.45rem;
+  letter-spacing: .18em;
+  color: var(--v3-tx);
+}
+.v3-marca small {
+  display: block; margin-top: 2px;
+  font-size: .62rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--v3-ouro);
+}
+
+.v3-mapa { flex: 1 1 auto; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+.v3-area { margin: 2px 0; border-radius: 12px; }
+.v3-area.atual { background: var(--v3-s2); box-shadow: 0 0 0 1px var(--v3-ln) inset; }
+.v3-area-btn {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0; border-radius: 12px;
+  background: transparent;
+  color: var(--v3-tx2);
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.v3-area-btn:hover { background: var(--v3-s2); color: var(--v3-tx); }
+.v3-area.atual .v3-area-btn { color: var(--v3-tx); }
+.v3-ico {
+  flex: 0 0 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 10px;
+  background: var(--v3-s2);
+  border: 1px solid var(--v3-ln);
+  font-size: 1rem; line-height: 1;
+}
+.v3-area.atual .v3-ico { background: var(--v3-ouro-bg); border-color: color-mix(in srgb, var(--v3-ouro) 45%, transparent); }
+.v3-area-txt { display: flex; flex-direction: column; min-width: 0; }
+.v3-area-txt b { font-size: .95rem; font-weight: 700; line-height: 1.2; }
+.v3-area-txt small { font-size: .74rem; color: var(--v3-tx3); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v3-area-btn.alerta b::after { content: " ●"; color: var(--v3-rubro); }
+
+.v3-secoes { display: flex; flex-direction: column; padding: 2px 8px 8px 56px; position: relative; }
+.v3-secoes::before { content: ""; position: absolute; left: 27px; top: 0; bottom: 12px; width: 1px; background: var(--v3-ln2); }
+.v3-secao {
+  position: relative;
+  display: block; width: 100%;
+  padding: 6px 10px;
+  border: 0; border-radius: 8px;
+  background: transparent;
+  color: var(--v3-tx2);
+  font-size: .88rem; font-weight: 600; text-align: left;
+  cursor: pointer;
+}
+.v3-secao:hover { color: var(--v3-tx); background: var(--v3-s3); }
+.v3-secao.on { color: var(--v3-ouro2); background: var(--v3-ouro-bg); }
+.v3-secao.on::before { content: ""; position: absolute; left: -29px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: var(--v3-ouro); box-shadow: 0 0 0 3px var(--v3-s2); }
+.v3-ponto { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--v3-rubro); vertical-align: middle; }
+
+.v3-ferr { border-top: 1px solid var(--v3-ln); padding-top: 10px; margin-top: 10px; display: grid; gap: 1px; }
+.v3-ferr-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0; border-radius: 8px;
+  background: transparent;
+  color: var(--v3-tx2);
+  font-size: .86rem; font-weight: 600; text-align: left;
+  cursor: pointer;
+}
+.v3-ferr-btn > span { width: 18px; text-align: center; color: var(--v3-tx3); }
+.v3-ferr-btn:hover { background: var(--v3-s2); color: var(--v3-tx); }
+.v3-ferr-btn.on { color: var(--v3-ouro2); background: var(--v3-ouro-bg); }
+.v3-ferr-btn kbd {
+  margin-left: auto;
+  font-family: var(--font-lcd); font-size: .66rem;
+  padding: 1px 6px; border-radius: 5px;
+  border: 1px solid var(--v3-ln2); color: var(--v3-tx3); background: transparent;
+}
+.v3-ferr-btn[data-a="toggleTema"] { border: 0 !important; border-radius: 8px !important; background: transparent !important; color: var(--v3-tx2) !important; }
+.v3-ferr-btn[data-a="toggleTema"]:hover { background: var(--v3-s2) !important; color: var(--v3-tx) !important; }
+.v3-folha .v3-ferr-btn[data-a="toggleTema"] { border: 1px solid var(--v3-ln) !important; }
+.v3-ferr-btn.v3-cheat { color: var(--v3-tx3); font-size: .8rem; }
+
+/* ---------- Cabeçalho de página --------------------------------------------- */
+.v3-pagina { margin: 22px 0 6px; }
+.v3-migalha {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .7rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--v3-ouro);
+}
+.v3-migalha .v3-sep { color: var(--v3-tx3); }
+.v3-titulo { font-size: clamp(1.6rem, 3vw, 2.1rem) !important; margin: 4px 0 2px !important; line-height: 1.1 !important; }
+.v3-desc { margin: 0; color: var(--v3-tx2); font-size: .95rem; }
+.v3-pagina-mes { margin-bottom: -8px; }
+#app > .v3-pagina + nav.subtabs { margin-top: 12px !important; }
+
+/* Nas telas com menu lateral, os dossiês do Plano do mês repetem o menu. */
+body.v3-shell .pf-dossies,
+body.v3-shell .pf-secao:has(.pf-dossies) { display: none !important; }
+body.v3-shell #app > nav.subtabs { display: none !important; }
+body.v3-shell .pf-head-actions [data-a="pfPalette"],
+body.v3-shell .pf-head-actions [data-a="guia"] { display: none !important; }
+.pf-head-actions { gap: 4px 14px !important; align-items: center; }
+
+/* ---------- Índice "Nesta tela" --------------------------------------------- */
+.secbar, .pf-cc-bar { display: none !important; }
+.v3-indice {
+  position: sticky;
+  top: var(--v3-hdr-h);
+  z-index: 24;
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 16px;
+  padding: 8px 10px 8px 14px;
+  background: color-mix(in srgb, var(--v3-s1) 94%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border: 1px solid var(--v3-ln);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px -18px rgba(0, 0, 0, .7);
+}
+@media (min-width: 760px) {
+  body:not(.v3-shell) .v3-indice { top: calc(var(--v3-hdr-h) + 50px); }
+}
+.v3-indice-rot {
+  flex: none;
+  font-size: .64rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--v3-tx3);
+}
+.v3-indice-trilho {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 28px), transparent);
+  padding: 0 24px 0 6px;
+}
+.v3-indice-trilho::-webkit-scrollbar { display: none; }
+.v3-ind {
+  flex: none;
+  max-width: 220px;
+  padding: 5px 11px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--v3-tx2);
+  font-size: .82rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  cursor: pointer;
+}
+.v3-ind:hover { color: var(--v3-tx); background: var(--v3-s2); }
+.v3-ind.on { color: var(--v3-ouro2); background: var(--v3-ouro-bg); border-color: color-mix(in srgb, var(--v3-ouro) 40%, transparent); }
+.v3-ind-filtro { color: var(--v3-ouro2); border-color: var(--v3-ouro); }
+.v3-indice-acoes { flex: none; display: flex; gap: 4px; padding-left: 8px; border-left: 1px solid var(--v3-ln); }
+.v3-ind-acao {
+  padding: 5px 10px; border-radius: 8px;
+  border: 1px solid var(--v3-ln2); background: transparent;
+  color: var(--v3-tx2); font-size: .78rem; font-weight: 600; cursor: pointer;
+}
+.v3-ind-acao:hover { color: var(--v3-tx); border-color: var(--v3-ouro); }
+@media (max-width: 640px) {
+  .v3-indice-rot { display: none; }
+  .v3-indice { padding: 6px; margin: 0 0 12px; }
+  .v3-indice-acoes .v3-ind-acao[data-a="secCols"] { display: none; }
+}
+
+.v3-pisca { animation: v3pisca 1.1s ease-out; }
+@keyframes v3pisca {
+  0% { box-shadow: 0 0 0 2px var(--v3-ouro), var(--v3-sombra); }
+  100% { box-shadow: 0 0 0 0 transparent, var(--v3-sombra); }
+}
+
+/* ---------- Sanfonas (blocos recolhidos) ------------------------------------ */
+#main > .pf-cc { position: relative; padding-bottom: 0 !important; }
+#main > .pf-cc > h3 {
+  cursor: pointer;
+  padding-right: 56px !important;
+  margin-bottom: 0 !important;
+  border-bottom-color: transparent !important;
+  transition: background .15s ease;
+  border-radius: 14px 14px 0 0;
+  user-select: none;
+}
+#main > .pf-cc:not(.pf-cc-open) > h3 { border-radius: 14px; }
+#main > .pf-cc > h3:hover { background: var(--v3-s2) !important; }
+#main > .pf-cc.pf-cc-open > h3 { border-bottom-color: var(--v3-ln) !important; margin-bottom: 14px !important; }
+#main > .pf-cc.pf-cc-open { padding-bottom: 18px !important; }
+#main > .pf-cc > .pf-cc-toggle {
+  position: absolute !important;
+  top: 12px; right: 14px;
+  width: 30px; height: 30px;
+  margin: 0 !important; padding: 0 !important;
+  border: 1px solid var(--v3-ln2) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  font-size: 0 !important; color: transparent !important;
+  cursor: pointer;
+}
+#main > .pf-cc > .pf-cc-toggle::before {
+  content: "";
+  position: absolute; left: 50%; top: 50%;
+  width: 7px; height: 7px;
+  margin: -5px 0 0 -3.5px;
+  border-right: 2px solid var(--v3-tx2);
+  border-bottom: 2px solid var(--v3-tx2);
+  transform: rotate(45deg);
+  transition: transform .2s ease, margin .2s ease;
+}
+#main > .pf-cc.pf-cc-open > .pf-cc-toggle::before { transform: rotate(-135deg); margin-top: -1.5px; }
+#main > .pf-cc > .pf-cc-toggle:hover { border-color: var(--v3-ouro) !important; }
+#main > .pf-cc.pf-cc-open { border-color: color-mix(in srgb, var(--v3-ouro) 30%, var(--v3-ln)) !important; }
+#main > .pf-cc:not(.pf-cc-open) { margin-bottom: 8px !important; }
+#main.cols > .pf-cc:not(.pf-cc-open) { margin-bottom: 10px !important; }
+
+/* ---------- Folha "Mapa do jogo" (celular / tablet) -------------------------- */
+.v3-folha .sbox { max-height: min(86vh, 760px); overflow-y: auto; }
+.v3-folha .v3-folha-sub { margin: -4px 0 12px; color: var(--v3-tx2); font-size: .88rem; }
+.v3-folha .v3-mapa { overflow: visible; margin: 0; padding: 0; }
+.v3-folha .v3-area { padding: 2px 0; border-bottom: 1px solid var(--v3-ln); border-radius: 0; background: transparent !important; box-shadow: none !important; }
+.v3-folha .v3-secoes { flex-direction: row; flex-wrap: wrap; gap: 6px; padding: 0 0 12px 56px; }
+.v3-folha .v3-secoes::before { display: none; }
+.v3-folha .v3-secao { width: auto; padding: 6px 12px; border: 1px solid var(--v3-ln2); border-radius: 999px; font-size: .84rem; }
+.v3-folha .v3-secao.on::before { display: none; }
+.v3-folha .v3-secao.on { border-color: var(--v3-ouro); }
+.v3-folha .v3-ferr { grid-template-columns: 1fr 1fr; gap: 4px; }
+.v3-folha .v3-ferr-btn { border: 1px solid var(--v3-ln); }
+.v3-folha .v3-ferr-btn kbd { display: none; }
+
+/* ---------- Criação de personagem em passos --------------------------------- */
+.v3-passo-oculto { display: none !important; }
+.v3-passos {
+  position: sticky; top: 0; z-index: 20;
+  margin: 0 0 18px;
+  padding: 14px 16px 12px;
+  background: color-mix(in srgb, var(--v3-bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--v3-ln);
+}
+.v3-passos-lista { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; counter-reset: none; }
+.v3-passos-lista li { flex: 1 1 0; min-width: 0; }
+.v3-passos-lista button {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  padding: 8px 6px 10px;
+  border: 0; border-bottom: 2px solid var(--v3-ln2);
+  background: transparent;
+  color: var(--v3-tx3);
+  font-weight: 700; font-size: .9rem; text-align: left;
+  cursor: pointer;
+}
+.v3-passos-lista button i {
+  flex: none; display: grid; place-items: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  font-style: normal; font-size: .78rem;
+  border: 1px solid var(--v3-ln2);
+  color: var(--v3-tx2);
+}
+.v3-passos-lista button span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v3-passos-lista button.feito { color: var(--v3-tx2); border-bottom-color: color-mix(in srgb, var(--v3-ouro) 50%, transparent); }
+.v3-passos-lista button.feito i { background: var(--v3-ouro-bg); border-color: var(--v3-ouro); color: var(--v3-ouro2); }
+.v3-passos-lista button.on { color: var(--v3-tx); border-bottom-color: var(--v3-ouro); }
+.v3-passos-lista button.on i { background: var(--v3-ouro); border-color: var(--v3-ouro); color: var(--v3-ouro-ink); }
+.v3-ficha { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.v3-ficha-item {
+  padding: 2px 10px; border-radius: 999px;
+  border: 1px solid var(--v3-ln2);
+  color: var(--v3-tx2); font-size: .76rem; font-weight: 600;
+}
+.v3-ficha-item.nome { color: var(--v3-ouro2); border-color: color-mix(in srgb, var(--v3-ouro) 50%, transparent); font-family: var(--font-display); font-size: .82rem; }
+.v3-passos-pe {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin: 6px 0 22px;
+}
+.v3-passos-pe .b { min-width: 150px; padding: 11px 18px !important; font-size: .98rem !important; }
+.v3-passos-cont { color: var(--v3-tx3); font-size: .82rem; font-weight: 600; }
+@media (max-width: 640px) {
+  .v3-passos { margin: 0 -12px 14px; padding: 10px 12px; }
+  .v3-passos-lista button { flex-direction: column; gap: 4px; align-items: center; text-align: center; font-size: .72rem; padding: 4px 2px 8px; }
+  .v3-passos-pe .b { min-width: 0; flex: 1; }
+  .v3-passos-cont { display: none; }
+}
+
+/* Plano do mês: com o cartão "Decisão pendente" na tela, o rodapé repetia os mesmos botões. */
+.pf-plano:has(.pf-evento) .pf-footer { display: none !important; }
+
+/* O índice "Nesta tela" já tem Abrir tudo / Recolher. */
+.tabs .pf-nav-tools [data-a="pfCompacto"] { display: none !important; }
+/* Não encosta no botão de som (fixo no canto). */
+body:not(.v3-shell) .lcd .lcd-top { padding-right: 56px; }
+
+</style>
 <script>
 (function(){
   var raf=0, ro=null, atual=null;
@@ -49789,6 +50113,388 @@ img { image-rendering: auto; }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',iniciar); else iniciar();
 })();
+</script>
+<script id="cadeira-v3-nav-js">
+/* =============================================================================
+   CADEIRA v3 — Navegação "Mapa do jogo"
+   Reorganiza ONDE as coisas aparecem, sem remover nada:
+   - menu lateral fixo (desktop) com todas as áreas e seções, cada área com
+     uma linha dizendo para que serve;
+   - cabeçalho de página (onde estou) + índice "Nesta tela" numa linha só,
+     no lugar do paredão de filtros e da barra de modo compacto;
+   - blocos recolhidos viram sanfona (clica no título);
+   - folha "Menu" no celular com o mapa completo;
+   - criação de personagem em 4 passos.
+   Tudo é pós-processamento do DOM depois do render() original; as ações
+   continuam usando os mesmos data-a do jogo.
+   ============================================================================= */
+(function () {
+  "use strict";
+  if (window.__V3NAV) return;
+  window.__V3NAV = true;
+
+  var LARG_SIDE = 1080; // a partir desta largura o menu lateral aparece
+
+  var AREAS = {
+    gabinete:   { ico: "🏛️", desc: "Seu mês, notícias e perfil" },
+    campanha:   { ico: "🗳️", desc: "Votos, pesquisas e eleição" },
+    partido:    { ico: "🚩", desc: "Sigla, fundo e alianças" },
+    poder:      { ico: "⚙️", desc: "Governo, pastas e obras" },
+    congresso:  { ico: "📜", desc: "Leis, votações e justiça" },
+    influencia: { ico: "🤝", desc: "Rede, mídia e bastidores" }
+  };
+  var DESC_SECAO = {
+    mes: "O que decidir agora", eu: "Sua ficha e trajetória", mang: "O que saiu na imprensa", cela: "Você está preso",
+    camp: "Cargo-alvo, caixa e pesquisas", marqueteiro: "Estratégia e propaganda", mapa: "Territórios e tráfego", ele: "Disputas e resultados",
+    partido: "Painel do partido", poder: "Executivo e pastas",
+    cong: "Plenário e votações", artic: "Bancadas e acordos", jur: "Processos e defesa",
+    inf: "Figuras e movimentos", todos: "Todos os personagens", imp: "Imprensa e entrevistas", sub: "O lado sombrio"
+  };
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function p(arr) { return esc(JSON.stringify(arr)); }
+  function hubs() { return (window.NAVH && window.NAVH.HUBS) || []; }
+  function estado() { try { return typeof S !== "undefined" ? S : null; } catch (e) { return null; } }
+  function jogo() { try { return typeof gameState !== "undefined" && !!gameState; } catch (e) { return false; } }
+  function preso() {
+    try {
+      return (typeof window.preso === "function" && window.preso()) ||
+        !!(typeof J === "function" && J() && J().juridico && J().juridico.status === "PRISAO_DOMICILIAR");
+    } catch (e) { return false; }
+  }
+  function hubDaAba(id) {
+    var hs = hubs();
+    for (var i = 0; i < hs.length; i++) for (var j = 0; j < hs[i].subs.length; j++) if (hs[i].subs[j][0] === id) return hs[i];
+    return null;
+  }
+  function nomeSecao(id) {
+    var hs = hubs();
+    for (var i = 0; i < hs.length; i++) for (var j = 0; j < hs[i].subs.length; j++) if (hs[i].subs[j][0] === id) return hs[i].subs[j][1];
+    try { var t = (TABS || []).filter(function (x) { return x[0] === id; })[0]; if (t) return t[1].replace(/^[^\wÀ-ú]+\s*/, ""); } catch (e) {}
+    return id;
+  }
+  function orfas() {
+    try {
+      return (TABS || []).filter(function (t) { return !hubDaAba(t[0]); });
+    } catch (e) { return []; }
+  }
+  function secoesVisiveis(h) {
+    return h.subs.filter(function (s) { return s[0] !== "cela" || preso(); });
+  }
+  function temaAtual() { return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark"; }
+
+  /* ---------------------------------------------------------------- menu lateral */
+  function htmlMapa(modo) {
+    var st = estado() || {};
+    var atual = st.tab;
+    var hubAtual = hubDaAba(atual);
+    var h = "";
+    hubs().forEach(function (hub) {
+      var info = AREAS[hub.id] || { ico: "•", desc: "" };
+      var aberto = modo === "folha" || (hubAtual && hubAtual.id === hub.id);
+      var subs = secoesVisiveis(hub);
+      var alerta = hub.id === "gabinete" && preso();
+      h += '<div class="v3-area' + (aberto ? " aberta" : "") + (hubAtual && hubAtual.id === hub.id ? " atual" : "") + '">';
+      h += '<button type="button" class="v3-area-btn' + (alerta ? " alerta" : "") + '" data-a="hub" data-p="' + p([hub.id]) + '">' +
+        '<span class="v3-ico" aria-hidden="true">' + info.ico + "</span>" +
+        '<span class="v3-area-txt"><b>' + esc(hub.nome) + "</b><small>" + esc(info.desc) + "</small></span></button>";
+      if (aberto && subs.length > 1) {
+        h += '<div class="v3-secoes">';
+        subs.forEach(function (s) {
+          h += '<button type="button" class="v3-secao' + (s[0] === atual ? " on" : "") + '" data-a="tab" data-p="' + p([s[0]]) + '">' +
+            esc(s[1]) + (s[0] === "cela" ? ' <i class="v3-ponto"></i>' : "") + "</button>";
+        });
+        h += "</div>";
+      }
+      h += "</div>";
+    });
+    return h;
+  }
+
+  function htmlFerramentas(modo) {
+    var claro = temaAtual() === "light";
+    var h = '<div class="v3-ferr">';
+    h += '<button type="button" class="v3-ferr-btn" data-a="pfPalette"><span aria-hidden="true">⌕</span>Buscar ação<kbd>Ctrl K</kbd></button>';
+    h += '<button type="button" class="v3-ferr-btn" data-a="guia"><span aria-hidden="true">?</span>Guia rápido</button>';
+    h += '<button type="button" class="v3-ferr-btn" data-a="salvar"><span aria-hidden="true">↓</span>Salvar carreira</button>';
+    orfas().forEach(function (t) {
+      h += '<button type="button" class="v3-ferr-btn' + ((estado() || {}).tab === t[0] ? " on" : "") + '" data-a="tab" data-p="' + p([t[0]]) + '"><span aria-hidden="true">✎</span>' + esc(nomeSecao(t[0])) + "</button>";
+    });
+    h += '<button type="button" class="v3-ferr-btn" data-a="toggleTema"><span aria-hidden="true">' + (claro ? "☾" : "☀") + "</span>" + (claro ? "Modo noturno" : "Modo claro") + "</button>";
+    h += '<button type="button" class="v3-ferr-btn v3-cheat" data-a="cheatpanel"><span aria-hidden="true">⚑</span>Console do operador</button>';
+    if (modo === "folha") h += '<button type="button" class="v3-ferr-btn" data-a="sheet"><span aria-hidden="true">✕</span>Fechar</button>';
+    h += "</div>";
+    return h;
+  }
+
+  function montarLateral(app) {
+    var aside = document.createElement("aside");
+    aside.className = "v3-side";
+    aside.setAttribute("aria-label", "Mapa do jogo");
+    aside.innerHTML =
+      '<div class="v3-marca"><span>CADEIRA</span><small>simulador de poder</small></div>' +
+      '<nav class="v3-mapa">' + htmlMapa("lateral") + "</nav>" +
+      htmlFerramentas("lateral");
+    app.insertBefore(aside, app.firstChild);
+    var salvo = window.__v3SideScroll || 0;
+    var mapa = aside.querySelector(".v3-mapa");
+    if (mapa) {
+      mapa.scrollTop = salvo;
+      mapa.addEventListener("scroll", function () { window.__v3SideScroll = mapa.scrollTop; }, { passive: true });
+    }
+  }
+
+  /* ---------------------------------------------------------------- cabeçalho de página */
+  function montarCabecalhoPagina(app) {
+    var st = estado(); if (!st) return;
+    var main = document.getElementById("main"); if (!main) return;
+    var hub = hubDaAba(st.tab);
+    var info = hub ? (AREAS[hub.id] || {}) : {};
+    var titulo = nomeSecao(st.tab);
+    var area = hub ? hub.nome : "Ferramentas";
+    var desc = DESC_SECAO[st.tab] || info.desc || "";
+    var div = document.createElement("div");
+    div.className = "v3-pagina";
+    div.innerHTML = '<div class="v3-migalha"><span>' + esc(info.ico || "") + " " + esc(area) + "</span>" +
+      (hub && hub.subs.length > 1 && titulo.toLowerCase() !== area.toLowerCase() ? '<span class="v3-sep">›</span><span>' + esc(titulo) + "</span>" : "") + "</div>" +
+      (st.tab === "mes" ? "" : '<h1 class="v3-titulo">' + esc(titulo) + "</h1>" + (desc ? '<p class="v3-desc">' + esc(desc) + "</p>" : ""));
+    var sub = app.querySelector(":scope > nav.subtabs");
+    app.insertBefore(div, sub || main);
+    if (st.tab === "mes") div.classList.add("v3-pagina-mes");
+  }
+
+  /* ---------------------------------------------------------------- índice "Nesta tela" */
+  function tituloDe(card) {
+    var h = card.querySelector(":scope > h3, :scope > summary, :scope > h2");
+    return h ? h.textContent.replace(/\s+/g, " ").trim() : "";
+  }
+  function abrirCard(card) {
+    if (card.classList.contains("pf-cc") && !card.classList.contains("pf-cc-open")) {
+      var t = card.querySelector(":scope > .pf-cc-toggle");
+      if (t) t.click();
+    }
+  }
+  function irPara(card) {
+    abrirCard(card);
+    var bar = window.__v3Indice, off = 90;
+    if (bar && document.body.contains(bar)) off = (parseInt(getComputedStyle(bar).top, 10) || 0) + bar.offsetHeight + 14;
+    var y = card.getBoundingClientRect().top + window.scrollY - off;
+    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    card.classList.remove("v3-pisca"); void card.offsetWidth; card.classList.add("v3-pisca");
+  }
+
+  function montarIndice(app) {
+    var st = estado(); if (!st) return;
+    var main = document.getElementById("main"); if (!main) return;
+    var cards = Array.prototype.filter.call(main.children, function (el) {
+      return (el.tagName === "SECTION" || el.tagName === "DETAILS") && el.classList.contains("card") && el.style.display !== "none" && tituloDe(el);
+    });
+    var filtro = "";
+    try { filtro = (st.sec && st.sec[st.tab]) || ""; } catch (e) {}
+    if (cards.length < 3 && !filtro) return;
+
+    var bar = document.createElement("nav");
+    bar.className = "v3-indice";
+    bar.setAttribute("aria-label", "Nesta tela");
+    var h = '<span class="v3-indice-rot">Nesta tela</span><div class="v3-indice-trilho">';
+    if (filtro) {
+      var nomeF = "";
+      Array.prototype.forEach.call(main.querySelectorAll(":scope > .card"), function (c) { if (c.dataset.k === filtro) nomeF = tituloDe(c); });
+      h += '<button type="button" class="v3-ind v3-ind-filtro" data-a="secTodos">Só: ' + esc(nomeF || "um bloco") + " ✕</button>";
+    }
+    cards.forEach(function (c, i) {
+      h += '<button type="button" class="v3-ind" data-v3-ir="' + i + '">' + esc(tituloDe(c).replace(/^[^\wÀ-ú]+\s*/, "")) + "</button>";
+    });
+    h += "</div>";
+    var temCC = !!main.querySelector(":scope > .pf-cc");
+    var acoes = "";
+    if (temCC || st.compacto === false) acoes += '<button type="button" class="v3-ind-acao" data-a="pfCompacto">' + (st.compacto ? "Abrir tudo" : "Recolher") + "</button>";
+    if (window.innerWidth >= 980 && cards.length > 2) {
+      var cols = true; try { cols = localStorage.getItem("cadeira_ui_cols") !== "0"; } catch (e) {}
+      acoes += '<button type="button" class="v3-ind-acao" data-a="secCols">' + (cols ? "1 coluna" : "2 colunas") + "</button>";
+    }
+    if (acoes) h += '<div class="v3-indice-acoes">' + acoes + "</div>";
+    bar.innerHTML = h;
+    main.insertBefore(bar, main.firstChild);
+
+    var trilho = bar.querySelector(".v3-indice-trilho");
+    trilho.scrollLeft = window.__v3IndScroll && window.__v3IndScroll[st.tab] || 0;
+    trilho.addEventListener("scroll", function () {
+      window.__v3IndScroll = window.__v3IndScroll || {};
+      window.__v3IndScroll[st.tab] = trilho.scrollLeft;
+    }, { passive: true });
+    bar.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-v3-ir]"); if (!b) return;
+      var c = cards[+b.getAttribute("data-v3-ir")]; if (c) irPara(c);
+      Array.prototype.forEach.call(bar.querySelectorAll(".v3-ind.on"), function (x) { x.classList.remove("on"); });
+      b.classList.add("on");
+    });
+    window.__v3Cards = cards;
+    window.__v3Indice = bar;
+  }
+
+  // Destaca no índice o bloco que está na tela
+  var rafSpy = 0;
+  function espiar() {
+    rafSpy = 0;
+    var cards = window.__v3Cards, bar = window.__v3Indice;
+    if (!cards || !bar || !document.body.contains(bar)) return;
+    var lim = (parseInt(getComputedStyle(bar).top, 10) || 0) + bar.offsetHeight + 40;
+    var ativo = -1;
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i].getBoundingClientRect().top <= lim) ativo = i; else break;
+    }
+    var bts = bar.querySelectorAll("[data-v3-ir]");
+    for (var k = 0; k < bts.length; k++) {
+      var on = +bts[k].getAttribute("data-v3-ir") === ativo;
+      if (on !== bts[k].classList.contains("on")) {
+        bts[k].classList.toggle("on", on);
+        if (on) {
+          var tr = bar.querySelector(".v3-indice-trilho");
+          var bx = bts[k].offsetLeft - tr.clientWidth / 2 + bts[k].clientWidth / 2;
+          tr.scrollTo({ left: Math.max(0, bx), behavior: "smooth" });
+        }
+      }
+    }
+  }
+  window.addEventListener("scroll", function () { if (!rafSpy) rafSpy = requestAnimationFrame(espiar); }, { passive: true });
+
+  /* ---------------------------------------------------------------- sanfonas */
+  function montarSanfonas() {
+    var main = document.getElementById("main"); if (!main) return;
+    Array.prototype.forEach.call(main.querySelectorAll(":scope > .pf-cc"), function (card) {
+      var h3 = card.querySelector(":scope > h3");
+      var tg = card.querySelector(":scope > .pf-cc-toggle");
+      if (!h3 || !tg || h3.__v3) return;
+      h3.__v3 = true;
+      h3.setAttribute("role", "button");
+      h3.setAttribute("tabindex", "0");
+      h3.addEventListener("click", function (e) { if (e.target.closest("button,a,input,select")) return; tg.click(); });
+      h3.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tg.click(); } });
+    });
+  }
+
+  /* ---------------------------------------------------------------- folha "Menu" (celular) */
+  function folhaMapa() {
+    return '<div class="sheet v3-folha" data-a="sheet"><div class="sbox" data-stop="1"><div class="grip"></div>' +
+      '<h3>Mapa do jogo</h3><p class="v3-folha-sub">Tudo o que dá para fazer, organizado por área.</p>' +
+      '<nav class="v3-mapa">' + htmlMapa("folha") + "</nav>" + htmlFerramentas("folha") + "</div></div>";
+  }
+
+  /* ---------------------------------------------------------------- criação de personagem em passos */
+  var PASSOS = ["Origem", "Identidade", "Retrato", "Inspiração"];
+  window.__v3Passo = window.__v3Passo || 0;
+  function resumoFicha(ini) {
+    function txt(k) {
+      var s = ini.querySelector('select[data-k="' + k + '"]');
+      if (!s || s.selectedIndex < 0) return "";
+      return s.options[s.selectedIndex].text.replace(/\s*\(.*?\)\s*/g, " ").trim();
+    }
+    var nome = (ini.querySelector("#cfg-nome") || {}).value || "";
+    var itens = [nome || "Sem nome ainda", txt("municipio"), txt("partido"), txt("alvo"), txt("profissao")].filter(Boolean);
+    return itens.map(function (x, i) { return '<span class="v3-ficha-item' + (i === 0 ? " nome" : "") + '">' + esc(x) + "</span>"; }).join("");
+  }
+  function montarPassos() {
+    var ini = document.querySelector("#app .inicio"); if (!ini) return;
+    var secs = Array.prototype.filter.call(ini.children, function (el) { return el.tagName === "SECTION" && el.classList.contains("card"); });
+    if (secs.length < 2) return;
+    var go = ini.querySelector('[data-a="novo"]');
+    var goBox = go ? go.closest(".inicio > *") : null;
+    var n = secs.length;
+    var at = Math.min(Math.max(0, window.__v3Passo | 0), n - 1);
+    ini.classList.add("v3-passos-on");
+
+    var topo = document.createElement("div");
+    topo.className = "v3-passos";
+    var h = '<ol class="v3-passos-lista">';
+    for (var i = 0; i < n; i++) {
+      h += '<li><button type="button" data-v3-passo="' + i + '" class="' + (i === at ? "on" : i < at ? "feito" : "") + '"><i>' + (i < at ? "✓" : i + 1) + "</i><span>" + esc(PASSOS[i] || "Passo " + (i + 1)) + "</span></button></li>";
+    }
+    h += '</ol><div class="v3-ficha">' + resumoFicha(ini) + "</div>";
+    topo.innerHTML = h;
+    var antes = secs[0];
+    ini.insertBefore(topo, antes);
+
+    secs.forEach(function (s, i) {
+      s.classList.toggle("v3-passo-oculto", i !== at);
+      var t = s.querySelector(":scope > h3");
+      if (t && !t.__v3) { t.__v3 = true; t.innerHTML = t.innerHTML.replace(/^\s*\d+\.\s*/, ""); }
+    });
+    if (goBox) goBox.classList.toggle("v3-passo-oculto", at !== n - 1);
+
+    var pe = document.createElement("div");
+    pe.className = "v3-passos-pe";
+    pe.innerHTML = (at > 0 ? '<button type="button" class="b branco" data-v3-passo="' + (at - 1) + '">← Voltar</button>' : "<span></span>") +
+      '<span class="v3-passos-cont">Passo ' + (at + 1) + " de " + n + "</span>" +
+      (at < n - 1 ? '<button type="button" class="b confirma" data-v3-passo="' + (at + 1) + '">Continuar →</button>' : "<span></span>");
+    secs[n - 1].insertAdjacentElement("afterend", pe);
+    if (goBox && at === n - 1) pe.insertAdjacentElement("afterend", goBox);
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-v3-passo]"); if (!b) return;
+    window.__v3Passo = +b.getAttribute("data-v3-passo") || 0;
+    try { render(); } catch (err) {}
+    var alvo = document.querySelector(".v3-passos");
+    if (alvo) window.scrollTo({ top: Math.max(0, alvo.getBoundingClientRect().top + window.scrollY - 16), behavior: "smooth" });
+  });
+  document.addEventListener("input", function (e) {
+    if (e.target && e.target.id === "cfg-nome") {
+      var ini = document.querySelector("#app .inicio"), f = document.querySelector(".v3-ficha");
+      if (ini && f) f.innerHTML = resumoFicha(ini);
+    }
+  });
+
+  /* ---------------------------------------------------------------- pós-render */
+  function aposRender() {
+    var app = document.getElementById("app"); if (!app) return;
+    // Idempotente: se render() for embrulhado de novo, não duplica nada.
+    Array.prototype.forEach.call(app.querySelectorAll(".v3-side, .v3-pagina, .v3-indice, .v3-passos, .v3-passos-pe"), function (el) { el.remove(); });
+    document.body.classList.toggle("v3-em-jogo", jogo());
+    if (!jogo()) { try { montarPassos(); } catch (e) { console.warn("v3 passos", e); } return; }
+    var lateral = window.innerWidth >= LARG_SIDE;
+    document.body.classList.toggle("v3-shell", lateral);
+    try { if (lateral) montarLateral(app); } catch (e) { console.warn("v3 lateral", e); }
+    try { montarCabecalhoPagina(app); } catch (e) { console.warn("v3 pagina", e); }
+    try { montarSanfonas(); } catch (e) { console.warn("v3 sanfona", e); }
+    try { montarIndice(app); } catch (e) { console.warn("v3 indice", e); }
+    if (rafSpy) cancelAnimationFrame(rafSpy);
+    rafSpy = requestAnimationFrame(espiar);
+  }
+
+  function instalar() {
+    if (typeof window.render !== "function" || window.render.__v3) return;
+    var orig = window.render;
+    var novo = function () {
+      var r = orig.apply(this, arguments);
+      try { aposRender(); } catch (e) { console.warn("v3 nav", e); }
+      return r;
+    };
+    novo.__v3 = true;
+    window.render = novo;
+    try { render = novo; } catch (e) {}
+    if (typeof window.sheetMais === "function" && !window.sheetMais.__v3) {
+      var folha = function () { return folhaMapa(); };
+      folha.__v3 = true; folha._navh = true;
+      window.sheetMais = folha;
+      try { sheetMais = folha; } catch (e) {}
+    }
+  }
+
+  var larguraAnt = window.innerWidth;
+  window.addEventListener("resize", function () {
+    var a = larguraAnt >= LARG_SIDE, b = window.innerWidth >= LARG_SIDE;
+    larguraAnt = window.innerWidth;
+    if (a !== b) { try { render(); } catch (e) {} }
+  });
+
+  // Outras camadas embrulham render() no DOMContentLoaded/load: instala por último.
+  instalar();
+  document.addEventListener("DOMContentLoaded", function () { setTimeout(function () { instalar(); try { render(); } catch (e) {} }, 0); });
+  window.addEventListener("load", function () { setTimeout(function () { if (!window.render.__v3) { instalar(); try { render(); } catch (e) {} } }, 0); });
+})();
+
 </script>
 <!-- CADEIRA_V3_FIM -->
 </body>

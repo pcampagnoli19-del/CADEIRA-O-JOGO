@@ -54,9 +54,24 @@ SCRIPT = """<script>
 </script>"""
 
 
+NAV_CSS = RAIZ / "cadeira-v3-nav.css"
+NAV_JS = RAIZ / "cadeira-v3-nav.js"
+
+
 def bloco_tema() -> str:
     css = CSS.read_text(encoding="utf-8")
-    return f'{INI}\n<style id="cadeira-v3">\n{css}\n</style>\n{SCRIPT}\n{FIM}'
+    nav_css = NAV_CSS.read_text(encoding="utf-8") if NAV_CSS.exists() else ""
+    nav_js = NAV_JS.read_text(encoding="utf-8") if NAV_JS.exists() else ""
+    if "</script" in nav_js or "</style" in nav_css or "</style" in css:
+        raise SystemExit("fechamento de tag dentro do CSS/JS embutido")
+    partes = [INI, f'<style id="cadeira-v3">\n{css}\n</style>']
+    if nav_css:
+        partes.append(f'<style id="cadeira-v3-nav">\n{nav_css}\n</style>')
+    partes.append(SCRIPT)
+    if nav_js:
+        partes.append(f'<script id="cadeira-v3-nav-js">\n{nav_js}\n</script>')
+    partes.append(FIM)
+    return "\n".join(partes)
 
 
 def aplicar_tema(html: str) -> str:
