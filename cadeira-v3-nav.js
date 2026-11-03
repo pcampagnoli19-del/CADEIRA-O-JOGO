@@ -33,7 +33,7 @@
     partido: "Painel do partido", poder: "Executivo e pastas",
     cong: "Plenário e votações", artic: "Bancadas e acordos", jur: "Processos e defesa",
     inf: "Figuras e movimentos", todos: "Todos os personagens", imp: "Relações com veículos, notas e campanhas editoriais", sub: "O lado sombrio",
-    pre: "Quem está ganhando força para ser candidato(a) em cada partido", jornal: "O que a imprensa publicou sobre você e o país", feed: "O que estão dizendo e o que você responde"
+    pasta: "Sua secretaria ou ministério: indicadores, despachos, equipe e chefe", pre: "Quem está ganhando força para ser candidato(a) em cada partido", jornal: "O que a imprensa publicou sobre você e o país", feed: "O que estão dizendo e o que você responde"
   };
 
   function esc(s) {
@@ -80,7 +80,7 @@
       var info = AREAS[hub.id] || { ico: "•", desc: "" };
       var aberto = modo === "folha" || (hubAtual && hubAtual.id === hub.id);
       var subs = secoesVisiveis(hub);
-      var alerta = (hub.id === "gabinete" && preso()) || (hub.id === "midia" && !!(window.MIDIA3 && window.MIDIA3.novidade && window.MIDIA3.novidade()));
+      var alerta = (hub.id === "gabinete" && preso()) || (hub.id === "midia" && !!(window.MIDIA3 && window.MIDIA3.novidade && window.MIDIA3.novidade())) || !!(window.V3ALERTA && typeof window.V3ALERTA[hub.id] === "function" && (function () { try { return window.V3ALERTA[hub.id](); } catch (e) { return false; } })());
       h += '<div class="v3-area' + (aberto ? " aberta" : "") + (hubAtual && hubAtual.id === hub.id ? " atual" : "") + '">';
       h += '<button type="button" class="v3-area-btn' + (alerta ? " alerta" : "") + '" data-a="hub" data-p="' + p([hub.id]) + '">' +
         '<span class="v3-ico" aria-hidden="true">' + info.ico + "</span>" +

@@ -63,6 +63,16 @@ O script `tools/aplicar_tema.py` embute os dois arquivos junto com o tema.
 - **Jogador:** entra na corrida quando o cargo-alvo bate; ações de agenda de pré-campanha, conversa com a direção e lançamento público.
 - **Tela:** Partido › Pré-candidaturas, com fase do ciclo, contagem até as prévias, favoritos, força com tendência e o último fato de cada nome. Estado em `M().v3pre`.
 
+### Gabinete da pasta (ministro e secretário)
+
+`cadeira-v3-pasta.js` + `.css` dão imersão a quem ocupa uma pasta (`J().pasta`), mantendo as ações táticas que já existiam. Tela: **Poder › Minha pasta** (o hub Poder abre direto nela quando o jogador tem pasta).
+
+- **Indicadores da área:** três por pasta (ex.: Segurança → homicídios, roubos, sensação de segurança; Saúde → fila de cirurgias, cobertura vacinal, satisfação), que andam com o desempenho e com cada decisão.
+- **Na sua mesa:** 2–3 despachos por mês, da área (surto de dengue, greve, aditivo de obra, rombo nas contas…) e gerais (deputado pede nomeação, convocação no Legislativo, tribunal de contas, entrevista, empresário oferecendo "ajuda", cobrança do chefe), com efeito mostrado na hora. Despacho ignorado pesa no desempenho e na confiança.
+- **Chefe:** confiança do Presidente/Governador/Prefeito, despacho mensal (mostrar resultados, pedir verba, pedir apoio à pauta) e risco real de demissão com números muito baixos (a partir do 3º mês, com aviso antes).
+- **Agenda pública** (visita a unidade/obra, coletiva, audiência no Legislativo), **equipe** (secretário-executivo técnico/político/indicado do partido; assessoria profissional/agressiva/discreta) e **programa-vitrine** com nome, lançamento em manchete e efeito mensal.
+- Estado em `J().pasta.v3`. O `tools/aplicar_tema.py` agora roda `node --check` em cada JS antes de embutir.
+
 ## Build / fonte de verdade
 
 O **HTML compilado é a fonte de verdade**. `index.html` e `CADEIRA_O_Jogo_25.html` devem ser idênticos: edite um e rode o script para sincronizar.
