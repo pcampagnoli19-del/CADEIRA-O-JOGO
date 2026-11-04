@@ -1,0 +1,116 @@
+/* ===== Noite eleitoral na TV ===== */
+#v3tv{position:fixed;inset:0;z-index:2147480001;font-family:"Source Sans 3",system-ui,sans-serif;color:#fff}
+.tv,.tv-esc{position:absolute;inset:0}
+.tv-fundo{position:absolute;inset:0;background:var(--bg) center/cover no-repeat}
+.tv-fundo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,.55) 60%,rgba(0,0,0,.85))}
+.tv-tela{position:relative;height:100%;display:flex;flex-direction:column;overflow-y:auto}
+.tv-top{display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap}
+.tv-logo{height:38px;width:auto;max-width:110px;object-fit:contain;border-radius:6px;background:#fff;padding:3px 6px}
+.tv-prog{flex:1;min-width:180px;line-height:1.15}
+.tv-prog b{display:block;font-size:1rem;letter-spacing:.05em}
+.tv-prog small{opacity:.85;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
+.tv-vivo{background:#dc2626;font-weight:800;font-size:.72rem;padding:3px 8px;border-radius:4px;animation:tvpisca 1.6s infinite}
+@keyframes tvpisca{50%{opacity:.55}}
+.tv-urnas{min-width:170px;text-align:right}
+.tv-urnas b{font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1}
+.tv-urnas small{display:block;font-size:.72rem;opacity:.85;text-transform:uppercase;letter-spacing:.06em}
+.tv-urnas-b{height:5px;border-radius:3px;background:rgba(255,255,255,.2);margin-top:4px;overflow:hidden}
+.tv-urnas-b i{display:block;height:100%;background:#22c55e;transition:width .4s}
+.tv-meio{flex:1;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:14px;padding:6px 16px 10px;align-items:start}
+.tv-telao{border-radius:14px;padding:14px;backdrop-filter:blur(6px)}
+.tv-telao h3{margin:2px 0 10px;font-family:Fraunces,serif;font-size:1.25rem}
+.tv-mom{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:3px;margin-bottom:8px}
+.tv-cands{display:grid;gap:8px}
+.tv-cand{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 8px;border-radius:10px;background:rgba(0,0,0,.25)}
+.tv-cand.eu{box-shadow:0 0 0 2px #facc15}
+.tv-cfoto{width:52px;height:52px;border-radius:50%;overflow:hidden;border:3px solid #64748b;background:#1e293b;display:flex;align-items:center;justify-content:center}
+.tv-cfoto img{width:100%;height:100%;object-fit:cover}
+.tv-ini{font-weight:800;font-size:1.2rem}
+.tv-cinfo b{font-size:1rem}.tv-cinfo small{display:block;opacity:.8;font-size:.74rem}
+.tv-barra{height:8px;border-radius:4px;background:rgba(255,255,255,.18);margin-top:4px;overflow:hidden}
+.tv-barra i{display:block;height:100%;transition:width .4s}
+.tv-cnum{text-align:right;font-variant-numeric:tabular-nums}
+.tv-cnum b{font-size:1.3rem;display:block}.tv-cnum small{opacity:.8;font-size:.74rem}
+.tv-selo{font-style:normal;font-size:.66rem;font-weight:800;letter-spacing:.06em;padding:2px 7px;border-radius:3px;vertical-align:middle}
+.tv-selo.eleito{background:#16a34a}.tv-selo.segundo{background:#d97706}.tv-selo.apurando{background:#475569}.tv-selo.quase{background:#0891b2}
+.tv-dif{margin:10px 0 0;font-size:1rem}
+.tv-st{margin:10px 0 0}
+.tv-nota{opacity:.85}
+.tv-sua{margin-top:12px;padding:8px 12px;border-radius:8px;background:rgba(250,204,21,.15);border-left:4px solid #facc15}
+.tv-sua b{display:block}.tv-sua small{opacity:.85}
+.tv-sua.ok{background:rgba(22,163,74,.2);border-color:#16a34a}.tv-sua.nao{background:rgba(220,38,38,.18);border-color:#dc2626}
+.tv-mapa{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:34px;gap:4px;max-width:360px}
+.tv-uf{border:0;border-radius:6px;color:#fff;font-weight:800;font-size:.75rem;cursor:pointer}
+.tv-uf.on{outline:2px solid #fff;outline-offset:1px}
+.tv-ufdet{margin-top:10px;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.35);font-size:.88rem;line-height:1.4}
+.tv-estados{display:grid;gap:6px}
+.tv-est{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.25)}
+.tv-est small{opacity:.8}
+.tv-lista{display:flex;flex-wrap:wrap;gap:6px}
+.tv-lista span{padding:4px 9px;border-radius:99px;background:rgba(0,0,0,.3);font-size:.82rem}.tv-lista span.eu{background:#a16207}
+.tv-bancada{display:grid;gap:10px}
+.tv-quem{border-radius:12px;padding:10px;background:rgba(0,0,0,.55)}
+.tv-quem p{margin:8px 0 0;line-height:1.45;font-size:.95rem}
+@keyframes tvsobe{from{opacity:0;transform:translateY(5px)}}
+.tv-gc{display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:5px}
+.tv-gc img,.tv-gc .tv-ini{width:46px;height:46px;border-radius:50%;object-fit:cover;background:#334155;display:inline-flex;align-items:center;justify-content:center}
+.tv-gc b{display:block}.tv-gc small{opacity:.85;font-size:.74rem}
+.tv-ticker{display:flex;align-items:stretch;font-size:.82rem;font-weight:600;overflow:hidden;white-space:nowrap}
+.tv-tk-rot{padding:7px 12px;font-weight:800;letter-spacing:.06em}
+.tv-tk{flex:1;overflow:hidden;padding:7px 0}
+.tv-tk span{display:inline-block;padding-left:100%;animation:tvrola 40s linear infinite}
+@keyframes tvrola{to{transform:translateX(-100%)}}
+.tv-ctrl{display:flex;gap:6px;flex-wrap:wrap;padding:8px 16px;background:rgba(0,0,0,.7)}
+.tv-ctrl button{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 10px;font:inherit;font-size:.82rem;cursor:pointer}
+.tv-ctrl button.on{background:#fff;color:#111}.tv-ctrl button.fim{background:#16a34a;border-color:#16a34a;margin-left:auto}
+.tv-voltar{position:absolute;right:14px;bottom:70px;z-index:5;background:#dc2626;color:#fff;border:0;border-radius:99px;padding:8px 14px;font-weight:700;cursor:pointer}
+/* --- TV Globo: vidro claro, azul, telão à direita --- */
+.tv-globo .tv-top{background:linear-gradient(90deg,#0b3d91,#1e88e5 55%,rgba(255,255,255,.08));border-bottom:2px solid #9ad7ff}
+.tv-globo .tv-meio{grid-template-columns:minmax(260px,1fr) minmax(0,1.6fr)}
+.tv-globo .tv-telao{order:2;background:rgba(240,248,255,.88);color:#0b2a5b}
+.tv-globo .tv-telao .tv-cand{background:rgba(11,61,145,.08)}
+.tv-globo .tv-telao .tv-barra{background:rgba(11,61,145,.15)}
+.tv-globo .tv-mom{background:#0b3d91;color:#fff}
+.tv-globo .tv-bancada{order:1}
+.tv-globo .tv-gc{background:linear-gradient(90deg,#0b3d91,#1e88e5)}
+.tv-globo .tv-ticker{background:#fff;color:#0b3d91}.tv-globo .tv-tk-rot{background:#0b3d91;color:#fff}
+.tv-globo .tv-ufdet,.tv-globo .tv-est{background:rgba(11,61,145,.1)}
+/* --- CNN Brasil: preto, vermelho e branco; central de dados --- */
+.tv-cnn .tv-top{background:#0a0a0a;border-bottom:4px solid #cc0000}
+.tv-cnn .tv-prog b{font-weight:900}
+.tv-cnn .tv-meio{grid-template-columns:1fr}
+.tv-cnn .tv-telao{background:rgba(10,10,10,.92);border:1px solid #2a2a2a;border-top:4px solid #cc0000;border-radius:4px}
+.tv-cnn .tv-telao h3{font-family:"Source Sans 3",sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.tv-cnn .tv-mom{background:#cc0000;color:#fff;border-radius:0}
+.tv-cnn .tv-cand{background:#141414;border-radius:2px;border-left:4px solid #cc0000}
+.tv-cnn .tv-bancada{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.tv-cnn .tv-quem{background:rgba(10,10,10,.9);border-radius:2px;border-left:4px solid #fff}
+.tv-cnn .tv-gc{background:#cc0000;border-radius:0}
+.tv-cnn .tv-ticker{background:#fff;color:#0a0a0a}.tv-cnn .tv-tk-rot{background:#cc0000;color:#fff}
+.tv-cnn .tv-urnas-b i{background:#cc0000}
+@media (min-width:1100px){.tv-cnn .tv-telao{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}.tv-cnn .tv-telao > .tv-mom,.tv-cnn .tv-telao > h3{grid-column:1/-1}}
+/* --- Band: azul-marinho e amarelo, telão à esquerda --- */
+.tv-band .tv-top{background:linear-gradient(90deg,#0a1a4a,#0a1a4a 60%,rgba(10,26,74,.3));border-bottom:3px solid #ffd400}
+.tv-band .tv-telao{background:rgba(10,26,74,.9);border:1px solid rgba(255,212,0,.35)}
+.tv-band .tv-telao h3{color:#ffd400}
+.tv-band .tv-mom{background:#ffd400;color:#0a1a4a}
+.tv-band .tv-cand{background:rgba(255,255,255,.06)}
+.tv-band .tv-gc{background:linear-gradient(90deg,#0a1a4a,#13306f);border-left:5px solid #ffd400}
+.tv-band .tv-ticker{background:#0a1a4a;color:#fff;border-top:2px solid #ffd400}.tv-band .tv-tk-rot{background:#ffd400;color:#0a1a4a}
+.tv-band .tv-urnas-b i{background:#00a650}
+/* --- seleção de emissora --- */
+.tv-esc{background:#05070d;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;overflow-y:auto}
+.tv-esc h2{font-family:Fraunces,serif;font-size:2rem;margin:0}
+.tv-esc p{opacity:.8;max-width:520px}
+.tv-esc-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;width:min(960px,100%);margin:14px 0}
+.tv-esc-c{position:relative;min-height:190px;border-radius:14px;border:2px solid rgba(255,255,255,.15);background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.85)),var(--bg) center/cover;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;padding:14px;cursor:pointer;font:inherit}
+.tv-esc-c:hover,.tv-esc-c.ult{border-color:#facc15}
+.tv-esc-c img{height:46px;width:auto;max-width:120px;background:#fff;border-radius:8px;padding:4px 8px;margin-bottom:auto}
+.tv-esc-c b{font-size:1.15rem}.tv-esc-c small{opacity:.85}
+.tv-classica{background:none;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;font:inherit}
+@media (max-width:820px){.tv-meio,.tv-globo .tv-meio{grid-template-columns:1fr}.tv-globo .tv-telao{order:1}.tv-globo .tv-bancada{order:2}.tv-urnas{min-width:0;text-align:left;width:100%}.tv-cand{grid-template-columns:44px minmax(0,1fr) auto}.tv-cfoto{width:44px;height:44px}}
+
+.tv-globo .tv-telao h3{color:#0b2a5b}
+.tv-globo .tv-telao small{color:#334e7a;opacity:1}
+.tv-globo .tv-telao .tv-cnum small{color:#334e7a}
+.tv-globo .tv-sua small{color:#334e7a}
