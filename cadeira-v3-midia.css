@@ -192,3 +192,5 @@ body.v3m-novidade .bnav button[data-p*="jornal"]::after { content: ""; position:
   .v3m-ping-ed { order: 3; width: 100%; }
   .v3m-ping-man h3 { font-size: 1.25rem !important; }
 }
+.v3m-veic-logo{height:14px;width:auto;max-width:56px;object-fit:contain;border-radius:2px;margin-right:6px;vertical-align:-2px;background:#fff;padding:1px 2px}
+.v3m-av-logo{width:42px;height:42px;border-radius:50%;object-fit:contain;background:#fff;padding:3px;box-sizing:border-box}

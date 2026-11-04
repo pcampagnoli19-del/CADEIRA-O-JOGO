@@ -65,8 +65,24 @@
     dgabc: { nome: "Diário do Grande ABC", handle: "@diariodoabc", cor: "#0f766e" },
     uol: { nome: "UOL", handle: "@UOL", cor: "#d97706" },
     metropoles: { nome: "Metrópoles", handle: "@Metropoles", cor: "#7c3aed" },
-    valor: { nome: "Valor Econômico", handle: "@valoreconomico", cor: "#065f46" }
+    valor: { nome: "Valor Econômico", handle: "@valoreconomico", cor: "#065f46" },
+    piaui: { nome: "piauí", handle: "@revistapiaui", cor: "#111827" },
+    veja: { nome: "Veja", handle: "@VEJA", cor: "#b91c1c" },
+    oeste: { nome: "Revista Oeste", handle: "@revistaoeste", cor: "#a16207" },
+    icl: { nome: "ICL Notícias", handle: "@iclnoticias", cor: "#1e1b4b" },
+    forbes: { nome: "Forbes Brasil", handle: "@forbesbr", cor: "#111111" },
+    record: { nome: "Record", handle: "@recordtvoficial", cor: "#2563eb" },
+    flow: { nome: "Flow News", handle: "@flownews", cor: "#0a0a0a" },
+    podpah: { nome: "Podpah", handle: "@podpah", cor: "#facc15" }
   };
+  window.V3M_VEIC = VEIC;
+  function logoVeic(vid) { return ok(function () { return window.V3MARCAS ? window.V3MARCAS.logo(vid) : ""; }, ""); }
+  // veículo citado no texto ("em entrevista à CNN Brasil...")
+  function veicNoTexto(t) {
+    t = String(t || ""); var achou = null;
+    Object.keys(VEIC).forEach(function (k) { var n = VEIC[k].nome; if (!achou && n.length > 2 && t.indexOf(n) >= 0) achou = k; });
+    return achou;
+  }
   var INFLU = [
     { nome: "Felipe Neto", lado: "E", tipo: "Criador de conteúdo", seg: 16e6 },
     { nome: "Leonardo Sakamoto", lado: "E", tipo: "Jornalista", seg: 9e5 },
@@ -96,7 +112,7 @@
     var n = npcs().find(function (k) { return k.nome === x.nome; });
     return { nome: x.nome, handle: "@" + slug(x.nome), tipo: "influencer", sub: x.tipo, seg: x.seg, selo: true, lado: x.lado };
   }
-  function contaMidia(vid) { var v = VEIC[vid] || VEIC.g1; return { nome: v.nome, handle: v.handle, tipo: "midia", sub: "Veículo de imprensa", seg: 4e6, selo: true, cor: v.cor }; }
+  function contaMidia(vid) { var v = VEIC[vid] || VEIC.g1; return { nome: v.nome, handle: v.handle, tipo: "midia", sub: "Veículo de imprensa", seg: 4e6, selo: true, cor: v.cor, logo: vid }; }
   function contaCidadao(r, bairro) {
     var n = pick(r, NOMES), s = pick(r, SOBRE);
     var nome = n + " " + s;
@@ -151,8 +167,10 @@
   function veicJogador(r, j, tom) {
     var e = escopoJogador(j);
     if (e === "local") return pick(r, ["dgabc", "dgabc", "g1", "folha"]);
-    if (e === "estadual") return pick(r, tom === "crit" ? ["folha", "estadao", "uol"] : ["estadao", "g1", "folha", "dgabc"]);
-    return pick(r, tom === "crit" ? ["folha", "metropoles", "uol"] : ["cnn", "g1", "estadao", "metropoles"]);
+    var lado = ok(function () { return espectro(j.partido_atual); }, "C");
+    var hostil = lado === "E" ? ["oeste", "veja"] : lado === "D" ? ["icl", "piaui"] : ["piaui"];
+    if (e === "estadual") return pick(r, tom === "crit" ? ["folha", "estadao", "uol"].concat(hostil) : ["estadao", "g1", "folha", "dgabc", "record"]);
+    return pick(r, tom === "crit" ? ["folha", "metropoles", "uol"].concat(hostil) : ["cnn", "g1", "estadao", "metropoles", "record"]);
   }
 
   var LEAD_SEC = {
@@ -470,7 +488,10 @@
     todas = todas.filter(function (x) { var k = slug(x.tit).slice(0, 50); if (vistos[k]) return false; vistos[k] = 1; return true; }).slice(0, 12);
     var leadsUsados = {};
     todas.forEach(function (x) {
-      if (!x.veic) x.veic = x.jog ? veicJogador(r, j, x.tom) : x.sec === "Grande ABC" ? "dgabc" : x.sec === "Economia" ? "valor" : pick(r, ["folha", "estadao", "g1", "cnn", "metropoles", "uol"]);
+      if (!x.veic) x.veic = veicNoTexto(x.tit + " " + (x.lead || ""));
+      if (!x.veic) x.veic = x.jog ? veicJogador(r, j, x.tom) : x.sec === "Grande ABC" ? "dgabc" : x.sec === "Economia" ? pick(r, ["valor", "valor", "forbes"]) :
+        x.sec === "Justiça" ? pick(r, ["piaui", "folha", "g1", "veja"]) : x.sec === "Bastidores" ? pick(r, ["cnn", "veja", "metropoles", "oeste", "icl"]) :
+        x.sec === "Gente" ? pick(r, ["g1", "uol", "record"]) : pick(r, ["folha", "estadao", "g1", "cnn", "metropoles", "uol"]);
       if (!x.lead) {
         var pool = (LEAD_SEC[x.sec] || LEAD_SEC["Bastidores"]).filter(function (l) { return !leadsUsados[l]; });
         x.lead = pick(r, pool.length ? pool : LEAD_SEC["Bastidores"]);
@@ -505,7 +526,10 @@
     return uc1(nomeMes(ed.mes)) + " de " + ed.ano + (mesmos > 1 && ed.semana ? " · semana " + ed.semana : "");
   }
   function chipTom(t) { return t === "fav" ? '<span class="v3m-tom fav">a favor</span>' : t === "crit" ? '<span class="v3m-tom crit">crítica</span>' : ""; }
-  function veicHtml(vid) { var v = VEIC[vid] || VEIC.g1; return '<span class="v3m-veic"><i style="background:' + v.cor + '"></i>' + esc_(v.nome) + "</span>"; }
+  function veicHtml(vid) {
+    var v = VEIC[vid] || VEIC.g1, lg = logoVeic(vid);
+    return '<span class="v3m-veic">' + (lg ? '<img class="v3m-veic-logo" src="' + lg + '" alt="">' : '<i style="background:' + v.cor + '"></i>') + esc_(v.nome) + "</span>";
+  }
   function fotoConta(c) {
     if (c.tipo === "eu") return J_();
     if (c.tipo !== "politico" && c.tipo !== "influencer") return null;
@@ -517,7 +541,8 @@
   function postHtml(p, st, compacto) {
     var c = p.conta, ac = st.acoes[p.id] || {};
     var foto = fotoConta(c);
-    var av = foto && typeof window.fotoTag === "function" ? window.fotoTag(foto, 42, 42) : '<span class="v3m-av-ini" style="' + (c.cor ? "background:" + c.cor : "") + '">' + esc_(c.nome.charAt(0)) + "</span>";
+    var lgc = c.logo ? logoVeic(c.logo) : "";
+    var av = lgc ? '<img class="v3m-av-logo" src="' + lgc + '" alt="">' : foto && typeof window.fotoTag === "function" ? window.fotoTag(foto, 42, 42) : '<span class="v3m-av-ini" style="' + (c.cor ? "background:" + c.cor : "") + '">' + esc_(c.nome.charAt(0)) + "</span>";
     var txt = esc_(p.texto).replace(/(@[A-Za-z0-9_]+)/g, '<b class="v3m-men">$1</b>').replace(/(#[A-Za-zÀ-ú0-9_]+)/g, '<span class="v3m-hash">$1</span>');
     var tempo = p.min < 60 ? "há " + p.min + " min" : p.min < 1440 ? "há " + Math.floor(p.min / 60) + " h" : "há " + Math.floor(p.min / 1440) + " d";
     var h = '<article class="v3m-post' + (p.cita ? " cita" : "") + (p.meu ? " meu" : "") + " t-" + (p.tom || "") + '">' +
