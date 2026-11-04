@@ -138,26 +138,49 @@
   // Autenticação: chaves clássicas (AIza...) vão no cabeçalho x-goog-api-key. Se o Google recusar e a chave
   // tiver outro formato (ex.: "AQ."), tenta como token Bearer. O modo que funcionar fica salvo.
   var BASE = "https://generativelanguage.googleapis.com/v1beta/";
-  function cab(chave, modo, json) { var h = {}; if (json) h["Content-Type"] = "application/json"; if (modo === "bearer") h.Authorization = "Bearer " + chave; else h["x-goog-api-key"] = chave; return h; }
+  var VERTEX = "https://aiplatform.googleapis.com/v1/publishers/google/";
+  // Modos de autenticação, testados em ordem até um funcionar (o que funcionar fica salvo):
+  //  api    → Gemini API, chave no cabeçalho x-goog-api-key (chaves AIza...)
+  //  query  → Gemini API, chave no parâmetro ?key=
+  //  vertex → Vertex AI no modo expresso (chaves de projeto do Google Cloud), ?key=
+  //  bearer → token OAuth no cabeçalho Authorization
+  var MODOS = ["api", "query", "vertex", "bearer"];
+  function montar(caminho, chave, modo, json) {
+    var h = {}; if (json) h["Content-Type"] = "application/json";
+    var base = modo === "vertex" ? VERTEX : BASE, url = base + caminho;
+    if (modo === "api") h["x-goog-api-key"] = chave;
+    else if (modo === "bearer") h.Authorization = "Bearer " + chave;
+    else url += (url.indexOf("?") >= 0 ? "&" : "?") + "key=" + encodeURIComponent(chave);
+    return { url: url, headers: h };
+  }
   function fetchIA(caminho, opts) {
-    var c = cfg(), modos = c.auth ? [c.auth] : (/^AIza/.test(c.chave) ? ["api"] : ["api", "bearer"]);
-    if (c.auth && !/^AIza/.test(c.chave)) modos = [c.auth, c.auth === "api" ? "bearer" : "api"];
+    var c = cfg(), modos = c.auth ? [c.auth].concat(MODOS.filter(function (m) { return m !== c.auth; })) : MODOS.slice();
+    if (opts.soGemini) modos = modos.filter(function (m) { return m !== "vertex"; });
+    var erros = [];
     function tenta(i) {
-      return fetch(BASE + caminho, Object.assign({}, opts, { headers: cab(c.chave, modos[i], opts.method === "POST") })).then(function (r) {
+      var mt = montar(caminho, c.chave, modos[i], opts.method === "POST");
+      return fetch(mt.url, { method: opts.method, headers: mt.headers, body: opts.body, signal: opts.signal }).then(function (r) {
         return r.text().then(function (t) {
-          if (!r.ok && [401, 403, 404].indexOf(r.status) >= 0 && i + 1 < modos.length) return tenta(i + 1);
+          if (!r.ok && [400, 401, 403, 404].indexOf(r.status) >= 0 && !/quota|exhausted/i.test(t) && i + 1 < modos.length) { erros.push({ modo: modos[i], status: r.status, texto: t }); return tenta(i + 1); }
           if (r.ok && c.auth !== modos[i]) { var c2 = cfg(); c2.auth = modos[i]; salvarCfg(c2); }
-          return { ok: r.ok, status: r.status, texto: t };
+          if (!r.ok) erros.push({ modo: modos[i], status: r.status, texto: t });
+          return { ok: r.ok, status: r.status, texto: t, erros: erros, modo: modos[i] };
         });
-      });
+      }, function (e) { if (e && e.name === "AbortError") throw e; erros.push({ modo: modos[i], status: 0, texto: "" }); if (i + 1 < modos.length) return tenta(i + 1); throw e; });
     }
     return tenta(0);
+  }
+  // resume as tentativas que falharam (ajuda a descobrir o tipo de chave)
+  function resumoErros(r) {
+    if (!r.erros || r.erros.length < 2) return erroAmigavel(r.status, r.texto);
+    var prim = r.erros.filter(function (x) { return x.modo === "api"; })[0] || r.erros[0];
+    return erroAmigavel(prim.status, prim.texto) + " Tentativas: " + r.erros.map(function (x) { var m = ok(function () { return JSON.parse(x.texto).error.message; }, "") || ""; return x.modo + " " + x.status + (m ? " (" + m.slice(0, 70) + ")" : ""); }).join(" · ");
   }
   // pergunta ao Google quais modelos esta chave pode usar
   AT.listarModelos = function () {
     var c = cfg(); if (!c.chave) return Promise.reject({ amigavel: "Cole a chave primeiro." });
-    return fetchIA("models?pageSize=200", { method: "GET" }).then(function (r) {
-      if (!r.ok) throw { amigavel: erroAmigavel(r.status, r.texto) };
+    return fetchIA("models?pageSize=200", { method: "GET", soGemini: true }).then(function (r) {
+      if (!r.ok) throw { amigavel: resumoErros(r) + " Se a chave for do Google Cloud (Vertex AI), pule esta etapa e use Testar conexão." };
       var l = (JSON.parse(r.texto).models || []).filter(function (m) { return (m.supportedGenerationMethods || []).indexOf("generateContent") >= 0 && /gemini/i.test(m.name) && !/embedding|image|tts|audio|live/i.test(m.name); })
         .map(function (m) { return m.name.replace(/^models\//, ""); });
       if (!l.length) throw { amigavel: "A chave funciona, mas não tem nenhum modelo Gemini de texto liberado." };
@@ -173,7 +196,7 @@
     var body = { contents: [{ role: "user", parts: [{ text: prompt(tipo, texto) }] }], generationConfig: { temperature: 0.85, responseMimeType: "application/json", responseSchema: SCHEMA, maxOutputTokens: 2048 } };
     var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null, tm = setTimeout(function () { if (ctrl) ctrl.abort(); }, 30000);
     return fetchIA(caminho, { method: "POST", body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
-      .then(function (r) { clearTimeout(tm); if (!r.ok) throw { amigavel: erroAmigavel(r.status, r.texto) }; return r.texto; })
+      .then(function (r) { clearTimeout(tm); if (!r.ok) throw { amigavel: resumoErros(r) }; return r.texto; })
       .then(function (t) {
         var j = JSON.parse(t), cand = j.candidates && j.candidates[0];
         if (!cand || !cand.content) throw { amigavel: cand && cand.finishReason === "SAFETY" ? "A IA bloqueou o texto por segurança. Reescreva o ato." : "A IA não devolveu resposta." };
