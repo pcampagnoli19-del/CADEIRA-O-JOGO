@@ -54438,6 +54438,15 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
         m.v3ajustes = 3;
       }
     } catch (e) {}
+    // mesma pessoa cadastrada com dois nomes: fica uma só
+    var FUNDIR = { "Carlos Pignatari (Carlão)": ["Carlão Pignatari"], "Delegado Bilynskyj": ["Delegado Paulo Bilynskyj"], "Zé Medeiros": ["José Medeiros", "Deputado Federal (MT) / Senador eleito em 2026"],
+      "Mauro Filho": ["Mauro Benevides Filho"], "Axel Schmidt Grael": ["Axel Grael"] };
+    Object.keys(FUNDIR).forEach(function (dup) {
+      var d = ex[nk(dup)], k = ex[nk(FUNDIR[dup][0])]; if (!d || !k || d === k || d.jogador) return;
+      if (!k.foto && d.foto) k.foto = d.foto;
+      if (FUNDIR[dup][1]) k.papel = FUNDIR[dup][1];
+      var i = b.indexOf(d); if (i >= 0) b.splice(i, 1); delete ex[nk(dup)];
+    });
     // Câmara de Mauá: os 23 vereadores da legislatura 2025-2028 (site oficial da Câmara)
     var MAUA = ["Alessandro Martins", "Alexandre Vieira", "Danilo do Teco", "Denis Caporal", "Mazinho", "Engenheiro Felipe do MSTU", "Juninho Getúlio", "Tchacabum", "Jotão", "José Afonso Madeira", "Zé Carlos Nova Era", "Zé Luiz Cassimiro", "Wellington da Saúde", "Zeinha Silva", "Leonardo Alves", "Luiz Alfredo Simão", "Rangel Souza", "Renan Pessoa", "Ricardinho da Enfermagem", "Doutor Tioki", "Vaguinho do Zaíra", "Neycar", "Wagner Rubinelli"];
     var naCamara = {}; MAUA.forEach(function (x) { naCamara[nk(x)] = 1; });
