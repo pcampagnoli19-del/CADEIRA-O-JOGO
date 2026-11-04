@@ -36,7 +36,35 @@
   var VERSAO = 4;
   function cfg() {
     var c = ok(function () { return JSON.parse(localStorage.getItem(CFG_KEY) || "{}"); }, {}) || {};
-    return { chave: c.chave || "", modelo: c.modelo || MODELOS[0], limite: clamp(c.limite || 2000, 300, 6000), atosMes: clamp(c.atosMes || 3, 1, 10), auth: c.auth || "", modelos: Array.isArray(c.modelos) ? c.modelos : [] };
+    return { chave: c.chave || "", modelo: c.modelo || MODELOS[0], limite: clamp(c.limite || 2000, 300, 6000), atosMes: clamp(c.atosMes || 3, 1, 10), limiteDia: clamp(c.limiteDia || 200, 10, 100000), auth: c.auth || "", modelos: Array.isArray(c.modelos) ? c.modelos : [] };
+  }
+  /* uso da IA neste aparelho: o Google não informa a cota restante, então o jogo conta.
+     A cota diária do Gemini renova à meia-noite do horário do Pacífico. */
+  var USO_KEY = "cadeira_ia_uso";
+  function diaPac() { return ok(function () { return new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" }); }, new Date().toISOString().slice(0, 10)); }
+  function uso() {
+    var u = ok(function () { return JSON.parse(localStorage.getItem(USO_KEY) || "{}"); }, {}) || {}, d = diaPac();
+    if (u.dia !== d) u = { dia: d, req: 0, tok: 0, ult429: u.ult429 && u.ult429.dia === d ? u.ult429 : null, min: [] };
+    if (!Array.isArray(u.min)) u.min = [];
+    return u;
+  }
+  function salvarUso(u) { ok(function () { localStorage.setItem(USO_KEY, JSON.stringify(u)); }); }
+  function registrarUso(status, tokens) {
+    var u = uso(), t = Date.now(); u.req++; u.tok += Math.max(0, Number(tokens) || 0);
+    u.min = u.min.filter(function (x) { return t - x < 60000; }); u.min.push(t);
+    if (status === 429) u.ult429 = { dia: u.dia, hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) };
+    salvarUso(u);
+  }
+  function somarTokens(n) { var u = uso(); u.tok += Math.max(0, Number(n) || 0); salvarUso(u); }
+  AT.uso = uso;
+  function medidorUso() {
+    var c = cfg(); if (!c.chave) return "";
+    var u = uso(), pct = Math.min(100, Math.round(u.req / c.limiteDia * 100)), rest = Math.max(0, c.limiteDia - u.req);
+    var cls = u.ult429 ? "fim" : pct >= 80 ? "alto" : pct >= 50 ? "medio" : "";
+    var tok = u.tok >= 1000 ? (u.tok / 1000).toFixed(1).replace(".", ",") + " mil" : String(u.tok);
+    var aviso = u.ult429 ? "O Google recusou um pedido por cota às " + u.ult429.hora + ". A cota diária costuma renovar por volta das 4h–5h (horário de Brasília). Até lá, use a avaliação offline."
+      : pct >= 80 ? "Perto do limite que você definiu. Restam cerca de " + rest + " pedidos hoje." : "Restam cerca de " + rest + " pedidos hoje pelo limite que você definiu.";
+    return '<div class="v3a-uso ' + cls + '"><div class="v3a-uso-t"><b>Uso da IA hoje</b><span>' + u.req + "/" + c.limiteDia + " pedidos · " + tok + ' tokens</span></div><div class="v3a-uso-b"><i style="width:' + (u.ult429 ? 100 : pct) + '%"></i></div><small>' + esc_(aviso) + ' Contagem feita neste aparelho; o número exato fica no Google AI Studio (aistudio.google.com › Usage).</small></div>';
   }
   function salvarCfg(c) { ok(function () { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }); }
   AT.cfg = cfg;
@@ -132,7 +160,7 @@
     if (status === 400) return "A IA recusou o pedido (" + msg.slice(0, 120) + ").";
     if (status === 401 || status === 403) return "A chave não tem permissão para usar a API do Gemini." + (msg ? " (Google: " + msg.slice(0, 160) + ")" : "");
     if (status === 404) return "Modelo não encontrado para esta chave. Use \"Buscar modelos da minha chave\" em Configurar IA." + (msg ? " (Google: " + msg.slice(0, 160) + ")" : "");
-    if (status === 429) return "Cota da API estourada. Espere um pouco ou use a avaliação offline.";
+    if (status === 429) return /day|daily|PerDay/i.test(msg) ? "Cota diária da IA esgotada. Ela costuma renovar por volta das 4h–5h (horário de Brasília). Até lá, use a avaliação offline." : "Muitos pedidos seguidos (limite por minuto). Espere 1 minuto ou use a avaliação offline.";
     if (status >= 500) return "Os servidores da IA estão instáveis agora. Tente de novo em instantes.";
     return "Falha na IA (código " + status + ")." + (msg ? " (Google: " + msg.slice(0, 160) + ")" : "");
   }
@@ -165,6 +193,7 @@
           if (!r.ok && [400, 401, 403, 404].indexOf(r.status) >= 0 && !/quota|exhausted/i.test(t) && i + 1 < modos.length) { erros.push({ modo: modos[i], status: r.status, texto: t }); return tenta(i + 1); }
           if (r.ok && c.auth !== modos[i]) { var c2 = cfg(); c2.auth = modos[i]; salvarCfg(c2); }
           if (!r.ok) erros.push({ modo: modos[i], status: r.status, texto: t });
+          if (/generateContent/.test(caminho) && (r.ok || r.status === 429)) registrarUso(r.status, 0);
           return { ok: r.ok, status: r.status, texto: t, erros: erros, modo: modos[i] };
         });
       }, function (e) { if (e && e.name === "AbortError") throw e; erros.push({ modo: modos[i], status: 0, texto: "" }); if (i + 1 < modos.length) return tenta(i + 1); throw e; });
@@ -211,6 +240,7 @@
       .then(function (r) { clearTimeout(tm); if (!r.ok) throw { amigavel: resumoErros(r) }; return r.texto; })
       .then(function (t) {
         var j = JSON.parse(t), cand = j.candidates && j.candidates[0];
+        ok(function () { somarTokens(j.usageMetadata.totalTokenCount); });
         if (!cand || !cand.content) throw { amigavel: cand && cand.finishReason === "SAFETY" ? "A IA bloqueou o texto por segurança. Reescreva o ato." : "A IA não devolveu resposta." };
         var txt = (cand.content.parts || []).map(function (p) { return p.text || ""; }).join("");
         try { return JSON.parse(txt); } catch (e) { var m = txt.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]); throw { amigavel: "A IA devolveu um formato inválido." }; }
@@ -344,6 +374,7 @@
     var T = TIPOS[ui.tipo], usados = atosNoMes(), lim = c.limite;
     var h = '<section class="v3a-hero"><div><small>Gabinete</small><h2>Atos oficiais</h2><p>Escreva o que quiser. ' + (c.chave ? "A IA avalia o texto no contexto do jogo" : "Sem chave de IA configurada: a avaliação é feita pelo modo offline") + " e o resultado mexe de verdade na sua carreira.</p></div>" +
       '<div class="v3a-kpi"><div><b>' + usados + "/" + c.atosMes + "</b><small>atos neste mês</small></div><div><b>" + Math.round(ok(function () { return J().energia; }, 0)) + "</b><small>energia</small></div><div><b>" + Math.round(governab().valor || 0) + "</b><small>" + (governab().tipo === "executivo" ? "governabilidade" : "relação c/ partido") + '</small></div></div></section>';
+    h += medidorUso();
     if (ui.res) return h + resultado(ui.res);
     h += '<div class="v3a-tipos">' + tipos.map(function (t) { return '<button type="button" data-v3a-tipo="' + t + '" class="' + (ui.tipo === t ? "on" : "") + '"><b>' + esc_(TIPOS[t][0]) + "</b><small>" + esc_(TIPOS[t][2]) + " · −" + TIPOS[t][1] + " energia</small></button>"; }).join("") + "</div>";
     var ph = { pl: "Art. 1º Fica instituído...\nArt. 2º ...\nJustificativa: ...", mp: "Art. 1º ...\nFonte de recursos: ...\nUrgência e relevância: ...", decmun: "O Prefeito de Mauá, no uso de suas atribuições, DECRETA:\nArt. 1º ...", decest: "O Governador do Estado de São Paulo, no uso de suas atribuições, DECRETA:\nArt. 1º ...", operacao: "Objetivo, área, efetivo, prazo e metas da operação...", discurso: "Senhor presidente, senhoras e senhores...", pronunc: "Boa noite. Venho a público para...", decpres: "O Presidente da República, no uso da atribuição que lhe confere o art. 84...", plexec: "Mensagem ao Legislativo: encaminho o projeto que...", cpi: "Requeiro a instalação de Comissão Parlamentar de Inquérito para apurar...", nota: "Nota oficial: ...", manifesto: "Carta aberta à população...", artigo: "Título do artigo\n\nTexto..." }[ui.tipo] || "";
@@ -364,12 +395,13 @@
       (c.modelos.length ? '<p class="v3a-nota">' + c.modelos.length + " modelos liberados para a sua chave." + (c.auth ? " Autenticação: " + (c.auth === "bearer" ? "token" : "chave de API") + "." : "") + "</p>" : "") +
       '<label>Limite de caracteres<input type="number" min="300" max="6000" step="100" data-v3a-cfg="limite" value="' + c.limite + '"></label>' +
       '<label>Atos por mês<input type="number" min="1" max="10" data-v3a-cfg="atosMes" value="' + c.atosMes + '"></label>' +
+      '<label>Limite diário estimado (pedidos)<input type="number" min="10" max="100000" step="10" data-v3a-cfg="limiteDia" value="' + c.limiteDia + '"></label><p class="v3a-nota">O Google não mostra quanto falta da cota. O jogo conta os pedidos feitos neste aparelho e avisa ao chegar a 80% do número acima. Cada ato gasta 1 pedido (às vezes 2). Confira o limite real do seu plano no AI Studio.</p>' +
       '<div class="v3a-acoes"><button type="button" data-v3a="salvarcfg">Salvar</button><button type="button" data-v3a="modelos">Buscar modelos da minha chave</button><button type="button" data-v3a="testar">Testar conexão</button><button type="button" data-v3a="apagar">Apagar chave</button></div><p class="v3a-nota" data-v3a-teste></p></div>';
   }
   function chipNum(v, rot, inv) { var cls = v > 0 ? (inv ? "neg" : "pos") : v < 0 ? (inv ? "pos" : "neg") : ""; return '<span class="v3a-chip ' + cls + '"><b>' + (v > 0 ? "+" : "") + v + "</b>" + rot + "</span>"; }
   function resultado(rec) {
     var r = rec.res, barr = /Barrad|Suspens|Inconstitu/i.test(r.status_legal);
-    var h = '<div class="v3a-res"><article class="v3a-jornal"><div class="v3a-jt"><span>' + esc_(r.veiculo || "Jornal do dia seguinte") + "</span><small>" + esc_(rec.tipo) + (r._offline ? " · avaliação offline" : " · avaliação por IA") + "</small></div><h2>" + esc_(r.manchete) + "</h2><p>" + esc_(r.ementa || "") + '</p><em class="v3a-status ' + (barr ? "neg" : /Vigente|vigor|Aprovad/i.test(r.status_legal) ? "pos" : "") + '">' + esc_(r.status_legal) + "</em></article>";
+    var h = '<div class="v3a-res"><article class="v3a-jornal"><div class="v3a-jt"><span>' + esc_(r.veiculo || "Jornal do dia seguinte") + "</span><small>" + esc_(rec.tipo) + (r._offline ? " · avaliação offline" : " · avaliação por IA") + "</small></div><h2>" + esc_(r.manchete) + "</h2><p>" + esc_(r.ementa || "") + '</p><em class="v3a-status ' + (barr ? "neg" : /Vigente|vigor|Aprovad/i.test(r.status_legal) ? "pos" : "") + '">' + esc_(r.status_legal) + "</em></article>" + cardJulgamento(rec);
     h += '<div class="v3a-imp"><h4>Impacto político</h4><div class="v3a-chips">' + chipNum(Math.round(r.impacto_popularidade), " popularidade") + chipNum(Math.round(r.impacto_governabilidade), " governabilidade") + (r.impacto_escandalo ? chipNum(Math.round(r.impacto_escandalo), " escândalo", true) : "") + '<span class="v3a-chip"><b>' + Math.round(r.radicalismo) + "</b> radicalismo</span><span class=\"v3a-chip\"><b>" + Math.round(r.coerencia_institucional) + "</b> coerência institucional</span>" + (!r.competencia_do_cargo ? '<span class="v3a-chip neg">fora da competência do cargo</span>' : "") + "</div>" +
       "<p>" + esc_(r.resumo_consequencia) + "</p><ul class='v3a-ef'>" + rec.efeitos.map(function (e) { return "<li>" + esc_(e) + "</li>"; }).join("") + "</ul>" +
       (r.reacoes_atores.length ? "<h4>Reação dos atores</h4><ul class='v3a-atores'>" + r.reacoes_atores.map(function (a) { return "<li><b>" + esc_(a.ator) + "</b> " + esc_(a.reacao) + "</li>"; }).join("") + "</ul>" : "") + "</div>";
@@ -385,6 +417,124 @@
   function view() { return '<div class="v3a" data-v3a-box="1">' + corpo() + "</div>"; }
   AT.view = view;
 
+  /* ================================================================ 8b) JULGAMENTO ANIMADO (STF / Órgão Especial do TJ-SP)
+     Quando um ato é barrado, suspenso ou tem alto risco jurídico, o tribunal julga em plenário.
+     O placar segue o mérito jurídico da avaliação (status, coerência institucional, competência,
+     risco). Cada voto usa uma semente fixa por ministro e por ato, sem estereótipo partidário. */
+  // ordem de votação: do mais novo ao mais antigo; o presidente vota por último
+  var STF = [["Luiz Passarinho Jobim", "M"], ["Flávio Dino", "M"], ["Cristiano Zanin", "M"], ["André Mendonça", "M"], ["Nunes Marques", "M"], ["Alexandre de Moraes", "M"],
+    ["Luiz Fux", "M"], ["Dias Toffoli", "M"], ["Cármen Lúcia", "F"], ["Gilmar Mendes", "M"], ["Edson Fachin", "M"]];
+  var PRES_STF = "Edson Fachin";
+  function hash(t) { var h = 2166136261; t = String(t); for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; }
+  function fotoDe(nome) { return ok(function () { var n = (M().npcs || []).filter(function (x) { return x && x.nome === nome; })[0]; return obterFotoPolitico(n || { nome: nome }); }, ""); }
+  function precisaJulgar(tipoId, r) {
+    var tp = TIPOS[tipoId] ? TIPOS[tipoId][3] : "fala";
+    if (/STF|Barrad|Suspens|Inconstitu|Justi/i.test(r.status_legal)) return true;
+    return (tp === "decreto" || tp === "mp" || tp === "pl") && r.risco_juridico >= 60;
+  }
+  function julgamento(rec) {
+    var r = rec.res, tipoId = rec.tipoId;
+    if (!precisaJulgar(tipoId, r)) return null;
+    var barr = /Barrad|Suspens|Inconstitu/i.test(r.status_legal), c = cid();
+    var federal = c === "PRES" || /STF|Inconstitu/i.test(r.status_legal) || ["DEPF", "SEN"].indexOf(c) >= 0;
+    var nomes, corte, tit;
+    if (federal) { corte = "STF"; tit = "Supremo Tribunal Federal · Plenário virtual"; nomes = STF.map(function (x) { return { nome: x[0], g: x[1], foto: fotoDe(x[0]) }; }); }
+    else {
+      corte = "TJSP"; tit = "Tribunal de Justiça de SP · Órgão Especial";
+      nomes = []; for (var i = 0; i < 25; i++) nomes.push({ nome: "Desembargador(a) " + (i + 1), g: "X", foto: "" });
+    }
+    var n = nomes.length, maioria = Math.floor(n / 2) + 1, coer = r.coerencia_institucional, risco = r.risco_juridico, s0 = hash(rec.id);
+    var contra;
+    if (barr) contra = Math.round(maioria + (1 - coer / 100) * (n - maioria) * 0.9 + (r.competencia_do_cargo ? 0 : 2) + (s0 - 0.5) * 2);
+    else contra = Math.round((risco / 100) * (maioria - 1) + (s0 - 0.5) * 2);
+    contra = barr ? clamp(contra, maioria, n) : clamp(contra, 0, maioria - 1);
+    // cada julgador recebe uma "propensão" fixa para este ato; os de maior propensão votam contra
+    var ord = nomes.map(function (x, i) { return { i: i, p: hash(rec.id + "|" + x.nome) }; }).sort(function (a, b) { return b.p - a.p; });
+    var votos = nomes.map(function () { return "manter"; });
+    ord.slice(0, contra).forEach(function (o) { votos[o.i] = "derrubar"; });
+    // relator: sorteado entre os que formam a maioria (o presidente não relata)
+    var cand = nomes.map(function (x, i) { return i; }).filter(function (i) { return (votos[i] === "derrubar") === barr && nomes[i].nome !== PRES_STF; });
+    var rel = cand.length ? cand[Math.floor(hash(rec.id + "rel") * cand.length)] : 0;
+    var seq = [rel].concat(nomes.map(function (x, i) { return i; }).filter(function (i) { return i !== rel; }));
+    var tema = r.tema || "o tema";
+    var MOT_D = [r.competencia_do_cargo ? "" : "O ato invade competência que não é do cargo.", "Há afronta à separação de Poderes.", "O texto viola direitos fundamentais.", "Falta fonte de custeio, em desacordo com a Lei de Responsabilidade Fiscal.",
+      tipoId === "mp" ? "Não vejo urgência e relevância que justifiquem a medida provisória." : "O decreto inova na ordem jurídica, o que exige lei.", "Acompanho o relator.", "Acompanho o relator, com ressalvas de fundamentação."].filter(Boolean);
+    var MOT_M = ["Divirjo: a medida está dentro da margem de escolha do gestor.", "Não cabe ao Judiciário substituir a escolha política.", "Não há inconstitucionalidade evidente nesta fase.", "Voto pela manutenção, sem prejuízo de exame futuro.", "Acompanho a divergência."];
+    var lista = seq.map(function (i, k) {
+      var v = votos[i], arr = v === "derrubar" ? MOT_D : MOT_M, mot = arr[Math.floor(hash(rec.id + "m" + i) * arr.length)];
+      if (k === 0) mot = (v === "derrubar" ? "Voto pela " + (barr && /Suspens/i.test(r.status_legal) ? "suspensão" : "derrubada") + " do ato. " + (r.competencia_do_cargo ? MOT_D[1] : MOT_D[0]) : "Voto pela manutenção do ato. " + MOT_M[0]) + " Matéria: " + tema + ".";
+      else if (/relator/.test(mot) && (v === "derrubar") !== (votos[rel] === "derrubar")) mot = arr[0];
+      return { i: i, nome: nomes[i].nome, g: nomes[i].g, v: v, mot: mot, rel: k === 0, pres: nomes[i].nome === PRES_STF };
+    });
+    var fav = n - contra;
+    var proc = barr ? (contra === n ? "Por unanimidade" : "Por maioria (" + contra + " a " + fav + ")") + ", o Tribunal " + (/Suspens/i.test(r.status_legal) ? "suspende" : "derruba") + " o ato."
+      : (contra === 0 ? "Por unanimidade" : "Por maioria (" + fav + " a " + contra + ")") + ", o Tribunal mantém o ato em vigor.";
+    return { corte: corte, titulo: tit, n: n, nomes: nomes, lista: lista, contra: contra, favor: fav, barrado: barr, proc: proc, relator: nomes[rel].nome, ato: r.titulo_oficial || rec.tipo };
+  }
+  function tratamento(x) { return x.g === "X" ? x.nome : "Min. " + x.nome; }
+  function posicoes(n) {
+    // assentos em semicírculo (até 2 fileiras para o Órgão Especial)
+    var out = [], filas = n > 13 ? 2 : 1, porFila = filas === 2 ? [11, n - 11] : [n];
+    porFila.forEach(function (q, f) {
+      var R = f === 0 ? 46 : 30;
+      for (var k = 0; k < q; k++) { var a = Math.PI - (q === 1 ? Math.PI / 2 : k * Math.PI / (q - 1)); out.push({ x: 50 + R * Math.cos(a), y: 90 - (R * 1.7) * Math.sin(a) }); }
+    });
+    return out;
+  }
+  var anim = null;
+  function abrirJulgamento(rec, instantaneo) {
+    var jg = rec.julg; if (!jg) return;
+    fecharJulgamento();
+    var ov = document.createElement("div"); ov.id = "v3a-stf"; ov.className = "v3a-stf " + (jg.corte === "STF" ? "stf" : "tj");
+    var pos = posicoes(jg.n), peq = jg.n > 13;
+    ov.innerHTML = '<div class="v3a-stf-box" role="dialog" aria-label="Julgamento"><div class="v3a-stf-top"><span class="v3a-stf-ao">● AO VIVO</span><small>' + esc_(jg.titulo) + '</small><h3>' + esc_(jg.ato) + '</h3></div>' +
+      '<div class="v3a-stf-pl' + (peq ? " peq" : "") + '">' + jg.nomes.map(function (x, i) {
+        var ini = x.g === "X" ? String(i + 1) : x.nome.split(" ").filter(function (w) { return w.length > 2; }).slice(0, 2).map(function (w) { return w[0]; }).join("");
+        return '<div class="v3a-stf-s" data-s="' + i + '" style="left:' + pos[i].x.toFixed(1) + "%;top:" + pos[i].y.toFixed(1) + '%">' + (x.foto ? '<img src="' + esc_(x.foto) + '" alt="" onerror="this.outerHTML=\'<b>' + esc_(ini) + '</b>\'">' : "<b>" + esc_(ini) + "</b>") + "</div>";
+      }).join("") + '</div><div class="v3a-stf-placar"><div class="d"><b data-pl="d">0</b><small>' + "derrubar" + '</small></div><span>×</span><div class="m"><b data-pl="m">0</b><small>manter</small></div></div>' +
+      '<div class="v3a-stf-voz" data-voz><small>Sessão aberta</small><p>' + (jg.corte === "STF" ? "O presidente " + esc_(PRES_STF) + " abre a sessão. Relatoria: Min. " + esc_(jg.relator) + "." : "Sessão do Órgão Especial aberta. Relatoria sorteada.") + "</p></div>" +
+      '<div class="v3a-stf-proc" data-proc hidden></div><div class="v3a-stf-ac"><button type="button" data-stf="pular">Pular para o resultado</button><button type="button" data-stf="fechar">Fechar</button></div></div>';
+    document.body.appendChild(ov);
+    var k = 0, d = 0, m = 0;
+    function passo() {
+      if (!document.getElementById("v3a-stf")) return;
+      if (k >= jg.lista.length) return fim();
+      var v = jg.lista[k++], seat = ov.querySelector('[data-s="' + v.i + '"]');
+      if (v.v === "derrubar") d++; else m++;
+      ov.querySelectorAll(".v3a-stf-s.fala").forEach(function (x) { x.classList.remove("fala"); });
+      if (seat) seat.classList.add(v.v === "derrubar" ? "d" : "m", "fala");
+      ov.querySelector('[data-pl="d"]').textContent = d; ov.querySelector('[data-pl="m"]').textContent = m;
+      var vz = ov.querySelector("[data-voz]");
+      vz.className = "v3a-stf-voz " + (v.v === "derrubar" ? "d" : "m");
+      vz.innerHTML = "<small>" + esc_(tratamento(v)) + (v.rel ? " · relator(a)" : v.pres ? " · presidente" : "") + " — vota " + (v.v === "derrubar" ? "contra o ato" : "pela manutenção") + "</small><p>" + esc_(v.mot) + "</p>";
+      var maior = Math.floor(jg.n / 2) + 1;
+      if ((d === maior && jg.contra >= maior) || (m === maior && jg.favor >= maior)) { var pz = ov.querySelector("[data-proc]"); pz.hidden = false; pz.className = "v3a-stf-proc maioria"; pz.textContent = "Maioria formada: " + maior + " votos para " + (d === maior ? "derrubar" : "manter") + "."; }
+      anim = setTimeout(passo, v.rel ? 2600 : jg.n > 13 ? 650 : 1300);
+    }
+    function fim() {
+      clearTimeout(anim); anim = null;
+      jg.lista.forEach(function (v) { var s2 = ov.querySelector('[data-s="' + v.i + '"]'); if (s2) { s2.classList.remove("fala"); s2.classList.add(v.v === "derrubar" ? "d" : "m"); } });
+      ov.querySelector('[data-pl="d"]').textContent = jg.contra; ov.querySelector('[data-pl="m"]').textContent = jg.favor;
+      var pz = ov.querySelector("[data-proc]"); pz.hidden = false; pz.className = "v3a-stf-proc final " + (jg.barrado ? "neg" : "pos");
+      pz.innerHTML = "<small>Proclamação do resultado</small><b>" + esc_(jg.proc) + "</b>";
+      var vz = ov.querySelector("[data-voz]"); vz.className = "v3a-stf-voz"; vz.innerHTML = "<small>Sessão encerrada</small><p>Relatoria: " + esc_(tratamento({ nome: jg.relator, g: jg.corte === "STF" ? "M" : "X" })) + ". " + jg.contra + " voto(s) contra o ato, " + jg.favor + " pela manutenção.</p>";
+      var bp = ov.querySelector('[data-stf="pular"]'); if (bp) bp.remove();
+    }
+    ov.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("[data-stf]");
+      if (e.target === ov || (b && b.getAttribute("data-stf") === "fechar")) { fecharJulgamento(); return; }
+      if (b && b.getAttribute("data-stf") === "pular") fim();
+    });
+    if (instantaneo) fim(); else anim = setTimeout(passo, 1500);
+  }
+  function fecharJulgamento() { clearTimeout(anim); anim = null; var o = document.getElementById("v3a-stf"); if (o) o.remove(); }
+  AT.julgamento = julgamento; AT.abrirJulgamento = abrirJulgamento;
+  function cardJulgamento(rec) {
+    if (!rec.julg && rec.res && rec.tipoId) rec.julg = ok(function () { return julgamento(rec); }, null);
+    var jg = rec.julg; if (!jg) return "";
+    return '<div class="v3a-julg ' + (jg.barrado ? "neg" : "pos") + '"><div><small>' + esc_(jg.corte === "STF" ? "Julgamento no STF" : "Julgamento no TJ-SP") + "</small><b>" + jg.contra + " × " + jg.favor + "</b><p>" + esc_(jg.proc) + " Relator(a): " + esc_(jg.relator) + '.</p></div><button type="button" data-v3a="stf">Rever o julgamento</button></div>';
+  }
+
   /* ---------------- envio */
   function validar() {
     var t = ui.texto.trim(), c = cfg(), T = TIPOS[ui.tipo];
@@ -396,8 +546,11 @@
   function concluir(rJSON, tipo, texto) {
     ok(function () { gastarEnergia(TIPOS[tipo][1]); });
     var r = normalizar(rJSON), rec = aplicar(tipo, texto, r);
+    rec.julg = ok(function () { return julgamento(rec); }, null);
+    if (rec.julg) nota((rec.julg.corte === "STF" ? "STF" : "TJ-SP") + (rec.julg.barrado ? " derruba" : " mantém") + " ato: " + rec.julg.ato + " (" + rec.julg.contra + " a " + rec.julg.favor + ")", "imprensa");
     ui.carregando = false; ui.erro = null; ui.res = rec; ui.texto = "";
     atualizar(); ok(function () { var hdr = document.querySelector(".v3a"); if (hdr) hdr.scrollIntoView({ behavior: "smooth", block: "start" }); });
+    if (rec.julg) setTimeout(function () { abrirJulgamento(rec); }, 700);
   }
   function enviar(forcarOffline) {
     var e = validar(); if (e) { ui.erro = e; atualizar(); return; }
@@ -420,9 +573,10 @@
       if (k === "enviar") return enviar(false), e.preventDefault();
       if (k === "offline") return enviar(true), e.preventDefault();
       if (k === "novo") ui.res = null;
+      else if (k === "stf") { if (ui.res) { if (!ui.res.julg) ui.res.julg = ok(function () { return julgamento(ui.res); }, null); abrirJulgamento(ui.res); } return e.preventDefault(); }
       else if (k === "cfg") ui.verCfg = !ui.verCfg;
       else if (k === "salvarcfg" || k === "testar" || k === "modelos") {
-        var c = cfg(), chaveAntes = c.chave; document.querySelectorAll("[data-v3a-cfg]").forEach(function (i) { var kk = i.getAttribute("data-v3a-cfg"); if (kk === "modeloLivre") { if (i.value.trim()) c.modelo = i.value.trim().replace(/^models\//, ""); return; } c[kk] = kk === "limite" || kk === "atosMes" ? Number(i.value) : i.value.trim(); });
+        var c = cfg(), chaveAntes = c.chave; document.querySelectorAll("[data-v3a-cfg]").forEach(function (i) { var kk = i.getAttribute("data-v3a-cfg"); if (kk === "modeloLivre") { if (i.value.trim()) c.modelo = i.value.trim().replace(/^models\//, ""); return; } c[kk] = kk === "limite" || kk === "atosMes" || kk === "limiteDia" ? Number(i.value) : i.value.trim(); });
         if (c.chave !== chaveAntes) { c.auth = ""; c.modelos = []; }
         salvarCfg(c);
         if (k === "modelos") { var pm = document.querySelector("[data-v3a-teste]"); if (pm) pm.textContent = "Consultando o Google..."; AT.listarModelos().then(function (l) { atualizar(); var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "✅ " + l.length + " modelos encontrados. Escolhido: " + cfg().modelo + ". Agora clique em Testar conexão."; }).catch(function (er) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
