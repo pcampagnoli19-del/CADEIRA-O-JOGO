@@ -49,7 +49,7 @@
     camara: { nome: "Marcela Vasconcelos", img: "marcela", papel: "repórter • Câmara de Mauá" },
     bairros: { nome: "Mariana Gutierrez", img: "mariana", papel: "repórter • bairros de Mauá" }
   };
-  DG.EQ = EQ;
+  DG.EQ = EQ; DG.IMG = IMG;
   var VEL = [["1x", 0.12], ["2x", 0.25], ["4x", 0.5], ["Rápido", 1]];
   var D = { abertura: 11000, candidatos: 11000, prefeitura: 10000, introBairro: 3200, porBairro: 4600, regioes: 11000, camaraPasso: 7000, introPan: 3500, porCidade: 6500, plantao: 9000 };
 
@@ -224,6 +224,8 @@
       return novaCena("camara", { passos: ["nova", "conta", "eleitos", "destaques"], plantao: true }, 4 * D.camaraPasso);
     }
     if (p >= 100) {
+      if (!st.pos) { st.pos = [{ tipo: "posEleito", dur: 12000 }]; var apm = ok(function () { return V3COB.apoiosDe("PREF"); }, []); if (apm.length) st.pos.push({ tipo: "posApoios", dur: 7000 + Math.min(5, apm.length) * 2500, d: { lista: apm.slice(0, 5) } }); if (ok(function () { return V3COB.perguntasPos(); }, null)) st.pos.push({ tipo: "posJogador", dur: 60000 }); }
+      if (st.pos.length && st.cena.tipo !== "final") { var ps = st.pos.shift(); return novaCena(ps.tipo, ps.d || {}, ps.dur); }
       var pend = panPendentes();
       if (pend.length && !st.panFinal) { st.panFinal = 1; var lp = pend.slice(0, 3); lp.forEach(function (c) { st.panVistas[c.cidade] = 1; }); return novaCena("panorama", { cidades: lp }, D.introPan + lp.length * D.porCidade); }
       return novaCena("final", {}, 1e9);
@@ -240,7 +242,11 @@
     }
     return novaCena("prefeitura", {}, D.prefeitura);
   }
+  var PRE = [["Boa noite", "16h30"], ["A eleição em Mauá", "16h38"], ["Pesquisa", "16h45"], ["Como funciona", "16h52"], ["Contagem regressiva", "16h58"]];
+  function fimPre() { st.pre = false; novaCena("urnas", {}, 6500); ok(function () { var AP_ = A().AP; AP_.vel = VEL[0][1]; AP_.play = true; AP_.last = performance.now(); }); }
   function dirigir() {
+    if (st.cena && st.cena.tipo === "pre") { if (agora() - st.cena.ini > st.cena.dur) { var k = st.cena.d.k + 1; if (k < PRE.length) novaCena("pre", { k: k }, k === PRE.length - 1 ? 7000 : 9500); else fimPre(); } return; }
+    if (st.cena && st.cena.tipo === "posJogador" && st.entAberta) return;
     varrer();
     var c = st.cena, t = agora();
     var urgente = st.fila.length && c && ["prefeitura", "regioes", "candidatos"].indexOf(c.tipo) >= 0 && t - c.ini > 3000;
@@ -411,6 +417,52 @@
     if (!pr) { out.tag = "Apuração"; out.h = "<p>Aguardando os dados da apuração de Mauá.</p>"; out.banc = fala("ancora", "Boa noite. Estamos aguardando os primeiros boletins do cartório eleitoral."); return out; }
     var tit = '<h3>Prefeitura de Mauá ' + selo(pr) + "</h3>";
     switch (c.tipo) {
+      case "pre":
+        var k = c.d.k;
+        out.tag = "Antes das urnas fecharem • " + PRE[k][0];
+        if (k === 0) {
+          out.h = '<div class="dg-capa"><small>Cobertura especial</small><h2>Noite eleitoral no ABC</h2><p>A redação do Diário acompanha a apuração de Mauá e das cidades da região.</p></div><div class="dg-equipe">' + Object.keys(EQ).map(function (kk) { var q = pessoa(kk); return "<span>" + (q.foto ? '<img src="' + esc_(q.foto) + '" alt="">' : "") + "<b>" + esc_(q.nome) + "</b><small>" + esc_(q.papel) + "</small></span>"; }).join("") + "</div>";
+          out.banc = fala("ancora", "Boa noite! Começa a cobertura especial do Diário do Grande ABC " + (turno2() ? "do segundo turno em Mauá" : "da eleição municipal de " + ano()) + ". Comigo, Nilton Valentim e Evaldo Novelini nos comentários, Marcela Vasconcelos na Câmara e Mariana Gutierrez nos bairros.");
+        } else if (k === 1) {
+          var el = ok(function () { return A().nac().elMaua; }, 0);
+          out.h = "<h3>O que está em jogo em Mauá</h3><ul class='dg-dest'><li><b>Prefeitura</b>: " + (pr ? ordena(pr.fin).length : "") + (turno2() ? " finalistas no 2º turno" : " candidaturas") + "</li>" + (turno2() ? "" : "<li><b>Câmara Municipal</b>: " + ((legVER() || {}).N || 23) + " cadeiras pelo quociente eleitoral</li>") + (el ? "<li><b>" + fmtV(el) + "</b> eleitores aptos</li>" : "") + "</ul>";
+          out.banc = fala("ancora", turno2() ? "Mauá volta às urnas para escolher o prefeito entre os dois mais votados do primeiro turno." : "Mauá escolhe hoje o prefeito e os vereadores. Com mais de 200 mil eleitores, a cidade pode ter segundo turno.");
+        } else if (k === 2) {
+          var q = pr ? ok(function () { return V3COB.pesquisa("PREF", turno2() ? pr.fin : (ok(function () { return A().prefAtual().base; }, pr.fin)), "dg" + ano()); }, null) : null;
+          out.h = "<h3>Última pesquisa • Prefeitura</h3>" + (q ? "<small class='dg-pc'>" + esc_(q.instituto) + " • margem ±" + q.margem + " pontos</small>" + q.itens.slice(0, 5).map(function (x, i2) { return '<div class="dg-cand" style="--c:' + cor(x.partido, i2) + '"><div class="dg-foto"><span class="dg-ini">' + esc_(x.nome.charAt(0)) + '</span></div><div class="dg-ci"><b>' + esc_(x.nome) + "</b><small>" + esc_(sigla(x.partido)) + '</small><div class="dg-bar"><i style="width:' + Math.min(100, x.pct * 1.6) + '%"></i></div></div><div class="dg-num"><b>' + fmtP1(x.pct) + "%</b></div></div>"; }).join("") : "<p>Sem pesquisa registrada.</p>");
+          out.banc = fala("analista", q && q.itens[0] ? q.itens[0].nome + " chegou à reta final na frente, mas a diferença para " + (q.itens[1] ? q.itens[1].nome : "o segundo colocado") + " está perto da margem de erro. Em Mauá, a periferia decide." : "A eleição chega aberta.", "coment");
+        } else if (k === 3) {
+          out.h = "<h3>Como funciona a apuração</h3><ol class='dg-dest'><li>As urnas fecham às <b>17h</b>.</li><li>Os boletins de cada seção chegam ao cartório eleitoral e ao TSE.</li><li>Prefeito: mais de <b>50% dos votos válidos</b> vence no 1º turno.</li>" + (turno2() ? "" : "<li>Vereadores: os votos de cada partido ou federação definem as cadeiras pelo <b>quociente eleitoral</b>; as que sobram vão pela maior média.</li>") + "</ol>";
+          out.banc = fala("camara", turno2() ? "Hoje a apuração é só da Prefeitura." : "Na Câmara, não basta ser bem votado: o partido precisa alcançar o quociente. Vou explicar cada cadeira ao longo da noite.", "rep");
+        } else {
+          out.h = "<div class='dg-relogio'><small>Horário de Brasília</small><b>16:58</b><span>As urnas fecham às 17h</span></div>" + suaDisputa();
+          out.banc = fala("bairros", "Aqui nos bairros os últimos eleitores ainda estão nas filas. Faltam dois minutos.", "rep");
+        }
+        break;
+      case "urnas":
+        out.tag = "17h00 • Urnas fechadas";
+        out.h = "<div class='dg-relogio fim'><small>Horário de Brasília</small><b>17:00</b><span>URNAS FECHADAS</span></div>";
+        out.banc = fala("ancora", "São 17 horas: as urnas estão fechadas em Mauá. Começa a apuração.");
+        break;
+      case "posEleito":
+        var dpe = decisao(pr);
+        out.tag = "Pós-apuração • Prefeitura";
+        out.h = tit + placar(pr, dpe && dpe.tipo === "segundo" ? 2 : 1);
+        out.banc = (dpe ? dpe.quem.filter(function (x) { return !x.jogador; }).map(function (x) { return '<div class="dg-fala rep"><div class="dg-gc"><span class="dg-ini">' + esc_(limpaNome(x.nome).charAt(0)) + "</span><div><b>" + esc_(limpaNome(x.nome)) + "</b><small>" + esc_(sigla(x.partido)) + " • ao vivo</small></div></div><p>" + esc_(ok(function () { return V3COB.falaNpc(x, dpe.tipo === "segundo" ? "segundo" : "eleito"); }, "")) + "</p></div>"; }).join("") : "") + fala("bairros", "Estamos no comitê, com a militância. A primeira fala depois do resultado.", "rep");
+        break;
+      case "posApoios":
+        var la = c.d.lista || [];
+        out.tag = "Pós-apuração • Apoios no 2º turno";
+        out.h = "<h3>Quem apoia quem no 2º turno</h3><ul class='dg-dest'>" + la.map(function (r) { return "<li><b>" + esc_(r.jogador ? "Você" : r.quem.nome) + "</b> (" + esc_(sigla(r.quem.partido)) + "): " + esc_(r.decisao === "apoia" ? "apoia " + r.para.nome : ok(function () { return V3COB.ROT[r.decisao]; }, r.decisao)) + "</li>"; }).join("") + "</ul>";
+        out.banc = fala("analista", "Os apoios vão pesar: quem ficou de fora tem voto em bairros que os finalistas não alcançaram.", "coment");
+        break;
+      case "posJogador":
+        out.tag = "Pós-apuração • Entrevista";
+        out.h = "<h3>Ao vivo com " + esc_(ok(function () { return J().nome; }, "")) + "</h3>" + suaDisputa();
+        out.banc = fala("bairros", "Estamos com " + ok(function () { return J().nome; }, "") + ", que fala ao Diário sobre o resultado.", "rep");
+        if (!st.entFeita) { st.entFeita = true; st.entAberta = true; var Pq = ok(function () { return V3COB.perguntasPos(); }, null), rq = pessoa("bairros");
+          setTimeout(function () { ok(function () { V3COB.abrirEntrevista(Pq, { titulo: "Diário do Grande ABC • entrevista", sub: Pq ? Pq.cargo : "", logo: img("dgabc"), tema: "dg", reporter: { nome: rq.nome, foto: rq.foto, papel: rq.papel }, aoFechar: function () { st.entAberta = false; st.cena.dur = 0; } }); }); }, 50); }
+        break;
       case "abertura":
         out.tag = "Especial Eleições " + ano();
         out.h = '<div class="dg-capa"><small>Cobertura especial</small><h2>Mauá decide</h2><p>Prefeitura, Câmara Municipal e o resultado nas outras cidades do Grande ABC e do Estado, ao vivo da redação do Diário.</p></div>' + placar(pr, 4, true);
@@ -517,11 +569,12 @@
   function tela() {
     var cn = cena(), AP_ = ok(function () { return A().AP; }, {}), p = pct();
     var h = '<div class="dg" style="--bg:url(' + img("estudio") + ')"><div class="dg-fundo"></div><div class="dg-tela">';
-    h += '<header class="dg-top"><div class="dg-marca"><img src="' + img("dgabc") + '" alt="Diário do Grande ABC"><div><b>Especial Eleições ' + ano() + "</b><small>" + (turno2() ? "2º turno" : "1º turno") + " • Mauá • " + esc_(ok(function () { return A().horaApuracao(); }, "")) + '</small></div></div><span class="dg-vivo">AO VIVO</span><div class="dg-urnas"><b>' + fmtP(p) + '%</b><small>seções apuradas em Mauá</small><div class="dg-urnas-b"><i style="width:' + Math.min(100, p) + '%"></i></div></div></header>';
+    h += '<header class="dg-top"><div class="dg-marca"><img src="' + img("dgabc") + '" alt="Diário do Grande ABC"><div><b>Especial Eleições ' + ano() + "</b><small>" + (turno2() ? "2º turno" : "1º turno") + " • Mauá • " + esc_(st.cena && st.cena.tipo === "pre" ? PRE[st.cena.d.k][1] : st.cena && st.cena.tipo === "urnas" ? "17h00" : ok(function () { return A().horaApuracao(); }, "")) + '</small></div></div><span class="dg-vivo">AO VIVO</span><div class="dg-urnas"><b>' + fmtP(p) + '%</b><small>seções apuradas em Mauá</small><div class="dg-urnas-b"><i style="width:' + Math.min(100, p) + '%"></i></div></div></header>';
     h += '<div class="dg-meio"><section class="dg-palco" data-mapa="maua"><div class="dg-mapbox">' + svgMapa("maua") + svgMapa("gsp") + '</div><div class="dg-mapcap"></div></section>';
     h += '<section class="dg-telao"><div class="dg-tag">' + esc_(cn.tag) + "</div>" + cn.h + "</section>";
     h += '<aside class="dg-bancada">' + cn.banc + "</aside></div>";
     h += '<div class="dg-ticker"><span class="dg-tk-rot">ÚLTIMAS DO DIÁRIO</span><div class="dg-tk"><span>' + esc_(ticker()) + "</span></div></div>";
+    if (st.cena && st.cena.tipo === "pre") { h += '<nav class="dg-ctrl"><button type="button" data-dg="preprox">Próximo ›</button><button type="button" data-dg="prepular">Pular abertura</button><button type="button" data-dg="classica">Tela clássica</button></nav>'; return h + "</div></div>"; }
     h += '<nav class="dg-ctrl"><button type="button" data-dg="play">' + (AP_.play ? "⏸ Pausar" : "▶ Continuar") + "</button>" + VEL.map(function (v) { return '<button type="button" data-dg="vel" data-id="' + v[1] + '" class="' + (Math.abs((AP_.vel || 0) - v[1]) < 1e-6 ? "on" : "") + '">' + v[0] + "</button>"; }).join("") +
       '<button type="button" data-dg="classica">Tela clássica</button>' + (p >= 100 ? '<button type="button" class="fim" data-dg="encerrar">Encerrar apuração</button>' : "") + "</nav>";
     return h + "</div></div>";
@@ -571,8 +624,8 @@
   function loop() {
     var ap = document.getElementById("apurMapa");
     if (ap && municipal() && !st.aberto) {
-      st.aberto = true; st.oculto = false; st.cena = null; st.rot = 0; st.anunc = {}; st.fila = []; st.panVistas = {}; st.panFinal = 0; st.vbK = null; cacheCam = { k: null, r: null };
-      ok(function () { var AP_ = A().AP; if (AP_.pct < 1) { AP_.vel = VEL[0][1]; AP_.play = true; AP_.last = performance.now(); } });
+      st.aberto = true; st.oculto = false; st.cena = null; st.rot = 0; st.anunc = {}; st.fila = []; st.panVistas = {}; st.panFinal = 0; st.vbK = null; cacheCam = { k: null, r: null }; st.pos = null; st.entFeita = false; st.entAberta = false;
+      ok(function () { var AP_ = A().AP; if (AP_.pct < 1) { AP_.play = false; st.pre = true; novaCena("pre", { k: 0 }, 9500); } });
     }
     if (ap || document.getElementById("v3dg")) desenhar();
   }
@@ -584,11 +637,13 @@
     var k = b.getAttribute("data-dg"), id = b.getAttribute("data-id"), AP_ = ok(function () { return A().AP; }, null);
     if (k === "" || (k === "bairro" && !painelBairros())) return;
     e.preventDefault(); e.stopPropagation();
-    if (k === "classica") st.oculto = true;
+    if (k === "classica") { st.oculto = true; if (st.pre) fimPre(); }
     else if (k === "voltar") st.oculto = false;
     else if (k === "play" && AP_) { AP_.play = !AP_.play; AP_.last = performance.now(); }
     else if (k === "vel" && AP_) { AP_.vel = +id; AP_.last = performance.now(); }
     else if (k === "bairro") novaCena("estado", { id: id }, 12000);
+    else if (k === "preprox") { if (st.cena && st.cena.tipo === "pre") st.cena.dur = 0; dirigir(); }
+    else if (k === "prepular") { fimPre(); }
     else if (k === "encerrar") { var t = document.getElementById("v3dg"); if (t) t.remove(); st.aberto = false; ok(function () { A().fechar(); }); return; }
     desenhar();
   }, true);

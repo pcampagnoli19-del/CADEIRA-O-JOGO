@@ -238,7 +238,9 @@
       pts: {}, plateia: 50, redes: 30, log: [], destaques: [], gafes: [], fase: "abertura", cena: null, posAqui: {}, fim: false, avisos: 0 };
     cands.forEach(function (c) { S_.ativo.pts[c.id] = { arg: 0, prop: 0, ataque: 0, defesa: 0, gafe: 0, postura: 0 }; });
     ev.status = "hoje";
-    S_.ativo.cena = cenaAbertura();
+    var pre = ok(function () { return preShow(); }, []);
+    S_.ativo.cena = pre.length ? pre.shift() : cenaAbertura();
+    S_.ativo.fila_cenas = pre.length ? pre.concat([cenaAbertura()]) : [];
     render_();
   }
   DB.iniciar = iniciar;
@@ -253,7 +255,43 @@
 
   function cenaAbertura() {
     var a = A_(), E = EMISSORAS[a.e], m = E.mediadores[0];
-    return { tipo: "fala", quem: { med: m }, txt: "Boa noite. Começa agora o " + E.vinheta + " entre os candidatos a " + CARGO_TXT[a.cargo] + (a.turno === 2 ? " no segundo turno" : "") + ". Estão aqui " + a.cands.map(function (c) { return c.nome; }).join(", ") + ". Cada um terá tempo para responder, replicar e treplicar. Vamos ao primeiro bloco.", botao: "Começar" };
+    return { tipo: "fala", rot: "ABERTURA OFICIAL", quem: { med: m }, txt: "Boa noite. Está no ar o " + E.vinheta + " entre os candidatos a " + CARGO_TXT[a.cargo] + (a.turno === 2 ? " no segundo turno" : "") + ". Participam " + a.cands.map(function (c) { return c.nome; }).join(", ") + ". As regras: cada candidato tem tempo para responder, a quem perguntou cabe a réplica e a quem respondeu, a tréplica. A plateia não pode se manifestar. A ordem dos blocos foi definida em sorteio com as assessorias. Vamos ao primeiro bloco.", botao: "Começar o debate" };
+  }
+  /* ---------- pré-debate: vinheta, apresentação, chegada e entrevistas ---------- */
+  function reporterDeb(e) {
+    var tv = ok(function () { return window.V3TV.IMG; }, {}) || {}, dg = ok(function () { return window.V3DGABC.IMG; }, {}) || {};
+    return { globo: { nome: "Maju Coutinho", foto: tv.rep_globo_se }, band: { nome: "Cynthia Martins", foto: tv.rep_band_se }, dgabc: { nome: "Mariana Gutierrez", foto: dg.mariana } }[e] || { nome: "Reportagem " + EMISSORAS[e].nome, foto: "" };
+  }
+  function preShow() {
+    var a = A_(), E = EMISSORAS[a.e], m = E.mediadores[0], rep = reporterDeb(a.e), l = [];
+    var tot = a.cands.reduce(function (s2, c) { return s2 + Math.max(5, c.pop || 20); }, 0) || 1;
+    var base = a.cands.map(function (c) { return { id: c.id, nome: c.nome, partido: c.partido, share: Math.max(5, c.pop || 20) / tot * 90 }; });
+    var pq = ok(function () { return window.V3COB.pesquisa(a.cargo, base, "deb" + a.ev); }, null);
+    var pos = 1, pct = 0, lider = "";
+    if (pq) { pos = pq.itens.length + 1; pq.itens.forEach(function (x, i) { if (x.jogador || x.nome === J().nome) { pos = i + 1; pct = x.pct; } }); lider = (pq.itens.filter(function (x) { return !x.jogador && x.nome !== J().nome; })[0] || {}).nome || ""; }
+    l.push({ tipo: "pvinheta", rot: "AO VIVO" });
+    l.push({ tipo: "papres", rot: "APRESENTAÇÃO", pq: pq, txt: "Boa noite. Em instantes, o " + E.vinheta + ". " + (a.turno === 2 ? "É o confronto final entre os dois candidatos que disputam o segundo turno para " + CARGO_TXT[a.cargo] + "." : a.cands.length + " candidatos disputam " + CARGO_TXT[a.cargo] + ".") + (pq && pq.itens[0] ? " Na última pesquisa " + pq.instituto + ", " + pq.itens[0].nome + " aparece à frente, com " + Math.round(pq.itens[0].pct) + "%." : "") + " Os temas que mais preocupam o eleitor, segundo as pesquisas, são saúde, segurança e emprego.", quem: { med: m } });
+    a.cands.slice(1).concat([a.cands[0]]).forEach(function (c) {
+      l.push({ tipo: "pchegada", rot: "CHEGADA DOS CANDIDATOS", cand: c.id, rep: rep, txt: c.jog ? "Você chega ao estúdio. Assessores, militantes e câmeras na porta." : ok(function () { return window.V3COB.falaNpc({ id: c.npc || c.id, nome: c.nome, partido: c.partido }, "chegada"); }, c.nome + " chega ao estúdio.") });
+    });
+    a.cands.slice(1).sort(function (x, y) { return (y.pop || 0) - (x.pop || 0); }).slice(0, 2).forEach(function (c) {
+      var q = c.inc ? "O senhor chega como quem governa. Vai defender a gestão ou propor mudanças?" : c.esc > 20 ? "Seu nome está no noticiário pelas investigações. Vai ser cobrado hoje?" : c.estilo === "agressivo" ? "Dá para esperar um debate duro da sua parte?" : "Qual é a sua estratégia para esta noite?";
+      if (c.sexo === "F") q = q.replace("O senhor", "A senhora");
+      l.push({ tipo: "pentNpc", rot: "ENTREVISTAS", cand: c.id, rep: rep, q: q, txt: ok(function () { return window.V3COB.falaNpc({ id: c.npc || c.id, nome: c.nome, partido: c.partido }, "pre"); }, "") });
+    });
+    var temAliados = ok(function () { var co = J().campanha.coligacao; return co && co.length ? co.slice(0, 2).join(" e ") : ""; }, "");
+    var Q = ok(function () { return window.V3COB.perguntasPreDebate({ pos: pos, pct: pct, lider: lider, cargoTxt: CARGO_TXT[a.cargo], temAliados: temAliados }); }, []);
+    Q.forEach(function (x) { l.push({ tipo: "pentJog", rot: "ENTREVISTAS", rep: rep, q: x.q, ops: x.ops }); });
+    l.push({ tipo: "ptransicao", rot: "VAI COMEÇAR" });
+    return l;
+  }
+  function responderPre(opId) {
+    var a = A_(), c = a.cena; if (!c || c.tipo !== "pentJog") return;
+    var op = c.ops.filter(function (o) { return o.id === opId; })[0]; if (!op) return;
+    var r = ok(function () { return window.V3COB.aplicarResposta(op, { canal: EMISSORAS[a.e].nome, rivalId: (rivais()[0] || {}).npc }); }, { delta: 0 });
+    a.plateia = clamp(a.plateia + (r.azar ? -6 : (r.delta || 0) * 4), 5, 95); a.redes = clamp(a.redes + (op.ef && op.ef.base ? 6 : 2) + (r.azar ? 8 : 0), 0, 100);
+    a.cena = { tipo: "pfala", rot: c.rot, quem: { cand: "JOGADOR" }, txt: op.fala, extra: r.azar ? "A frase repercute mal nos bastidores." : (r.delta || 0) > 0.4 ? "Boa repercussão entre os jornalistas." : "Os adversários anotam a resposta." };
+    render_();
   }
 
   /* ---------- opções de resposta (contextualizadas) ---------- */
@@ -538,11 +576,27 @@
     var mo = a.fila[Math.max(0, a.i)] || {};
     var h = '<div class="v3d v3d-' + E.tema + '" style="--bg:url(' + bg + ')"><div class="v3d-fundo"></div><div class="v3d-tela">';
     h += '<header class="v3d-top"><img class="v3d-logo" src="' + logo + '" alt=""><div class="v3d-tit"><b>' + esc_(E.titulo) + "</b><small>" + esc_(NOME_CARGO[a.cargo]) + (a.turno === 2 ? " • 2º TURNO" : "") + '</small></div><span class="v3d-vivo">● AO VIVO</span></header>';
-    h += '<div class="v3d-bloco">' + esc_(a.i < 0 ? "ABERTURA" : mo.titulo || "") + "</div>";
+    h += '<div class="v3d-bloco">' + esc_(a.i < 0 ? ((a.cena && a.cena.rot) || "ABERTURA") : mo.titulo || "") + "</div>";
     h += placar(a);
     var c = a.cena || {};
     h += '<div class="v3d-cena">';
-    if (c.tipo === "vinheta") h += '<div class="v3d-vinheta">' + esc_(c.txt) + '</div><button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
+    if (c.tipo === "pvinheta") h += '<div class="v3d-abert"><img src="' + logo + '" alt=""><b>' + esc_(E.titulo) + "</b><small>" + esc_(NOME_CARGO[a.cargo]) + (a.turno === 2 ? " • 2º turno" : "") + " • " + esc_(data().ano) + '</small><span>AO VIVO</span></div><button type="button" class="b confirma v3d-go" data-v3d="cont">Entrar na transmissão</button>';
+    else if (c.tipo === "papres") {
+      h += quemHtml(c.quem) + '<p class="v3d-fala">' + esc_(c.txt) + "</p>";
+      if (c.pq) h += '<div class="v3d-pq"><small>' + esc_(c.pq.instituto) + " • margem ±" + c.pq.margem + " pontos</small>" + c.pq.itens.map(function (x) { return '<div class="v3d-barra' + (x.jogador || x.nome === J().nome ? " eu" : "") + '"><span>' + esc_(x.jogador || x.nome === J().nome ? "Você" : x.nome) + '</span><i style="width:' + Math.min(100, x.pct * 1.5) + '%"></i><b>' + Math.round(x.pct) + "%</b></div>"; }).join("") + "</div>";
+      h += '<button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
+    } else if (c.tipo === "pchegada" || c.tipo === "pentNpc") {
+      var cc = byId(c.cand);
+      h += '<div class="v3d-gc rep">' + (c.rep.foto ? '<img src="' + esc_(c.rep.foto) + '" alt="">' : '<span class="v3d-ini big">🎤</span>') + "<div><b>" + esc_(c.rep.nome) + "</b><small>repórter • na porta do estúdio</small></div></div>";
+      if (c.tipo === "pchegada") h += '<div class="v3d-chega">' + fotoHtml(cc, "v3d-foto") + "<div><b>" + esc_(cc.jog ? "Você" : cc.nome) + "</b><small>" + esc_(cc.partido) + '</small></div></div><p class="v3d-fala">' + esc_(c.txt) + "</p>";
+      else h += '<p class="v3d-fala"><b>' + esc_(c.rep.nome) + ":</b> " + esc_(c.q) + "</p>" + quemHtml({ cand: c.cand }) + '<p class="v3d-fala">' + esc_(c.txt) + "</p>";
+      h += '<button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
+    } else if (c.tipo === "pentJog") {
+      h += '<div class="v3d-gc rep">' + (c.rep.foto ? '<img src="' + esc_(c.rep.foto) + '" alt="">' : '<span class="v3d-ini big">🎤</span>') + "<div><b>" + esc_(c.rep.nome) + '</b><small>entrevista antes do debate</small></div></div><p class="v3d-fala">' + esc_(c.q) + '</p><p class="v3d-vez">🎙️ Sua resposta</p><div class="v3d-ops">' + c.ops.map(function (o) { return '<button type="button" class="v3d-op" data-v3d="preop" data-id="' + esc_(o.id) + '"><b>' + esc_(o.rot) + '</b><em>"' + esc_(o.fala) + '"</em></button>'; }).join("") + "</div>";
+    } else if (c.tipo === "pfala") {
+      h += quemHtml(c.quem) + '<p class="v3d-fala">' + esc_(c.txt) + "</p>" + (c.extra ? '<p class="v3d-tag ' + (/mal/.test(c.extra) ? "ruim" : "bom") + '">' + esc_(c.extra) + "</p>" : "") + '<button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
+    } else if (c.tipo === "ptransicao") h += '<div class="v3d-vinheta v3d-trans">O DEBATE VAI COMEÇAR</div><button type="button" class="b confirma v3d-go" data-v3d="cont">Ao vivo</button>';
+    else if (c.tipo === "vinheta") h += '<div class="v3d-vinheta">' + esc_(c.txt) + '</div><button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
     else if (c.tipo === "fala") {
       h += quemHtml(c.quem) + '<p class="v3d-fala">' + esc_(c.txt) + "</p>";
       if (c.nota && c.nota.gafe) h += '<p class="v3d-tag ruim">⚠️ ' + esc_(c.nota.gafe) + "</p>";
@@ -597,6 +651,7 @@
     e.preventDefault();
     if (k === "entrar") iniciar(id);
     else if (k === "cont") continuar();
+    else if (k === "preop") responderPre(id);
     else if (k === "op") escolher(id);
     else if (k === "alvo") escolherAlvo(id);
     else if (k === "sair") sair();
