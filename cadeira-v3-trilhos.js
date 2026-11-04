@@ -65,32 +65,57 @@
     L9: { num: "9", nome: "Esmeralda", op: "ViaMobilidade", cor: "#01A9A7", modo: "trem" }, L10: { num: "10", nome: "Turquesa", op: "CPTM", cor: "#049FC3", modo: "trem" },
     L11: { num: "11", nome: "Coral", op: "CPTM", cor: "#F04E23", modo: "trem" }, L12: { num: "12", nome: "Safira", op: "CPTM", cor: "#083E89", modo: "trem" },
     L13: { num: "13", nome: "Jade", op: "CPTM", cor: "#00B352", modo: "trem" },
+    L18: { num: "18", nome: "Bronze", op: "Metrô (monotrilho)", cor: "#B0703C", modo: "metro" },
+    BRTABC: { num: "BRT", nome: "BRT-ABC", op: "Consórcio Next", cor: "#3D7A5A", modo: "brt" },
     ET: { num: "ET", nome: "Expresso Tiradentes", op: "SPTrans (BRT)", cor: "#6D6E71", modo: "brt" },
     TICN: { num: "TIC", nome: "Intercidades Norte", op: "TIC (Campinas)", cor: "#5B2C83", modo: "regional" },
     TICS: { num: "TIC", nome: "Intercidades Sul", op: "TIC (Santos)", cor: "#7A4FA3", modo: "regional" },
     TICO: { num: "TIM", nome: "Intermetropolitano Oeste", op: "TIM (Sorocaba)", cor: "#8C6BB1", modo: "regional" },
     TAV: { num: "TAV", nome: "Trem de Alta Velocidade", op: "Federal", cor: "#2B2B2B", modo: "regional" }
   };
-  var L7 = ["jundiai", "fmorato", "francodarocha", "caieiras", "perus", "jaragua", "pirituba", "lapa", "aguabranca", "barrafunda"];
+  // seq(): monta o traçado com a lista completa de estações. Item = id já conhecido, [id, nome] (posição
+  // interpolada entre as estações vizinhas com coordenada) ou [id, nome, lat, lon].
+  function seq(arr) {
+    var ids = arr.map(function (x) {
+      if (typeof x === "string") return x;
+      if (!E[x[0]]) E[x[0]] = { id: x[0], n: x[1], c: x.length > 2 ? [x[2], x[3]] : null };
+      return x[0];
+    });
+    for (var k = 0; k < ids.length; k++) {
+      if (E[ids[k]].c) continue;
+      var a = k - 1; while (a >= 0 && !E[ids[a]].c) a--;
+      var b = k + 1; while (b < ids.length && !E[ids[b]].c) b++;
+      if (a < 0 || b >= ids.length) continue;
+      var f = (k - a) / (b - a), ca = E[ids[a]].c, cb = E[ids[b]].c;
+      E[ids[k]].c = [ca[0] + (cb[0] - ca[0]) * f, ca[1] + (cb[1] - ca[1]) * f];
+    }
+    return ids;
+  }
+  var L7 = seq(["jundiai", ["varzeapta", "Várzea Paulista"], ["campolimpopta", "Campo Limpo Paulista"], ["botujuru", "Botujuru"], "fmorato", ["baltazar", "Baltazar Fidélis"], "francodarocha", "caieiras", "perus",
+    ["vilaaurora", "Vila Aurora"], "jaragua", ["vilaclarice", "Vila Clarice"], "pirituba", ["piqueri", "Piqueri"], "lapa", "aguabranca", "barrafunda"]);
   var TRECHOS = [
-    { id: "L1", linha: "L1", base: "operacao", est: ["tucuruvi", "santana", "tiete", "luz", "saobento", "se", "liberdade", "saojoaquim", "paraiso", "anarosa", "santacruz", "saude", "jabaquara"] },
-    { id: "L2", linha: "L2", base: "operacao", est: ["vilamadalena", "clinicas", "consolacao", "trianon", "brigadeiro", "paraiso", "anarosa", "chacaraklabin", "altoipiranga", "sacoma", "tamanduatei", "vilaprudente"] },
-    { id: "L2-leste", linha: "L2", base: "planejado", obras: ["OBR-GOV-023"], rotulo: "Extensão Vila Prudente–Dutra", est: ["vilaprudente", "orfanato", "analiafranco", "vilaformosa", "aricanduva", "penha", "dutra"] },
-    { id: "L3", linha: "L3", base: "operacao", est: ["barrafunda", "santacecilia", "republica", "anhangabau", "se", "pedroii", "bras", "bresser", "belem", "tatuape", "carrao", "penha", "vilamatilde", "patriarca", "arturalvim", "itaquera"] },
-    { id: "L4", linha: "L4", base: "operacao", est: ["luz", "republica", "higienopolis", "paulista", "oscarfreire", "farialima", "pinheiros", "butanta", "morumbi4", "vilasonia"] },
-    { id: "L5", linha: "L5", base: "operacao", est: ["capaoredondo", "campolimpo", "santoamaro", "largotreze", "borbagato", "brooklin", "campobelo", "moema", "aacd", "hsp", "santacruz", "chacaraklabin"] },
-    { id: "L6", linha: "L6", base: "planejado", obras: ["OBR-GOV-024"], rotulo: "Brasilândia–São Joaquim", est: ["brasilandia", "itaberaba", "freguesia", "santamarina", "aguabranca", "perdizes", "puc", "faap", "higienopolis", "bis14", "saojoaquim"] },
-    { id: "L15", linha: "L15", base: "operacao", est: ["vilaprudente", "oratorio15", "saolucas", "vilauniao", "sapopemba", "saomateus"] },
+    { id: "L1", linha: "L1", base: "operacao", est: seq(["tucuruvi", ["paradainglesa", "Parada Inglesa"], ["jdsaopaulo", "Jardim São Paulo-Ayrton Senna"], "santana", ["carandiru", "Carandiru"], "tiete", ["armenia", "Armênia"], ["tiradentes", "Tiradentes"], "luz", "saobento", "se", "liberdade", "saojoaquim", ["vergueiro", "Vergueiro"], "paraiso", "anarosa", ["vilamariana", "Vila Mariana"], "santacruz", ["pracaarvore", "Praça da Árvore"], "saude", ["saojudas", "São Judas"], ["conceicao", "Conceição"], "jabaquara"]) },
+    { id: "L2", linha: "L2", base: "operacao", est: seq(["vilamadalena", ["sumare", "Sumaré"], "clinicas", "consolacao", "trianon", "brigadeiro", "paraiso", "anarosa", "chacaraklabin", ["santosimigrantes", "Santos-Imigrantes"], "altoipiranga", "sacoma", "tamanduatei", "vilaprudente"]) },
+    { id: "L2-leste", linha: "L2", base: "planejado", obras: ["OBR-GOV-023"], rotulo: "Extensão Vila Prudente–Dutra", est: seq(["vilaprudente", "orfanato", ["aguarasa", "Água Rasa"], "analiafranco", "vilaformosa", ["guilhermegiorgi", "Guilherme Giorgi"], ["novamanchester", "Nova Manchester"], "aricanduva", "penha", "dutra"]) },
+    { id: "L3", linha: "L3", base: "operacao", est: seq(["barrafunda", ["marechal", "Marechal Deodoro"], "santacecilia", "republica", "anhangabau", "se", "pedroii", "bras", "bresser", "belem", "tatuape", "carrao", "penha", "vilamatilde", ["guilhermina", "Guilhermina-Esperança"], "patriarca", "arturalvim", "itaquera"]) },
+    { id: "L4", linha: "L4", base: "operacao", est: seq(["luz", "republica", "higienopolis", "paulista", "oscarfreire", ["fradique", "Fradique Coutinho"], "farialima", "pinheiros", "butanta", "morumbi4", "vilasonia"]) },
+    { id: "L5", linha: "L5", base: "operacao", est: seq(["capaoredondo", "campolimpo", ["vilabelezas", "Vila das Belezas"], ["gronchi", "Giovanni Gronchi"], "santoamaro", "largotreze", ["adolfopinheiro", "Adolfo Pinheiro"], ["altoboavista", "Alto da Boa Vista"], "borbagato", "brooklin", "campobelo", ["eucaliptos", "Eucaliptos"], "moema", "aacd", "hsp", "santacruz", "chacaraklabin"]) },
+    { id: "L6", linha: "L6", base: "planejado", obras: ["OBR-GOV-024"], rotulo: "Brasilândia–São Joaquim", est: seq(["brasilandia", ["vilacardoso", "Vila Cardoso"], "itaberaba", ["joaopaulo", "João Paulo I"], "freguesia", "santamarina", "aguabranca", ["sescpompeia", "SESC-Pompeia"], "perdizes", "puc", "faap", "higienopolis", "bis14", ["belavista", "Bela Vista"], "saojoaquim"]) },
+    { id: "L15", linha: "L15", base: "operacao", est: seq(["vilaprudente", "oratorio15", "saolucas", ["camilohaddad", "Camilo Haddad"], ["vilatolstoi", "Vila Tolstói"], "vilauniao", ["jdplanalto", "Jardim Planalto"], "sapopemba", ["fazendajuta", "Fazenda da Juta"], "saomateus"]) },
     { id: "L15-ipiranga", linha: "L15", base: "planejado", obras: ["OBR-GOV-025"], rotulo: "Extensão até Ipiranga", est: ["ipiranga", "vilaprudente"] },
     { id: "L15-colonial", linha: "L15", base: "planejado", obras: ["OBR-GOV-025"], rotulo: "Extensão até Jardim Colonial", est: ["saomateus", "jdcolonial"] },
     { id: "L19", linha: "L19", base: "planejado", obras: ["OBR-GOV-027"], rotulo: "Guarulhos–Anhangabaú (referência)", est: ["bosquemaia", "vilamaria", "catumbi", "anhangabau"] },
     { id: "L20", linha: "L20", base: "planejado", obras: ["OBR-GOV-026"], rotulo: "Lapa–Santo Amaro (referência)", est: ["lapa", "pinheiros", "vilaolimpia", "brooklin", "santoamaro"] },
+    { id: "L18", linha: "L18", base: "planejado", obras: ["OBR-TRI-005"], rotulo: "Tamanduateí–São Bernardo (monotrilho do ABC)", est: seq(["tamanduatei", ["espacoceramica", "Espaço Cerâmica", -23.6230, -46.5590], ["praçaqb", "Praça Quarto Centenário"], ["paco_sa", "Paço Municipal de Santo André", -23.6560, -46.5370], ["afonsina", "Afonsina"], ["djalma", "Djalma Dutra (São Bernardo)", -23.6990, -46.5560]]) },
+    { id: "BRTABC", linha: "BRTABC", base: "planejado", obras: ["OBR-TRI-006"], rotulo: "BRT-ABC: São Bernardo–Santo André–Tamanduateí", est: seq([["sbc_term", "Terminal São Bernardo", -23.7090, -46.5520], ["paco_sbc", "Paço de São Bernardo"], "paco_sa", ["sa_oeste", "Santo André Oeste"], "saocaetano", "tamanduatei"]) },
     { id: "L7", linha: "L7", base: "operacao", est: L7 },
-    { id: "L8", linha: "L8", base: "operacao", est: ["juliop", "barrafunda", "lapa", "paltino", "osasco", "carapicuiba", "barueri", "jandira", "itapevi", "amadorbueno"] },
-    { id: "L9", linha: "L9", base: "operacao", est: ["osasco", "paltino", "ceasa", "pinheiros", "cidadejardim", "vilaolimpia", "berrini", "santoamaro", "socorro", "jurubatuba", "grajau"] },
-    { id: "L10", linha: "L10", base: "operacao", est: ["bras", "mooca", "ipiranga", "tamanduatei", "saocaetano", "utinga", "santoandre", "capuava", "maua", "guapituba", "ribeiraopires", "rgs"] },
-    { id: "L11", linha: "L11", base: "operacao", est: ["luz", "bras", "tatuape", "itaquera", "guaianases", "ferraz", "poa", "calmonviana", "suzano", "brascubas", "mogi", "estudantes"] },
-    { id: "L12", linha: "L12", base: "operacao", est: ["bras", "tatuape", "engoulart", "uspleste", "saomiguel", "itaimpaulista", "itaquaquecetuba", "calmonviana"] },
+    { id: "L8", linha: "L8", base: "operacao", est: seq(["juliop", "barrafunda", "lapa", ["domingos", "Domingos de Moraes"], ["imperatriz", "Imperatriz Leopoldina"], "paltino", "osasco", ["cmtsampaio", "Comandante Sampaio"], ["quitauna", "Quitaúna"], ["miguelcosta", "General Miguel Costa"], "carapicuiba", ["santaterezinha", "Santa Terezinha"], ["antoniojoao", "Antônio João"], "barueri", ["belval", "Jardim Belval"], ["silveira", "Jardim Silveira"], "jandira", ["sagrado", "Sagrado Coração"], ["engcardoso", "Engenheiro Cardoso"], "itapevi", ["santarita", "Santa Rita"], "amadorbueno"]) },
+    { id: "L9", linha: "L9", base: "operacao", est: seq(["osasco", "paltino", "ceasa", ["villalobos", "Villa-Lobos-Jaguaré"], ["cidadeuniv", "Cidade Universitária"], "pinheiros", ["hebraica", "Hebraica-Rebouças"], "cidadejardim", "vilaolimpia", "berrini", ["morumbi9", "Morumbi"], ["granjajulieta", "Granja Julieta"], ["joaodias", "João Dias"], "santoamaro", "socorro", "jurubatuba", ["autodromo", "Autódromo"], ["interlagos", "Primavera-Interlagos"], "grajau", ["mendes", "Mendes-Vila Natal", -23.7520, -46.6950], ["varginha", "Varginha", -23.7680, -46.6940]]) },
+    { id: "L10", linha: "L10", base: "operacao", est: seq(["bras", "mooca", "ipiranga", "tamanduatei", "saocaetano", "utinga", ["saladino", "Prefeito Saladino"], "santoandre", "capuava", "maua", "guapituba", "ribeiraopires", "rgs"]) },
+    { id: "L10-itapark", linha: "L10", base: "planejado", obras: ["OBR-TRI-002"], rotulo: "Nova estação Itapark (Mauá)", est: seq(["capuava", ["itapark10", "Itapark", -23.6650, -46.4790], "maua"]) },
+    { id: "L10-paranapiacaba", linha: "L10", base: "planejado", obras: ["OBR-TRI-003"], rotulo: "Prolongamento turístico até Paranapiacaba", est: seq(["rgs", ["paranapiacaba", "Paranapiacaba", -23.7780, -46.3030]]) },
+    { id: "L11", linha: "L11", base: "operacao", est: seq(["luz", "bras", "tatuape", "itaquera", ["dombosco", "Dom Bosco"], ["josebonifacio", "José Bonifácio"], "guaianases", ["gianetti", "Antônio Gianetti Neto"], "ferraz", "poa", "calmonviana", "suzano", ["jundiapeba", "Jundiapeba"], "brascubas", "mogi", "estudantes"]) },
+    { id: "L12", linha: "L12", base: "operacao", est: seq(["bras", "tatuape", "engoulart", "uspleste", ["ermelino", "Comendador Ermelino"], "saomiguel", ["jdhelena", "Jardim Helena-Vila Mara"], "itaimpaulista", ["jdromano", "Jardim Romano"], ["manoelfeio", "Engenheiro Manoel Feio"], "itaquaquecetuba", ["aracare", "Aracaré"], "calmonviana"]) },
     { id: "L13", linha: "L13", base: "operacao", est: ["engoulart", "cecap", "aeroporto"] },
     { id: "L13-ext", linha: "L13", base: "planejado", obras: ["OBR-GOV-034"], rotulo: "Extensão aos terminais do aeroporto", est: ["aeroporto", "terminais"] },
     { id: "ET", linha: "ET", base: "operacao", est: ["pqdpedro", "ipiranga", "sacoma"] },
@@ -104,7 +129,20 @@
     { linha: "L10", obras: ["OBR-GOV-032", "OBR-PRE-089"], rotulo: "Modernização de trens e estações (Mauá e ABC)" },
     { linha: "L11", obras: ["OBR-GOV-033"], rotulo: "Expresso Leste (trens expressos Guaianases–Mogi)" }
   ];
-  var PONTOS = [{ est: "maua", obras: ["OBR-PRF-024"], rotulo: "Terminal Rodoviário Intermodal de Mauá" }];
+  var PONTOS = [
+    { est: "maua", obras: ["OBR-PRF-024"], rotulo: "Terminal Rodoviário Intermodal de Mauá" },
+    { est: "maua", obras: ["OBR-TRI-001"], rotulo: "Reforma e acessibilidade da estação Mauá" },
+    { est: "santoandre", obras: ["OBR-TRI-004"], rotulo: "Terminal metropolitano integrado de Santo André" }
+  ];
+  /* obras de trilhos que o catálogo original não tinha (ligadas ao mapa e jogáveis como qualquer obra) */
+  var CATALOGO_EXTRA = [
+    { id: "OBR-TRI-001", esfera_executora: "Governador", categoria: "Obra", area: "Mobilidade", nome: "Estação Mauá: reforma e acessibilidade", descricao: "Reconstrução da estação da Linha 10 em Mauá, com elevadores, passarela nova e integração com os ônibus.", local: "Mauá (SP)", escopo: "Local", custo_milhoes: 180, prazo_meses: 24, manutencao_anual_milhoes: 4, solicitantes: ["Prefeito"], negociar_com: null, aprovacao_legislativa: null, contrapartida: null, efeitos: { mobilidade: 2, economia: 1 }, polemica: 1, base_real: "Inspirado em real" },
+    { id: "OBR-TRI-002", esfera_executora: "Governador", categoria: "Obra", area: "Mobilidade", nome: "Linha 10: nova estação Itapark (Mauá)", descricao: "Estação intermediária entre Capuava e Mauá para atender o Itapark e a zona industrial.", local: "Mauá (SP)", escopo: "Local", custo_milhoes: 260, prazo_meses: 30, manutencao_anual_milhoes: 5, solicitantes: ["Prefeito"], negociar_com: null, aprovacao_legislativa: null, contrapartida: null, efeitos: { mobilidade: 3, economia: 1 }, polemica: 1, base_real: "Fictício" },
+    { id: "OBR-TRI-003", esfera_executora: "Governador", categoria: "Obra", area: "Mobilidade", nome: "Linha 10: prolongamento turístico até Paranapiacaba", descricao: "Recupera o trecho da serra entre Rio Grande da Serra e a vila ferroviária, com trem turístico regular.", local: "Rio Grande da Serra e Santo André (SP)", escopo: "Regional", custo_milhoes: 420, prazo_meses: 36, manutencao_anual_milhoes: 8, solicitantes: ["Prefeito"], negociar_com: null, aprovacao_legislativa: null, contrapartida: null, efeitos: { economia: 2, mobilidade: 1, meio_ambiente: -1 }, polemica: 2, base_real: "Inspirado em real" },
+    { id: "OBR-TRI-004", esfera_executora: "Governador", categoria: "Obra", area: "Mobilidade", nome: "Estação Santo André: terminal metropolitano integrado", descricao: "Integra trem, ônibus metropolitanos e o futuro monotrilho do ABC num único terminal.", local: "Santo André (SP)", escopo: "Regional", custo_milhoes: 340, prazo_meses: 30, manutencao_anual_milhoes: 6, solicitantes: ["Prefeito"], negociar_com: null, aprovacao_legislativa: null, contrapartida: null, efeitos: { mobilidade: 3, economia: 1 }, polemica: 1, base_real: "Inspirado em real" },
+    { id: "OBR-TRI-005", esfera_executora: "Governador", categoria: "Obra", area: "Mobilidade", nome: "Linha 18-Bronze (monotrilho do ABC)", descricao: "Monotrilho entre Tamanduateí e São Bernardo do Campo, passando por São Caetano e Santo André. O projeto original foi cancelado em 2019.", local: "São Paulo, São Caetano, Santo André e São Bernardo", escopo: "Regional", custo_milhoes: 7800, prazo_meses: 72, manutencao_anual_milhoes: 90, solicitantes: ["Prefeito", "Presidente"], negociar_com: null, aprovacao_legislativa: null, contrapartida: null, efeitos: { mobilidade: 6, economia: 2 }, polemica: 2, base_real: "Real – planejado/proposto" },
+    { id: "OBR-TRI-006", esfera_executora: "Governador", categoria: "Obra", area: "Mobilidade", nome: "BRT-ABC", descricao: "Corredor de ônibus rápido entre São Bernardo, Santo André, São Caetano e o Tamanduateí, que substituiu o monotrilho.", local: "Grande ABC (SP)", escopo: "Regional", custo_milhoes: 1100, prazo_meses: 36, manutencao_anual_milhoes: 20, solicitantes: ["Prefeito"], negociar_com: null, aprovacao_legislativa: null, contrapartida: null, efeitos: { mobilidade: 4 }, polemica: 2, base_real: "Real – existente/em andamento" }
+  ];
   TR.dados = { ESTACOES: E, LINHAS: L, TRECHOS: TRECHOS, MELHORIAS: MELHORIAS, PONTOS: PONTOS };
 
   /* ================================================================ estado das obras */
@@ -193,7 +231,7 @@
     vis.forEach(function (x) { var t = x.t, ps = t.paradas || t.est; ps.forEach(function (id) { var s = x.e.s; if (!est[id] || RANK[s] > RANK[est[id]]) est[id] = s; (linhasEst[id] = linhasEst[id] || {}); linhasEst[id][t.linha] = 1; }); });
     Object.keys(est).forEach(function (id) {
       var p = xy(id), n = Object.keys(linhasEst[id]).length, s = est[id], term = TRECHOS.some(function (t) { return (t.paradas || t.est)[0] === id || (t.paradas || t.est).slice(-1)[0] === id; });
-      var pt = PONTOS.filter(function (x) { return x.est === id; })[0], ptS = pt ? estadoObras(pt.obras) : null;
+      var ptS = null; PONTOS.filter(function (x) { return x.est === id; }).forEach(function (x) { var r = estadoObras(x.obras); if (r && (!ptS || RANK[r.s] > RANK[ptS.s])) ptS = r; });
       var cls = "v3t-est st-" + s + (n > 1 ? " int" : "") + (term || n > 1 || id === "maua" ? " pri" : "") + (ptS && ptS.s === "operacao" ? " eq" : "");
       h += '<g class="' + cls + '" data-v3t-est="' + id + '"><circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + ((n > 1 ? 4.6 : 3.2) * RF).toFixed(2) + '"/>' + (ptS && ptS.s !== "planejado" && ptS.s !== "cancelado" ? '<rect x="' + (p[0] + 4 * RF).toFixed(1) + '" y="' + (p[1] - 10 * RF).toFixed(1) + '" width="' + (7 * RF).toFixed(1) + '" height="' + (7 * RF).toFixed(1) + '" class="v3t-eq st-' + ptS.s + '"/>' : "") + '<text x="' + (p[0] + 6 * RF).toFixed(1) + '" y="' + (p[1] + 3 * RF).toFixed(1) + '">' + esc_(E[id].n) + "</text></g>";
     });
@@ -212,11 +250,8 @@
     }).join("") + "</div>";
   }
   function quem(inst) { return ok(function () { return inst.mem ? inst.mem.autor : null; }, null); }
-  function painel() {
-    var id = ui.sel; if (!id || !L[id]) return '<p class="v3t-dica">Toque numa linha (no mapa ou nos botões) para ver os trechos, as obras ligadas e o que dá para fazer. Arraste para mover o mapa; use os botões para aproximar.</p>';
-    var l = L[id], ts = TRECHOS.filter(function (t) { return t.linha === id; }), cid = ok(function () { return cargoAtualId(); }, ""), esf = { PREF: "Prefeito", GOV: "Governador", PRES: "Presidente" }[cid];
-    var h = '<div class="v3t-pl" style="--c:' + l.cor + '"><b>Linha ' + esc_(l.num) + " – " + esc_(l.nome) + "</b><small>" + esc_(l.op) + "</small></div>";
-    function obraBox(cat) {
+  function obraBox(cat) {
+    var cid = ok(function () { return cargoAtualId(); }, ""), esf = { PREF: "Prefeito", GOV: "Governador", PRES: "Presidente" }[cid];
       var it = ok(function () { return OBRAS.item(cat); }, null); if (!it) return "";
       var is = instsDe(cat), i = is.filter(function (x) { return statusDeInst(x) !== "cancelado"; })[0] || is[0];
       var podeIniciar = !i || statusDeInst(i) === "cancelado";
@@ -225,6 +260,20 @@
       return '<div class="v3t-obra"><b>' + esc_(it.nome) + "</b><small>" + esc_(it.esfera_executora) + " · R$ " + Math.round(it.custo_milhoes).toLocaleString("pt-BR") + " mi · " + it.prazo_meses + " meses</small>" +
         (i ? "<p>" + esc_(i.estado) + (["Em execução", "Atrasada", "Paralisada"].indexOf(i.estado) >= 0 ? " · " + Math.round(i.progresso || 0) + "%" : "") + (quem(i) ? " · iniciada por " + esc_(quem(i)) : "") + (i.inauguradorNome && i.estado === "Em manutenção" ? " · inaugurada por " + esc_(i.inauguradorNome) : "") + "</p>" : "<p>Ainda não saiu do papel.</p>") + (acao ? '<div class="row">' + acao + "</div>" : "") + "</div>";
     }
+  function painelEst(id) {
+    var e = E[id], ls = {}; TRECHOS.forEach(function (t) { if ((t.paradas || t.est).indexOf(id) >= 0) (ls[t.linha] = ls[t.linha] || []).push(t); });
+    var h = '<div class="v3t-pl" style="--c:#1f2937"><b>Estação ' + esc_(e.n) + "</b><small>" + Object.keys(ls).map(function (k) { return "Linha " + L[k].num + " " + L[k].nome; }).join(" · ") + "</small></div>";
+    Object.keys(ls).forEach(function (k) { ls[k].forEach(function (t) { var st = estadoTrecho(t); h += '<div class="v3t-trecho"><div><em class="v3t-st st-' + st.s + '">' + ROT[st.s] + "</em> <b>Linha " + esc_(L[k].num) + " – " + esc_(t.rotulo || L[k].nome) + "</b></div>" + (t.base === "operacao" ? "" : (t.obras || []).map(obraBox).join("")) + "</div>"; }); });
+    var pts = PONTOS.filter(function (p) { return p.est === id; });
+    pts.forEach(function (p) { var r = estadoObras(p.obras); h += '<div class="v3t-trecho"><div><em class="v3t-st st-' + (r ? r.s : "planejado") + '">' + (r ? ROT[r.s] : "Projeto") + "</em> <b>" + esc_(p.rotulo) + "</b></div>" + p.obras.map(obraBox).join("") + "</div>"; });
+    if (!pts.length) h += '<p class="v3t-dica">Nenhuma obra de estação cadastrada aqui ainda.</p>';
+    return h;
+  }
+  function painel() {
+    if (ui.selEst && E[ui.selEst]) return painelEst(ui.selEst);
+    var id = ui.sel; if (!id || !L[id]) return '<p class="v3t-dica">Toque numa linha ou estação (no mapa ou nos botões) para ver os trechos, as obras ligadas e o que dá para fazer. Arraste para mover o mapa; use os botões para aproximar.</p>';
+    var l = L[id], ts = TRECHOS.filter(function (t) { return t.linha === id; });
+    var h = '<div class="v3t-pl" style="--c:' + l.cor + '"><b>Linha ' + esc_(l.num) + " – " + esc_(l.nome) + "</b><small>" + esc_(l.op) + "</small></div>";
     ts.forEach(function (t) {
       var e = estadoTrecho(t), ps = (t.paradas || t.est).map(function (x) { return E[x].n; });
       h += '<div class="v3t-trecho"><div><em class="v3t-st st-' + e.s + '">' + ROT[e.s] + (e.inst && (e.s === "obras" || e.s === "parado") ? " · " + Math.round(e.inst.progresso || 0) + "%" : "") + "</em> <b>" + esc_(t.rotulo || (t.base === "operacao" ? "Linha em operação" : "Trecho")) + "</b></div><small>" + ps.length + " estações: " + esc_(ps.join(" · ")) + "</small>" + (t.obras || []).map(obraBox).join("") + "</div>";
@@ -262,7 +311,8 @@
     if ((b = t.closest("[data-v3t-vista]"))) { var k = b.getAttribute("data-v3t-vista"); ui.vb = VISTAS[k] ? caixa(VISTAS[k]) : [0, 0, W, H]; atualizar("mapa"); e.preventDefault(); return; }
     if ((b = t.closest("[data-v3t-zoom]"))) { var f = +b.getAttribute("data-v3t-zoom"), v = ui.vb, cx = v[0] + v[2] / 2, cy = v[1] + v[3] / 2, nw = Math.max(140, Math.min(W * 1.2, v[2] * f)), nh = nw * v[3] / v[2]; ui.vb = [cx - nw / 2, cy - nh / 2, nw, nh]; atualizar("mapa"); e.preventDefault(); return; }
     if (arrastou) return;
-    if ((b = t.closest("[data-v3t-linha]"))) { var id = b.getAttribute("data-v3t-linha"); ui.sel = ui.sel === id ? null : id; atualizar(); e.preventDefault(); e.stopPropagation(); }
+    if ((b = t.closest("[data-v3t-est]"))) { ui.selEst = b.getAttribute("data-v3t-est"); ui.sel = null; atualizar(); e.preventDefault(); e.stopPropagation(); return; }
+    if ((b = t.closest("[data-v3t-linha]"))) { var id = b.getAttribute("data-v3t-linha"); ui.sel = ui.sel === id ? null : id; ui.selEst = null; atualizar(); e.preventDefault(); e.stopPropagation(); }
   }, true);
   document.addEventListener("change", function (e) { var t = e.target; if (t && t.hasAttribute && t.hasAttribute("data-v3t-planos")) { ui.planos = t.checked; atualizar(); } }, true);
   // arrastar o mapa
@@ -279,13 +329,143 @@
     var nw = Math.max(140, Math.min(W * 1.2, v[2] * f)), nh = nw * v[3] / v[2]; ui.vb = [px - (px - v[0]) * nw / v[2], py - (py - v[1]) * nh / v[3], nw, nh]; atualizar("mapa");
   }, { passive: false });
 
+  /* ================================================================ mundo vivo: catálogo, governos NPC e efeito regional */
+  var ESF_ID = { Prefeito: "PREF", Governador: "GOV", Presidente: "PRES" };
+  function catalogo() {
+    var OB = window.OBRAS; if (!OB || !OB.DB || !OB.BY_ID) return false;
+    CATALOGO_EXTRA.forEach(function (it) { if (!OB.BY_ID[it.id]) { OB.DB.push(it); OB.BY_ID[it.id] = it; } });
+    return true;
+  }
+  function agoraM_() { return ok(function () { return agoraM(); }, 0); }
+  function titularNome(adm) { var g = ok(function () { return V3MEM.gestaoAtual(adm); }, null); return g ? g.nome : null; }
+  // cria a obra como se o governo da vez a tivesse iniciado (sem passar pelo jogador)
+  function obraNPC(catId, prog, autor, adm) {
+    var OB = window.OBRAS, sys = ok(function () { return OB.garantir(); }, null), it = ok(function () { return OB.item(catId); }, null); if (!sys || !it) return null;
+    var prazo = Math.max(1, it.prazo_meses || 12), dec = Math.min(prazo - 1, Math.round(prazo * prog / 100)), m = agoraM_(), total = OB.reais(it.custo_milhoes);
+    var g = ok(function () { return V3MEM.gestaoAtual(adm); }, null);
+    var inst = { id: "ON_" + catId + "_" + m, catalogoId: catId, estado: "Em execução", progresso: Math.round(dec / prazo * 100), custoTotal: total, custoPago: Math.round(total * dec / prazo), prazoMeses: prazo, mesesDecorridos: dec,
+      esferaExec: adm, solicitanteCargo: adm, inauguradorId: null, inauguradorNome: null, manutencaoNivel: 1, manutencaoPagaMes: 0, estouro: 0, efeitosParciais: 0, mesInicio: m - dec, meioEfeito: dec >= prazo / 2, plPauta: false,
+      mem: { adm: adm, gIni: dec ? null : (g ? g.id : null), rede: false, autor: autor, autorJogador: false, autorCargo: adm, gSol: null, ultEstado: "Em execução", ev: [{ m: m - dec, t: "Iniciada por " + autor }] } };
+    sys.instancias[inst.id] = inst;
+    return inst;
+  }
+  function existe(catId) { return instsDe(catId).some(function (i) { return statusDeInst(i) !== "cancelado"; }); }
+  // obras reais que já estavam em andamento quando o jogo começa (Linha 6, extensões, TIC, BRT-ABC, Rodoanel Norte)
+  var EM_CURSO = [["OBR-GOV-024", 80], ["OBR-GOV-023", 30], ["OBR-GOV-025", 35], ["OBR-GOV-028", 8], ["OBR-TRI-006", 55], ["OBR-GOV-036", 85]];
+  function semear() {
+    var m = ok(function () { return M(); }, null); if (!m || !catalogo()) return;
+    m.v3tri = m.v3tri || {};
+    if (!m.v3tri.efeitoMarcado) { // obras já entregues antes deste módulo não dão bônus retroativo
+      m.v3tri.efeitoMarcado = true;
+      ok(function () { var s2 = m.obrasSys; Object.keys(s2.instancias).forEach(function (k) { if (s2.instancias[k].estado === "Em manutenção") s2.instancias[k]._v3triEf = true; }); });
+    }
+    if (m.v3tri.semeado) return;
+    m.v3tri.semeado = true;
+    if (ok(function () { return dt().ano; }, 2026) > 2027) return;
+    EM_CURSO.forEach(function (x) { if (!existe(x[0])) obraNPC(x[0], x[1], "Governo de SP (gestões anteriores)", "GOV"); });
+  }
+  // governos NPC também tocam obras novas (raramente), escolhendo projetos reais do catálogo
+  function iniciativasNPC() {
+    var cid = ok(function () { return cargoAtualId(); }, "");
+    [["GOV", 0.008, true], ["PRES", 0.006, true], ["PREF", 0.01, false]].forEach(function (x) {
+      var adm = x[0]; if (cid === adm || Math.random() >= x[1]) return;
+      var autor = titularNome(adm); if (!autor) return;
+      var esf = { PREF: "Prefeito", GOV: "Governador", PRES: "Presidente" }[adm];
+      var cands = ok(function () { return OBRAS.DB.filter(function (it) { return it.esfera_executora === esf && it.categoria === "Obra" && (!x[2] || it.area === "Mobilidade") && !existe(it.id); }); }, []);
+      if (!cands.length) return;
+      var pref = cands.filter(function (it) { return /^Real/.test(it.base_real || ""); }), pool = pref.length && Math.random() < 0.7 ? pref : cands;
+      var it = pool[Math.floor(Math.random() * pool.length)], inst = obraNPC(it.id, 0, autor, adm);
+      if (inst) ok(function () { manchete(autor + " anuncia o início de \"" + it.nome + "\".", "obras"); });
+    });
+  }
+  // linha ou estação entregue mexe na aprovação de quem governa (ou iniciou) nas regiões atendidas
+  var TERR = { maua: "MAUA", capuava: "MAUA", itapark10: "MAUA", guapituba: "MAUA", santoandre: "sa", saladino: "sa", utinga: "sa", paco_sa: "sa", sa_oeste: "sa", afonsina: "sa", paranapiacaba: "sa", saocaetano: "scs", espacoceramica: "scs", djalma: "sbc", sbc_term: "sbc", paco_sbc: "sbc", ribeiraopires: "rp", rgs: "rgs" };
+  function estacoesDaObra(catId) {
+    var ids = {};
+    TRECHOS.forEach(function (t) { if ((t.obras || []).indexOf(catId) >= 0) (t.paradas || t.est).forEach(function (e) { ids[e] = 1; }); });
+    MELHORIAS.forEach(function (mm) { if (mm.obras.indexOf(catId) >= 0) { var t = TRECHOS.filter(function (x) { return x.id === mm.linha; })[0]; if (t) t.est.forEach(function (e) { ids[e] = 1; }); } });
+    PONTOS.forEach(function (p) { if (p.obras.indexOf(catId) >= 0) ids[p.est] = 1; });
+    return Object.keys(ids);
+  }
+  function efeitosRegionais() {
+    var sys = ok(function () { return M().obrasSys; }, null); if (!sys) return;
+    var cid = ok(function () { return cargoAtualId(); }, "");
+    Object.keys(sys.instancias).forEach(function (k) {
+      var inst = sys.instancias[k]; if (inst.estado !== "Em manutenção" || inst._v3triEf) return;
+      var ests = estacoesDaObra(inst.catalogoId); if (!ests.length) return;
+      inst._v3triEf = true;
+      var terr = {}; ests.forEach(function (e) { var t = TERR[e] || "capital"; if (t === "MAUA") ok(function () { TERRITORIOS.filter(function (x) { return x.grupo === "Mauá"; }).forEach(function (x) { terr[x.id] = 1; }); }); else terr[t] = 1; });
+      var adm = inst.esferaExec, m = inst.mem || {}, k2 = adm === cid ? 3 : (m.autorJogador ? 2 : 0);
+      if (k2) ok(function () { var ap = J().aprovacao; Object.keys(terr).forEach(function (t) { if (ap[t] != null) ap[t] = Math.max(0, Math.min(100, ap[t] + k2)); }); });
+      var nomes = Object.keys(terr).map(function (t) { return ok(function () { return TERRITORIOS.find(function (x) { return x.id === t; }).nome; }, t); });
+      var it = ok(function () { return OBRAS.item(inst.catalogoId); }, null);
+      if (it) ok(function () { manchete('Em operação: "' + it.nome + '". Moradores de ' + (nomes.length > 3 ? nomes.slice(0, 3).join(", ") + " e região" : nomes.join(", ")) + " ganham novas opções de transporte.", "obras"); });
+    });
+  }
+  function ganchos() {
+    var OB = window.OBRAS; if (!OB || !OB.tickMensal || OB.tickMensal.__v3tri) return;
+    var o = OB.tickMensal;
+    OB.tickMensal = function () { var r = o.apply(this, arguments); try { semear(); iniciativasNPC(); efeitosRegionais(); } catch (e) { console.warn("v3trilhos tick", e); } return r; };
+    for (var k in o) { try { OB.tickMensal[k] = o[k]; } catch (e) {} }
+    OB.tickMensal.__v3tri = true;
+  }
+  TR.semear = semear; TR.obraNPC = obraNPC;
+
+  /* ================================================================ obras viárias de Mauá (mapa da cidade) */
+  var VIARIO = [
+    { obras: ["OBR-PRF-022"], tipo: "linha", pts: [[95, 257], [153, 178], [187, 108]], rot: "Corredor exclusivo de ônibus (Zaíra–Centro–Vila Noêmia)", cls: "onibus" },
+    { obras: ["OBR-PRF-023"], tipo: "linha", pts: [[56, 150], [90, 93], [187, 108], [265, 85], [240, 212], [153, 178], [95, 257], [56, 150]], rot: "Ciclovias interbairros", cls: "ciclo" },
+    { obras: ["OBR-PRF-024"], tipo: "ponto", pt: [160, 168], rot: "Terminal rodoviário intermodal (estação Mauá)" },
+    { obras: ["OBR-PRF-026"], tipo: "ponto", pt: [92, 200], rot: "Nova ponte sobre o Rio Tamanduateí" },
+    { obras: ["OBR-PRF-027"], tipo: "ponto", pt: [176, 146], rot: "Viaduto da Avenida Barão de Mauá" },
+    { obras: ["OBR-PRF-028"], tipo: "area", ids: ["zaira", "primavera", "oratorio"], rot: "Asfalto em ruas de terra (bairros da periferia)" },
+    { obras: ["OBR-PRE-036"], tipo: "linha", pts: [[4, 205], [60, 292], [180, 318], [326, 255]], rot: "Contorno viário de Mauá e Rodoanel Sul", cls: "rod" },
+    { obras: ["OBR-GOV-037"], tipo: "linha", pts: [[150, 326], [142, 280], [153, 182]], rot: "Túnel Imigrantes–Mauá", cls: "tunel" },
+    { obras: ["OBR-TRI-002"], tipo: "ponto", pt: [108, 166], rot: "Linha 10: estação Itapark" }
+  ];
+  var uiV = { sel: null };
+  function estadoV(v) { var r = estadoObras(v.obras); return r || { s: "planejado" }; }
+  function svgViario() {
+    var g = ok(function () { return GEO.maua; }, null); if (!g) return "<p class='txt'>Mapa de Mauá indisponível.</p>";
+    var h = '<svg class="v3v-svg" viewBox="0 0 ' + g.w + " " + g.h + '">';
+    var areas = {}; VIARIO.forEach(function (v) { if (v.tipo === "area") { var st = estadoV(v).s; v.ids.forEach(function (id) { areas[id] = st; }); } });
+    Object.keys(g.p).forEach(function (id) { h += '<path class="v3v-bairro' + (areas[id] && areas[id] !== "planejado" ? " ar-" + areas[id] : "") + '" d="' + g.p[id] + '"/>'; });
+    // Linha 10 atravessando a cidade (contexto)
+    h += '<path class="v3v-trem" d="M0 160 L60 165 L160 170 L255 230 L330 282"/>';
+    [[60, 165, "Capuava"], [160, 170, "Mauá"], [255, 230, "Guapituba"]].forEach(function (x) { h += '<circle class="v3v-est" cx="' + x[0] + '" cy="' + x[1] + '" r="3.2"/><text class="v3v-et" x="' + (x[0] + 5) + '" y="' + (x[1] + 11) + '">' + x[2] + "</text>"; });
+    Object.keys(g.c || {}).forEach(function (id) { var c = g.c[id], nm = ok(function () { return TERRITORIOS.find(function (t) { return t.id === id; }).nome; }, id); h += '<text class="v3v-bt" x="' + c[0] + '" y="' + (c[1] - 6) + '">' + esc_(String(nm).replace("Jardim ", "Jd. ").replace("Vila ", "V. ").replace("Centro de Mauá", "Centro")) + "</text>"; });
+    VIARIO.forEach(function (v, i) {
+      var st = estadoV(v).s, sel = uiV.sel === i ? " sel" : "", prog = (estadoObras(v.obras) || {}).inst;
+      if (v.tipo === "linha") { var d = "M" + v.pts.map(function (p) { return p.join(" "); }).join("L"); h += '<g class="v3v-el v3v-l ' + (v.cls || "") + " st-" + st + sel + '" data-v3v="' + i + '"><path class="v3v-hit" d="' + d + '"/><path class="v3v-ln" d="' + d + '"/>' + (prog && (st === "obras" || st === "parado") ? '<path class="v3v-ln v3v-feito" pathLength="100" stroke-dasharray="' + Math.round(prog.progresso || 0) + ' 100" d="' + d + '"/>' : "") + "</g>"; }
+      else if (v.tipo === "ponto") h += '<g class="v3v-el v3v-p st-' + st + sel + '" data-v3v="' + i + '"><circle cx="' + v.pt[0] + '" cy="' + v.pt[1] + '" r="7"/><text x="' + v.pt[0] + '" y="' + (v.pt[1] + 3) + '">' + (i + 1) + "</text></g>";
+    });
+    return h + "</svg>";
+  }
+  function painelViario() {
+    var lista = '<ol class="v3v-lista">' + VIARIO.map(function (v, i) { var st = estadoV(v).s; return '<li class="' + (uiV.sel === i ? "on" : "") + '"><button type="button" data-v3v="' + i + '"><em class="v3t-st st-' + st + '">' + ROT[st] + "</em> " + esc_(v.rot) + "</button></li>"; }).join("") + "</ol>";
+    var v = VIARIO[uiV.sel];
+    return lista + (v ? '<div class="v3t-trecho"><b>' + esc_(v.rot) + "</b>" + v.obras.map(obraBox).join("") + "</div>" : "");
+  }
+  function cardViario() {
+    var txt = "<p class='txt'><small>Obras viárias e de transporte dentro de Mauá, de qualquer esfera (Prefeitura, Estado e União). O desenho é esquemático; o estado de cada obra é o do jogo.</small></p>";
+    return typeof card === "function" ? card("Obras viárias de Mauá", txt + '<div class="v3v" data-v3v-box="1"><div class="v3v-mapa">' + svgViario() + '</div><div class="v3v-painel">' + painelViario() + "</div></div>") : "";
+  }
+  TR.cardViario = cardViario;
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-v3v]"); if (!b || !b.closest('[data-v3v-box="1"]')) return;
+    e.preventDefault(); e.stopPropagation();
+    var i = +b.getAttribute("data-v3v"); uiV.sel = uiV.sel === i ? null : i;
+    var box = document.querySelector('[data-v3v-box="1"]'); if (box) { box.querySelector(".v3v-mapa").innerHTML = svgViario(); box.querySelector(".v3v-painel").innerHTML = painelViario(); }
+  }, true);
+
   /* ================================================================ onde aparece: Poder (perto da Mobilidade) e Mapa */
   function instalar() {
+    catalogo(); ganchos();
     if (typeof VIEWS === "undefined") return;
     ["poder", "mapa"].forEach(function (v) {
       if (typeof VIEWS[v] !== "function" || VIEWS[v].__v3t) return;
       var o = VIEWS[v];
-      var n = function () { var h = o.apply(this, arguments); try { if (String(h).indexOf('data-v3t="1"') < 0) h += cardRede(); } catch (e) { console.warn("v3trilhos", e); } return h; };
+      var n = function () { var h = o.apply(this, arguments); try { semear(); if (String(h).indexOf('data-v3t="1"') < 0) h += cardRede(); if (String(h).indexOf('data-v3v-box="1"') < 0) h += cardViario(); } catch (e) { console.warn("v3trilhos", e); } return h; };
       for (var k in o) { try { n[k] = o[k]; } catch (e) {} }
       n.__v3t = true; VIEWS[v] = n;
     });
