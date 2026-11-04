@@ -51243,6 +51243,23 @@ body.v3d-aberto{overflow:hidden}
 .v3v-lista{margin:0;padding-left:20px;display:grid;gap:4px;font-size:.82rem}
 .v3v-lista button{font:inherit;text-align:left;background:none;border:0;color:inherit;cursor:pointer;padding:2px 0}
 .v3v-lista li.on button{font-weight:700}
+/* ===== Área Mobilidade (tela própria) ===== */
+.v3mob-hero{display:flex;gap:18px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;padding:18px 20px;margin-bottom:12px;border-radius:14px;color:#fff;background:linear-gradient(120deg,#0b2545 0%,#13315c 45%,#1d4e89 100%);position:relative;overflow:hidden}
+.v3mob-hero::after{content:"";position:absolute;right:-40px;top:-30px;width:280px;height:200px;background:repeating-linear-gradient(135deg,rgba(255,255,255,.06) 0 6px,transparent 6px 18px);transform:rotate(8deg)}
+.v3mob-hero small{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;opacity:.8}
+.v3mob-hero h2{margin:2px 0 4px;font-family:Fraunces,serif;font-size:1.7rem}
+.v3mob-hero p{margin:0;opacity:.85;max-width:560px}
+.v3mob-kpi{display:grid;grid-template-columns:repeat(4,minmax(90px,1fr));gap:8px;position:relative;z-index:1}
+.v3mob-kpi div{background:rgba(255,255,255,.1);border-radius:10px;padding:8px 10px}
+.v3mob-kpi b{display:block;font-size:1.5rem;line-height:1}.v3mob-kpi small{font-size:.7rem;opacity:.85;letter-spacing:0;text-transform:none}
+.v3mob-rede{padding:12px}
+.v3t-duo{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(280px,1fr);gap:14px;align-items:start}
+.v3t-full .v3t-svg{max-height:calc(100vh - 230px);min-height:420px}
+.v3t-full .v3t-dir{position:sticky;top:70px;max-height:calc(100vh - 90px);overflow-y:auto}
+.v3mob-baixo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start;margin-top:12px}
+.v3mob-baixo:has(> div:first-child:empty){grid-template-columns:1fr}
+@media (max-width:1000px){.v3t-duo,.v3mob-baixo{grid-template-columns:1fr}.v3t-full .v3t-dir{position:static;max-height:none}.v3t-full .v3t-svg{min-height:0;max-height:70vh}.v3mob-kpi{grid-template-columns:repeat(2,1fr);width:100%}}
+@media (max-width:640px){.v3mob-hero{padding:12px 14px;gap:10px}.v3mob-hero h2{font-size:1.15rem}.v3mob-hero p{font-size:.82rem}.v3mob-kpi{grid-template-columns:repeat(4,1fr);gap:5px}.v3mob-kpi div{padding:5px 6px}.v3mob-kpi b{font-size:1.05rem}.v3mob-kpi small{font-size:.6rem;line-height:1.1;display:block}.v3mob-rede{padding:8px}}
 
 </style>
 <script>
@@ -51291,6 +51308,7 @@ body.v3d-aberto{overflow:hidden}
     campanha:   { ico: "🗳️", desc: "Votos, pesquisas e eleição" },
     partido:    { ico: "🚩", desc: "Sigla, fundo e alianças" },
     poder:      { ico: "⚙️", desc: "Governo, pastas e obras" },
+    mobilidade: { ico: "🚇", desc: "Metrô, trens e obras viárias" },
     congresso:  { ico: "📜", desc: "Leis, votações e justiça" },
     influencia: { ico: "🤝", desc: "Rede, figuras e bastidores" },
     midia:      { ico: "📰", desc: "Jornal, rede social e repercussão" }
@@ -51298,7 +51316,7 @@ body.v3d-aberto{overflow:hidden}
   var DESC_SECAO = {
     mes: "O que decidir agora", eu: "Sua ficha e trajetória", mang: "O que saiu na imprensa", cela: "Você está preso",
     camp: "Cargo-alvo, caixa e pesquisas", marqueteiro: "Estratégia e propaganda", mapa: "Territórios e tráfego", ele: "Disputas e resultados",
-    partido: "Painel do partido", poder: "Executivo e pastas",
+    partido: "Painel do partido", poder: "Executivo e pastas", mob: "Mapa da rede, linhas, estações e obras de transporte",
     cong: "Plenário e votações", artic: "Bancadas e acordos", jur: "Processos e defesa",
     inf: "Figuras e movimentos", todos: "Todos os personagens", imp: "Relações com veículos, notas e campanhas editoriais", sub: "O lado sombrio",
     pasta: "Sua secretaria ou ministério: indicadores, despachos, equipe e chefe", pre: "Quem está ganhando força para ser candidato(a) em cada partido", jornal: "O que a imprensa publicou sobre você e o país", feed: "O que estão dizendo e o que você responde"
@@ -57818,10 +57836,13 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     var est = {}; TRECHOS.forEach(function (t) { if (estadoTrecho(t).s === "operacao") (t.paradas || t.est).forEach(function (id) { est[id] = 1; }); });
     return '<p class="v3t-res"><b>' + Object.keys(est).length + "</b> estações no mapa em operação · projetos de expansão: <b>" + c.operacao + "</b> entregues, <b>" + (c.obras + c.parado) + "</b> em obras, <b>" + c.aprovacao + "</b> em aprovação, <b>" + c.planejado + "</b> no papel" + (c.cancelado ? ", " + c.cancelado + " cancelados" : "") + ".</p>";
   }
+  function barra() {
+    return '<div class="v3t-bar">' + Object.keys(VISTAS).map(function (k) { return '<button type="button" data-v3t-vista="' + k + '">' + { rede: "Rede inteira", centro: "Centro", abc: "ABC e Mauá", leste: "Zona Leste", norte: "Norte" }[k] + "</button>"; }).join("") +
+      '<button type="button" data-v3t-zoom="0.7" aria-label="Aproximar">＋</button><button type="button" data-v3t-zoom="1.4" aria-label="Afastar">－</button><label><input type="checkbox" data-v3t-planos ' + (ui.planos ? "checked" : "") + "> projetos</label></div>";
+  }
   function corpo() {
-    return resumo() + '<div class="v3t-bar">' + Object.keys(VISTAS).map(function (k) { return '<button type="button" data-v3t-vista="' + k + '">' + { rede: "Rede inteira", centro: "Centro", abc: "ABC e Mauá", leste: "Zona Leste", norte: "Norte" }[k] + "</button>"; }).join("") +
-      '<button type="button" data-v3t-zoom="0.7" aria-label="Aproximar">＋</button><button type="button" data-v3t-zoom="1.4" aria-label="Afastar">－</button><label><input type="checkbox" data-v3t-planos ' + (ui.planos ? "checked" : "") + "> projetos</label></div>" +
-      '<div class="v3t-mapa">' + svg() + "</div>" + legenda() + chips() + '<div class="v3t-painel">' + painel() + "</div>";
+    if (ui.full) return '<div class="v3t-duo"><div class="v3t-esq">' + barra() + '<div class="v3t-mapa">' + svg() + "</div>" + legenda() + '</div><div class="v3t-dir">' + resumo() + chips() + '<div class="v3t-painel">' + painel() + "</div></div></div>";
+    return resumo() + barra() + '<div class="v3t-mapa">' + svg() + "</div>" + legenda() + chips() + '<div class="v3t-painel">' + painel() + "</div>";
   }
   function cardRede() {
     var txt = "<p class='txt'><small>O mapa mostra o que acontece no jogo: cada extensão, linha nova ou melhoria está ligada a uma obra do catálogo e muda de aparência conforme ela avança, para, é entregue ou cancelada, seja qual for o governante. Traçados de projetos são de referência.</small></p>";
@@ -57988,17 +58009,47 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     var box = document.querySelector('[data-v3v-box="1"]'); if (box) { box.querySelector(".v3v-mapa").innerHTML = svgViario(); box.querySelector(".v3v-painel").innerHTML = painelViario(); }
   }, true);
 
-  /* ================================================================ onde aparece: Poder (perto da Mobilidade) e Mapa */
+  /* ================================================================ tela própria: área "Mobilidade" no menu */
+  function heroi() {
+    var cid = ok(function () { return cargoAtualId(); }, "");
+    var est = {}, linhas = {}, obras = 0, novas = 0;
+    TRECHOS.forEach(function (t) { var s2 = estadoTrecho(t).s; if (s2 === "operacao") { (t.paradas || t.est).forEach(function (id) { est[id] = 1; }); linhas[t.linha] = 1; if (t.base !== "operacao") novas++; } if (s2 === "obras" || s2 === "parado") obras++; });
+    var papel = { GOV: "Você comanda o Metrô e a CPTM: inicie linhas, extensões e estações.", PREF: "Você toca as obras viárias de Mauá e pode pedir ao Estado linhas e estações para a cidade.", PRES: "Você pode financiar trens regionais e a integração federal das linhas." }[cid] || "Acompanhe a rede. Ao assumir Prefeitura, Governo ou Presidência você passa a decidir as obras.";
+    return '<section class="v3mob-hero"><div><small>Mobilidade urbana</small><h2>Rede metropolitana de São Paulo</h2><p>' + esc_(papel) + '</p></div><div class="v3mob-kpi"><div><b>' + Object.keys(est).length + "</b><small>estações em operação</small></div><div><b>" + Object.keys(linhas).length + "</b><small>linhas operando</small></div><div><b>" + obras + "</b><small>trechos em obras</small></div><div><b>" + novas + "</b><small>expansões entregues</small></div></div></section>";
+  }
+  function viewMob() {
+    semear(); ui.full = true;
+    if (!ui.vbFull) { ui.vbFull = true; if (ui.vb[2] >= W) ui.vb = caixa(["pirituba", "itaquera", "jabaquara", "maua", "tucuruvi", "vilasonia"]); }
+    var h = heroi();
+    h += '<section class="card v3mob-rede"><div class="v3t v3t-full" data-v3t="1">' + corpo() + "</div></section>";
+    var cat = ok(function () { return OBRAS._cardCatalogo(true); }, "");
+    h += '<div class="v3mob-baixo"><div>' + cat + "</div><div>" + cardViario() + "</div></div>";
+    return h;
+  }
+  TR.view = viewMob;
+  function atalho() {
+    var b = typeof btn === "function" ? btn("Abrir Mobilidade urbana", "tab", ["mob"], "confirma") : "";
+    return typeof card === "function" ? card("Mobilidade urbana", "<p class='txt'>Metrô, trens, obras viárias de Mauá e o mapa da rede agora têm uma área própria no menu.</p><div class='row'>" + b + "</div>") : "";
+  }
   function instalar() {
     catalogo(); ganchos();
     if (typeof VIEWS === "undefined") return;
-    ["poder", "mapa"].forEach(function (v) {
-      if (typeof VIEWS[v] !== "function" || VIEWS[v].__v3t) return;
-      var o = VIEWS[v];
-      var n = function () { var h = o.apply(this, arguments); try { semear(); if (String(h).indexOf('data-v3t="1"') < 0) h += cardRede(); if (String(h).indexOf('data-v3v-box="1"') < 0) h += cardViario(); } catch (e) { console.warn("v3trilhos", e); } return h; };
-      for (var k in o) { try { n[k] = o[k]; } catch (e) {} }
-      n.__v3t = true; VIEWS[v] = n;
-    });
+    if (!VIEWS.mob) VIEWS.mob = function () { return viewMob(); };
+    try { if (!TABS.some(function (t) { return t[0] === "mob"; })) TABS.push(["mob", "Mobilidade urbana"]); } catch (e) {}
+    var N = window.NAVH;
+    if (N && N.HUBS && !N.HUBS.some(function (h) { return h.id === "mobilidade"; })) {
+      var k = 0; N.HUBS.forEach(function (h, i) { if (h.id === "poder") k = i + 1; });
+      N.HUBS.splice(k || N.HUBS.length, 0, { id: "mobilidade", nome: "Mobilidade", subs: [["mob", "Mobilidade urbana"]] });
+    }
+    // Poder e Mapa: no lugar das seções de mobilidade, um atalho para a área nova (nada some, só muda de lugar)
+    var OB = window.OBRAS;
+    if (OB && OB._cardCatalogo && !OB.__v3mobTab) { OB.__v3mobTab = true; OB.cardCatalogo = function () { return OB._cardCatalogo(false) + atalho(); }; }
+    if (typeof VIEWS.mapa === "function" && !VIEWS.mapa.__v3t) {
+      var o = VIEWS.mapa;
+      var n = function () { var h = o.apply(this, arguments); try { if (String(h).indexOf("Abrir Mobilidade urbana") < 0) h += atalho(); } catch (e) {} return h; };
+      for (var k2 in o) { try { n[k2] = o[k2]; } catch (e) {} }
+      n.__v3t = true; VIEWS.mapa = n;
+    }
   }
   instalar();
   document.addEventListener("DOMContentLoaded", function () { setTimeout(instalar, 0); });
