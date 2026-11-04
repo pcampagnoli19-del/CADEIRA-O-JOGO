@@ -78,11 +78,11 @@
     var h = "";
     hubs().forEach(function (hub) {
       var info = AREAS[hub.id] || { ico: "•", desc: "" };
-      var aberto = modo === "folha" || (hubAtual && hubAtual.id === hub.id);
+      var aberto = true; // todas as áreas sempre abertas: nada escondido atrás de clique
       var subs = secoesVisiveis(hub);
       var alerta = (hub.id === "gabinete" && preso()) || (hub.id === "midia" && !!(window.MIDIA3 && window.MIDIA3.novidade && window.MIDIA3.novidade())) || !!(window.V3ALERTA && typeof window.V3ALERTA[hub.id] === "function" && (function () { try { return window.V3ALERTA[hub.id](); } catch (e) { return false; } })());
       h += '<div class="v3-area' + (aberto ? " aberta" : "") + (hubAtual && hubAtual.id === hub.id ? " atual" : "") + '">';
-      h += '<button type="button" class="v3-area-btn' + (alerta ? " alerta" : "") + '" data-a="hub" data-p="' + p([hub.id]) + '">' +
+      h += '<button type="button" class="v3-area-btn' + (alerta ? " alerta" : "") + '" data-a="hub" data-p="' + p([hub.id]) + '" title="' + esc(info.desc) + '">' +
         '<span class="v3-ico" aria-hidden="true">' + info.ico + "</span>" +
         '<span class="v3-area-txt"><b>' + esc(hub.nome) + "</b><small>" + esc(info.desc) + "</small></span></button>";
       if (aberto && subs.length > 1) {

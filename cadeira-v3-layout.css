@@ -1,0 +1,13 @@
+/* ===== Seções das telas longas ===== */
+.v3l-sec{margin:22px 0 8px}
+.v3l-sec:first-of-type{margin-top:8px}
+.v3l-cab{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:0 2px 8px;margin-bottom:10px;border-bottom:1px solid var(--v3-ln,#33415566)}
+.v3l-cab h2{margin:0;font-family:Fraunces,serif;font-size:1.25rem;font-weight:600;color:var(--v3-tx,#e5e7eb)}
+.v3l-cab small{color:var(--v3-tx3,#94a3b8);font-size:.85rem}
+.v3l-grid{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
+.v3l-grid > .card{margin:0 !important}
+@media (min-width:1100px){
+  .v3l-grid{display:block;columns:2;column-gap:14px}
+  .v3l-grid > .card{break-inside:avoid;margin:0 0 14px !important;display:block;width:100%}
+  .v3l-grid > .v3l-larga{column-span:all}
+}
