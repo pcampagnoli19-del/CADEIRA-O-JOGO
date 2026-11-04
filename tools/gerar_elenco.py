@@ -13,6 +13,12 @@ SAIDA = RAIZ / "cadeira-v3-elenco.js"
 MODELO = RAIZ / "tools" / "elenco_modelo.js"
 
 pol = json.loads(DADOS.read_text(encoding="utf-8"))["politicos"]
+COMP = RAIZ / "dados" / "abc-complemento.json"
+ajustes = {}
+if COMP.exists():
+    comp = json.loads(COMP.read_text(encoding="utf-8"))
+    pol += comp.get("politicos", [])
+    ajustes = comp.get("ajustes", {})
 fotos = {}
 if FOTOS.exists():
     for linha in FOTOS.read_text(encoding="utf-8").splitlines():
@@ -26,7 +32,8 @@ for p in pol:
                   p.get("profissao") or "", p.get("profissao_detalhe") or "", p.get("grupo") or ""])
 dados = json.dumps(lista, ensure_ascii=False, separators=(",", ":"))
 fj = json.dumps(fotos, ensure_ascii=False, separators=(",", ":"))
-js = MODELO.read_text(encoding="utf-8").replace("__DADOS__", dados).replace("__FOTOS__", fj)
+aj = json.dumps(ajustes, ensure_ascii=False, separators=(",", ":"))
+js = MODELO.read_text(encoding="utf-8").replace("__DADOS__", dados).replace("__FOTOS__", fj).replace("__AJUSTES__", aj)
 if "</script" in js:
     raise SystemExit("fechamento de tag nos dados")
 SAIDA.write_text(js, encoding="utf-8")
