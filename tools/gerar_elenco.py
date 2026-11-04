@@ -35,6 +35,13 @@ if USU.exists():
             n, u = linha.split("\t", 1)
             if u.startswith("data:image/"):
                 fotos[n.strip()] = u.strip(); prioridade[n.strip()] = 1
+# datas de nascimento conferidas (Câmara, Senado, Wikidata): nome<TAB>AAAA-MM-DD<TAB>fonte
+NASC_F = RAIZ / "dados" / "nascimentos.tsv"
+nasc = {}
+if NASC_F.exists():
+    for linha in NASC_F.read_text(encoding="utf-8").splitlines():
+        partes = linha.split("\t")
+        if len(partes) >= 2 and len(partes[1]) == 10: nasc[partes[0]] = partes[1]
 lista = []
 for p in pol:
     lista.append([p["id"], p["nome"], p["cargo"], p["papel"], p["partido"], p["uf"], p.get("municipio") or "",
@@ -42,8 +49,8 @@ for p in pol:
 dados = json.dumps(lista, ensure_ascii=False, separators=(",", ":"))
 fj = json.dumps(fotos, ensure_ascii=False, separators=(",", ":"))
 aj = json.dumps(ajustes, ensure_ascii=False, separators=(",", ":"))
-js = MODELO.read_text(encoding="utf-8").replace("__DADOS__", dados).replace("__FOTOS__", fj).replace("__AJUSTES__", aj).replace("__PRIORIDADE__", json.dumps(prioridade, ensure_ascii=False, separators=(",", ":")))
+js = MODELO.read_text(encoding="utf-8").replace("__DADOS__", dados).replace("__FOTOS__", fj).replace("__AJUSTES__", aj).replace("__NASC__", json.dumps(nasc, ensure_ascii=False, separators=(",", ":"))).replace("__PRIORIDADE__", json.dumps(prioridade, ensure_ascii=False, separators=(",", ":")))
 if "</script" in js:
     raise SystemExit("fechamento de tag nos dados")
 SAIDA.write_text(js, encoding="utf-8")
-print(f"{len(lista)} políticos, {len(fotos)} fotos -> {SAIDA.name}")
+print(f"{len(lista)} políticos, {len(fotos)} fotos, {len(nasc)} nascimentos -> {SAIDA.name}")

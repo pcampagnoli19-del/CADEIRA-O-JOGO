@@ -17,7 +17,9 @@
   var DADOS = __DADOS__;
   var FOTOS = __FOTOS__;
   var PRIORIDADE = __PRIORIDADE__; // fotos escolhidas à mão: substituem a foto anterior
-  var AJUSTES = __AJUSTES__; // cargos e papéis conferidos nos sites oficiais (aplicados uma vez por save)
+  var AJUSTES = __AJUSTES__;
+  var NASC = __NASC__; // datas de nascimento conferidas (Câmara, Senado, Wikidata)
+  function idadeEm(iso, d) { var a = +iso.slice(0, 4), m = +iso.slice(5, 7); return d.ano - a - (d.mes < m ? 1 : 0); } // cargos e papéis conferidos nos sites oficiais (aplicados uma vez por save)
   var NAO_BUSCAR = { "Jorge Araújo": 1, "Cicinho": 1, "Bruno Farias": 1, "Mazinho": 1 }; // homônimos na Wikipédia
   var PROFS = ["Advogado(a)", "Economista", "Médico(a)", "Professor(a)", "Agricultor(a)", "Policial/Militar", "Empresário(a)", "Líder Comunitário", "Jornalista", "Engenheiro(a)", "Cientista Político", "Líder Religioso"];
   // vereadores de outras cidades que estavam marcados como de Mauá
@@ -26,6 +28,7 @@
 
   function norm(s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s*\([^)]*\)\s*/g, " ").replace(/[^a-zA-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim().toLowerCase(); }
   function nk(s) { try { return typeof normKey === "function" ? normKey(s) : norm(s); } catch (e) { return norm(s); } }
+  function ok_(f, d) { try { var v = f(); return v === undefined ? d : v; } catch (e) { return d; } }
   function hash(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
   function banco() { try { return bancoDeNPCs; } catch (e) { return null; } }
   function temFoto(n) { try { return !!String(obterFotoPolitico(n) || "").trim(); } catch (e) { return !!n.foto; } }
@@ -41,7 +44,8 @@
       var id = d[0], nome = d[1], cargo = d[2], papel = d[3], partido = d[4], uf = d[5], mun = d[6], prof = d[7], det = d[8], grupo = d[9];
       if (ex[nk(nome)]) return;
       if (cargo === "Ministro") { papel = papel + " (no cargo a partir de abr/2026)"; cargo = "Liderança / Ex-Titular"; }
-      var r = { id: id, nome: nome, idade: 34 + hash(nome) % 31, partido: partido, cargo: cargo, papel: papel, base: grupo, uf: uf || "SP", mun: mun || null };
+      var dJ = ok_(function () { return dt(); }, { ano: 2026, mes: 1 });
+      var r = { id: id, nome: nome, idade: NASC[nome] ? idadeEm(NASC[nome], dJ) : 34 + hash(nome) % 31, partido: partido, cargo: cargo, papel: papel, base: grupo, uf: uf || "SP", mun: mun || null };
       var n; try { n = montarNPCReal2(r); } catch (e) { return; }
       n.id = id; if (mun) n.municipio_domicilio = mun;
       if (PROFS.indexOf(prof) >= 0) n.profissao = prof;
@@ -67,6 +71,17 @@
           if (a.cargo === "Prefeito") { n.esfera = "MUNICIPAL"; n.mandato_fim = 2028; }
         });
         m.v3ajustes = 3;
+      }
+    } catch (e) {}
+    // idades: uma vez por save, pela data de nascimento real (depois o jogo envelhece todo mundo em janeiro)
+    try {
+      var mm = M(), dd = dt();
+      if ((mm.v3nasc || 0) < 1) {
+        b.forEach(function (n) {
+          var iso = n.real && NASC[n.nome]; if (!iso) return;
+          n.idade = idadeEm(iso, dd); n.nascimento = { dia: +iso.slice(8, 10), mes: +iso.slice(5, 7), ano: +iso.slice(0, 4) };
+        });
+        mm.v3nasc = 1;
       }
     } catch (e) {}
     // mesma pessoa cadastrada com dois nomes: fica uma só
