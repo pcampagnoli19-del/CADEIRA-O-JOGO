@@ -281,7 +281,8 @@
     });
     var temAliados = ok(function () { var co = J().campanha.coligacao; return co && co.length ? co.slice(0, 2).join(" e ") : ""; }, "");
     var Q = ok(function () { return window.V3COB.perguntasPreDebate({ pos: pos, pct: pct, lider: lider, cargoTxt: CARGO_TXT[a.cargo], temAliados: temAliados }); }, []);
-    Q.forEach(function (x) { l.push({ tipo: "pentJog", rot: "ENTREVISTAS", rep: rep, q: x.q, ops: x.ops }); });
+    if (ok(function () { return window.V3ENT.disponivel(); }, false)) l.push({ tipo: "pentIA", rot: "ENTREVISTAS", rep: rep, dados: { posicao_pesquisa: pos, percentual: pct ? Math.round(pct) : null, lider: lider, cargo: CARGO_TXT[a.cargo], turno: a.turno, adversarios: a.cands.filter(function (c) { return !c.jog; }).map(function (c) { return c.nome + " (" + c.partido + ")"; }), aliados: temAliados } });
+    else Q.forEach(function (x) { l.push({ tipo: "pentJog", rot: "ENTREVISTAS", rep: rep, q: x.q, ops: x.ops }); });
     l.push({ tipo: "ptransicao", rot: "VAI COMEÇAR" });
     return l;
   }
@@ -291,6 +292,32 @@
     var r = ok(function () { return window.V3COB.aplicarResposta(op, { canal: EMISSORAS[a.e].nome, rivalId: (rivais()[0] || {}).npc }); }, { delta: 0 });
     a.plateia = clamp(a.plateia + (r.azar ? -6 : (r.delta || 0) * 4), 5, 95); a.redes = clamp(a.redes + (op.ef && op.ef.base ? 6 : 2) + (r.azar ? 8 : 0), 0, 100);
     a.cena = { tipo: "pfala", rot: c.rot, quem: { cand: "JOGADOR" }, txt: op.fala, extra: r.azar ? "A frase repercute mal nos bastidores." : (r.delta || 0) > 0.4 ? "Boa repercussão entre os jornalistas." : "Os adversários anotam a resposta." };
+    render_();
+  }
+
+  // entrevistas com IA (módulo cadeira-v3-entrevista.js): antes e depois do debate
+  function entrevistaPre() {
+    var a = A_(), c = a.cena; if (!c || c.tipo !== "pentIA" || !window.V3ENT) return;
+    var E = EMISSORAS[a.e];
+    window.V3ENT.abrir({ modo: "pre-debate", veiculo: E.nome, titulo: E.vinheta + " • antes do debate", logo: imgUrl(E.logo), reporter: { nome: c.rep.nome, foto: c.rep.foto, papel: "repórter • " + E.nome }, rodadas: 2, dados: c.dados,
+      assunto: "a estratégia para o debate de hoje e a posição nas pesquisas",
+      aoFechar: function (r) {
+        var b = A_(); if (!b) return;
+        if (r && r.feito) { b.plateia = clamp(b.plateia + (r.media - 5) * 2.5, 5, 95); b.redes = clamp(b.redes + 4 + (r.media < 4 ? 8 : 0), 0, 100);
+          b.cena = { tipo: "pfala", rot: c.rot, quem: { cand: "JOGADOR" }, txt: r.destaque || "…", extra: r.media >= 6.5 ? "Boa repercussão entre os jornalistas." : r.media < 4.5 ? "A entrevista repercute mal nos bastidores." : "Os adversários anotam as respostas." };
+        } else b.cena = { tipo: "pfala", rot: c.rot, quem: { cand: "JOGADOR" }, txt: "Você passa direto pela imprensa, sem falar.", extra: "Os repórteres anotam o silêncio." };
+        render_();
+      } });
+  }
+  function entrevistaPos() {
+    var a = A_(); if (!a || !a.fim || a.posEnt || !window.V3ENT) return;
+    var E = EMISSORAS[a.e], r = a.cena && a.cena.res, rv = rivais()[0] || {};
+    a.posEnt = true;
+    window.V3ENT.abrir({ modo: "pos-debate", veiculo: E.nome, titulo: E.vinheta + " • sala de imprensa", logo: imgUrl(E.logo), rodadas: 3,
+      reporters: [EMISSORAS[a.e].nome, "Folha de S.Paulo", "Rádio CBN"].map(function (v, i) { return window.V3ENT.reporter("posdeb" + a.ev + i, v); }),
+      dados: r ? { posicao_no_levantamento: r.pos + "º de " + r.n, percentual: r.share + "%", vencedor: r.venc, gafes: r.gafes, melhores_momentos: r.destaques, ranking: r.ranking.map(function (x) { return (x.jog ? "VOCÊ" : x.nome) + " " + x.share + "%"; }) } : null,
+      assunto: "o desempenho no debate que acabou de terminar" + (rv.nome ? " e o confronto com " + rv.nome : ""),
+      aoFechar: function () { render_(); } });
     render_();
   }
 
@@ -591,6 +618,9 @@
       if (c.tipo === "pchegada") h += '<div class="v3d-chega">' + fotoHtml(cc, "v3d-foto") + "<div><b>" + esc_(cc.jog ? "Você" : cc.nome) + "</b><small>" + esc_(cc.partido) + '</small></div></div><p class="v3d-fala">' + esc_(c.txt) + "</p>";
       else h += '<p class="v3d-fala"><b>' + esc_(c.rep.nome) + ":</b> " + esc_(c.q) + "</p>" + quemHtml({ cand: c.cand }) + '<p class="v3d-fala">' + esc_(c.txt) + "</p>";
       h += '<button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
+    } else if (c.tipo === "pentIA") {
+      h += '<div class="v3d-gc rep">' + (c.rep.foto ? '<img src="' + esc_(c.rep.foto) + '" alt="">' : '<span class="v3d-ini big">🎤</span>') + "<div><b>" + esc_(c.rep.nome) + '</b><small>entrevista antes do debate • ao vivo</small></div></div><p class="v3d-fala">' + esc_(c.rep.nome) + " se aproxima com o microfone: as perguntas são sobre a sua situação real na disputa, e você responde com as suas palavras.</p>" +
+        '<button type="button" class="b confirma v3d-go" data-v3d="entia">🎤 Dar entrevista</button><button type="button" class="b v3d-go" data-v3d="cont">Passar direto</button>';
     } else if (c.tipo === "pentJog") {
       h += '<div class="v3d-gc rep">' + (c.rep.foto ? '<img src="' + esc_(c.rep.foto) + '" alt="">' : '<span class="v3d-ini big">🎤</span>') + "<div><b>" + esc_(c.rep.nome) + '</b><small>entrevista antes do debate</small></div></div><p class="v3d-fala">' + esc_(c.q) + '</p><p class="v3d-vez">🎙️ Sua resposta</p><div class="v3d-ops">' + c.ops.map(function (o) { return '<button type="button" class="v3d-op" data-v3d="preop" data-id="' + esc_(o.id) + '"><b>' + esc_(o.rot) + '</b><em>"' + esc_(o.fala) + '"</em></button>'; }).join("") + "</div>";
     } else if (c.tipo === "pfala") {
@@ -616,7 +646,7 @@
         r.ranking.map(function (x) { return '<div class="v3d-barra' + (x.jog ? " eu" : "") + '"><span>' + esc_(x.jog ? "Você" : x.nome) + '</span><i style="width:' + x.share + '%"></i><b>' + x.share + "%</b></div>"; }).join("") +
         '<p class="txt">Popularidade: <b>' + (r.delta >= 0 ? "+" : "") + r.delta + "</b>" + (r.gafes.length ? " • gafes: " + esc_(r.gafes.join(", ")) : " • sem gafes") + "</p>" +
         (r.destaques.length ? '<p class="txt">Destaques: ' + esc_(r.destaques.join("; ")) + "</p>" : "") +
-        '<p class="txt">A repercussão já está no jornal e no feed.</p><button type="button" class="b confirma v3d-go" data-v3d="sair">Sair do estúdio</button></div>';
+        '<p class="txt">A repercussão já está no jornal e no feed.</p>' + (A_().posEnt ? '<p class="txt">✔️ Você falou na sala de imprensa.</p>' : '<button type="button" class="b v3d-go" data-v3d="posent">🎤 Sala de imprensa (entrevista pós-debate)</button>') + '<button type="button" class="b confirma v3d-go" data-v3d="sair">Sair do estúdio</button></div>';
     }
     h += "</div>";
     h += '<footer class="v3d-rodape"><span>Plateia ' + Math.round(a.plateia) + '%</span><span>Redes ' + Math.round(a.redes) + "%</span><span>#" + esc_(E.vinheta.replace(/\s+/g, "")) + "</span></footer>";
@@ -652,6 +682,8 @@
     if (k === "entrar") iniciar(id);
     else if (k === "cont") continuar();
     else if (k === "preop") responderPre(id);
+    else if (k === "entia") entrevistaPre();
+    else if (k === "posent") entrevistaPos();
     else if (k === "op") escolher(id);
     else if (k === "alvo") escolherAlvo(id);
     else if (k === "sair") sair();

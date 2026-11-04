@@ -126,6 +126,8 @@
     };
   }
 
+  AT.contexto = function () { var c = contexto("nota"); delete c.tipo_ato; return c; };
+
   /* ================================================================ 4) PROMPT E SCHEMA */
   var TEMAS = ["Saúde", "Segurança pública", "Educação", "Trabalho e renda", "Agropecuária", "Costumes e família", "Mercado e empreendedorismo", "Auxílio social", "Transporte", "Habitação", "Meio ambiente"];
   var SCHEMA = {
@@ -239,11 +241,13 @@
     return fetchIA("models/" + encodeURIComponent(c.modelo) + ":generateContent", { method: "POST", body: JSON.stringify({ contents: [{ parts: [{ text: "Responda apenas: ok" }] }] }) })
       .then(function (r) { if (!r.ok) throw { amigavel: resumoErros(r) }; return r; }, function () { throw { amigavel: "Sem conexão com o Google." }; });
   };
-  AT.chamarGemini = function (tipo, texto) {
+  AT.chamarGemini = function (tipo, texto) { return AT.geminiJSON(prompt(tipo, texto), SCHEMA); };
+  // pedido genérico ao Gemini que devolve JSON (usado pelos atos, entrevistas e outros módulos)
+  AT.geminiJSON = function (textoPrompt, schema, temp) {
     var c = cfg();
     if (!c.chave) return Promise.reject({ amigavel: "Nenhuma chave configurada. Use a avaliação offline ou configure a IA." });
     var caminho = "models/" + encodeURIComponent(c.modelo) + ":generateContent";
-    var body = { contents: [{ role: "user", parts: [{ text: prompt(tipo, texto) }] }], generationConfig: { temperature: 0.85, responseMimeType: "application/json", responseSchema: SCHEMA, maxOutputTokens: 8192 } };
+    var body = { contents: [{ role: "user", parts: [{ text: textoPrompt }] }], generationConfig: { temperature: temp == null ? 0.85 : temp, responseMimeType: "application/json", responseSchema: schema, maxOutputTokens: 8192 } };
     var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null, tm = setTimeout(function () { if (ctrl) ctrl.abort(); }, 45000);
     return fetchIA(caminho, { method: "POST", body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) {
@@ -274,11 +278,12 @@
     if (status >= 500) return "Os servidores do Groq estão instáveis agora.";
     return "Falha no Groq (código " + status + ")." + (msg ? " (Groq: " + msg.slice(0, 140) + ")" : "");
   }
-  function esqueletoJSON() {
-    var ex = {};
-    Object.keys(SCHEMA.properties).forEach(function (k) {
-      var d = SCHEMA.properties[k];
-      if (d.type === "ARRAY") { var it = {}; Object.keys(d.items.properties).forEach(function (kk) { var e = d.items.properties[kk]; it[kk] = e.enum ? e.enum.join("|") : "texto"; }); ex[k] = [it]; }
+  function esqueletoJSON(schema) {
+    var ex = {}; schema = schema || SCHEMA;
+    Object.keys(schema.properties).forEach(function (k) {
+      var d = schema.properties[k];
+      if (d.type === "ARRAY" && !(d.items && d.items.properties)) ex[k] = [d.items && d.items.type === "NUMBER" ? 0 : "texto"];
+      else if (d.type === "ARRAY") { var it = {}; Object.keys(d.items.properties).forEach(function (kk) { var e = d.items.properties[kk]; it[kk] = e.enum ? e.enum.join("|") : "texto"; }); ex[k] = [it]; }
       else ex[k] = d.enum ? d.enum.join("|") : d.type === "NUMBER" ? 0 : d.type === "BOOLEAN" ? true : "texto";
     });
     return JSON.stringify(ex);
@@ -287,12 +292,13 @@
     var c = cfg(), h = { Authorization: "Bearer " + c.groqChave }; if (opts.method === "POST") h["Content-Type"] = "application/json";
     return fetch(GROQ_URL + caminho, { method: opts.method, headers: h, body: opts.body, signal: opts.signal }).then(function (r) { return r.text().then(function (t) { return { ok: r.ok, status: r.status, texto: t }; }); });
   }
-  AT.chamarGroq = function (tipo, texto) {
+  AT.chamarGroq = function (tipo, texto) { return AT.groqJSON(prompt(tipo, texto), SCHEMA); };
+  AT.groqJSON = function (textoPrompt, schema, temp) {
     var c = cfg();
     if (!c.groqChave) return Promise.reject({ amigavel: "Nenhuma chave do Groq configurada." });
-    var msgs = [{ role: "system", content: "Você é o motor de avaliação de um jogo de simulação política brasileiro. Responda SOMENTE com um objeto JSON válido (sem markdown, sem texto fora do JSON) com exatamente estas chaves e tipos: " + esqueletoJSON() + ". Onde aparece 'a|b|c', escolha um dos valores." },
-      { role: "user", content: prompt(tipo, texto) }];
-    var body = { model: c.groqModelo, messages: msgs, temperature: 0.85, max_completion_tokens: 8192, response_format: { type: "json_object" } };
+    var msgs = [{ role: "system", content: "Você é o motor narrativo de um jogo de simulação política brasileiro. Responda SOMENTE com um objeto JSON válido (sem markdown, sem texto fora do JSON) com exatamente estas chaves e tipos: " + esqueletoJSON(schema) + ". Onde aparece 'a|b|c', escolha um dos valores." },
+      { role: "user", content: textoPrompt }];
+    var body = { model: c.groqModelo, messages: msgs, temperature: temp == null ? 0.85 : temp, max_completion_tokens: 8192, response_format: { type: "json_object" } };
     if (/gpt-oss/.test(c.groqModelo)) body.reasoning_effort = "low";
     if (/qwen3/.test(c.groqModelo)) body.reasoning_format = "hidden";
     var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null, tm = setTimeout(function () { if (ctrl) ctrl.abort(); }, 45000);
@@ -326,12 +332,16 @@
     }, function (e) { throw (e && e.amigavel) ? e : { amigavel: "Sem conexão com o Groq." }; });
   };
   // avalia com a IA principal; se falhar (cota, erro, formato), tenta a reserva
-  AT.avaliarIA = function (tipo, texto) {
+  AT.avaliarIA = function (tipo, texto) { return AT.iaJSON(prompt(tipo, texto), SCHEMA); };
+  // pedido genérico com a IA principal e a reserva; devolve o objeto JSON com _ia (quem respondeu)
+  AT.temIA = function () { return temIA(); };
+  AT.esqueleto = esqueletoJSON;
+  AT.iaJSON = function (textoPrompt, schema, temp) {
     var c = cfg(), l = provedores(c), erros = [];
     function tenta(i) {
       if (i >= l.length) return Promise.reject({ amigavel: erros.join(" · ") || "Nenhuma IA configurada." });
-      var p = l[i], f = p === "groq" ? AT.chamarGroq : AT.chamarGemini;
-      return f(tipo, texto).then(function (j) { if (j && typeof j === "object") { j._ia = nomeIA(p, c); if (i > 0) j._reserva = true; } return j; },
+      var p = l[i], f = p === "groq" ? AT.groqJSON : AT.geminiJSON;
+      return f(textoPrompt, schema, temp).then(function (j) { if (j && typeof j === "object") { j._ia = nomeIA(p, c); if (i > 0) j._reserva = true; } return j; },
         function (e) { erros.push((p === "groq" ? "Groq: " : "Gemini: ") + ((e && e.amigavel) || "falhou")); return tenta(i + 1); });
     }
     return tenta(0);

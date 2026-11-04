@@ -282,7 +282,17 @@
   /* ================================================================ overlay de entrevista ao vivo (usado na TV e no Diário) */
   var ent = null;
   CB.abrirEntrevista = function (P, cfg) {
-    if (!P) return; ent = { P: P, cfg: cfg || {}, resp: null };
+    if (!P) return;
+    // com IA configurada, a entrevista vira conversa livre (exceto a decisão de apoio no 2º turno, que é mecânica)
+    if (P.tipo !== "apoio" && window.V3ENT && window.V3ENT.disponivel()) {
+      var c0 = cfg || {}, e = CB.minhaDisputa() || {};
+      window.V3ENT.abrir({ modo: "pos-eleicao", veiculo: String(c0.titulo || "TV").split(" •")[0], titulo: c0.titulo, logo: c0.logo, tema: c0.tema, reporter: c0.reporter ? { nome: c0.reporter.nome, foto: c0.reporter.foto, papel: (c0.reporter.papel || "repórter") } : null,
+        rodadas: 3, assunto: { vitoria: "a vitória e os primeiros passos no cargo", derrota: "a derrota e o futuro político", segundo: "a ida ao 2º turno e as alianças" }[P.tipo] || "o resultado da eleição",
+        dados: { situacao: P.tipo, cargo_disputado: P.cargo || e.cargo, resultado: e.resultado, votos: e.votos, percentual: e.pct || e.share, apoios_2turno: CB.apoiosDe().filter(function (r) { return r.decisao === "apoia"; }).slice(0, 5).map(function (r) { return r.quem.nome + " → " + r.para.nome; }) },
+        aoFechar: function () { if (c0.aoFechar) ok(c0.aoFechar); } });
+      return;
+    }
+    ent = { P: P, cfg: cfg || {}, resp: null };
     desenharEnt();
   };
   function desenharEnt() {
