@@ -33,38 +33,51 @@
   /* ================================================================ 1) CONFIGURAÇÃO (localStorage, só no aparelho) */
   var CFG_KEY = "cadeira_ia_cfg";
   var MODELOS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
-  var VERSAO = 4;
+  var VERSAO = 5;
+  // Groq: API compatível com OpenAI, chamada direto do navegador (CORS liberado). Usada como reserva do Gemini ou como principal.
+  var GROQ_URL = "https://api.groq.com/openai/v1/";
+  var GROQ_MODELOS = ["openai/gpt-oss-120b", "llama-3.3-70b-versatile", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "llama-3.1-8b-instant"];
+  function temIA(c) { c = c || cfg(); return !!(c.chave || c.groqChave); }
+  function provedores(c) { c = c || cfg(); var l = c.principal === "groq" ? ["groq", "gemini"] : ["gemini", "groq"]; return l.filter(function (p) { return p === "groq" ? !!c.groqChave : !!c.chave; }); }
+  function nomeIA(p, c) { c = c || cfg(); return p === "groq" ? "Groq (" + c.groqModelo + ")" : "Gemini (" + c.modelo + ")"; }
   function cfg() {
     var c = ok(function () { return JSON.parse(localStorage.getItem(CFG_KEY) || "{}"); }, {}) || {};
-    return { chave: c.chave || "", modelo: c.modelo || MODELOS[0], limite: clamp(c.limite || 2000, 300, 6000), atosMes: clamp(c.atosMes || 3, 1, 10), limiteDia: clamp(c.limiteDia || 200, 10, 100000), auth: c.auth || "", modelos: Array.isArray(c.modelos) ? c.modelos : [] };
+    return { chave: c.chave || "", modelo: c.modelo || MODELOS[0], limite: clamp(c.limite || 2000, 300, 6000), atosMes: clamp(c.atosMes || 3, 1, 10), limiteDia: clamp(c.limiteDia || 200, 10, 100000), auth: c.auth || "", modelos: Array.isArray(c.modelos) ? c.modelos : [],
+      groqChave: c.groqChave || "", groqModelo: c.groqModelo || GROQ_MODELOS[0], groqModelos: Array.isArray(c.groqModelos) ? c.groqModelos : [], limiteDiaGroq: clamp(c.limiteDiaGroq || 1000, 10, 100000),
+      principal: c.principal === "groq" ? "groq" : "gemini" };
   }
   /* uso da IA neste aparelho: o Google não informa a cota restante, então o jogo conta.
      A cota diária do Gemini renova à meia-noite do horário do Pacífico. */
   var USO_KEY = "cadeira_ia_uso";
   function diaPac() { return ok(function () { return new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" }); }, new Date().toISOString().slice(0, 10)); }
-  function uso() {
-    var u = ok(function () { return JSON.parse(localStorage.getItem(USO_KEY) || "{}"); }, {}) || {}, d = diaPac();
+  function usoKey(p) { return p === "groq" ? USO_KEY + "_groq" : USO_KEY; }
+  function uso(p) {
+    var u = ok(function () { return JSON.parse(localStorage.getItem(usoKey(p)) || "{}"); }, {}) || {}, d = diaPac();
     if (u.dia !== d) u = { dia: d, req: 0, tok: 0, ult429: u.ult429 && u.ult429.dia === d ? u.ult429 : null, min: [] };
     if (!Array.isArray(u.min)) u.min = [];
     return u;
   }
-  function salvarUso(u) { ok(function () { localStorage.setItem(USO_KEY, JSON.stringify(u)); }); }
-  function registrarUso(status, tokens) {
-    var u = uso(), t = Date.now(); u.req++; u.tok += Math.max(0, Number(tokens) || 0);
+  function salvarUso(u, p) { ok(function () { localStorage.setItem(usoKey(p), JSON.stringify(u)); }); }
+  function registrarUso(status, tokens, p) {
+    var u = uso(p), t = Date.now(); u.req++; u.tok += Math.max(0, Number(tokens) || 0);
     u.min = u.min.filter(function (x) { return t - x < 60000; }); u.min.push(t);
     if (status === 429) u.ult429 = { dia: u.dia, hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) };
-    salvarUso(u);
+    salvarUso(u, p);
   }
-  function somarTokens(n) { var u = uso(); u.tok += Math.max(0, Number(n) || 0); salvarUso(u); }
+  function somarTokens(n, p) { var u = uso(p); u.tok += Math.max(0, Number(n) || 0); salvarUso(u, p); }
   AT.uso = uso;
-  function medidorUso() {
-    var c = cfg(); if (!c.chave) return "";
-    var u = uso(), pct = Math.min(100, Math.round(u.req / c.limiteDia * 100)), rest = Math.max(0, c.limiteDia - u.req);
+  function barraUso(p, c) {
+    var u = uso(p), lim = p === "groq" ? c.limiteDiaGroq : c.limiteDia, pct = Math.min(100, Math.round(u.req / lim * 100)), rest = Math.max(0, lim - u.req);
     var cls = u.ult429 ? "fim" : pct >= 80 ? "alto" : pct >= 50 ? "medio" : "";
     var tok = u.tok >= 1000 ? (u.tok / 1000).toFixed(1).replace(".", ",") + " mil" : String(u.tok);
-    var aviso = u.ult429 ? "O Google recusou um pedido por cota às " + u.ult429.hora + ". A cota diária costuma renovar por volta das 4h–5h (horário de Brasília). Até lá, use a avaliação offline."
+    var nm = p === "groq" ? "Groq" : "Gemini", painel = p === "groq" ? "console.groq.com › Settings › Limits" : "aistudio.google.com › Usage";
+    var aviso = u.ult429 ? "O " + nm + " recusou um pedido por limite às " + u.ult429.hora + "." + (p === "groq" ? " O limite do Groq volta aos poucos ao longo do dia." : " A cota diária costuma renovar por volta das 4h–5h (horário de Brasília).")
       : pct >= 80 ? "Perto do limite que você definiu. Restam cerca de " + rest + " pedidos hoje." : "Restam cerca de " + rest + " pedidos hoje pelo limite que você definiu.";
-    return '<div class="v3a-uso ' + cls + '"><div class="v3a-uso-t"><b>Uso da IA hoje</b><span>' + u.req + "/" + c.limiteDia + " pedidos · " + tok + ' tokens</span></div><div class="v3a-uso-b"><i style="width:' + (u.ult429 ? 100 : pct) + '%"></i></div><small>' + esc_(aviso) + ' Contagem feita neste aparelho; o número exato fica no Google AI Studio (aistudio.google.com › Usage).</small></div>';
+    return '<div class="v3a-uso ' + cls + '"><div class="v3a-uso-t"><b>' + nm + (provedores(c)[0] === p ? " · principal" : " · reserva") + '</b><span>' + u.req + "/" + lim + " pedidos · " + tok + ' tokens</span></div><div class="v3a-uso-b"><i style="width:' + (u.ult429 ? 100 : pct) + '%"></i></div><small>' + esc_(aviso) + " Número exato: " + painel + ".</small></div>";
+  }
+  function medidorUso() {
+    var c = cfg(), l = provedores(c); if (!l.length) return "";
+    return '<div class="v3a-usos"><small class="v3a-nota">Uso da IA hoje (contado neste aparelho)' + (l.length > 1 ? " · se a principal falhar ou a cota acabar, a reserva assume sozinha" : "") + "</small>" + l.map(function (p) { return barraUso(p, c); }).join("") + "</div>";
   }
   function salvarCfg(c) { ok(function () { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }); }
   AT.cfg = cfg;
@@ -250,6 +263,80 @@
       .catch(function (e) { clearTimeout(tm); if (e && e.amigavel) throw e; throw { amigavel: e && e.name === "AbortError" ? "A IA demorou demais para responder (30 s)." : "Sem conexão com a IA. Verifique a internet." }; });
   };
 
+  /* ---------------- Groq (reserva ou principal) */
+  function erroGroq(status, corpo) {
+    var msg = ok(function () { return JSON.parse(corpo).error.message; }, "") || "";
+    if (status === 401) return "Chave do Groq inválida. Confira em Configurar IA.";
+    if (status === 403) return "A chave do Groq não tem permissão para este modelo." + (msg ? " (Groq: " + msg.slice(0, 140) + ")" : "");
+    if (status === 404) return "Modelo do Groq não encontrado. Use \"Buscar modelos do Groq\"." + (msg ? " (Groq: " + msg.slice(0, 140) + ")" : "");
+    if (status === 413) return "Texto grande demais para o limite do Groq. Encurte o ato.";
+    if (status === 429) return "Limite do Groq atingido. Espere alguns minutos ou use a avaliação offline.";
+    if (status >= 500) return "Os servidores do Groq estão instáveis agora.";
+    return "Falha no Groq (código " + status + ")." + (msg ? " (Groq: " + msg.slice(0, 140) + ")" : "");
+  }
+  function esqueletoJSON() {
+    var ex = {};
+    Object.keys(SCHEMA.properties).forEach(function (k) {
+      var d = SCHEMA.properties[k];
+      if (d.type === "ARRAY") { var it = {}; Object.keys(d.items.properties).forEach(function (kk) { var e = d.items.properties[kk]; it[kk] = e.enum ? e.enum.join("|") : "texto"; }); ex[k] = [it]; }
+      else ex[k] = d.enum ? d.enum.join("|") : d.type === "NUMBER" ? 0 : d.type === "BOOLEAN" ? true : "texto";
+    });
+    return JSON.stringify(ex);
+  }
+  function fetchGroq(caminho, opts) {
+    var c = cfg(), h = { Authorization: "Bearer " + c.groqChave }; if (opts.method === "POST") h["Content-Type"] = "application/json";
+    return fetch(GROQ_URL + caminho, { method: opts.method, headers: h, body: opts.body, signal: opts.signal }).then(function (r) { return r.text().then(function (t) { return { ok: r.ok, status: r.status, texto: t }; }); });
+  }
+  AT.chamarGroq = function (tipo, texto) {
+    var c = cfg();
+    if (!c.groqChave) return Promise.reject({ amigavel: "Nenhuma chave do Groq configurada." });
+    var msgs = [{ role: "system", content: "Você é o motor de avaliação de um jogo de simulação política brasileiro. Responda SOMENTE com um objeto JSON válido (sem markdown, sem texto fora do JSON) com exatamente estas chaves e tipos: " + esqueletoJSON() + ". Onde aparece 'a|b|c', escolha um dos valores." },
+      { role: "user", content: prompt(tipo, texto) }];
+    var body = { model: c.groqModelo, messages: msgs, temperature: 0.85, max_completion_tokens: 8192, response_format: { type: "json_object" } };
+    if (/gpt-oss/.test(c.groqModelo)) body.reasoning_effort = "low";
+    if (/qwen3/.test(c.groqModelo)) body.reasoning_format = "hidden";
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null, tm = setTimeout(function () { if (ctrl) ctrl.abort(); }, 45000);
+    function pede(b) { return fetchGroq("chat/completions", { method: "POST", body: JSON.stringify(b), signal: ctrl ? ctrl.signal : undefined }).then(function (r) { if (r.ok || r.status === 429) registrarUso(r.status, 0, "groq"); return r; }); }
+    return pede(body)
+      .then(function (r) {
+        if (r.ok || r.status !== 400) return r;
+        // o modelo pode não aceitar algum parâmetro ou falhar a validação do JSON: tenta de novo, mais simples
+        var b2 = { model: c.groqModelo, messages: msgs, temperature: 0.7, max_completion_tokens: 8192 };
+        return pede(b2);
+      })
+      .then(function (r) { clearTimeout(tm); if (!r.ok) throw { amigavel: erroGroq(r.status, r.texto) + " [código " + r.status + "]" }; return r.texto; })
+      .then(function (t) {
+        var j = JSON.parse(t), ch = j.choices && j.choices[0];
+        ok(function () { somarTokens(j.usage.total_tokens, "groq"); });
+        var txt = ch && ch.message && ch.message.content || "";
+        if (!txt) throw { amigavel: "O Groq não devolveu resposta." };
+        txt = txt.replace(/<think>[\s\S]*?<\/think>/g, "").replace(/^```(?:json)?\s*|\s*```$/g, "");
+        try { return JSON.parse(txt); } catch (e) { var m = txt.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]); throw { amigavel: "O Groq devolveu um formato inválido." }; }
+      })
+      .catch(function (e) { clearTimeout(tm); if (e && e.amigavel) throw e; throw { amigavel: e && e.name === "AbortError" ? "O Groq demorou demais para responder." : e instanceof SyntaxError ? "O Groq devolveu um formato inválido." : "Sem conexão com o Groq." }; });
+  };
+  AT.listarModelosGroq = function () {
+    var c = cfg(); if (!c.groqChave) return Promise.reject({ amigavel: "Cole a chave do Groq primeiro." });
+    return fetchGroq("models", { method: "GET" }).then(function (r) {
+      if (!r.ok) throw { amigavel: erroGroq(r.status, r.texto) };
+      var l = (JSON.parse(r.texto).data || []).filter(function (m) { return m && m.active !== false && !/whisper|guard|tts|playai|orpheus|compound|distil/i.test(m.id); }).map(function (m) { return m.id; }).sort();
+      if (!l.length) throw { amigavel: "A chave funciona, mas não há modelos de texto liberados." };
+      var c2 = cfg(); c2.groqModelos = l; if (l.indexOf(c2.groqModelo) < 0) c2.groqModelo = GROQ_MODELOS.filter(function (m) { return l.indexOf(m) >= 0; })[0] || l[0];
+      salvarCfg(c2); return l;
+    }, function (e) { throw (e && e.amigavel) ? e : { amigavel: "Sem conexão com o Groq." }; });
+  };
+  // avalia com a IA principal; se falhar (cota, erro, formato), tenta a reserva
+  AT.avaliarIA = function (tipo, texto) {
+    var c = cfg(), l = provedores(c), erros = [];
+    function tenta(i) {
+      if (i >= l.length) return Promise.reject({ amigavel: erros.join(" · ") || "Nenhuma IA configurada." });
+      var p = l[i], f = p === "groq" ? AT.chamarGroq : AT.chamarGemini;
+      return f(tipo, texto).then(function (j) { if (j && typeof j === "object") { j._ia = nomeIA(p, c); if (i > 0) j._reserva = true; } return j; },
+        function (e) { erros.push((p === "groq" ? "Groq: " : "Gemini: ") + ((e && e.amigavel) || "falhou")); return tenta(i + 1); });
+    }
+    return tenta(0);
+  };
+
   /* ================================================================ 6) AVALIADOR OFFLINE (sem IA): mesmo formato */
   var RADICAIS = /fechar o (congresso|stf|supremo)|interven[cç][aã]o militar|estado de s[ií]tio|censur|prender (jornalistas|ministros|opositores)|cassar todos|confiscar|expropria|pena de morte|armar a popula|banir|proibir (todos|toda)|ditadura|golpe/i;
   var ILEGAIS = /sem licita|caixa 2|perdoar d[ií]vidas de aliados|nepotismo|parente|perpetu|terceiro mandato|reelei[cç][aã]o ilimitada/i;
@@ -301,7 +388,7 @@
       risco_juridico: clamp(r.risco_juridico || 0, 0, 100), status_legal: texto_(r.status_legal || "Em Análise", 40), titulo_oficial: texto_(r.titulo_oficial || "", 120), ementa: texto_(r.ementa || "", 220),
       tema: TEMAS.indexOf(r.tema) >= 0 ? r.tema : "Trabalho e renda", radicalismo: clamp(r.radicalismo || 0, 0, 100), coerencia_institucional: clamp(r.coerencia_institucional == null ? 50 : r.coerencia_institucional, 0, 100),
       competencia_do_cargo: r.competencia_do_cargo !== false, indicador: r.indicador || "nenhum", impacto_indicador: clamp(r.impacto_indicador || 0, -5, 5),
-      manchete: texto_(r.manchete || "Ato do governo repercute", 180), veiculo: texto_(r.veiculo || "", 40), resumo_consequencia: texto_(r.resumo_consequencia || "", 260), _offline: !!r._offline,
+      manchete: texto_(r.manchete || "Ato do governo repercute", 180), veiculo: texto_(r.veiculo || "", 40), resumo_consequencia: texto_(r.resumo_consequencia || "", 260), _offline: !!r._offline, _ia: texto_(r._ia || "", 60), _reserva: !!r._reserva,
       reacoes_sociais: (Array.isArray(r.reacoes_sociais) ? r.reacoes_sociais : []).slice(0, 8).map(function (x) { return { perfil: texto_(x.perfil, 40), texto: texto_(x.texto, 220), sentimento: ["positivo", "negativo", "neutro"].indexOf(x.sentimento) >= 0 ? x.sentimento : "neutro" }; }),
       reacoes_atores: (Array.isArray(r.reacoes_atores) ? r.reacoes_atores : []).slice(0, 4).map(function (x) { return { ator: texto_(x.ator, 40), reacao: texto_(x.reacao, 200) }; }),
       outras_manchetes: (Array.isArray(r.outras_manchetes) ? r.outras_manchetes : []).slice(0, 5).map(function (x) { return { veiculo: texto_(x && x.veiculo || "", 40), titulo: texto_(x && x.titulo || "", 170) }; }).filter(function (x) { return x.titulo; })
@@ -419,7 +506,7 @@
     var tipos = tiposDoCargo(), c = cfg();
     if (!ui.tipo || tipos.indexOf(ui.tipo) < 0) ui.tipo = tipos[0];
     var T = TIPOS[ui.tipo], usados = atosNoMes(), lim = c.limite;
-    var h = '<section class="v3a-hero"><div><small>Gabinete</small><h2>Atos oficiais</h2><p>Escreva o que quiser. ' + (c.chave ? "A IA avalia o texto no contexto do jogo" : "Sem chave de IA configurada: a avaliação é feita pelo modo offline") + " e o resultado mexe de verdade na sua carreira.</p></div>" +
+    var h = '<section class="v3a-hero"><div><small>Gabinete</small><h2>Atos oficiais</h2><p>Escreva o que quiser. ' + (temIA(c) ? "A IA avalia o texto no contexto do jogo" : "Sem chave de IA configurada: a avaliação é feita pelo modo offline") + " e o resultado mexe de verdade na sua carreira.</p></div>" +
       '<div class="v3a-kpi"><div><b>' + usados + "/" + c.atosMes + "</b><small>atos neste mês</small></div><div><b>" + Math.round(ok(function () { return J().energia; }, 0)) + "</b><small>energia</small></div><div><b>" + Math.round(governab().valor || 0) + "</b><small>" + (governab().tipo === "executivo" ? "governabilidade" : "relação c/ partido") + '</small></div></div></section>';
     h += medidorUso();
     if (ui.res) return h + resultado(ui.res);
@@ -428,7 +515,7 @@
     h += '<div class="v3a-form"><label class="v3a-lbl">Texto do ato · <span data-v3a-cont>' + ui.texto.length + "</span>/" + lim + '</label><textarea data-v3a-texto maxlength="' + lim + '" rows="10" placeholder="' + esc_(ph) + '"' + (ui.carregando ? " disabled" : "") + ">" + esc_(ui.texto) + "</textarea>" +
       (ui.erro ? '<div class="v3a-erro">⚠️ ' + esc_(ui.erro) + ' <button type="button" data-v3a="offline">Avaliar offline</button></div>' : "") +
       '<div class="v3a-acoes"><button type="button" class="v3a-env" data-v3a="enviar"' + (ui.carregando ? " disabled" : "") + ">" + (ui.carregando ? '<span class="v3a-spin"></span> Repercutindo nos bastidores...' : "Publicar ato (−" + T[1] + " energia)") + "</button>" +
-      '<button type="button" data-v3a="cfg">⚙️ Configurar IA</button><span class="v3a-modo">' + (c.chave ? "IA: " + esc_(c.modelo) : "modo offline") + "</span></div></div>";
+      '<button type="button" data-v3a="cfg">⚙️ Configurar IA</button><span class="v3a-modo">' + (temIA(c) ? "IA: " + esc_(provedores(c).map(function (p) { return p === "groq" ? "Groq" : "Gemini"; }).join(" + reserva ")) : "modo offline") + "</span></div></div>";
     if (ui.verCfg) h += painelCfg();
     h += historico();
     return h;
@@ -443,12 +530,18 @@
       '<label>Limite de caracteres<input type="number" min="300" max="6000" step="100" data-v3a-cfg="limite" value="' + c.limite + '"></label>' +
       '<label>Atos por mês<input type="number" min="1" max="10" data-v3a-cfg="atosMes" value="' + c.atosMes + '"></label>' +
       '<label>Limite diário estimado (pedidos)<input type="number" min="10" max="100000" step="10" data-v3a-cfg="limiteDia" value="' + c.limiteDia + '"></label><p class="v3a-nota">O Google não mostra quanto falta da cota. O jogo conta os pedidos feitos neste aparelho e avisa ao chegar a 80% do número acima. Cada ato gasta 1 pedido (às vezes 2). Confira o limite real do seu plano no AI Studio.</p>' +
-      '<div class="v3a-acoes"><button type="button" data-v3a="salvarcfg">Salvar</button><button type="button" data-v3a="modelos">Buscar modelos da minha chave</button><button type="button" data-v3a="testar">Testar conexão</button><button type="button" data-v3a="apagar">Apagar chave</button></div><p class="v3a-nota" data-v3a-teste></p></div>';
+      '<div class="v3a-acoes"><button type="button" data-v3a="salvarcfg">Salvar</button><button type="button" data-v3a="modelos">Buscar modelos da minha chave</button><button type="button" data-v3a="testar">Testar conexão</button><button type="button" data-v3a="apagar">Apagar chave</button></div><p class="v3a-nota" data-v3a-teste></p>' +
+      '<h4 class="v3a-cfg-h">Groq <small class="v3a-nota">reserva gratuita</small></h4><p class="v3a-nota">Crie a chave em console.groq.com (começa com gsk_). Ela também fica só neste aparelho e vai apenas para o Groq.</p>' +
+      '<label>Chave do Groq<input type="password" data-v3a-cfg="groqChave" autocomplete="off" placeholder="gsk_..." value="' + esc_(c.groqChave) + '"></label>' +
+      '<label>Modelo do Groq<select data-v3a-cfg="groqModelo">' + (function () { var l = c.groqModelos.length ? c.groqModelos.slice() : GROQ_MODELOS.slice(); if (l.indexOf(c.groqModelo) < 0) l.unshift(c.groqModelo); return l; })().map(function (m) { return "<option " + (m === c.groqModelo ? "selected" : "") + ">" + esc_(m) + "</option>"; }).join("") + "</select></label>" +
+      '<label>IA principal<select data-v3a-cfg="principal"><option value="gemini"' + (c.principal === "gemini" ? " selected" : "") + '>Gemini (Groq como reserva)</option><option value="groq"' + (c.principal === "groq" ? " selected" : "") + ">Groq (Gemini como reserva)</option></select></label>" +
+      '<label>Limite diário estimado do Groq (pedidos)<input type="number" min="10" max="100000" step="10" data-v3a-cfg="limiteDiaGroq" value="' + c.limiteDiaGroq + '"></label>' +
+      '<div class="v3a-acoes"><button type="button" data-v3a="salvarcfg">Salvar</button><button type="button" data-v3a="groqmodelos">Buscar modelos do Groq</button><button type="button" data-v3a="groqtestar">Testar Groq</button><button type="button" data-v3a="groqapagar">Apagar chave do Groq</button></div><p class="v3a-nota" data-v3a-teste-groq></p></div>';
   }
   function chipNum(v, rot, inv) { var cls = v > 0 ? (inv ? "neg" : "pos") : v < 0 ? (inv ? "pos" : "neg") : ""; return '<span class="v3a-chip ' + cls + '"><b>' + (v > 0 ? "+" : "") + v + "</b>" + rot + "</span>"; }
   function resultado(rec) {
     var r = rec.res, barr = /Barrad|Suspens|Inconstitu/i.test(r.status_legal);
-    var h = '<div class="v3a-res"><article class="v3a-jornal"><div class="v3a-jt"><span>' + esc_(r.veiculo || "Jornal do dia seguinte") + "</span><small>" + esc_(rec.tipo) + (r._offline ? " · avaliação offline" : " · avaliação por IA") + "</small></div><h2>" + esc_(r.manchete) + "</h2><p>" + esc_(r.ementa || "") + '</p><em class="v3a-status ' + (barr ? "neg" : /Vigente|vigor|Aprovad/i.test(r.status_legal) ? "pos" : "") + '">' + esc_(r.status_legal) + "</em></article>" + cardJulgamento(rec);
+    var h = '<div class="v3a-res"><article class="v3a-jornal"><div class="v3a-jt"><span>' + esc_(r.veiculo || "Jornal do dia seguinte") + "</span><small>" + esc_(rec.tipo) + (r._offline ? " · avaliação offline" : " · avaliação por " + (r._ia || "IA") + (r._reserva ? " (reserva)" : "")) + "</small></div><h2>" + esc_(r.manchete) + "</h2><p>" + esc_(r.ementa || "") + '</p><em class="v3a-status ' + (barr ? "neg" : /Vigente|vigor|Aprovad/i.test(r.status_legal) ? "pos" : "") + '">' + esc_(r.status_legal) + "</em></article>" + cardJulgamento(rec);
     h += '<div class="v3a-imp"><h4>Impacto político</h4><div class="v3a-chips">' + chipNum(Math.round(r.impacto_popularidade), " popularidade") + chipNum(Math.round(r.impacto_governabilidade), " governabilidade") + (r.impacto_escandalo ? chipNum(Math.round(r.impacto_escandalo), " escândalo", true) : "") + '<span class="v3a-chip"><b>' + Math.round(r.radicalismo) + "</b> radicalismo</span><span class=\"v3a-chip\"><b>" + Math.round(r.coerencia_institucional) + "</b> coerência institucional</span>" + (!r.competencia_do_cargo ? '<span class="v3a-chip neg">fora da competência do cargo</span>' : "") + "</div>" +
       "<p>" + esc_(r.resumo_consequencia) + "</p><ul class='v3a-ef'>" + rec.efeitos.map(function (e) { return "<li>" + esc_(e) + "</li>"; }).join("") + "</ul>" +
       (r.reacoes_atores.length ? "<h4>Reação dos atores</h4><ul class='v3a-atores'>" + r.reacoes_atores.map(function (a) { return "<li><b>" + esc_(a.ator) + "</b> " + esc_(a.reacao) + "</li>"; }).join("") + "</ul>" : "") + "</div>";
@@ -606,8 +699,8 @@
     var e = validar(); if (e) { ui.erro = e; atualizar(); return; }
     var tipo = ui.tipo, texto = ui.texto.trim().slice(0, cfg().limite);
     ui.carregando = true; ui.erro = null; atualizar();
-    if (forcarOffline || !cfg().chave) { setTimeout(function () { concluir(AT.avaliarOffline(tipo, texto), tipo, texto); }, 900); return; }
-    AT.chamarGemini(tipo, texto).then(function (j) { concluir(j, tipo, texto); }).catch(function (err) { ui.carregando = false; ui.erro = (err && err.amigavel) || "Falha inesperada na IA."; atualizar(); });
+    if (forcarOffline || !temIA()) { setTimeout(function () { concluir(AT.avaliarOffline(tipo, texto), tipo, texto); }, 900); return; }
+    AT.avaliarIA(tipo, texto).then(function (j) { concluir(j, tipo, texto); }).catch(function (err) { ui.carregando = false; ui.erro = (err && err.amigavel) || "Falha inesperada na IA."; atualizar(); });
   }
   document.addEventListener("input", function (e) {
     var t = e.target; if (!t || !t.hasAttribute || !t.hasAttribute("data-v3a-texto")) return;
@@ -625,14 +718,19 @@
       if (k === "novo") ui.res = null;
       else if (k === "stf") { if (ui.res) { if (!ui.res.julg) ui.res.julg = ok(function () { return julgamento(ui.res); }, null); abrirJulgamento(ui.res); } return e.preventDefault(); }
       else if (k === "cfg") ui.verCfg = !ui.verCfg;
-      else if (k === "salvarcfg" || k === "testar" || k === "modelos") {
-        var c = cfg(), chaveAntes = c.chave; document.querySelectorAll("[data-v3a-cfg]").forEach(function (i) { var kk = i.getAttribute("data-v3a-cfg"); if (kk === "modeloLivre") { if (i.value.trim()) c.modelo = i.value.trim().replace(/^models\//, ""); return; } c[kk] = kk === "limite" || kk === "atosMes" || kk === "limiteDia" ? Number(i.value) : i.value.trim(); });
+      else if (k === "salvarcfg" || k === "testar" || k === "modelos" || k === "groqtestar" || k === "groqmodelos") {
+        var c = cfg(), chaveAntes = c.chave, groqAntes = c.groqChave; document.querySelectorAll("[data-v3a-cfg]").forEach(function (i) { var kk = i.getAttribute("data-v3a-cfg"); if (kk === "modeloLivre") { if (i.value.trim()) c.modelo = i.value.trim().replace(/^models\//, ""); return; } c[kk] = kk === "limite" || kk === "atosMes" || kk === "limiteDia" || kk === "limiteDiaGroq" ? Number(i.value) : i.value.trim(); });
         if (c.chave !== chaveAntes) { c.auth = ""; c.modelos = []; }
+        if (c.groqChave !== groqAntes) c.groqModelos = [];
         salvarCfg(c);
+        var pg = document.querySelector("[data-v3a-teste-groq]");
+        if (k === "groqmodelos") { if (pg) pg.textContent = "Consultando o Groq..."; AT.listarModelosGroq().then(function (l) { atualizar(); var q = document.querySelector("[data-v3a-teste-groq]"); if (q) q.textContent = "✅ " + l.length + " modelos. Escolhido: " + cfg().groqModelo + ". Agora clique em Testar Groq."; }).catch(function (er) { var q = document.querySelector("[data-v3a-teste-groq]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
+        if (k === "groqtestar") { if (pg) pg.textContent = "Testando o Groq com um ato completo..."; AT.chamarGroq("nota", "Nota oficial: o gabinete reafirma o compromisso com a transparência e a boa gestão dos recursos públicos.").then(function (j) { var q = document.querySelector("[data-v3a-teste-groq]"); if (q) q.textContent = (j && j.manchete ? "✅ Groq funcionando (" + cfg().groqModelo + "). Manchete de teste: " + String(j.manchete).slice(0, 90) : "⚠️ O Groq respondeu, mas sem manchete. Tente outro modelo."); }).catch(function (er) { var q = document.querySelector("[data-v3a-teste-groq]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
         if (k === "modelos") { var pm = document.querySelector("[data-v3a-teste]"); if (pm) pm.textContent = "Consultando o Google..."; AT.listarModelos().then(function (l) { atualizar(); var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "✅ " + l.length + " modelos encontrados. Escolhido: " + cfg().modelo + ". Agora clique em Testar conexão."; }).catch(function (er) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
         if (k === "testar") { var p = document.querySelector("[data-v3a-teste]"); if (p) p.textContent = "Testando (1/2: pedido simples)..."; AT.testeMinimo().then(function (r1) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "Testando (2/2: ato completo, modo " + r1.modo + ")..."; return AT.chamarGemini("nota", "Nota oficial: o gabinete reafirma o compromisso com a transparência e a boa gestão dos recursos públicos."); }).then(function () { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "✅ Conexão com a IA funcionando (" + cfg().modelo + ")."; }).catch(function (er) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
         ok(function () { toast("Configuração salva neste aparelho.", "ok"); });
-      } else if (k === "apagar") { var c2 = cfg(); c2.chave = ""; salvarCfg(c2); ok(function () { toast("Chave apagada deste aparelho.", "ok"); }); }
+      } else if (k === "groqapagar") { var c3 = cfg(); c3.groqChave = ""; c3.groqModelos = []; salvarCfg(c3); ok(function () { toast("Chave do Groq apagada deste aparelho.", "ok"); }); }
+      else if (k === "apagar") { var c2 = cfg(); c2.chave = ""; salvarCfg(c2); ok(function () { toast("Chave apagada deste aparelho.", "ok"); }); }
       else return;
     } else return;
     e.preventDefault(); e.stopPropagation(); atualizar();
