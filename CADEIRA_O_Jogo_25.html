@@ -59289,7 +59289,8 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
 
   /* ================================================================ 1) CONFIGURAÇÃO (localStorage, só no aparelho) */
   var CFG_KEY = "cadeira_ia_cfg";
-  var MODELOS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
+  var MODELOS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+  var VERSAO = 4;
   function cfg() {
     var c = ok(function () { return JSON.parse(localStorage.getItem(CFG_KEY) || "{}"); }, {}) || {};
     return { chave: c.chave || "", modelo: c.modelo || MODELOS[0], limite: clamp(c.limite || 2000, 300, 6000), atosMes: clamp(c.atosMes || 3, 1, 10), auth: c.auth || "", modelos: Array.isArray(c.modelos) ? c.modelos : [] };
@@ -59411,7 +59412,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     return { url: url, headers: h };
   }
   function fetchIA(caminho, opts) {
-    var c = cfg(), modos = c.auth ? [c.auth].concat(MODOS.filter(function (m) { return m !== c.auth; })) : MODOS.slice();
+    var c = cfg(), modos = c.auth ? [c.auth] : MODOS.slice();
     if (opts.soGemini) modos = modos.filter(function (m) { return m !== "vertex"; });
     var erros = [];
     function tenta(i) {
@@ -59429,7 +59430,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   }
   // resume as tentativas que falharam (ajuda a descobrir o tipo de chave)
   function resumoErros(r) {
-    if (!r.erros || r.erros.length < 2) return erroAmigavel(r.status, r.texto);
+    if (!r.erros || r.erros.length < 2) { var m1 = ok(function () { return JSON.parse(r.texto).error.message; }, "") || ""; return erroAmigavel(r.status, r.texto) + " [modo " + (r.modo || "?") + ", código " + r.status + "]" + (m1 && r.status !== 404 && r.status !== 401 && r.status !== 403 && r.status !== 400 ? " (Google: " + m1.slice(0, 160) + ")" : ""); }
     var prim = r.erros.filter(function (x) { return x.modo === "api"; })[0] || r.erros[0];
     return erroAmigavel(prim.status, prim.texto) + " Tentativas: " + r.erros.map(function (x) { var m = ok(function () { return JSON.parse(x.texto).error.message; }, "") || ""; return x.modo + " " + x.status + (m ? " (" + m.slice(0, 70) + ")" : ""); }).join(" · ");
   }
@@ -59446,13 +59447,24 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
       salvarCfg(c2); return l;
     }, function (e) { throw (e && e.amigavel) ? e : { amigavel: "Sem conexão com o Google." }; });
   };
+  AT.testeMinimo = function () {
+    var c = cfg(); if (!c.chave) return Promise.reject({ amigavel: "Cole a chave primeiro." });
+    return fetchIA("models/" + encodeURIComponent(c.modelo) + ":generateContent", { method: "POST", body: JSON.stringify({ contents: [{ parts: [{ text: "Responda apenas: ok" }] }] }) })
+      .then(function (r) { if (!r.ok) throw { amigavel: resumoErros(r) }; return r; }, function () { throw { amigavel: "Sem conexão com o Google." }; });
+  };
   AT.chamarGemini = function (tipo, texto) {
     var c = cfg();
     if (!c.chave) return Promise.reject({ amigavel: "Nenhuma chave configurada. Use a avaliação offline ou configure a IA." });
     var caminho = "models/" + encodeURIComponent(c.modelo) + ":generateContent";
-    var body = { contents: [{ role: "user", parts: [{ text: prompt(tipo, texto) }] }], generationConfig: { temperature: 0.85, responseMimeType: "application/json", responseSchema: SCHEMA, maxOutputTokens: 2048 } };
-    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null, tm = setTimeout(function () { if (ctrl) ctrl.abort(); }, 30000);
+    var body = { contents: [{ role: "user", parts: [{ text: prompt(tipo, texto) }] }], generationConfig: { temperature: 0.85, responseMimeType: "application/json", responseSchema: SCHEMA, maxOutputTokens: 8192 } };
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null, tm = setTimeout(function () { if (ctrl) ctrl.abort(); }, 45000);
     return fetchIA(caminho, { method: "POST", body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) {
+        if (r.ok || r.status !== 400) return r;
+        // o modelo pode não aceitar o schema: tenta só com JSON (o prompt já descreve os campos)
+        var b2 = { contents: body.contents, generationConfig: { temperature: 0.85, responseMimeType: "application/json", maxOutputTokens: 8192 } };
+        return fetchIA(caminho, { method: "POST", body: JSON.stringify(b2), signal: ctrl ? ctrl.signal : undefined });
+      })
       .then(function (r) { clearTimeout(tm); if (!r.ok) throw { amigavel: resumoErros(r) }; return r.texto; })
       .then(function (t) {
         var j = JSON.parse(t), cand = j.candidates && j.candidates[0];
@@ -59602,7 +59614,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   }
   function painelCfg() {
     var c = cfg();
-    return '<div class="v3a-cfg"><h4>Configurar IA (Gemini)</h4><p class="v3a-nota">A chave fica só neste aparelho (localStorage do navegador). Ela não vai para o save, não vai para o servidor do jogo e é enviada apenas ao Google. Crie uma chave no Google AI Studio e, se possível, restrinja o uso dela ao site do jogo.</p>' +
+    return '<div class="v3a-cfg"><h4>Configurar IA (Gemini) <small class="v3a-nota">versão ' + VERSAO + '</small></h4><p class="v3a-nota">A chave fica só neste aparelho (localStorage do navegador). Ela não vai para o save, não vai para o servidor do jogo e é enviada apenas ao Google. Crie uma chave no Google AI Studio e, se possível, restrinja o uso dela ao site do jogo.</p>' +
       '<label>Chave da API<input type="password" data-v3a-cfg="chave" autocomplete="off" placeholder="cole a chave aqui" value="' + esc_(c.chave) + '"></label>' +
       '<label>Modelo<select data-v3a-cfg="modelo">' + (function () { var l = c.modelos.length ? c.modelos.slice() : MODELOS.slice(); if (l.indexOf(c.modelo) < 0) l.unshift(c.modelo); return l; })().map(function (m) { return "<option " + (m === c.modelo ? "selected" : "") + ">" + esc_(m) + "</option>"; }).join("") + "</select></label>" +
       '<label>Ou digite o nome do modelo<input type="text" data-v3a-cfg="modeloLivre" placeholder="ex.: gemini-2.5-flash" autocomplete="off"></label>' +
@@ -59671,7 +59683,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
         if (c.chave !== chaveAntes) { c.auth = ""; c.modelos = []; }
         salvarCfg(c);
         if (k === "modelos") { var pm = document.querySelector("[data-v3a-teste]"); if (pm) pm.textContent = "Consultando o Google..."; AT.listarModelos().then(function (l) { atualizar(); var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "✅ " + l.length + " modelos encontrados. Escolhido: " + cfg().modelo + ". Agora clique em Testar conexão."; }).catch(function (er) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
-        if (k === "testar") { var p = document.querySelector("[data-v3a-teste]"); if (p) p.textContent = "Testando..."; AT.chamarGemini("nota", "Nota oficial: o gabinete reafirma o compromisso com a transparência e a boa gestão dos recursos públicos.").then(function () { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "✅ Conexão com a IA funcionando."; }).catch(function (er) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
+        if (k === "testar") { var p = document.querySelector("[data-v3a-teste]"); if (p) p.textContent = "Testando (1/2: pedido simples)..."; AT.testeMinimo().then(function (r1) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "Testando (2/2: ato completo, modo " + r1.modo + ")..."; return AT.chamarGemini("nota", "Nota oficial: o gabinete reafirma o compromisso com a transparência e a boa gestão dos recursos públicos."); }).then(function () { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "✅ Conexão com a IA funcionando (" + cfg().modelo + ")."; }).catch(function (er) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
         ok(function () { toast("Configuração salva neste aparelho.", "ok"); });
       } else if (k === "apagar") { var c2 = cfg(); c2.chave = ""; salvarCfg(c2); ok(function () { toast("Chave apagada deste aparelho.", "ok"); }); }
       else return;
