@@ -288,10 +288,13 @@
     var est = {}; TRECHOS.forEach(function (t) { if (estadoTrecho(t).s === "operacao") (t.paradas || t.est).forEach(function (id) { est[id] = 1; }); });
     return '<p class="v3t-res"><b>' + Object.keys(est).length + "</b> estações no mapa em operação · projetos de expansão: <b>" + c.operacao + "</b> entregues, <b>" + (c.obras + c.parado) + "</b> em obras, <b>" + c.aprovacao + "</b> em aprovação, <b>" + c.planejado + "</b> no papel" + (c.cancelado ? ", " + c.cancelado + " cancelados" : "") + ".</p>";
   }
+  function barra() {
+    return '<div class="v3t-bar">' + Object.keys(VISTAS).map(function (k) { return '<button type="button" data-v3t-vista="' + k + '">' + { rede: "Rede inteira", centro: "Centro", abc: "ABC e Mauá", leste: "Zona Leste", norte: "Norte" }[k] + "</button>"; }).join("") +
+      '<button type="button" data-v3t-zoom="0.7" aria-label="Aproximar">＋</button><button type="button" data-v3t-zoom="1.4" aria-label="Afastar">－</button><label><input type="checkbox" data-v3t-planos ' + (ui.planos ? "checked" : "") + "> projetos</label></div>";
+  }
   function corpo() {
-    return resumo() + '<div class="v3t-bar">' + Object.keys(VISTAS).map(function (k) { return '<button type="button" data-v3t-vista="' + k + '">' + { rede: "Rede inteira", centro: "Centro", abc: "ABC e Mauá", leste: "Zona Leste", norte: "Norte" }[k] + "</button>"; }).join("") +
-      '<button type="button" data-v3t-zoom="0.7" aria-label="Aproximar">＋</button><button type="button" data-v3t-zoom="1.4" aria-label="Afastar">－</button><label><input type="checkbox" data-v3t-planos ' + (ui.planos ? "checked" : "") + "> projetos</label></div>" +
-      '<div class="v3t-mapa">' + svg() + "</div>" + legenda() + chips() + '<div class="v3t-painel">' + painel() + "</div>";
+    if (ui.full) return '<div class="v3t-duo"><div class="v3t-esq">' + barra() + '<div class="v3t-mapa">' + svg() + "</div>" + legenda() + '</div><div class="v3t-dir">' + resumo() + chips() + '<div class="v3t-painel">' + painel() + "</div></div></div>";
+    return resumo() + barra() + '<div class="v3t-mapa">' + svg() + "</div>" + legenda() + chips() + '<div class="v3t-painel">' + painel() + "</div>";
   }
   function cardRede() {
     var txt = "<p class='txt'><small>O mapa mostra o que acontece no jogo: cada extensão, linha nova ou melhoria está ligada a uma obra do catálogo e muda de aparência conforme ela avança, para, é entregue ou cancelada, seja qual for o governante. Traçados de projetos são de referência.</small></p>";
@@ -458,17 +461,47 @@
     var box = document.querySelector('[data-v3v-box="1"]'); if (box) { box.querySelector(".v3v-mapa").innerHTML = svgViario(); box.querySelector(".v3v-painel").innerHTML = painelViario(); }
   }, true);
 
-  /* ================================================================ onde aparece: Poder (perto da Mobilidade) e Mapa */
+  /* ================================================================ tela própria: área "Mobilidade" no menu */
+  function heroi() {
+    var cid = ok(function () { return cargoAtualId(); }, "");
+    var est = {}, linhas = {}, obras = 0, novas = 0;
+    TRECHOS.forEach(function (t) { var s2 = estadoTrecho(t).s; if (s2 === "operacao") { (t.paradas || t.est).forEach(function (id) { est[id] = 1; }); linhas[t.linha] = 1; if (t.base !== "operacao") novas++; } if (s2 === "obras" || s2 === "parado") obras++; });
+    var papel = { GOV: "Você comanda o Metrô e a CPTM: inicie linhas, extensões e estações.", PREF: "Você toca as obras viárias de Mauá e pode pedir ao Estado linhas e estações para a cidade.", PRES: "Você pode financiar trens regionais e a integração federal das linhas." }[cid] || "Acompanhe a rede. Ao assumir Prefeitura, Governo ou Presidência você passa a decidir as obras.";
+    return '<section class="v3mob-hero"><div><small>Mobilidade urbana</small><h2>Rede metropolitana de São Paulo</h2><p>' + esc_(papel) + '</p></div><div class="v3mob-kpi"><div><b>' + Object.keys(est).length + "</b><small>estações em operação</small></div><div><b>" + Object.keys(linhas).length + "</b><small>linhas operando</small></div><div><b>" + obras + "</b><small>trechos em obras</small></div><div><b>" + novas + "</b><small>expansões entregues</small></div></div></section>";
+  }
+  function viewMob() {
+    semear(); ui.full = true;
+    if (!ui.vbFull) { ui.vbFull = true; if (ui.vb[2] >= W) ui.vb = caixa(["pirituba", "itaquera", "jabaquara", "maua", "tucuruvi", "vilasonia"]); }
+    var h = heroi();
+    h += '<section class="card v3mob-rede"><div class="v3t v3t-full" data-v3t="1">' + corpo() + "</div></section>";
+    var cat = ok(function () { return OBRAS._cardCatalogo(true); }, "");
+    h += '<div class="v3mob-baixo"><div>' + cat + "</div><div>" + cardViario() + "</div></div>";
+    return h;
+  }
+  TR.view = viewMob;
+  function atalho() {
+    var b = typeof btn === "function" ? btn("Abrir Mobilidade urbana", "tab", ["mob"], "confirma") : "";
+    return typeof card === "function" ? card("Mobilidade urbana", "<p class='txt'>Metrô, trens, obras viárias de Mauá e o mapa da rede agora têm uma área própria no menu.</p><div class='row'>" + b + "</div>") : "";
+  }
   function instalar() {
     catalogo(); ganchos();
     if (typeof VIEWS === "undefined") return;
-    ["poder", "mapa"].forEach(function (v) {
-      if (typeof VIEWS[v] !== "function" || VIEWS[v].__v3t) return;
-      var o = VIEWS[v];
-      var n = function () { var h = o.apply(this, arguments); try { semear(); if (String(h).indexOf('data-v3t="1"') < 0) h += cardRede(); if (String(h).indexOf('data-v3v-box="1"') < 0) h += cardViario(); } catch (e) { console.warn("v3trilhos", e); } return h; };
-      for (var k in o) { try { n[k] = o[k]; } catch (e) {} }
-      n.__v3t = true; VIEWS[v] = n;
-    });
+    if (!VIEWS.mob) VIEWS.mob = function () { return viewMob(); };
+    try { if (!TABS.some(function (t) { return t[0] === "mob"; })) TABS.push(["mob", "Mobilidade urbana"]); } catch (e) {}
+    var N = window.NAVH;
+    if (N && N.HUBS && !N.HUBS.some(function (h) { return h.id === "mobilidade"; })) {
+      var k = 0; N.HUBS.forEach(function (h, i) { if (h.id === "poder") k = i + 1; });
+      N.HUBS.splice(k || N.HUBS.length, 0, { id: "mobilidade", nome: "Mobilidade", subs: [["mob", "Mobilidade urbana"]] });
+    }
+    // Poder e Mapa: no lugar das seções de mobilidade, um atalho para a área nova (nada some, só muda de lugar)
+    var OB = window.OBRAS;
+    if (OB && OB._cardCatalogo && !OB.__v3mobTab) { OB.__v3mobTab = true; OB.cardCatalogo = function () { return OB._cardCatalogo(false) + atalho(); }; }
+    if (typeof VIEWS.mapa === "function" && !VIEWS.mapa.__v3t) {
+      var o = VIEWS.mapa;
+      var n = function () { var h = o.apply(this, arguments); try { if (String(h).indexOf("Abrir Mobilidade urbana") < 0) h += atalho(); } catch (e) {} return h; };
+      for (var k2 in o) { try { n[k2] = o[k2]; } catch (e) {} }
+      n.__v3t = true; VIEWS.mapa = n;
+    }
   }
   instalar();
   document.addEventListener("DOMContentLoaded", function () { setTimeout(instalar, 0); });
