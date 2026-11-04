@@ -73,7 +73,10 @@
     forbes: { nome: "Forbes Brasil", handle: "@forbesbr", cor: "#111111" },
     record: { nome: "Record", handle: "@recordtvoficial", cor: "#2563eb" },
     flow: { nome: "Flow News", handle: "@flownews", cor: "#0a0a0a" },
-    podpah: { nome: "Podpah", handle: "@podpah", cor: "#facc15" }
+    podpah: { nome: "Podpah", handle: "@podpah", cor: "#facc15" },
+    band: { nome: "Band", handle: "@BandJornalismo", cor: "#1d4ed8" },
+    sbt: { nome: "SBT", handle: "@SBTonline", cor: "#0f766e" },
+    globo: { nome: "TV Globo", handle: "@tvglobo", cor: "#0284c7" }
   };
   window.V3M_VEIC = VEIC;
   function logoVeic(vid) { return ok(function () { return window.V3MARCAS ? window.V3MARCAS.logo(vid) : ""; }, ""); }
