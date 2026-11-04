@@ -35,7 +35,7 @@
   var MODELOS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
   function cfg() {
     var c = ok(function () { return JSON.parse(localStorage.getItem(CFG_KEY) || "{}"); }, {}) || {};
-    return { chave: c.chave || "", modelo: c.modelo || MODELOS[0], limite: clamp(c.limite || 2000, 300, 6000), atosMes: clamp(c.atosMes || 3, 1, 10) };
+    return { chave: c.chave || "", modelo: c.modelo || MODELOS[0], limite: clamp(c.limite || 2000, 300, 6000), atosMes: clamp(c.atosMes || 3, 1, 10), auth: c.auth || "", modelos: Array.isArray(c.modelos) ? c.modelos : [] };
   }
   function salvarCfg(c) { ok(function () { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }); }
   AT.cfg = cfg;
@@ -129,20 +129,51 @@
     var msg = ok(function () { return JSON.parse(corpo).error.message; }, "") || "";
     if (status === 400 && /API key|API_KEY/i.test(msg)) return "Chave da API inválida. Confira a chave em Configurar IA.";
     if (status === 400) return "A IA recusou o pedido (" + msg.slice(0, 120) + ").";
-    if (status === 401 || status === 403) return "A chave não tem permissão para usar a API do Gemini.";
-    if (status === 404) return "Modelo não encontrado. Troque o modelo em Configurar IA (o 1.5 foi descontinuado pelo Google).";
+    if (status === 401 || status === 403) return "A chave não tem permissão para usar a API do Gemini." + (msg ? " (Google: " + msg.slice(0, 160) + ")" : "");
+    if (status === 404) return "Modelo não encontrado para esta chave. Use \"Buscar modelos da minha chave\" em Configurar IA." + (msg ? " (Google: " + msg.slice(0, 160) + ")" : "");
     if (status === 429) return "Cota da API estourada. Espere um pouco ou use a avaliação offline.";
     if (status >= 500) return "Os servidores da IA estão instáveis agora. Tente de novo em instantes.";
-    return "Falha na IA (código " + status + ").";
+    return "Falha na IA (código " + status + ")." + (msg ? " (Google: " + msg.slice(0, 160) + ")" : "");
   }
+  // Autenticação: chaves clássicas (AIza...) vão no cabeçalho x-goog-api-key. Se o Google recusar e a chave
+  // tiver outro formato (ex.: "AQ."), tenta como token Bearer. O modo que funcionar fica salvo.
+  var BASE = "https://generativelanguage.googleapis.com/v1beta/";
+  function cab(chave, modo, json) { var h = {}; if (json) h["Content-Type"] = "application/json"; if (modo === "bearer") h.Authorization = "Bearer " + chave; else h["x-goog-api-key"] = chave; return h; }
+  function fetchIA(caminho, opts) {
+    var c = cfg(), modos = c.auth ? [c.auth] : (/^AIza/.test(c.chave) ? ["api"] : ["api", "bearer"]);
+    if (c.auth && !/^AIza/.test(c.chave)) modos = [c.auth, c.auth === "api" ? "bearer" : "api"];
+    function tenta(i) {
+      return fetch(BASE + caminho, Object.assign({}, opts, { headers: cab(c.chave, modos[i], opts.method === "POST") })).then(function (r) {
+        return r.text().then(function (t) {
+          if (!r.ok && [401, 403, 404].indexOf(r.status) >= 0 && i + 1 < modos.length) return tenta(i + 1);
+          if (r.ok && c.auth !== modos[i]) { var c2 = cfg(); c2.auth = modos[i]; salvarCfg(c2); }
+          return { ok: r.ok, status: r.status, texto: t };
+        });
+      });
+    }
+    return tenta(0);
+  }
+  // pergunta ao Google quais modelos esta chave pode usar
+  AT.listarModelos = function () {
+    var c = cfg(); if (!c.chave) return Promise.reject({ amigavel: "Cole a chave primeiro." });
+    return fetchIA("models?pageSize=200", { method: "GET" }).then(function (r) {
+      if (!r.ok) throw { amigavel: erroAmigavel(r.status, r.texto) };
+      var l = (JSON.parse(r.texto).models || []).filter(function (m) { return (m.supportedGenerationMethods || []).indexOf("generateContent") >= 0 && /gemini/i.test(m.name) && !/embedding|image|tts|audio|live/i.test(m.name); })
+        .map(function (m) { return m.name.replace(/^models\//, ""); });
+      if (!l.length) throw { amigavel: "A chave funciona, mas não tem nenhum modelo Gemini de texto liberado." };
+      var c2 = cfg(); c2.modelos = l;
+      if (l.indexOf(c2.modelo) < 0) c2.modelo = l.filter(function (n) { return /flash/.test(n) && !/lite|preview|exp/.test(n); })[0] || l.filter(function (n) { return /flash/.test(n); })[0] || l[0];
+      salvarCfg(c2); return l;
+    }, function (e) { throw (e && e.amigavel) ? e : { amigavel: "Sem conexão com o Google." }; });
+  };
   AT.chamarGemini = function (tipo, texto) {
     var c = cfg();
     if (!c.chave) return Promise.reject({ amigavel: "Nenhuma chave configurada. Use a avaliação offline ou configure a IA." });
-    var url = "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(c.modelo) + ":generateContent";
+    var caminho = "models/" + encodeURIComponent(c.modelo) + ":generateContent";
     var body = { contents: [{ role: "user", parts: [{ text: prompt(tipo, texto) }] }], generationConfig: { temperature: 0.85, responseMimeType: "application/json", responseSchema: SCHEMA, maxOutputTokens: 2048 } };
     var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null, tm = setTimeout(function () { if (ctrl) ctrl.abort(); }, 30000);
-    return fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": c.chave }, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
-      .then(function (r) { clearTimeout(tm); return r.text().then(function (t) { if (!r.ok) throw { amigavel: erroAmigavel(r.status, t) }; return t; }); })
+    return fetchIA(caminho, { method: "POST", body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { clearTimeout(tm); if (!r.ok) throw { amigavel: erroAmigavel(r.status, r.texto) }; return r.texto; })
       .then(function (t) {
         var j = JSON.parse(t), cand = j.candidates && j.candidates[0];
         if (!cand || !cand.content) throw { amigavel: cand && cand.finishReason === "SAFETY" ? "A IA bloqueou o texto por segurança. Reescreva o ato." : "A IA não devolveu resposta." };
@@ -293,10 +324,12 @@
     var c = cfg();
     return '<div class="v3a-cfg"><h4>Configurar IA (Gemini)</h4><p class="v3a-nota">A chave fica só neste aparelho (localStorage do navegador). Ela não vai para o save, não vai para o servidor do jogo e é enviada apenas ao Google. Crie uma chave no Google AI Studio e, se possível, restrinja o uso dela ao site do jogo.</p>' +
       '<label>Chave da API<input type="password" data-v3a-cfg="chave" autocomplete="off" placeholder="cole a chave aqui" value="' + esc_(c.chave) + '"></label>' +
-      '<label>Modelo<select data-v3a-cfg="modelo">' + MODELOS.map(function (m) { return "<option " + (m === c.modelo ? "selected" : "") + ">" + m + "</option>"; }).join("") + "</select></label>" +
+      '<label>Modelo<select data-v3a-cfg="modelo">' + (function () { var l = c.modelos.length ? c.modelos.slice() : MODELOS.slice(); if (l.indexOf(c.modelo) < 0) l.unshift(c.modelo); return l; })().map(function (m) { return "<option " + (m === c.modelo ? "selected" : "") + ">" + esc_(m) + "</option>"; }).join("") + "</select></label>" +
+      '<label>Ou digite o nome do modelo<input type="text" data-v3a-cfg="modeloLivre" placeholder="ex.: gemini-2.5-flash" autocomplete="off"></label>' +
+      (c.modelos.length ? '<p class="v3a-nota">' + c.modelos.length + " modelos liberados para a sua chave." + (c.auth ? " Autenticação: " + (c.auth === "bearer" ? "token" : "chave de API") + "." : "") + "</p>" : "") +
       '<label>Limite de caracteres<input type="number" min="300" max="6000" step="100" data-v3a-cfg="limite" value="' + c.limite + '"></label>' +
       '<label>Atos por mês<input type="number" min="1" max="10" data-v3a-cfg="atosMes" value="' + c.atosMes + '"></label>' +
-      '<div class="v3a-acoes"><button type="button" data-v3a="salvarcfg">Salvar</button><button type="button" data-v3a="testar">Testar conexão</button><button type="button" data-v3a="apagar">Apagar chave</button></div><p class="v3a-nota" data-v3a-teste></p></div>';
+      '<div class="v3a-acoes"><button type="button" data-v3a="salvarcfg">Salvar</button><button type="button" data-v3a="modelos">Buscar modelos da minha chave</button><button type="button" data-v3a="testar">Testar conexão</button><button type="button" data-v3a="apagar">Apagar chave</button></div><p class="v3a-nota" data-v3a-teste></p></div>';
   }
   function chipNum(v, rot, inv) { var cls = v > 0 ? (inv ? "neg" : "pos") : v < 0 ? (inv ? "pos" : "neg") : ""; return '<span class="v3a-chip ' + cls + '"><b>' + (v > 0 ? "+" : "") + v + "</b>" + rot + "</span>"; }
   function resultado(rec) {
@@ -353,9 +386,11 @@
       if (k === "offline") return enviar(true), e.preventDefault();
       if (k === "novo") ui.res = null;
       else if (k === "cfg") ui.verCfg = !ui.verCfg;
-      else if (k === "salvarcfg" || k === "testar") {
-        var c = cfg(); document.querySelectorAll("[data-v3a-cfg]").forEach(function (i) { var kk = i.getAttribute("data-v3a-cfg"); c[kk] = kk === "limite" || kk === "atosMes" ? Number(i.value) : i.value.trim(); });
+      else if (k === "salvarcfg" || k === "testar" || k === "modelos") {
+        var c = cfg(), chaveAntes = c.chave; document.querySelectorAll("[data-v3a-cfg]").forEach(function (i) { var kk = i.getAttribute("data-v3a-cfg"); if (kk === "modeloLivre") { if (i.value.trim()) c.modelo = i.value.trim().replace(/^models\//, ""); return; } c[kk] = kk === "limite" || kk === "atosMes" ? Number(i.value) : i.value.trim(); });
+        if (c.chave !== chaveAntes) { c.auth = ""; c.modelos = []; }
         salvarCfg(c);
+        if (k === "modelos") { var pm = document.querySelector("[data-v3a-teste]"); if (pm) pm.textContent = "Consultando o Google..."; AT.listarModelos().then(function (l) { atualizar(); var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "✅ " + l.length + " modelos encontrados. Escolhido: " + cfg().modelo + ". Agora clique em Testar conexão."; }).catch(function (er) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
         if (k === "testar") { var p = document.querySelector("[data-v3a-teste]"); if (p) p.textContent = "Testando..."; AT.chamarGemini("nota", "Nota oficial: o gabinete reafirma o compromisso com a transparência e a boa gestão dos recursos públicos.").then(function () { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "✅ Conexão com a IA funcionando."; }).catch(function (er) { var q = document.querySelector("[data-v3a-teste]"); if (q) q.textContent = "❌ " + (er.amigavel || "falhou"); }); e.preventDefault(); return; }
         ok(function () { toast("Configuração salva neste aparelho.", "ok"); });
       } else if (k === "apagar") { var c2 = cfg(); c2.chave = ""; salvarCfg(c2); ok(function () { toast("Chave apagada deste aparelho.", "ok"); }); }
