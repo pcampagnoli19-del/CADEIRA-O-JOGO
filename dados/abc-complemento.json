@@ -2506,7 +2506,7 @@
    "nome": "Cafu César",
    "cargo": "Liderança / Ex-Titular",
    "papel": "Vice-prefeito de Hortolândia",
-   "partido": "Sem Partido",
+   "partido": "PSB",
    "uf": "SP",
    "municipio": "Hortolândia",
    "profissao": "Líder Comunitário",
@@ -2617,6 +2617,9 @@
   "José Auricchio Júnior": {
    "cargo": "Liderança / Ex-Titular",
    "papel": "Ex-prefeito de São Caetano do Sul"
+  },
+  "Cafu César": {
+   "partido": "PSB"
   }
  },
  "versao_ajustes": 2
