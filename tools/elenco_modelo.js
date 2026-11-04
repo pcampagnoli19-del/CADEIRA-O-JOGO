@@ -16,6 +16,8 @@
   var EL = (window.V3ELENCO = {});
   var DADOS = __DADOS__;
   var FOTOS = __FOTOS__;
+  var AJUSTES = __AJUSTES__; // cargos e papéis conferidos nos sites oficiais (aplicados uma vez por save)
+  var NAO_BUSCAR = { "Jorge Araújo": 1, "Cicinho": 1, "Bruno Farias": 1, "Mazinho": 1 }; // homônimos na Wikipédia
   var PROFS = ["Advogado(a)", "Economista", "Médico(a)", "Professor(a)", "Agricultor(a)", "Policial/Militar", "Empresário(a)", "Líder Comunitário", "Jornalista", "Engenheiro(a)", "Cientista Político", "Líder Religioso"];
   // vereadores de outras cidades que estavam marcados como de Mauá
   var OUTRAS = { "Cris Monteiro": "São Paulo", "Luana Alves": "São Paulo", "Silvia Ferraro": "São Paulo", "Toninho Vespoli": "São Paulo", "Celso Giannazi": "São Paulo", "Keit Lima": "São Paulo", "Zoe Martínez": "São Paulo", "Adrilles Jorge": "São Paulo", "Sonaira Fernandes": "São Paulo", "Mônica Benício": "Rio de Janeiro", "Thais Ferreira": "Rio de Janeiro", "William Siri": "Rio de Janeiro", "Carlo Caiado": "Rio de Janeiro", "Leniel Borel": "Rio de Janeiro", "Mariana Conti": "Campinas", "Débora Camilo": "Santos", "Karen Santos": "Porto Alegre" };
@@ -55,6 +57,12 @@
       var n = ex[nk(nome)]; if (!n || n.cargo !== "Vereador de Mauá") return;
       var cid = OUTRAS[nome]; n.cargo = "Liderança / Ex-Titular"; n.papel = (n.sexo === "F" ? "Vereadora" : "Vereador") + " de " + cid; n.municipio_domicilio = cid; n.uf = UF_CID[cid] || n.uf; n.esfera = "MUNICIPAL";
     });
+    try {
+      var m = M(); if ((m.v3ajustes || 0) < 1) {
+        Object.keys(AJUSTES).forEach(function (nome) { var n = ex[nk(nome)], a = AJUSTES[nome]; if (!n) return; if (a.cargo) n.cargo = a.cargo; if (a.papel) n.papel = a.papel; });
+        m.v3ajustes = 1;
+      }
+    } catch (e) {}
     // Câmara de Mauá: os 23 vereadores da legislatura 2025-2028 (site oficial da Câmara)
     var MAUA = ["Alessandro Martins", "Alexandre Vieira", "Danilo do Teco", "Denis Caporal", "Mazinho", "Engenheiro Felipe do MSTU", "Juninho Getúlio", "Tchacabum", "Jotão", "José Afonso Madeira", "Zé Carlos Nova Era", "Zé Luiz Cassimiro", "Wellington da Saúde", "Zeinha Silva", "Leonardo Alves", "Luiz Alfredo Simão", "Rangel Souza", "Renan Pessoa", "Ricardinho da Enfermagem", "Doutor Tioki", "Vaguinho do Zaíra", "Neycar", "Wagner Rubinelli"];
     var naCamara = {}; MAUA.forEach(function (x) { naCamara[nk(x)] = 1; });
@@ -88,7 +96,7 @@
   function candidatos() {
     var b = banco() || [], c = lerCache(), agora = Date.now();
     return b.filter(function (n) {
-      if (!n.real || n.vivo === false || temFoto(n)) return false;
+      if (!n.real || n.vivo === false || temFoto(n) || NAO_BUSCAR[n.nome]) return false;
       var k = c[norm(n.nome)]; return !(k && (k.u || agora - k.t < DIAS));
     });
   }
@@ -118,6 +126,10 @@
         var p = pags[mapa[t]]; if (!p || p.missing !== undefined) { out[t] = ""; return; }
         var desc = (p.terms && p.terms.description && p.terms.description[0]) || "";
         var ok = p.thumbnail && p.thumbnail.source && POL.test(desc) && /brasil/i.test(desc);
+        // vereador local: recusa se a Wikipédia diz que é vereador de outra cidade
+        var nn = lote.filter(function (x) { return x.nome.trim() === t; })[0];
+        var cid = nn && /Vereador(?:a)? de (.+)/.exec(nn.papel || ""), vd = /vereador[a]?(?: do município)? de ([^,;]+)/i.exec(desc);
+        if (ok && cid && vd && norm(vd[1]).indexOf(norm(cid[1]).split(" ")[0]) < 0) ok = false;
         out[t] = ok ? p.thumbnail.source : "";
       });
       return out;
