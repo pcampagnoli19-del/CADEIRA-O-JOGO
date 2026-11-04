@@ -55,11 +55,21 @@
       var n = ex[nk(nome)]; if (!n || n.cargo !== "Vereador de Mauá") return;
       var cid = OUTRAS[nome]; n.cargo = "Liderança / Ex-Titular"; n.papel = (n.sexo === "F" ? "Vereadora" : "Vereador") + " de " + cid; n.municipio_domicilio = cid; n.uf = UF_CID[cid] || n.uf; n.esfera = "MUNICIPAL";
     });
+    // Câmara de Mauá: os 23 vereadores da legislatura 2025-2028 (site oficial da Câmara)
+    var MAUA = ["Alessandro Martins", "Alexandre Vieira", "Danilo do Teco", "Denis Caporal", "Mazinho", "Engenheiro Felipe do MSTU", "Juninho Getúlio", "Tchacabum", "Jotão", "José Afonso Madeira", "Zé Carlos Nova Era", "Zé Luiz Cassimiro", "Wellington da Saúde", "Zeinha Silva", "Leonardo Alves", "Luiz Alfredo Simão", "Rangel Souza", "Renan Pessoa", "Ricardinho da Enfermagem", "Doutor Tioki", "Vaguinho do Zaíra", "Neycar", "Wagner Rubinelli"];
+    var naCamara = {}; MAUA.forEach(function (x) { naCamara[nk(x)] = 1; });
+    b.forEach(function (n) {
+      if (n.vivo === false) return;
+      var dentro = !!naCamara[nk(n.nome)];
+      if (n.cargo === "Vereador de Mauá" && !dentro && n.real) { n.cargo = "Liderança / Ex-Titular"; n.papel = (n.sexo === "F" ? "Ex-vereadora" : "Ex-vereador") + " de Mauá"; }
+      else if (dentro && n.real && n.cargo !== "Vereador de Mauá" && n.cargo !== "Prefeito de Mauá") { n.cargo = "Vereador de Mauá"; n.papel = (n.sexo === "F" ? "Vereadora" : "Vereador") + " de Mauá"; n.municipio_domicilio = "Mauá"; n.uf = "SP"; n.esfera = "MUNICIPAL"; }
+    });
     // fotos conhecidas (geradas) e as do cache das APIs
     var cache = lerCache();
     b.forEach(function (n) {
-      if (!n.real || temFoto(n)) return;
-      if (FOTOS[n.nome]) { n.foto = FOTOS[n.nome]; return; }
+      if (!n.real) return;
+      if (FOTOS[n.nome] && (!temFoto(n) || naCamara[nk(n.nome)])) { n.foto = FOTOS[n.nome]; return; }
+      if (temFoto(n)) return;
       var c = cache[norm(n.nome)]; if (c && c.u) n.foto = c.u;
     });
     try { b.__v3el = b.length; } catch (e) {}
