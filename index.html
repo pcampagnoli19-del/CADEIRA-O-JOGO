@@ -5178,10 +5178,16 @@ function projetarMajoritaria(cargoId,ruido=0){
 function projetarLegislativo(cargoId){
   const N=CADEIRAS[cargoId]; const pred=cargoId==="VER"?(n=>n.cargo.includes("Vereador")):cargoId==="DEPE"?(n=>n.cargo.includes("Deputado Estadual")):(n=>n.cargo.includes("Deputado Federal")&&n.uf==="SP");
   const inc=bancoDeNPCs.filter(n=>n.vivo&&!n.jogador&&pred(n)&&!ehSemPartido(n)); const ch=bancoDeNPCs.filter(n=>n.vivo&&n.cargo==="Liderança / Ex-Titular"&&n.base_votos>0&&(cargoId==="VER"?n.municipio_domicilio==="Mauá":n.uf==="SP")&&n.idade>=25&&n.idade<=75&&n.status_judicial!=="CONDENADO"&&!isFiguraPublica(n)&&!ehSemPartido(n));
-  const votos=n=>Math.round(n.base_votos*R.f(.72,1.28)*(.85+n.popularidade/180)*(n.status_judicial==="INDICIADO"?.6:1)*(cargoId==="DEPF"?.9:1));
+  // vereador: a base de quem já disputou cargo maior (deputado, prefeito) é trazida para a escala de uma Câmara municipal
+  const baseDe=n=>{ const b=n.base_votos||0; if(cargoId!=="VER"||b<=6000) return b; return Math.round(6000+3000*Math.log10(b/6000)); };
+  const votos=n=>Math.round(baseDe(n)*R.f(.72,1.28)*(.85+n.popularidade/180)*(n.status_judicial==="INDICIADO"?.6:1)*(cargoId==="DEPF"?.9:1));
   const lista=inc.map(n=>({npc:n,votos:votos(n),inc:true})).concat(ch.map(n=>({npc:n,votos:Math.round(votos(n)*.55),inc:false})));
   const med=cargoId==="VER"?1100:cargoId==="DEPE"?12000:20000; const nExtra=Math.round(N*1.6);
   for(let i=0;i<nExtra;i++){ const v=Math.round(med*Math.exp(R.f(-1,1.1)*1.0+ (Math.random()+Math.random()+Math.random()-1.5)*.5)); lista.push({npc:null,votos:v,inc:false,temp:true}); }
+  if(cargoId==="VER"){ // o total de votos nominais cabe no eleitorado de Mauá (comparecimento e votos válidos ~70%)
+    const el=TERRITORIOS.filter(t=>t.grupo==="Mauá").reduce((s,t)=>s+t.el,0)*1000, alvo=el*.70*.9, tot=lista.reduce((s,x)=>s+(x.votos||0),0);
+    if(tot>alvo){ const k=alvo/tot; lista.forEach(x=>{ x.votos=Math.max(1,Math.round(x.votos*k)); }); }
+  }
   return lista;
 }
 function projecaoLeg(cargoId){
@@ -11067,6 +11073,15 @@ function podeCand(n,k){ if(ehSemPartido(n)||n.status_judicial==="CONDENADO"||n.i
 }
 
 /* --- prefeitos (todos os municípios): 1º/2º turno, substituição e limite de mandatos --- */
+/* 2º turno para prefeito só em municípios com mais de 200 mil eleitores (Constituição, art. 29, II).
+   Lista aproximada pelo eleitorado do TSE; capitais sempre entram. */
+const CIDADES_2T=new Set(["São Paulo","Rio de Janeiro","Belo Horizonte","Salvador","Fortaleza","Brasília","Curitiba","Manaus","Recife","Porto Alegre","Belém","Goiânia","São Luís","Maceió","Natal","Teresina","Campo Grande","João Pessoa","Aracaju","Cuiabá","Florianópolis","Porto Velho","Macapá","Rio Branco","Boa Vista","Vitória","Palmas",
+  "Guarulhos","Campinas","São Bernardo do Campo","Santo André","Osasco","São José dos Campos","Ribeirão Preto","Sorocaba","Santos","Mauá","São José do Rio Preto","Mogi das Cruzes","Diadema","Jundiaí","Piracicaba","Carapicuíba","Bauru","Itaquaquecetuba","Franca","São Vicente","Praia Grande","Guarujá","Taubaté","Limeira","Suzano","Sumaré","Barueri","Taboão da Serra","Embu das Artes",
+  "São Gonçalo","Duque de Caxias","Nova Iguaçu","Niterói","Belford Roxo","São João de Meriti","Campos dos Goytacazes","Petrópolis","Volta Redonda",
+  "Uberlândia","Contagem","Juiz de Fora","Betim","Montes Claros","Ribeirão das Neves","Uberaba",
+  "Londrina","Maringá","Ponta Grossa","Cascavel","São José dos Pinhais","Joinville","Blumenau","Caxias do Sul","Canoas","Pelotas","Santa Maria",
+  "Vila Velha","Serra","Cariacica","Feira de Santana","Vitória da Conquista","Camaçari","Jaboatão dos Guararapes","Olinda","Caruaru","Petrolina","Paulista","Caucaia","Anápolis","Aparecida de Goiânia","Ananindeua","Santarém","Várzea Grande","Campina Grande"]);
+function cidadeComSegundoTurno(m){ return CIDADES_2T.has(m)||/^Capital/.test(m||""); }
 { const _rs=reeleicaoSimplificada;
   reeleicaoSimplificada=function(){
     if(tipoEleicao(dt().ano)!=="MUNICIPAL") return _rs();
@@ -11079,7 +11094,7 @@ function podeCand(n,k){ if(ehSemPartido(n)||n.status_judicial==="CONDENADO"||n.i
       let guard=0; while(cs.length<2&&guard++<6){ const t=gerarNovoPoliticoProcedural(LIVRE,"MUNICIPAL",null,{uf:inc.uf||"SP",idade:R.i(35,68)}); t.municipio_domicilio=m; add(t,t.popularidade+R.f(-6,6)); }
       const w8=cs.map(x=>Math.exp(x.s/10)),tot=w8.reduce((s,x)=>s+x,0); cs.forEach((x,i)=>x.share=w8[i]/tot*100); cs.sort((a,b)=>b.share-a.share);
       let win=cs[0], t2=false;
-      if(cs[0].share<=50&&cs.length>1){ const pa=1/(1+Math.exp(-((cs[0].s-cs[1].s)+R.f(-4,4))/8)); win=Math.random()<pa?cs[0]:cs[1]; t2=true; E.runoffsMun++; }
+      if(cs[0].share<=50&&cs.length>1&&cidadeComSegundoTurno(m)){ const pa=1/(1+Math.exp(-((cs[0].s-cs[1].s)+R.f(-4,4))/8)); win=Math.random()<pa?cs[0]:cs[1]; t2=true; E.runoffsMun++; }
       const w=win.n, reel=w===inc;
       if(reel){ inc.mandatosSeguidos=(inc.mandatosSeguidos||1)+1; inc.mandato_fim=dt().ano+4; }
       else { hist(inc,"Prefeito",LIVRE,"eleição"); inc.cargo=LIVRE; inc.papel="Ex-prefeito(a)"; assumirCargoEleito(w,"Prefeito","MUNICIPAL"); w.municipio_domicilio=m; w.papel=`Prefeito(a) de ${m}`; w.mandatosSeguidos=1; w.mandato_fim=dt().ano+4; hist(w,LIVRE,"Prefeito","eleição"); }
@@ -47337,6 +47352,17 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
     return { partidos: Object.keys(porChave).map(function (k) { return porChave[k]; }), porSigla: porSigla, bruto: grupos };
   }
 
+  // quem entrou como candidato temporário e ganhou cadeira vira político do jogo (aplicarCadeiras):
+  // a lista da apuração passa a mostrar o nome dele em vez de "Candidato de legenda"
+  function nomearTemporarios(entrada, lista) {
+    (entrada.partidos || []).forEach(function (p) {
+      (p.candidatos || []).forEach(function (c) {
+        if (c.nome || String(c.id).indexOf("TMP|") !== 0) return;
+        var x = (lista || []).find(function (it) { return it._qid === c.id; });
+        if (x && x.npc) { c.nome = x.npc.nome; if (x.npc.sexo) c.genero = x.npc.sexo; }
+      });
+    });
+  }
   function nomeItem(id, lista) {
     if (id === "JOGADOR") return J().nome;
     var x = (lista || []).find(function (it) { return it._qid === id; });
@@ -47510,6 +47536,7 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
       var res = apurarProporcional({ vagas: vagas, partidos: entrada.partidos, regras: regrasDoModo() });
       res.por_sigla = entrada.porSigla;
       aplicarCadeiras(cargoId, lista, res);
+      nomearTemporarios(entrada, lista);
       gravarLeg(cargoId, lista, res, entrada, cargoId === "VER" ? "MAUA" : "SP");
       var nominais = [];
       (entrada.partidos || []).forEach(function (p) { (p.candidatos || []).forEach(function (c) { nominais.push(c); }); });
