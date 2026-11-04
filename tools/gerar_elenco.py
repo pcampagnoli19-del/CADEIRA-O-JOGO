@@ -18,7 +18,7 @@ if FOTOS.exists():
     for linha in FOTOS.read_text(encoding="utf-8").splitlines():
         if "\t" in linha and not linha.startswith("#"):
             n, u = linha.split("\t", 1)
-            if u.strip().startswith("https://"):
+            if u.strip().startswith(("https://", "data:image/")):
                 fotos[n.strip()] = u.strip()
 lista = []
 for p in pol:
