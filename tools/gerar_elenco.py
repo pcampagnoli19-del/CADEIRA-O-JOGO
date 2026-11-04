@@ -26,6 +26,15 @@ if FOTOS.exists():
             n, u = linha.split("\t", 1)
             if u.strip().startswith(("https://", "data:image/")):
                 fotos[n.strip()] = u.strip()
+# fotos escolhidas à mão pelo dono do jogo: têm prioridade sobre qualquer outra
+USU = RAIZ / "dados" / "fotos-usuario.tsv"
+prioridade = {}
+if USU.exists():
+    for linha in USU.read_text(encoding="utf-8").splitlines():
+        if "\t" in linha:
+            n, u = linha.split("\t", 1)
+            if u.startswith("data:image/"):
+                fotos[n.strip()] = u.strip(); prioridade[n.strip()] = 1
 lista = []
 for p in pol:
     lista.append([p["id"], p["nome"], p["cargo"], p["papel"], p["partido"], p["uf"], p.get("municipio") or "",
@@ -33,7 +42,7 @@ for p in pol:
 dados = json.dumps(lista, ensure_ascii=False, separators=(",", ":"))
 fj = json.dumps(fotos, ensure_ascii=False, separators=(",", ":"))
 aj = json.dumps(ajustes, ensure_ascii=False, separators=(",", ":"))
-js = MODELO.read_text(encoding="utf-8").replace("__DADOS__", dados).replace("__FOTOS__", fj).replace("__AJUSTES__", aj)
+js = MODELO.read_text(encoding="utf-8").replace("__DADOS__", dados).replace("__FOTOS__", fj).replace("__AJUSTES__", aj).replace("__PRIORIDADE__", json.dumps(prioridade, ensure_ascii=False, separators=(",", ":")))
 if "</script" in js:
     raise SystemExit("fechamento de tag nos dados")
 SAIDA.write_text(js, encoding="utf-8")

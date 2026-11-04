@@ -16,6 +16,7 @@
   var EL = (window.V3ELENCO = {});
   var DADOS = __DADOS__;
   var FOTOS = __FOTOS__;
+  var PRIORIDADE = __PRIORIDADE__; // fotos escolhidas à mão: substituem a foto anterior
   var AJUSTES = __AJUSTES__; // cargos e papéis conferidos nos sites oficiais (aplicados uma vez por save)
   var NAO_BUSCAR = { "Jorge Araújo": 1, "Cicinho": 1, "Bruno Farias": 1, "Mazinho": 1 }; // homônimos na Wikipédia
   var PROFS = ["Advogado(a)", "Economista", "Médico(a)", "Professor(a)", "Agricultor(a)", "Policial/Militar", "Empresário(a)", "Líder Comunitário", "Jornalista", "Engenheiro(a)", "Cientista Político", "Líder Religioso"];
@@ -81,7 +82,7 @@
     var cache = lerCache();
     b.forEach(function (n) {
       if (!n.real) return;
-      if (FOTOS[n.nome] && (!temFoto(n) || naCamara[nk(n.nome)])) { n.foto = FOTOS[n.nome]; return; }
+      if (FOTOS[n.nome] && (PRIORIDADE[n.nome] || !temFoto(n) || naCamara[nk(n.nome)])) { n.foto = FOTOS[n.nome]; return; }
       if (temFoto(n)) return;
       var c = cache[norm(n.nome)]; if (c && c.u) n.foto = c.u;
     });
