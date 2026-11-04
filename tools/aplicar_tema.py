@@ -55,8 +55,8 @@ SCRIPT = """<script>
 
 
 # Camadas extras, embutidas nesta ordem depois do tema.
-EXTRAS_CSS = [RAIZ / "cadeira-v3-nav.css", RAIZ / "cadeira-v3-midia.css", RAIZ / "cadeira-v3-diplomacia.css", RAIZ / "cadeira-v3-pre.css", RAIZ / "cadeira-v3-pasta.css", RAIZ / "cadeira-v3-brasoes.css", RAIZ / "cadeira-v3-formacao.css", RAIZ / "cadeira-v3-partidosform.css"]
-EXTRAS_JS = [RAIZ / "cadeira-v3-nav.js", RAIZ / "cadeira-v3-midia.js", RAIZ / "cadeira-v3-geo.js", RAIZ / "cadeira-v3-diplomacia.js", RAIZ / "cadeira-v3-pre.js", RAIZ / "cadeira-v3-pasta.js", RAIZ / "cadeira-v3-logos.js", RAIZ / "cadeira-v3-brasoes.js", RAIZ / "cadeira-v3-formacao.js", RAIZ / "cadeira-v3-profissoes.js", RAIZ / "cadeira-v3-partidosform.js", RAIZ / "cadeira-v3-elenco.js", RAIZ / "cadeira-v3-estado.js"]
+EXTRAS_CSS = [RAIZ / "cadeira-v3-nav.css", RAIZ / "cadeira-v3-midia.css", RAIZ / "cadeira-v3-diplomacia.css", RAIZ / "cadeira-v3-pre.css", RAIZ / "cadeira-v3-pasta.css", RAIZ / "cadeira-v3-brasoes.css", RAIZ / "cadeira-v3-formacao.css", RAIZ / "cadeira-v3-partidosform.css", RAIZ / "cadeira-v3-marcas.css"]
+EXTRAS_JS = [RAIZ / "cadeira-v3-nav.js", RAIZ / "cadeira-v3-midia.js", RAIZ / "cadeira-v3-geo.js", RAIZ / "cadeira-v3-diplomacia.js", RAIZ / "cadeira-v3-pre.js", RAIZ / "cadeira-v3-pasta.js", RAIZ / "cadeira-v3-logos.js", RAIZ / "cadeira-v3-brasoes.js", RAIZ / "cadeira-v3-formacao.js", RAIZ / "cadeira-v3-profissoes.js", RAIZ / "cadeira-v3-partidosform.js", RAIZ / "cadeira-v3-elenco.js", RAIZ / "cadeira-v3-marcas.js", RAIZ / "cadeira-v3-estado.js"]
 
 
 def checar_sintaxe(arq: Path) -> None:
