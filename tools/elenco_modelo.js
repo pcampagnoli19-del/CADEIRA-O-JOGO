@@ -58,14 +58,14 @@
       var cid = OUTRAS[nome]; n.cargo = "Liderança / Ex-Titular"; n.papel = (n.sexo === "F" ? "Vereadora" : "Vereador") + " de " + cid; n.municipio_domicilio = cid; n.uf = UF_CID[cid] || n.uf; n.esfera = "MUNICIPAL";
     });
     try {
-      var m = M(); if ((m.v3ajustes || 0) < 2) {
+      var m = M(); if ((m.v3ajustes || 0) < 3) {
         Object.keys(AJUSTES).forEach(function (nome) {
           var n = ex[nk(nome)], a = AJUSTES[nome]; if (!n) return;
           if (a.cargo) n.cargo = a.cargo; if (a.papel) n.papel = a.papel; if (a.mun) n.municipio_domicilio = a.mun; if (a.uf) n.uf = a.uf;
           if (a.partido) { n.partido = a.partido; try { n.partidoBase = normPartido(a.partido); } catch (e) {} }
           if (a.cargo === "Prefeito") { n.esfera = "MUNICIPAL"; n.mandato_fim = 2028; }
         });
-        m.v3ajustes = 2;
+        m.v3ajustes = 3;
       }
     } catch (e) {}
     // Câmara de Mauá: os 23 vereadores da legislatura 2025-2028 (site oficial da Câmara)
