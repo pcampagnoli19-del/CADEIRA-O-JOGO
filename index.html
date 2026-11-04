@@ -51133,6 +51133,91 @@ body.v3d-aberto{overflow:hidden}
 @media (max-width:820px){.dg-meio{grid-template-columns:minmax(0,1fr);grid-template-areas:'banc' 'palco' 'telao';padding:10px}.dg-palco{max-width:440px;width:100%;justify-self:center}.dg-urnas{min-width:0;text-align:left;width:100%}.dg-marca img{height:32px}.dg-capa h2{font-size:1.7rem}.dg-ctrl{position:sticky;bottom:0}.dg-tab{font-size:.76rem}.dg-tab th,.dg-tab td{padding:4px 3px}}
 
 </style>
+<style id="cadeira-v3-memoria">
+/* ===== Memória administrativa ===== */
+.v3m-nota{font-size:.78rem;opacity:.75;font-weight:400}
+.v3m-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.v3m-tabs button{font:inherit;font-size:.82rem;padding:6px 10px;border-radius:8px;border:1px solid var(--linha,#33415566);background:transparent;color:inherit;cursor:pointer}
+.v3m-tabs button.on{background:var(--v3-azul,#2f6fe0);border-color:transparent;color:#fff}
+.v3m-cab b{display:block;font-size:1.05rem}.v3m-cab small{opacity:.75}
+.v3m-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin:10px 0}
+.v3m-kpi div{border:1px solid var(--linha,#33415566);border-radius:8px;padding:6px 8px}
+.v3m-kpi b{display:block;font-size:1.15rem}.v3m-kpi small{opacity:.75;font-size:.72rem}
+.v3m h4{margin:14px 0 6px}.v3m h4 small{opacity:.6;font-weight:400}
+.v3m-gest{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.v3m-gest li{display:grid;grid-template-columns:90px 1fr;gap:0 8px;padding:5px 8px;border-left:3px solid var(--linha,#475569);font-size:.85rem}
+.v3m-gest li.eu{border-left-color:#facc15}
+.v3m-gest li span{grid-row:span 2;opacity:.7;font-variant-numeric:tabular-nums}.v3m-gest li small{opacity:.7}
+.v3m-obra{border:1px solid var(--linha,#33415566);border-radius:8px;margin-bottom:6px;padding:6px 8px}
+.v3m-obra summary{display:flex;gap:8px;align-items:flex-start;cursor:pointer;list-style:none}
+.v3m-obra summary::-webkit-details-marker{display:none}
+.v3m-t{flex:1;min-width:0}.v3m-t b{display:block}.v3m-t small{opacity:.72;font-size:.76rem}
+.v3m-st{font-style:normal;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap;background:#475569;color:#fff}
+.v3m-st.ok{background:#15803d}.v3m-st.and{background:#2563eb}.v3m-st.par{background:#b45309}.v3m-st.pla{background:#64748b}.v3m-st.int{background:#991b1b}
+.v3m-bar{height:5px;border-radius:3px;background:rgba(127,127,127,.25);margin:6px 0}.v3m-bar i{display:block;height:100%;border-radius:3px;background:#2563eb}
+.v3m-meta{margin:4px 0;font-size:.78rem;opacity:.8}
+.v3m-ev{list-style:none;margin:4px 0 0;padding:0;font-size:.78rem}
+.v3m-ev li{display:flex;gap:8px;padding:2px 0;border-top:1px dashed var(--linha,#33415544)}.v3m-ev span{opacity:.6;min-width:58px}
+.v3m-prog{list-style:none;margin:0;padding:0;display:grid;gap:4px}.v3m-prog li small{display:block;opacity:.7;font-size:.76rem}
+.v3m-traj{display:grid;gap:6px}.v3m-traj div{padding:6px 8px;border-radius:8px;background:rgba(250,204,21,.1);border-left:3px solid #facc15}.v3m-traj small{display:block;opacity:.8}
+
+</style>
+<style id="cadeira-v3-trilhos">
+/* ===== Rede metropolitana de trilhos ===== */
+.v3t-res{font-size:.85rem;margin:4px 0 8px}
+.v3t-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.v3t-bar button{font:inherit;font-size:.78rem;padding:5px 9px;border-radius:7px;border:1px solid var(--linha,#33415566);background:transparent;color:inherit;cursor:pointer}
+.v3t-bar label{font-size:.78rem;display:inline-flex;gap:4px;align-items:center;margin-left:4px}
+.v3t-mapa{border-radius:10px;overflow:hidden;background:#f4f1ea;border:1px solid var(--linha,#33415566);touch-action:none}
+.v3t-svg{display:block;width:100%;height:auto;max-height:72vh;aspect-ratio:1000/823;cursor:grab;user-select:none}
+.v3t-svg:active{cursor:grabbing}
+.v3t-tr .v3t-hit{stroke:transparent;stroke-width:16;fill:none;cursor:pointer;vector-effect:non-scaling-stroke}
+.v3t-ln{fill:none;stroke:var(--c);stroke-width:4.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.v3t-tr.modo-regional .v3t-ln{stroke-width:3.4}
+.v3t-tr.modo-brt .v3t-ln{stroke-width:3;stroke-dasharray:1 5}
+.v3t-tr.st-planejado .v3t-proj{stroke-width:2.6;stroke-dasharray:5 6;opacity:.55}
+.v3t-tr.st-aprovacao .v3t-proj{stroke-width:3.4;stroke-dasharray:8 5;opacity:.9}
+.v3t-tr.st-cancelado .v3t-proj{stroke:#9ca3af;stroke-width:2;stroke-dasharray:1 6;opacity:.7}
+.v3t-tr.st-obras .v3t-proj,.v3t-tr.st-parado .v3t-proj{stroke-width:4.6;stroke-dasharray:3 4;opacity:.45}
+.v3t-tr .v3t-feito{stroke-linecap:butt}
+.v3t-tr.st-obras .v3t-feito{animation:v3tobra 1.6s ease-in-out infinite}
+.v3t-tr.st-parado .v3t-feito{stroke:#b45309}
+@keyframes v3tobra{50%{opacity:.6}}
+.v3t-tr.sel .v3t-ln{stroke-width:7.5}
+.v3t-stub{stroke-dasharray:4 4 !important}
+.v3t-stubt{font-size:calc(var(--fs) * 1.05);font-weight:700;fill:#374151}
+.v3t-melhoria{fill:none;stroke:#facc15;stroke-width:9;opacity:.45;stroke-linecap:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.v3t-melhoria.st-obras,.v3t-melhoria.st-aprovacao,.v3t-melhoria.st-parado{stroke-dasharray:6 6;animation:v3tobra 1.6s infinite}
+.v3t-melhoria.st-operacao{stroke:#22c55e;opacity:.35}
+.v3t-est circle{fill:#fff;stroke:#1f2937;stroke-width:1.4;vector-effect:non-scaling-stroke}
+.v3t-est.int circle{stroke-width:2.2}
+.v3t-est.st-planejado circle,.v3t-est.st-aprovacao circle{fill:#f4f1ea;stroke-dasharray:2 2;opacity:.75}
+.v3t-est.st-obras circle,.v3t-est.st-parado circle{fill:#fde68a}
+.v3t-est.st-cancelado{opacity:.4}
+.v3t-est text{font-size:var(--fs);fill:#1f2937;paint-order:stroke;stroke:#f4f1ea;stroke-width:calc(var(--fs) * .25);display:none;pointer-events:none}
+.v3t-est.pri text{display:block;font-weight:700}
+.v3t-svg.z1 .v3t-est text{display:block}
+.v3t-eq{fill:#2563eb;stroke:#fff;stroke-width:1;vector-effect:non-scaling-stroke}.v3t-eq.st-obras{fill:#f59e0b}
+.v3t-leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.74rem;margin:8px 0;opacity:.85}
+.v3t-leg span{display:inline-flex;align-items:center;gap:5px}
+.v3t-leg .lg{display:inline-block;width:22px;height:0;border-top:4px solid #475569}
+.v3t-leg .op{border-top-style:solid}.v3t-leg .ob{border-top:4px dashed #2563eb}.v3t-leg .pa{border-top:4px dashed #b45309}.v3t-leg .ap{border-top:3px dashed #475569}.v3t-leg .pl{border-top:2px dashed #94a3b8}.v3t-leg .ca{border-top:2px dotted #9ca3af}.v3t-leg .mo{border-top:6px solid rgba(250,204,21,.6)}
+.v3t-chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.v3t-chips button{font:inherit;font-size:.74rem;display:inline-flex;gap:5px;align-items:center;padding:3px 8px 3px 3px;border-radius:99px;border:1px solid var(--linha,#33415566);background:transparent;color:inherit;cursor:pointer}
+.v3t-chips button b{background:var(--c);color:#fff;border-radius:99px;min-width:22px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;padding:0 5px}
+.v3t-chips button.novo b{background:transparent;color:var(--c);border:2px dashed var(--c)}
+.v3t-chips button.on{border-color:var(--c);box-shadow:0 0 0 2px var(--c)}
+.v3t-painel{margin-top:6px}
+.v3t-dica{font-size:.8rem;opacity:.75}
+.v3t-pl{border-left:6px solid var(--c);padding:4px 10px;margin-bottom:8px}.v3t-pl b{display:block;font-size:1.05rem}.v3t-pl small{opacity:.75}
+.v3t-trecho{border:1px solid var(--linha,#33415566);border-radius:8px;padding:8px;margin-bottom:6px}
+.v3t-trecho > small{display:block;opacity:.75;font-size:.76rem;margin-top:3px}
+.v3t-st{font-style:normal;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:99px;color:#fff;background:#64748b}
+.v3t-st.st-operacao{background:#15803d}.v3t-st.st-obras{background:#2563eb}.v3t-st.st-parado{background:#b45309}.v3t-st.st-aprovacao{background:#7c3aed}.v3t-st.st-cancelado{background:#991b1b}
+.v3t-obra{margin-top:6px;padding:6px 8px;border-radius:6px;background:rgba(127,127,127,.08)}
+.v3t-obra b{display:block;font-size:.85rem}.v3t-obra small{opacity:.7;font-size:.74rem}.v3t-obra p{margin:3px 0;font-size:.8rem}
+
+</style>
 <script>
 (function(){
   var raf=0, ro=null, atual=null;
@@ -55877,7 +55962,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     ],
     poder: [
       ["Seu mandato", "O que está nas suas mãos", /cargo|Minhas leis|Gabinete pessoal|Articular uma pasta|Pasta|Despacho/i],
-      ["Obras e programas", "Entregas para a população", /Obras|Programas/i],
+      ["Obras e programas", "Entregas para a população e memória das gestões", /Obras|Programas|Mobilidade|Memória|Rede metropolitana/i],
       ["Brasil e mundo", "Economia, estatais, Congresso e diplomacia", /Exteriores|macroecon|estatais|Anatomia|Congresso|Diplomac/i]
     ],
     jur: [
@@ -57125,6 +57210,593 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     else if (k === "encerrar") { var t = document.getElementById("v3dg"); if (t) t.remove(); st.aberto = false; ok(function () { A().fechar(); }); return; }
     desenhar();
   }, true);
+})();
+
+</script>
+<script id="cadeira-v3-memoria-js">
+/* =============================================================================
+   CADEIRA v3 — Memória administrativa (obras, programas e gestões)
+   As obras e programas pertencem à ADMINISTRAÇÃO PÚBLICA (Prefeitura de Mauá,
+   Governo de SP, Governo Federal), não ao personagem. Este módulo:
+   - carimba cada obra (M().obrasSys.instancias) com a administração executora,
+     quem iniciou, em qual gestão, e um diário de eventos (início, atrasos,
+     paralisações, retomadas, inauguração, abandono);
+   - registra as gestões de cada administração (jogador ou NPC, início e fim);
+   - corrige o crédito da inauguração: inaugura quem chefia a administração na
+     hora (o jogador só leva a popularidade cheia se for ele; se ele iniciou e
+     já saiu, leva metade);
+   - continuidade: obras seguem avançando depois da troca de governante; uma
+     nova gestão pode suspender para revisar contratos e um governo NPC pode
+     retomar obra parada;
+   - a aba de Obras/Mobilidade passa a mostrar só a administração atual; o
+     resto fica no card "Memória administrativa" (nada é apagado).
+   Dados: M().v3mem = { gestoes: [...], seq }  +  inst.mem em cada obra.
+   ============================================================================= */
+(function () {
+  "use strict";
+  if (window.V3MEM) return;
+  var MEM = (window.V3MEM = {});
+  function esc_(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function ok(f, d) { try { var v = f(); return v === undefined ? d : v; } catch (e) { return d; } }
+  function agora() { return ok(function () { return agoraM(); }, 0); }
+  function cid() { return ok(function () { return cargoAtualId(); }, "CIDADAO"); }
+  function O() { return window.OBRAS; }
+
+  var ADM = {
+    PREF: { nome: "Prefeitura de Mauá", curto: "Mauá", cargo: "Prefeito(a) de Mauá" },
+    GOV: { nome: "Governo do Estado de São Paulo", curto: "Estado de SP", cargo: "Governador(a) de SP" },
+    PRES: { nome: "Governo Federal", curto: "União", cargo: "Presidente da República" }
+  };
+  MEM.ADM = ADM;
+  var ORDEM = ["PREF", "GOV", "PRES"];
+
+  /* ---------------------------------------------------------------- tempo */
+  function mesAno(m) {
+    var d = ok(function () { return dt(); }, null), a = agora(); if (!d) return { ano: "", mes: 1 };
+    var tot = d.ano * 12 + ((d.mes || 1) - 1) - (a - m);
+    return { ano: Math.floor(tot / 12), mes: (tot % 12 + 12) % 12 + 1 };
+  }
+  var MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  function quando(m) { var x = mesAno(m); return MESES[x.mes - 1] + "/" + x.ano; }
+  function ano(m) { return mesAno(m).ano; }
+
+  /* ---------------------------------------------------------------- estado salvo */
+  function st() {
+    var m = ok(function () { return M(); }, null); if (!m) return null;
+    if (!m.v3mem) m.v3mem = { gestoes: [], seq: 0 };
+    return m.v3mem;
+  }
+  function titular(adm) {
+    if (cid() === adm) return ok(function () { return { jogador: true, id: "JOGADOR", nome: J().nome, partido: J().partido_atual }; }, null);
+    var n = ok(function () {
+      return bancoDeNPCs.find(function (x) {
+        if (!x.vivo) return false;
+        if (adm === "PREF") return x.cargo === "Prefeito de Mauá";
+        if (adm === "GOV") return x.cargo === "Governador de SP" || (x.cargo === "Governador" && x.uf === "SP");
+        return x.cargo === "Presidente da República" || x.cargo === "Presidente";
+      });
+    }, null);
+    return n ? { jogador: false, id: n.id, nome: n.nome, partido: n.partidoBase || n.partido } : null;
+  }
+  function gestaoAtual(adm) {
+    var s = st(); if (!s) return null;
+    for (var i = s.gestoes.length - 1; i >= 0; i--) if (s.gestoes[i].adm === adm && s.gestoes[i].fim == null) return s.gestoes[i];
+    return null;
+  }
+  MEM.gestaoAtual = gestaoAtual;
+  // abre/fecha gestões quando o titular de uma administração muda
+  function atualizarGestoes() {
+    var s = st(); if (!s) return;
+    ORDEM.forEach(function (adm) {
+      var t = titular(adm), g = gestaoAtual(adm);
+      var mesmo = g && t && g.tid === t.id;
+      if (mesmo || (!t && !g)) return;
+      if (g) g.fim = agora();
+      if (t) {
+        var nova = { id: "G" + (++s.seq), adm: adm, tid: t.id, nome: t.nome, partido: t.partido || "", jogador: t.jogador, ini: agora(), fim: null, primeira: !s.gestoes.some(function (x) { return x.adm === adm; }) };
+        s.gestoes.push(nova);
+        if (g) transicao(adm, g, nova);
+      }
+    });
+  }
+  MEM.atualizarGestoes = atualizarGestoes;
+
+  /* ---------------------------------------------------------------- obras */
+  function sys() { return ok(function () { return O().garantir(); }, null); }
+  function insts() { var s = sys(); return s ? Object.keys(s.instancias).map(function (k) { return s.instancias[k]; }) : []; }
+  function item(inst) { return ok(function () { return O().item(inst.catalogoId); }, null); }
+  function ev(inst, txt) { inst.mem.ev = inst.mem.ev || []; inst.mem.ev.push({ m: agora(), t: txt }); if (inst.mem.ev.length > 40) inst.mem.ev.splice(0, inst.mem.ev.length - 40); }
+  function carimbar(inst) {
+    if (inst.mem) return inst.mem;
+    var adm = inst.esferaExec || "PREF", seed = String(inst.id).indexOf("OM_") === 0;
+    var g = gestaoAtual(adm), jog = !seed;
+    var solic = inst.solicitanteCargo || adm, gs = gestaoAtual(solic);
+    inst.mem = {
+      adm: adm, gIni: g ? g.id : null, rede: seed,
+      autor: seed ? "rede existente" : ok(function () { return J().nome; }, "Executivo"),
+      autorJogador: jog, autorCargo: solic, gSol: gs ? gs.id : null,
+      ultEstado: inst.estado, ev: []
+    };
+    if (!seed) ev(inst, (adm === solic ? "Iniciada" : "Pedida pelo " + (ADM[solic] ? ADM[solic].nome : solic)) + " por " + inst.mem.autor);
+    else inst.mem.ev.push({ m: inst.mesInicio || agora(), t: "Parte da rede que a administração já mantinha" });
+    return inst.mem;
+  }
+  var TXT_ESTADO = { "Em execução": "Obras em execução", "Atrasada": "Atrasou", "Paralisada": "Paralisada", "Em manutenção": "Concluída e entregue", "Abandonada": "Abandonada", "Recusada": "Pedido recusado", "Aprovada": "Aprovada", "Em negociação": "Em negociação" };
+  function registrarEstados() {
+    insts().forEach(function (inst) {
+      var m = carimbar(inst);
+      if (m.ultEstado === inst.estado) return;
+      var t = titular(m.adm);
+      if (inst.estado === "Em manutenção" && !m.rede) {
+        m.gFim = (gestaoAtual(m.adm) || {}).id || null; m.mFim = agora();
+        ev(inst, "Inaugurada por " + (inst.inauguradorNome || (t ? t.nome : "gestão")));
+      } else ev(inst, (TXT_ESTADO[inst.estado] || inst.estado) + (t ? " (gestão " + t.nome + ")" : ""));
+      if (inst.estado === "Abandonada" || inst.estado === "Recusada") m.mFim = agora();
+      m.ultEstado = inst.estado;
+    });
+  }
+  MEM.registrar = function () { atualizarGestoes(); registrarEstados(); carimbarProgramas(); };
+
+  // nova gestão: pode suspender obras para revisar contratos (governo NPC)
+  function transicao(adm, velha, nova) {
+    insts().forEach(function (inst) {
+      var m = carimbar(inst); if (m.adm !== adm) return;
+      if (inst.estado === "Em execução" && !nova.jogador && Math.random() < 0.12) {
+        inst.estado = "Paralisada"; m.ultEstado = inst.estado;
+        ev(inst, "A nova gestão (" + nova.nome + ") suspende a obra para revisar contratos");
+        ok(function () { manchete('Nova gestão de ' + ADM[adm].curto + ' suspende "' + item(inst).nome + '" para revisar contratos.', "obras"); });
+      }
+    });
+  }
+  // governo NPC retoma obras paradas da sua administração
+  function continuidadeNPC() {
+    insts().forEach(function (inst) {
+      var m = carimbar(inst); if (m.adm === cid() || inst.estado !== "Paralisada") return;
+      var t = titular(m.adm); if (!t || t.jogador) return;
+      if (Math.random() < 0.05) { inst.estado = "Em execução"; m.ultEstado = inst.estado; ev(inst, "Retomada pela gestão " + t.nome); ok(function () { manchete('Gestão ' + t.nome + ' retoma "' + item(inst).nome + '".', "obras"); }); }
+    });
+  }
+
+  /* ---------------------------------------------------------------- programas (PROG) */
+  function progs() { return ok(function () { return Object.values(M().prog.lista); }, []); }
+  function carimbarProgramas() {
+    progs().forEach(function (p) {
+      if (p.mem) return;
+      var g = gestaoAtual(p.esf);
+      p.mem = p.custom ? { autor: ok(function () { return J().nome; }, ""), autorJogador: true, m: agora(), gIni: g ? g.id : null } : { autor: "programa da administração", autorJogador: false, m: null, gIni: null };
+    });
+  }
+
+  /* ---------------------------------------------------------------- ganchos no motor de obras */
+  function instalar() {
+    var OB = O(); if (!OB || OB.__v3mem) return !!(OB && OB.__v3mem);
+    OB.__v3mem = true;
+    // 1) tick mensal: gestões antes, eventos e continuidade depois
+    var _tick = OB.tickMensal;
+    OB.tickMensal = function () { atualizarGestoes(); insts().forEach(carimbar); var r = _tick.apply(this, arguments); try { continuidadeNPC(); MEM.registrar(); } catch (e) { console.warn("v3mem tick", e); } return r; };
+    // 2) inauguração: crédito para quem chefia a administração naquele momento
+    var _av = OB._avancarExecucao;
+    OB._avancarExecucao = function (inst) {
+      var antes = inst && inst.estado; OB._memCtx = inst;
+      var r; try { r = _av.apply(this, arguments); } finally { OB._memCtx = null; }
+      try {
+        if (inst && antes !== "Em manutenção" && inst.estado === "Em manutenção") {
+          var m = carimbar(inst), t = titular(m.adm);
+          if (t) { inst.inauguradorNome = t.nome; inst.inauguradorId = t.jogador ? "JOGADOR" : t.id; }
+        }
+      } catch (e) {}
+      return r;
+    };
+    // 3) popularidade: cheia para quem chefia a administração; metade para quem iniciou e já saiu
+    var _pop = OB._popularidadeObra;
+    OB._popularidadeObra = function (it, conclusao) {
+      var inst = OB._memCtx, f = 1;
+      if (inst) { var m = carimbar(inst); if (m.adm !== cid()) f = m.autorJogador ? 0.5 : 0; }
+      if (f === 1) return _pop.apply(this, arguments);
+      if (f === 0) return;
+      var base = conclusao ? 1.2 : 0.25, vis = it.categoria === "Obra" ? 1.2 : 0.7, pol = it.polemica || 2;
+      ok(function () { mudarAprovTodos(base * vis * (pol <= 1 ? 1.3 : pol >= 3 ? 0.4 : 1) * f); });
+    };
+    // 4) a aba de obras mostra só a administração atual (o resto fica na memória)
+    var _ia = OB.instanciasAtivas;
+    OB.instanciasAtivas = function () {
+      var l = _ia.apply(this, arguments), c = OB._memFiltro; if (!c) return l;
+      var gj = gestaoAtual(c);
+      return l.filter(function (i) { var m = carimbar(i); return m.adm === c || (i.solicitanteCargo === c && (!gj || m.gSol === gj.id)); });
+    };
+    var _cc = OB._cardCatalogo;
+    OB._cardCatalogo = function (mob) {
+      MEM.registrar(); OB._memFiltro = ["PREF", "GOV", "PRES"].indexOf(cid()) >= 0 ? cid() : null;
+      var h; try { h = _cc.apply(this, arguments); } finally { OB._memFiltro = null; }
+      var c = cid(); if (ADM[c]) h = String(h).replace(/ — (Prefeito|Governador|Presidente)<\/b>/, " — " + ADM[c].nome + '</b> <small class="v3m-nota">gestão atual · realizações de outras administrações e gestões ficam na <b>Memória administrativa</b></small>');
+      return h;
+    };
+    return true;
+  }
+
+  /* ---------------------------------------------------------------- tela */
+  var ui = { adm: null, aberto: {} };
+  function fmtR(n) { var v = (Number(n) || 0) / 1e6; return v >= 1000 ? "R$ " + (v / 1000).toFixed(1).replace(".", ",") + " bi" : "R$ " + Math.round(v).toLocaleString("pt-BR") + " mi"; }
+  function grupoDe(inst) {
+    var e = inst.estado;
+    if (inst.mem && inst.mem.rede) return "rede";
+    if (e === "Em manutenção") return "concluida";
+    if (e === "Abandonada" || e === "Recusada") return "interrompida";
+    if (e === "Paralisada") return "parada";
+    if (e === "Em negociação" || e === "Aprovada") return "planejada";
+    return "andamento";
+  }
+  function linhaObra(inst) {
+    var it = item(inst) || { nome: inst.catalogoId, categoria: "" }, m = inst.mem || {}, g = grupoDe(inst), evs = (m.ev || []).slice(-4).reverse();
+    var tag = { concluida: ["Concluída", "ok"], andamento: [inst.estado + " · " + Math.round(inst.progresso || 0) + "%", "and"], parada: ["Paralisada · " + Math.round(inst.progresso || 0) + "%", "par"], planejada: [inst.estado, "pla"], interrompida: [inst.estado, "int"] }[g] || [inst.estado, ""];
+    return '<details class="v3m-obra"><summary><span class="v3m-t"><b>' + esc_(it.nome) + "</b><small>" + esc_(it.categoria || "") + (it.area ? " · " + esc_(it.area) : "") + " · iniciada por " + esc_(m.autor || "—") + (inst.mesInicio != null ? " em " + quando(inst.mesInicio) : "") + (g === "concluida" && inst.inauguradorNome ? " · inaugurada por " + esc_(inst.inauguradorNome) + (m.mFim != null ? " em " + quando(m.mFim) : "") : "") + '</small></span><em class="v3m-st ' + tag[1] + '">' + esc_(tag[0]) + "</em></summary>" +
+      (g === "andamento" || g === "parada" ? '<div class="v3m-bar"><i style="width:' + Math.round(inst.progresso || 0) + '%"></i></div>' : "") +
+      '<p class="v3m-meta">Investido: ' + fmtR(inst.custoPago) + " de " + fmtR(inst.custoTotal) + (inst.solicitanteCargo && inst.solicitanteCargo !== m.adm ? " · pedida pelo " + esc_((ADM[inst.solicitanteCargo] || {}).nome || inst.solicitanteCargo) : "") + "</p>" +
+      (evs.length ? '<ul class="v3m-ev">' + evs.map(function (e) { return "<li><span>" + quando(e.m) + "</span>" + esc_(e.t) + "</li>"; }).join("") + "</ul>" : "") + "</details>";
+  }
+  function blocoAdm(adm) {
+    var todas = insts().filter(function (i) { return carimbar(i).adm === adm; });
+    var gr = { andamento: [], parada: [], planejada: [], concluida: [], interrompida: [], rede: [] };
+    todas.forEach(function (i) { gr[grupoDe(i)].push(i); });
+    var invest = todas.filter(function (i) { return !i.mem.rede; }).reduce(function (s, i) { return s + (i.custoPago || 0); }, 0);
+    var gs = (st() || { gestoes: [] }).gestoes.filter(function (g) { return g.adm === adm; }).slice().reverse();
+    var ps = progs().filter(function (p) { return p.esf === adm; });
+    var proprios = ps.filter(function (p) { return p.custom; }), susp = ps.filter(function (p) { return !p.custom && !p.ativo; });
+    var t = titular(adm);
+    var h = '<div class="v3m-cab"><div><b>' + esc_(ADM[adm].nome) + "</b><small>" + (t ? (t.jogador ? "Você chefia esta administração" : "Hoje: " + esc_(t.nome) + (t.partido ? " (" + esc_(t.partido) + ")" : "")) : "Titular não identificado") + "</small></div></div>";
+    h += '<div class="v3m-kpi"><div><b>' + gr.concluida.length + "</b><small>concluídas</small></div><div><b>" + (gr.andamento.length + gr.parada.length) + "</b><small>em andamento</small></div><div><b>" + gr.planejada.length + "</b><small>em aprovação</small></div><div><b>" + gr.interrompida.length + "</b><small>interrompidas</small></div><div><b>" + fmtR(invest) + "</b><small>investido em obras</small></div></div>";
+    if (gs.length) h += "<h4>Gestões</h4><ul class='v3m-gest'>" + gs.map(function (g) {
+      var ini = todas.filter(function (i) { return i.mem.gIni === g.id && !i.mem.rede; }).length, inau = todas.filter(function (i) { return i.mem.gFim === g.id; }).length;
+      return "<li class='" + (g.jogador ? "eu" : "") + "'><span>" + (g.primeira ? "até " : ano(g.ini) + "–") + (g.fim == null ? "hoje" : ano(g.fim)) + "</span><b>" + esc_(g.jogador ? g.nome + " (você)" : g.nome) + "</b><small>" + ini + " obra" + (ini === 1 ? "" : "s") + " iniciada" + (ini === 1 ? "" : "s") + " · " + inau + " inaugurada" + (inau === 1 ? "" : "s") + "</small></li>";
+    }).join("") + "</ul><p class='v3m-nota'>O registro de gestões começa quando a memória administrativa entrou no jogo.</p>";
+    function lista(titulo, arr, aberto) { return arr.length ? "<h4>" + titulo + " <small>(" + arr.length + ")</small></h4>" + arr.sort(function (a, b) { return (b.mesInicio || 0) - (a.mesInicio || 0); }).map(linhaObra).join("") : ""; }
+    h += lista("Em andamento", gr.andamento.concat(gr.parada)) + lista("Em aprovação ou negociação", gr.planejada) + lista("Concluídas", gr.concluida) + lista("Interrompidas ou canceladas", gr.interrompida);
+    if (!todas.filter(function (i) { return !i.mem.rede; }).length) h += "<p class='v3m-nota'>Nenhuma obra registrada nesta administração ainda.</p>";
+    h += "<h4>Programas <small>(" + ps.length + ")</small></h4>" + (proprios.length ? "<ul class='v3m-prog'>" + proprios.map(function (p) { return "<li><b>" + esc_(p.nome) + "</b> " + (p.ativo ? "<em class='v3m-st ok'>ativo</em>" : "<em class='v3m-st int'>suspenso</em>") + "<small>criado por " + esc_((p.mem || {}).autor || "—") + ((p.mem || {}).m != null ? " em " + quando(p.mem.m) : "") + " · " + esc_(p.foco || "") + "</small></li>"; }).join("") + "</ul>" : "") +
+      "<p class='v3m-nota'>" + (ps.length - proprios.length) + " programas permanentes da administração" + (susp.length ? ", " + susp.length + " suspenso" + (susp.length > 1 ? "s" : "") + " hoje (" + susp.map(function (p) { return esc_(p.nome); }).join(", ") + ")" : "") + ".</p>";
+    if (gr.rede.length) h += "<p class='v3m-nota'>Rede mantida pela administração: " + gr.rede.length + " contratos de manutenção.</p>";
+    return h;
+  }
+  function trajetoria() {
+    var minhas = insts().filter(function (i) { var m = carimbar(i); return m.autorJogador; });
+    var porAdm = ORDEM.map(function (adm) {
+      var l = minhas.filter(function (i) { return i.mem.adm === adm || i.mem.autorCargo === adm; });
+      var inau = insts().filter(function (i) { return i.mem.adm === adm && i.inauguradorId === "JOGADOR"; });
+      var pr = progs().filter(function (p) { return p.esf === adm && p.custom; });
+      return { adm: adm, ini: l.length, conc: l.filter(function (i) { return grupoDe(i) === "concluida"; }).length, inau: inau.length, pr: pr.length };
+    }).filter(function (x) { return x.ini || x.inau || x.pr; });
+    if (!porAdm.length) return "";
+    return "<h4>Na sua trajetória</h4><div class='v3m-traj'>" + porAdm.map(function (x) { return "<div><b>" + esc_(ADM[x.adm].nome) + "</b><small>" + x.ini + " obra" + (x.ini === 1 ? "" : "s") + " iniciada" + (x.ini === 1 ? "" : "s") + " (" + x.conc + " já concluída" + (x.conc === 1 ? "" : "s") + ") · " + x.inau + " inaugurada" + (x.inau === 1 ? "" : "s") + " por você · " + x.pr + " programa" + (x.pr === 1 ? "" : "s") + " criado" + (x.pr === 1 ? "" : "s") + "</small></div>"; }).join("") + "</div>";
+  }
+  function corpo() {
+    var c = cid(); if (!ui.adm) ui.adm = ADM[c] ? c : "PREF";
+    return '<div class="v3m-tabs">' + ORDEM.map(function (a) { return '<button type="button" data-v3m-adm="' + a + '" class="' + (ui.adm === a ? "on" : "") + '">' + esc_(ADM[a].nome.replace("Governo do Estado de São Paulo", "Governo de SP")) + (a === c ? " •" : "") + "</button>"; }).join("") + "</div>" + blocoAdm(ui.adm) + trajetoria();
+  }
+  function cardMemoria() {
+    MEM.registrar();
+    var txt = "<p class='txt'><small>Obras e programas pertencem à administração pública, não ao governante. Quando você troca de cargo, eles continuam existindo e avançando aqui, e voltam a aparecer na sua aba se você reassumir a administração.</small></p>";
+    return typeof card === "function" ? card("Memória administrativa", txt + '<div class="v3m" data-v3m="1">' + corpo() + "</div>") : "";
+  }
+  MEM.card = cardMemoria;
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-v3m-adm]"); if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    ui.adm = b.getAttribute("data-v3m-adm");
+    var box = document.querySelector('.v3m[data-v3m="1"]'); if (box) box.innerHTML = corpo();
+  }, true);
+
+  function instalarTela() {
+    if (typeof VIEWS === "undefined" || typeof VIEWS.poder !== "function" || VIEWS.poder.__v3mem) return;
+    var _vp = VIEWS.poder;
+    var n = function () { var h = _vp.apply(this, arguments); try { if (String(h).indexOf('data-v3m="1"') < 0) h += cardMemoria(); } catch (e) { console.warn("v3mem card", e); } return h; };
+    for (var k in _vp) { try { n[k] = _vp[k]; } catch (e) {} }
+    n.__v3mem = true; VIEWS.poder = n;
+  }
+  function boot() { try { instalar(); instalarTela(); } catch (e) { console.warn("v3mem boot", e); } }
+  boot();
+  document.addEventListener("DOMContentLoaded", function () { setTimeout(boot, 0); });
+  window.addEventListener("load", function () { setTimeout(boot, 50); });
+  var tentativas = 0, t = setInterval(function () { boot(); if (++tentativas > 20) clearInterval(t); }, 500);
+})();
+
+</script>
+<script id="cadeira-v3-trilhos-js">
+/* =============================================================================
+   CADEIRA v3 — Rede metropolitana de trilhos (metrô, CPTM e trens regionais)
+   Mapa interativo da Grande São Paulo cujo estado vem das OBRAS do jogo:
+   cada trecho novo, extensão, melhoria de linha ou equipamento de estação está
+   ligado a um ou mais itens do catálogo de obras (OBRAS.DB) e muda de aparência
+   conforme a instância da obra (M().obrasSys): planejado → em aprovação → em
+   obras (com o avanço desenhado) → em operação; paralisado e cancelado também.
+   Estrutura pensada para crescer sem refazer nada:
+     ESTACOES  id → { n: nome, c: [lat, lon] }
+     LINHAS    id → { num, nome, op, cor, modo }
+     TRECHOS   [ { id, linha, est: [ids na ordem do traçado], paradas?: [ids],
+                   base: "operacao" | "planejado", obras?: [ids do catálogo],
+                   stub?: { de, dx, dy, rotulo } } ]
+     MELHORIAS [ { linha, obras, rotulo } ]   (obras que mudam uma linha inteira)
+     PONTOS    [ { est, obras, rotulo } ]      (equipamentos em estações)
+   Coordenadas aproximadas (traçados de referência de projetos públicos; não é
+   o mapa oficial do Metrô nem da CPTM).
+   ============================================================================= */
+(function () {
+  "use strict";
+  if (window.V3TRILHOS) return;
+  var TR = (window.V3TRILHOS = {});
+  function esc_(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function ok(f, d) { try { var v = f(); return v === undefined ? d : v; } catch (e) { return d; } }
+
+  /* ================================================================ dados */
+  var E = {}; // estações
+  [["tucuruvi", "Tucuruvi", -23.4797, -46.6030], ["santana", "Santana", -23.5025, -46.6253], ["tiete", "Portuguesa-Tietê", -23.5164, -46.6252], ["luz", "Luz", -23.5350, -46.6350],
+    ["saobento", "São Bento", -23.5440, -46.6340], ["se", "Sé", -23.5505, -46.6333], ["liberdade", "Liberdade", -23.5558, -46.6355], ["saojoaquim", "São Joaquim", -23.5617, -46.6383],
+    ["paraiso", "Paraíso", -23.5754, -46.6410], ["anarosa", "Ana Rosa", -23.5810, -46.6380], ["santacruz", "Santa Cruz", -23.5990, -46.6370], ["saude", "Saúde", -23.6180, -46.6390], ["jabaquara", "Jabaquara", -23.6460, -46.6410],
+    ["vilamadalena", "Vila Madalena", -23.5465, -46.6910], ["clinicas", "Clínicas", -23.5545, -46.6705], ["consolacao", "Consolação", -23.5575, -46.6605], ["trianon", "Trianon-Masp", -23.5615, -46.6560], ["brigadeiro", "Brigadeiro", -23.5685, -46.6490],
+    ["chacaraklabin", "Chácara Klabin", -23.5925, -46.6290], ["altoipiranga", "Alto do Ipiranga", -23.6020, -46.6125], ["sacoma", "Sacomã", -23.6010, -46.6020], ["tamanduatei", "Tamanduateí", -23.5925, -46.5890], ["vilaprudente", "Vila Prudente", -23.5850, -46.5820],
+    ["orfanato", "Orfanato", -23.5745, -46.5755], ["analiafranco", "Anália Franco", -23.5612, -46.5604], ["vilaformosa", "Vila Formosa", -23.5640, -46.5460], ["aricanduva", "Aricanduva", -23.5440, -46.5370], ["penha", "Penha", -23.5335, -46.5430], ["dutra", "Dutra", -23.5080, -46.5470],
+    ["barrafunda", "Palmeiras-Barra Funda", -23.5255, -46.6670], ["santacecilia", "Santa Cecília", -23.5390, -46.6480], ["republica", "República", -23.5440, -46.6425], ["anhangabau", "Anhangabaú", -23.5475, -46.6390], ["pedroii", "Pedro II", -23.5500, -46.6250],
+    ["bras", "Brás", -23.5470, -46.6160], ["bresser", "Bresser-Mooca", -23.5465, -46.6070], ["belem", "Belém", -23.5425, -46.5895], ["tatuape", "Tatuapé", -23.5400, -46.5765], ["carrao", "Carrão", -23.5380, -46.5640],
+    ["vilamatilde", "Vila Matilde", -23.5320, -46.5310], ["patriarca", "Patriarca", -23.5310, -46.5015], ["arturalvim", "Artur Alvim", -23.5400, -46.4840], ["itaquera", "Corinthians-Itaquera", -23.5425, -46.4710],
+    ["higienopolis", "Higienópolis-Mackenzie", -23.5480, -46.6520], ["paulista", "Paulista", -23.5555, -46.6625], ["oscarfreire", "Oscar Freire", -23.5600, -46.6720], ["farialima", "Faria Lima", -23.5670, -46.6935], ["pinheiros", "Pinheiros", -23.5670, -46.7020],
+    ["butanta", "Butantã", -23.5720, -46.7085], ["morumbi4", "São Paulo-Morumbi", -23.5850, -46.7230], ["vilasonia", "Vila Sônia", -23.5880, -46.7350],
+    ["capaoredondo", "Capão Redondo", -23.6600, -46.7790], ["campolimpo", "Campo Limpo", -23.6490, -46.7590], ["santoamaro", "Santo Amaro", -23.6550, -46.7195], ["largotreze", "Largo Treze", -23.6530, -46.7060], ["borbagato", "Borba Gato", -23.6400, -46.6935],
+    ["brooklin", "Brooklin", -23.6265, -46.6880], ["campobelo", "Campo Belo", -23.6170, -46.6720], ["moema", "Moema", -23.6010, -46.6620], ["aacd", "AACD-Servidor", -23.5970, -46.6520], ["hsp", "Hospital São Paulo", -23.5985, -46.6440],
+    ["oratorio15", "Oratório", -23.5900, -46.5600], ["saolucas", "São Lucas", -23.5950, -46.5470], ["vilauniao", "Vila União", -23.6000, -46.5070], ["sapopemba", "Sapopemba", -23.6080, -46.4850], ["saomateus", "São Mateus", -23.6120, -46.4770], ["jdcolonial", "Jardim Colonial", -23.6200, -46.4600],
+    ["ipiranga", "Ipiranga", -23.5880, -46.6090], ["brasilandia", "Brasilândia", -23.4670, -46.6880], ["itaberaba", "Itaberaba", -23.4800, -46.6900], ["freguesia", "Freguesia do Ó", -23.5010, -46.6970], ["santamarina", "Santa Marina", -23.5130, -46.6990],
+    ["aguabranca", "Água Branca", -23.5220, -46.6900], ["perdizes", "Perdizes", -23.5340, -46.6760], ["puc", "PUC-Cardoso de Almeida", -23.5390, -46.6680], ["faap", "FAAP-Pacaembu", -23.5440, -46.6610], ["bis14", "14 Bis-Saracura", -23.5550, -46.6455],
+    ["lapa", "Lapa", -23.5205, -46.7040], ["vilaolimpia", "Vila Olímpia", -23.5930, -46.6920], ["berrini", "Berrini", -23.6070, -46.6970], ["cidadejardim", "Cidade Jardim", -23.5840, -46.6935],
+    ["bosquemaia", "Bosque Maia", -23.4550, -46.5350], ["vilamaria", "Vila Maria", -23.5120, -46.5800], ["catumbi", "Catumbi", -23.5360, -46.6000],
+    ["jundiai", "Jundiaí", -23.1900, -46.8830], ["fmorato", "Francisco Morato", -23.2810, -46.7450], ["francodarocha", "Franco da Rocha", -23.3230, -46.7270], ["caieiras", "Caieiras", -23.3640, -46.7400], ["perus", "Perus", -23.4050, -46.7540],
+    ["jaragua", "Jaraguá", -23.4560, -46.7380], ["pirituba", "Pirituba", -23.4880, -46.7240], ["juliop", "Júlio Prestes", -23.5350, -46.6400], ["paltino", "Presidente Altino", -23.5310, -46.7630], ["osasco", "Osasco", -23.5280, -46.7780],
+    ["carapicuiba", "Carapicuíba", -23.5230, -46.8360], ["barueri", "Barueri", -23.5110, -46.8760], ["jandira", "Jandira", -23.5280, -46.9020], ["itapevi", "Itapevi", -23.5490, -46.9340], ["amadorbueno", "Amador Bueno", -23.5420, -46.9800], ["ceasa", "Ceasa", -23.5410, -46.7400],
+    ["socorro", "Socorro", -23.6670, -46.7110], ["jurubatuba", "Jurubatuba", -23.6830, -46.7050], ["grajau", "Grajaú", -23.7360, -46.6960],
+    ["mooca", "Juventus-Mooca", -23.5580, -46.6070], ["saocaetano", "São Caetano do Sul", -23.6180, -46.5660], ["utinga", "Utinga", -23.6340, -46.5420], ["santoandre", "Santo André", -23.6570, -46.5310], ["capuava", "Capuava", -23.6660, -46.5000],
+    ["maua", "Mauá", -23.6680, -46.4610], ["guapituba", "Guapituba", -23.6880, -46.4370], ["ribeiraopires", "Ribeirão Pires", -23.7110, -46.4130], ["rgs", "Rio Grande da Serra", -23.7430, -46.3980],
+    ["guaianases", "Guaianases", -23.5420, -46.4150], ["ferraz", "Ferraz de Vasconcelos", -23.5420, -46.3690], ["poa", "Poá", -23.5250, -46.3460], ["calmonviana", "Calmon Viana", -23.5230, -46.3120], ["suzano", "Suzano", -23.5440, -46.3050],
+    ["brascubas", "Brás Cubas", -23.5310, -46.2240], ["mogi", "Mogi das Cruzes", -23.5230, -46.1880], ["estudantes", "Estudantes", -23.5160, -46.1750],
+    ["engoulart", "Engenheiro Goulart", -23.4930, -46.5190], ["uspleste", "USP Leste", -23.4870, -46.5000], ["saomiguel", "São Miguel Paulista", -23.4930, -46.4440], ["itaimpaulista", "Itaim Paulista", -23.5010, -46.3950], ["itaquaquecetuba", "Itaquaquecetuba", -23.4850, -46.3480],
+    ["cecap", "Guarulhos-Cecap", -23.4580, -46.5100], ["aeroporto", "Aeroporto-Guarulhos", -23.4360, -46.4860], ["terminais", "Terminais 2 e 3", -23.4280, -46.4790], ["pqdpedro", "Parque Dom Pedro II", -23.5480, -46.6290]
+  ].forEach(function (x) { E[x[0]] = { id: x[0], n: x[1], c: [x[2], x[3]] }; });
+
+  var L = {
+    L1: { num: "1", nome: "Azul", op: "Metrô", cor: "#0455A1", modo: "metro" }, L2: { num: "2", nome: "Verde", op: "Metrô", cor: "#007E5E", modo: "metro" },
+    L3: { num: "3", nome: "Vermelha", op: "Metrô", cor: "#EE372F", modo: "metro" }, L4: { num: "4", nome: "Amarela", op: "ViaQuatro", cor: "#E8B400", modo: "metro" },
+    L5: { num: "5", nome: "Lilás", op: "ViaMobilidade", cor: "#9B3894", modo: "metro" }, L6: { num: "6", nome: "Laranja", op: "Linha Uni", cor: "#F68B1F", modo: "metro" },
+    L15: { num: "15", nome: "Prata", op: "Metrô (monotrilho)", cor: "#8E9AA6", modo: "metro" }, L19: { num: "19", nome: "Celeste", op: "Metrô", cor: "#3FA9F5", modo: "metro" },
+    L20: { num: "20", nome: "Rosa", op: "Metrô", cor: "#E2558E", modo: "metro" },
+    L7: { num: "7", nome: "Rubi", op: "TIC Trens", cor: "#CA016B", modo: "trem" }, L8: { num: "8", nome: "Diamante", op: "ViaMobilidade", cor: "#97A098", modo: "trem" },
+    L9: { num: "9", nome: "Esmeralda", op: "ViaMobilidade", cor: "#01A9A7", modo: "trem" }, L10: { num: "10", nome: "Turquesa", op: "CPTM", cor: "#049FC3", modo: "trem" },
+    L11: { num: "11", nome: "Coral", op: "CPTM", cor: "#F04E23", modo: "trem" }, L12: { num: "12", nome: "Safira", op: "CPTM", cor: "#083E89", modo: "trem" },
+    L13: { num: "13", nome: "Jade", op: "CPTM", cor: "#00B352", modo: "trem" },
+    ET: { num: "ET", nome: "Expresso Tiradentes", op: "SPTrans (BRT)", cor: "#6D6E71", modo: "brt" },
+    TICN: { num: "TIC", nome: "Intercidades Norte", op: "TIC (Campinas)", cor: "#5B2C83", modo: "regional" },
+    TICS: { num: "TIC", nome: "Intercidades Sul", op: "TIC (Santos)", cor: "#7A4FA3", modo: "regional" },
+    TICO: { num: "TIM", nome: "Intermetropolitano Oeste", op: "TIM (Sorocaba)", cor: "#8C6BB1", modo: "regional" },
+    TAV: { num: "TAV", nome: "Trem de Alta Velocidade", op: "Federal", cor: "#2B2B2B", modo: "regional" }
+  };
+  var L7 = ["jundiai", "fmorato", "francodarocha", "caieiras", "perus", "jaragua", "pirituba", "lapa", "aguabranca", "barrafunda"];
+  var TRECHOS = [
+    { id: "L1", linha: "L1", base: "operacao", est: ["tucuruvi", "santana", "tiete", "luz", "saobento", "se", "liberdade", "saojoaquim", "paraiso", "anarosa", "santacruz", "saude", "jabaquara"] },
+    { id: "L2", linha: "L2", base: "operacao", est: ["vilamadalena", "clinicas", "consolacao", "trianon", "brigadeiro", "paraiso", "anarosa", "chacaraklabin", "altoipiranga", "sacoma", "tamanduatei", "vilaprudente"] },
+    { id: "L2-leste", linha: "L2", base: "planejado", obras: ["OBR-GOV-023"], rotulo: "Extensão Vila Prudente–Dutra", est: ["vilaprudente", "orfanato", "analiafranco", "vilaformosa", "aricanduva", "penha", "dutra"] },
+    { id: "L3", linha: "L3", base: "operacao", est: ["barrafunda", "santacecilia", "republica", "anhangabau", "se", "pedroii", "bras", "bresser", "belem", "tatuape", "carrao", "penha", "vilamatilde", "patriarca", "arturalvim", "itaquera"] },
+    { id: "L4", linha: "L4", base: "operacao", est: ["luz", "republica", "higienopolis", "paulista", "oscarfreire", "farialima", "pinheiros", "butanta", "morumbi4", "vilasonia"] },
+    { id: "L5", linha: "L5", base: "operacao", est: ["capaoredondo", "campolimpo", "santoamaro", "largotreze", "borbagato", "brooklin", "campobelo", "moema", "aacd", "hsp", "santacruz", "chacaraklabin"] },
+    { id: "L6", linha: "L6", base: "planejado", obras: ["OBR-GOV-024"], rotulo: "Brasilândia–São Joaquim", est: ["brasilandia", "itaberaba", "freguesia", "santamarina", "aguabranca", "perdizes", "puc", "faap", "higienopolis", "bis14", "saojoaquim"] },
+    { id: "L15", linha: "L15", base: "operacao", est: ["vilaprudente", "oratorio15", "saolucas", "vilauniao", "sapopemba", "saomateus"] },
+    { id: "L15-ipiranga", linha: "L15", base: "planejado", obras: ["OBR-GOV-025"], rotulo: "Extensão até Ipiranga", est: ["ipiranga", "vilaprudente"] },
+    { id: "L15-colonial", linha: "L15", base: "planejado", obras: ["OBR-GOV-025"], rotulo: "Extensão até Jardim Colonial", est: ["saomateus", "jdcolonial"] },
+    { id: "L19", linha: "L19", base: "planejado", obras: ["OBR-GOV-027"], rotulo: "Guarulhos–Anhangabaú (referência)", est: ["bosquemaia", "vilamaria", "catumbi", "anhangabau"] },
+    { id: "L20", linha: "L20", base: "planejado", obras: ["OBR-GOV-026"], rotulo: "Lapa–Santo Amaro (referência)", est: ["lapa", "pinheiros", "vilaolimpia", "brooklin", "santoamaro"] },
+    { id: "L7", linha: "L7", base: "operacao", est: L7 },
+    { id: "L8", linha: "L8", base: "operacao", est: ["juliop", "barrafunda", "lapa", "paltino", "osasco", "carapicuiba", "barueri", "jandira", "itapevi", "amadorbueno"] },
+    { id: "L9", linha: "L9", base: "operacao", est: ["osasco", "paltino", "ceasa", "pinheiros", "cidadejardim", "vilaolimpia", "berrini", "santoamaro", "socorro", "jurubatuba", "grajau"] },
+    { id: "L10", linha: "L10", base: "operacao", est: ["bras", "mooca", "ipiranga", "tamanduatei", "saocaetano", "utinga", "santoandre", "capuava", "maua", "guapituba", "ribeiraopires", "rgs"] },
+    { id: "L11", linha: "L11", base: "operacao", est: ["luz", "bras", "tatuape", "itaquera", "guaianases", "ferraz", "poa", "calmonviana", "suzano", "brascubas", "mogi", "estudantes"] },
+    { id: "L12", linha: "L12", base: "operacao", est: ["bras", "tatuape", "engoulart", "uspleste", "saomiguel", "itaimpaulista", "itaquaquecetuba", "calmonviana"] },
+    { id: "L13", linha: "L13", base: "operacao", est: ["engoulart", "cecap", "aeroporto"] },
+    { id: "L13-ext", linha: "L13", base: "planejado", obras: ["OBR-GOV-034"], rotulo: "Extensão aos terminais do aeroporto", est: ["aeroporto", "terminais"] },
+    { id: "ET", linha: "ET", base: "operacao", est: ["pqdpedro", "ipiranga", "sacoma"] },
+    { id: "ET-abc", linha: "ET", base: "planejado", obras: ["OBR-GOV-031"], rotulo: "Extensão ao ABC (referência)", est: ["sacoma", "saocaetano"] },
+    { id: "TICN", linha: "TICN", base: "planejado", obras: ["OBR-GOV-028", "OBR-PRE-028"], rotulo: "Barra Funda–Jundiaí–Campinas", est: L7.slice().reverse(), paradas: ["barrafunda", "jundiai"], stub: { de: "jundiai", dx: -30, dy: -70, rotulo: "Campinas" } },
+    { id: "TICS", linha: "TICS", base: "planejado", obras: ["OBR-GOV-029"], rotulo: "São Paulo–ABC–Baixada Santista (referência)", est: ["bras", "mooca", "ipiranga", "tamanduatei", "saocaetano", "santoandre"], paradas: ["bras", "santoandre"], stub: { de: "santoandre", dx: 10, dy: 90, rotulo: "Santos" } },
+    { id: "TICO", linha: "TICO", base: "planejado", obras: ["OBR-GOV-030"], rotulo: "São Paulo–Sorocaba", est: ["barrafunda", "lapa", "paltino", "osasco", "carapicuiba", "barueri", "jandira", "itapevi", "amadorbueno"], paradas: ["barrafunda", "osasco", "amadorbueno"], stub: { de: "amadorbueno", dx: -70, dy: 20, rotulo: "Sorocaba" } },
+    { id: "TAV", linha: "TAV", base: "planejado", obras: ["OBR-PRE-027"], rotulo: "Rio–São Paulo (alta velocidade)", est: ["barrafunda", "aeroporto"], stub: { de: "aeroporto", dx: 80, dy: -40, rotulo: "Rio de Janeiro" } }
+  ];
+  var MELHORIAS = [
+    { linha: "L10", obras: ["OBR-GOV-032", "OBR-PRE-089"], rotulo: "Modernização de trens e estações (Mauá e ABC)" },
+    { linha: "L11", obras: ["OBR-GOV-033"], rotulo: "Expresso Leste (trens expressos Guaianases–Mogi)" }
+  ];
+  var PONTOS = [{ est: "maua", obras: ["OBR-PRF-024"], rotulo: "Terminal Rodoviário Intermodal de Mauá" }];
+  TR.dados = { ESTACOES: E, LINHAS: L, TRECHOS: TRECHOS, MELHORIAS: MELHORIAS, PONTOS: PONTOS };
+
+  /* ================================================================ estado das obras */
+  function instsDe(catId) { return ok(function () { var s = M().obrasSys; return Object.keys(s.instancias).map(function (k) { return s.instancias[k]; }).filter(function (i) { return i.catalogoId === catId; }); }, []); }
+  var RANK = { operacao: 6, obras: 5, parado: 4, aprovacao: 3, planejado: 1, cancelado: 0 };
+  function statusDeInst(i) {
+    var e = i.estado;
+    if (e === "Em manutenção" || e === "Concluída") return "operacao";
+    if (e === "Em execução" || e === "Atrasada") return "obras";
+    if (e === "Paralisada") return "parado";
+    if (e === "Em negociação" || e === "Aprovada") return "aprovacao";
+    if (e === "Abandonada" || e === "Recusada") return "cancelado";
+    return "planejado";
+  }
+  // estado de um conjunto de obras ligadas a um elemento: o mais avançado vence
+  function estadoObras(ids) {
+    var melhor = null;
+    (ids || []).forEach(function (id) { instsDe(id).forEach(function (i) { var s = statusDeInst(i), r = { s: s, inst: i, cat: id }; if (!melhor || RANK[s] > RANK[melhor.s] || (s === melhor.s && (i.progresso || 0) > (melhor.inst.progresso || 0))) melhor = r; }); });
+    return melhor;
+  }
+  function estadoTrecho(t) {
+    if (t.base === "operacao") return { s: "operacao" };
+    var r = estadoObras(t.obras); if (!r) return { s: "planejado" };
+    if (r.s === "cancelado") { var nova = (t.obras || []).some(function (id) { return instsDe(id).some(function (i) { return statusDeInst(i) !== "cancelado"; }); }); if (!nova) return { s: "cancelado", inst: r.inst, cat: r.cat }; }
+    return r;
+  }
+  TR.estadoTrecho = estadoTrecho;
+  var ROT = { operacao: "Em operação", obras: "Em obras", parado: "Obra paralisada", aprovacao: "Em aprovação / licitação", planejado: "Projeto planejado", cancelado: "Projeto cancelado" };
+
+  /* ================================================================ geometria */
+  var LAT0 = -23.18, LAT1 = -23.78, LON0 = -47.0, LON1 = -46.15, KX = Math.cos(23.5 * Math.PI / 180), W = 1000;
+  var ESC = W / ((LON1 - LON0) * KX), H = Math.round((LAT0 - LAT1) * ESC);
+  function xy(id) { var c = E[id].c; return [(c[1] - LON0) * KX * ESC, (LAT0 - c[0]) * ESC]; }
+  // trechos que dividem o mesmo segmento são desenhados lado a lado
+  var OFF = null;
+  function offsets(lista) {
+    var seg = {};
+    lista.forEach(function (t) { for (var i = 0; i + 1 < t.est.length; i++) { var k = [t.est[i], t.est[i + 1]].sort().join("|"); (seg[k] = seg[k] || []); if (seg[k].indexOf(t.linha) < 0) seg[k].push(t.linha); } });
+    return seg;
+  }
+  function segPath(a, b, idx, n, w) {
+    var p = xy(a), q = xy(b), dx = q[0] - p[0], dy = q[1] - p[1], len = Math.sqrt(dx * dx + dy * dy) || 1, o = (idx - (n - 1) / 2) * w;
+    var nx = -dy / len * o, ny = dx / len * o;
+    return [p[0] + nx, p[1] + ny, q[0] + nx, q[1] + ny];
+  }
+  function trechoD(t, w) {
+    var pts = [];
+    for (var i = 0; i + 1 < t.est.length; i++) {
+      var k = [t.est[i], t.est[i + 1]].sort().join("|"), ls = OFF[k] || [t.linha], s = segPath(t.est[i], t.est[i + 1], Math.max(0, ls.indexOf(t.linha)), ls.length, w);
+      if (!pts.length) pts.push([s[0], s[1]]); else { var u = pts[pts.length - 1]; pts[pts.length - 1] = [(u[0] + s[0]) / 2, (u[1] + s[1]) / 2]; }
+      pts.push([s[2], s[3]]);
+    }
+    return "M" + pts.map(function (p) { return p[0].toFixed(1) + " " + p[1].toFixed(1); }).join("L");
+  }
+
+  /* ================================================================ desenho */
+  var ui = { vb: [0, 0, W, H], sel: null, planos: true };
+  var VISTAS = { rede: null, centro: ["luz", "pinheiros", "tatuape", "jabaquara"], abc: ["sacoma", "rgs", "santoandre", "maua", "tamanduatei"], leste: ["tatuape", "estudantes", "aeroporto", "saomateus"], norte: ["jundiai", "barrafunda", "brasilandia"] };
+  function caixa(ids) {
+    var a = [1e9, 1e9, -1e9, -1e9]; ids.forEach(function (id) { var p = xy(id); a[0] = Math.min(a[0], p[0]); a[1] = Math.min(a[1], p[1]); a[2] = Math.max(a[2], p[0]); a[3] = Math.max(a[3], p[1]); });
+    var w = a[2] - a[0], h = a[3] - a[1], m = Math.max(w, h) * 0.12 + 20; w += 2 * m; h += 2 * m;
+    var r = W / H; if (w / h < r) w = h * r; else h = w / r;
+    return [(a[0] + a[2]) / 2 - w / 2, (a[1] + a[3]) / 2 - h / 2, w, h];
+  }
+  function svg() {
+    var vis = TRECHOS.map(function (t) { return { t: t, e: estadoTrecho(t) }; }).filter(function (x) { return ui.planos || x.e.s === "operacao" || x.e.s === "obras" || x.e.s === "parado"; });
+    OFF = offsets(vis.map(function (x) { return x.t; }));
+    var w = 5.2, h = "";
+    // linhas
+    vis.forEach(function (x) {
+      var t = x.t, l = L[t.linha], d = trechoD(t, w), s = x.e.s, sel = ui.sel === t.linha ? " sel" : "";
+      var prog = x.e.inst ? Math.round(x.e.inst.progresso || 0) : 0;
+      h += '<g class="v3t-tr st-' + s + sel + " modo-" + l.modo + '" data-v3t-linha="' + t.linha + '" style="--c:' + l.cor + '">';
+      h += '<path class="v3t-hit" d="' + d + '"/>';
+      if (s === "operacao") h += '<path class="v3t-ln" d="' + d + '"/>';
+      else if (s === "obras" || s === "parado") h += '<path class="v3t-ln v3t-proj" d="' + d + '"/><path class="v3t-ln v3t-feito" pathLength="100" stroke-dasharray="' + prog + ' 100" d="' + d + '"/>';
+      else h += '<path class="v3t-ln v3t-proj" d="' + d + '"/>';
+      if (t.stub) { var p = xy(t.stub.de); h += '<path class="v3t-ln v3t-stub" d="M' + p[0].toFixed(1) + " " + p[1].toFixed(1) + "l" + t.stub.dx + " " + t.stub.dy + '"/><text class="v3t-stubt" x="' + (p[0] + t.stub.dx).toFixed(1) + '" y="' + (p[1] + t.stub.dy - 4).toFixed(1) + '">' + esc_(t.stub.rotulo) + " ›</text>"; }
+      h += "</g>";
+    });
+    // melhorias (selo sobre a linha)
+    MELHORIAS.forEach(function (m) { var r = estadoObras(m.obras); if (!r || r.s === "planejado" || r.s === "cancelado") return; var t = TRECHOS.filter(function (x) { return x.id === m.linha; })[0]; if (!t) return; h += '<path class="v3t-melhoria st-' + r.s + '" d="' + trechoD(t, w) + '" style="--c:' + L[m.linha].cor + '"/>'; });
+    // estações (raio acompanha o zoom para não virar bolha ao aproximar)
+    var RF = Math.max(0.3, Math.pow(ui.vb[2] / W, 0.85));
+    var est = {}, linhasEst = {};
+    vis.forEach(function (x) { var t = x.t, ps = t.paradas || t.est; ps.forEach(function (id) { var s = x.e.s; if (!est[id] || RANK[s] > RANK[est[id]]) est[id] = s; (linhasEst[id] = linhasEst[id] || {}); linhasEst[id][t.linha] = 1; }); });
+    Object.keys(est).forEach(function (id) {
+      var p = xy(id), n = Object.keys(linhasEst[id]).length, s = est[id], term = TRECHOS.some(function (t) { return (t.paradas || t.est)[0] === id || (t.paradas || t.est).slice(-1)[0] === id; });
+      var pt = PONTOS.filter(function (x) { return x.est === id; })[0], ptS = pt ? estadoObras(pt.obras) : null;
+      var cls = "v3t-est st-" + s + (n > 1 ? " int" : "") + (term || n > 1 || id === "maua" ? " pri" : "") + (ptS && ptS.s === "operacao" ? " eq" : "");
+      h += '<g class="' + cls + '" data-v3t-est="' + id + '"><circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + ((n > 1 ? 4.6 : 3.2) * RF).toFixed(2) + '"/>' + (ptS && ptS.s !== "planejado" && ptS.s !== "cancelado" ? '<rect x="' + (p[0] + 4 * RF).toFixed(1) + '" y="' + (p[1] - 10 * RF).toFixed(1) + '" width="' + (7 * RF).toFixed(1) + '" height="' + (7 * RF).toFixed(1) + '" class="v3t-eq st-' + ptS.s + '"/>' : "") + '<text x="' + (p[0] + 6 * RF).toFixed(1) + '" y="' + (p[1] + 3 * RF).toFixed(1) + '">' + esc_(E[id].n) + "</text></g>";
+    });
+    var vb = ui.vb, zoom = vb[2] < 420 ? " z2" : vb[2] < 700 ? " z1" : "";
+    return '<svg class="v3t-svg' + zoom + '" viewBox="' + vb.map(function (n) { return n.toFixed(1); }).join(" ") + '" style="--fs:' + (vb[2] / 70).toFixed(2) + 'px">' + h + "</svg>";
+  }
+  function legenda() {
+    return '<div class="v3t-leg"><span><i class="lg op"></i>em operação</span><span><i class="lg ob"></i>em obras (trecho cheio = avanço)</span><span><i class="lg pa"></i>paralisada</span><span><i class="lg ap"></i>em aprovação</span><span><i class="lg pl"></i>projeto</span><span><i class="lg ca"></i>cancelado</span><span><i class="lg mo"></i>melhoria em curso</span></div>';
+  }
+  function chips() {
+    var grupos = {}; TRECHOS.forEach(function (t) { (grupos[t.linha] = grupos[t.linha] || []).push(t); });
+    return '<div class="v3t-chips">' + Object.keys(L).map(function (id) {
+      var ts = grupos[id] || [], st = ts.map(function (t) { return estadoTrecho(t).s; }), novo = ts.every(function (t) { return t.base !== "operacao"; }) && st.every(function (s) { return s !== "operacao"; });
+      var obras = st.some(function (s) { return s === "obras" || s === "parado"; });
+      return '<button type="button" data-v3t-linha="' + id + '" class="' + (ui.sel === id ? "on " : "") + (novo ? "novo" : "") + '" style="--c:' + L[id].cor + '"><b>' + esc_(L[id].num) + "</b>" + esc_(L[id].nome) + (obras ? " 🚧" : "") + "</button>";
+    }).join("") + "</div>";
+  }
+  function quem(inst) { return ok(function () { return inst.mem ? inst.mem.autor : null; }, null); }
+  function painel() {
+    var id = ui.sel; if (!id || !L[id]) return '<p class="v3t-dica">Toque numa linha (no mapa ou nos botões) para ver os trechos, as obras ligadas e o que dá para fazer. Arraste para mover o mapa; use os botões para aproximar.</p>';
+    var l = L[id], ts = TRECHOS.filter(function (t) { return t.linha === id; }), cid = ok(function () { return cargoAtualId(); }, ""), esf = { PREF: "Prefeito", GOV: "Governador", PRES: "Presidente" }[cid];
+    var h = '<div class="v3t-pl" style="--c:' + l.cor + '"><b>Linha ' + esc_(l.num) + " – " + esc_(l.nome) + "</b><small>" + esc_(l.op) + "</small></div>";
+    function obraBox(cat) {
+      var it = ok(function () { return OBRAS.item(cat); }, null); if (!it) return "";
+      var is = instsDe(cat), i = is.filter(function (x) { return statusDeInst(x) !== "cancelado"; })[0] || is[0];
+      var podeIniciar = !i || statusDeInst(i) === "cancelado";
+      var acao = "";
+      if (podeIniciar && esf && (it.esfera_executora === esf || (it.solicitantes || []).indexOf(esf) >= 0) && typeof btn === "function") acao = btn(it.esfera_executora === esf ? "Iniciar obra" : "Pedir ao " + it.esfera_executora, "obrasIniciar", [it.id], "mini confirma");
+      return '<div class="v3t-obra"><b>' + esc_(it.nome) + "</b><small>" + esc_(it.esfera_executora) + " · R$ " + Math.round(it.custo_milhoes).toLocaleString("pt-BR") + " mi · " + it.prazo_meses + " meses</small>" +
+        (i ? "<p>" + esc_(i.estado) + (["Em execução", "Atrasada", "Paralisada"].indexOf(i.estado) >= 0 ? " · " + Math.round(i.progresso || 0) + "%" : "") + (quem(i) ? " · iniciada por " + esc_(quem(i)) : "") + (i.inauguradorNome && i.estado === "Em manutenção" ? " · inaugurada por " + esc_(i.inauguradorNome) : "") + "</p>" : "<p>Ainda não saiu do papel.</p>") + (acao ? '<div class="row">' + acao + "</div>" : "") + "</div>";
+    }
+    ts.forEach(function (t) {
+      var e = estadoTrecho(t), ps = (t.paradas || t.est).map(function (x) { return E[x].n; });
+      h += '<div class="v3t-trecho"><div><em class="v3t-st st-' + e.s + '">' + ROT[e.s] + (e.inst && (e.s === "obras" || e.s === "parado") ? " · " + Math.round(e.inst.progresso || 0) + "%" : "") + "</em> <b>" + esc_(t.rotulo || (t.base === "operacao" ? "Linha em operação" : "Trecho")) + "</b></div><small>" + ps.length + " estações: " + esc_(ps.join(" · ")) + "</small>" + (t.obras || []).map(obraBox).join("") + "</div>";
+    });
+    MELHORIAS.filter(function (m) { return m.linha === id; }).forEach(function (m) { var r = estadoObras(m.obras); h += '<div class="v3t-trecho"><div><em class="v3t-st st-' + (r ? r.s : "planejado") + '">' + (r ? ROT[r.s] : "Projeto") + "</em> <b>" + esc_(m.rotulo) + "</b></div>" + m.obras.map(obraBox).join("") + "</div>"; });
+    PONTOS.forEach(function (p) { if (!ts.some(function (t) { return t.est.indexOf(p.est) >= 0; })) return; var r = estadoObras(p.obras); h += '<div class="v3t-trecho"><div><em class="v3t-st st-' + (r ? r.s : "planejado") + '">' + (r ? ROT[r.s] : "Projeto") + "</em> <b>" + esc_(p.rotulo) + "</b> <small>estação " + esc_(E[p.est].n) + "</small></div>" + p.obras.map(obraBox).join("") + "</div>"; });
+    return h;
+  }
+  function resumo() {
+    var c = { operacao: 0, obras: 0, parado: 0, aprovacao: 0, planejado: 0, cancelado: 0 };
+    TRECHOS.forEach(function (t) { if (t.base !== "operacao") c[estadoTrecho(t).s]++; });
+    var est = {}; TRECHOS.forEach(function (t) { if (estadoTrecho(t).s === "operacao") (t.paradas || t.est).forEach(function (id) { est[id] = 1; }); });
+    return '<p class="v3t-res"><b>' + Object.keys(est).length + "</b> estações no mapa em operação · projetos de expansão: <b>" + c.operacao + "</b> entregues, <b>" + (c.obras + c.parado) + "</b> em obras, <b>" + c.aprovacao + "</b> em aprovação, <b>" + c.planejado + "</b> no papel" + (c.cancelado ? ", " + c.cancelado + " cancelados" : "") + ".</p>";
+  }
+  function corpo() {
+    return resumo() + '<div class="v3t-bar">' + Object.keys(VISTAS).map(function (k) { return '<button type="button" data-v3t-vista="' + k + '">' + { rede: "Rede inteira", centro: "Centro", abc: "ABC e Mauá", leste: "Zona Leste", norte: "Norte" }[k] + "</button>"; }).join("") +
+      '<button type="button" data-v3t-zoom="0.7" aria-label="Aproximar">＋</button><button type="button" data-v3t-zoom="1.4" aria-label="Afastar">－</button><label><input type="checkbox" data-v3t-planos ' + (ui.planos ? "checked" : "") + "> projetos</label></div>" +
+      '<div class="v3t-mapa">' + svg() + "</div>" + legenda() + chips() + '<div class="v3t-painel">' + painel() + "</div>";
+  }
+  function cardRede() {
+    var txt = "<p class='txt'><small>O mapa mostra o que acontece no jogo: cada extensão, linha nova ou melhoria está ligada a uma obra do catálogo e muda de aparência conforme ela avança, para, é entregue ou cancelada, seja qual for o governante. Traçados de projetos são de referência.</small></p>";
+    return typeof card === "function" ? card("Rede metropolitana de trilhos", txt + '<div class="v3t" data-v3t="1">' + corpo() + "</div>") : "";
+  }
+  TR.card = cardRede;
+  function atualizar(parcial) {
+    var box = document.querySelector('.v3t[data-v3t="1"]'); if (!box) return;
+    if (parcial === "mapa") { var m = box.querySelector(".v3t-mapa"); if (m) m.innerHTML = svg(); return; }
+    box.innerHTML = corpo();
+  }
+
+  /* ================================================================ interação */
+  document.addEventListener("click", function (e) {
+    var t = e.target; if (!t.closest || !t.closest('.v3t[data-v3t="1"]')) return;
+    var b;
+    if ((b = t.closest("[data-v3t-vista]"))) { var k = b.getAttribute("data-v3t-vista"); ui.vb = VISTAS[k] ? caixa(VISTAS[k]) : [0, 0, W, H]; atualizar("mapa"); e.preventDefault(); return; }
+    if ((b = t.closest("[data-v3t-zoom]"))) { var f = +b.getAttribute("data-v3t-zoom"), v = ui.vb, cx = v[0] + v[2] / 2, cy = v[1] + v[3] / 2, nw = Math.max(140, Math.min(W * 1.2, v[2] * f)), nh = nw * v[3] / v[2]; ui.vb = [cx - nw / 2, cy - nh / 2, nw, nh]; atualizar("mapa"); e.preventDefault(); return; }
+    if (arrastou) return;
+    if ((b = t.closest("[data-v3t-linha]"))) { var id = b.getAttribute("data-v3t-linha"); ui.sel = ui.sel === id ? null : id; atualizar(); e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  document.addEventListener("change", function (e) { var t = e.target; if (t && t.hasAttribute && t.hasAttribute("data-v3t-planos")) { ui.planos = t.checked; atualizar(); } }, true);
+  // arrastar o mapa
+  var drag = null, arrastou = false;
+  document.addEventListener("pointerdown", function (e) { var s = e.target.closest && e.target.closest(".v3t-mapa svg"); if (!s) return; drag = { x: e.clientX, y: e.clientY, vb: ui.vb.slice(), w: s.getBoundingClientRect().width, s: s }; arrastou = false; });
+  document.addEventListener("pointermove", function (e) {
+    if (!drag) return; var dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 4) arrastou = true; if (!arrastou) return;
+    var k = drag.vb[2] / (drag.w || 1); ui.vb = [drag.vb[0] - dx * k, drag.vb[1] - dy * k, drag.vb[2], drag.vb[3]]; drag.s.setAttribute("viewBox", ui.vb.map(function (n) { return n.toFixed(1); }).join(" "));
+  });
+  document.addEventListener("pointerup", function () { if (drag) { drag = null; setTimeout(function () { arrastou = false; }, 0); } });
+  document.addEventListener("wheel", function (e) {
+    var s = e.target.closest && e.target.closest(".v3t-mapa svg"); if (!s) return; e.preventDefault();
+    var r = s.getBoundingClientRect(), v = ui.vb, f = e.deltaY > 0 ? 1.15 : 0.87, px = v[0] + (e.clientX - r.left) / r.width * v[2], py = v[1] + (e.clientY - r.top) / r.height * v[3];
+    var nw = Math.max(140, Math.min(W * 1.2, v[2] * f)), nh = nw * v[3] / v[2]; ui.vb = [px - (px - v[0]) * nw / v[2], py - (py - v[1]) * nh / v[3], nw, nh]; atualizar("mapa");
+  }, { passive: false });
+
+  /* ================================================================ onde aparece: Poder (perto da Mobilidade) e Mapa */
+  function instalar() {
+    if (typeof VIEWS === "undefined") return;
+    ["poder", "mapa"].forEach(function (v) {
+      if (typeof VIEWS[v] !== "function" || VIEWS[v].__v3t) return;
+      var o = VIEWS[v];
+      var n = function () { var h = o.apply(this, arguments); try { if (String(h).indexOf('data-v3t="1"') < 0) h += cardRede(); } catch (e) { console.warn("v3trilhos", e); } return h; };
+      for (var k in o) { try { n[k] = o[k]; } catch (e) {} }
+      n.__v3t = true; VIEWS[v] = n;
+    });
+  }
+  instalar();
+  document.addEventListener("DOMContentLoaded", function () { setTimeout(instalar, 0); });
+  window.addEventListener("load", function () { setTimeout(instalar, 60); });
+  var n0 = 0, t0 = setInterval(function () { instalar(); if (++n0 > 20) clearInterval(t0); }, 500);
 })();
 
 </script>
