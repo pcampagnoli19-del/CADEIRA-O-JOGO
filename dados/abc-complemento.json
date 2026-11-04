@@ -2500,6 +2500,23 @@
    "profissao_detalhe": "",
    "profissao_verificada": false,
    "grupo": "SANTO ANDRÉ - vereadores 2025-2028"
+  },
+  {
+   "id": "POL_X_95001",
+   "nome": "Cafu César",
+   "cargo": "Liderança / Ex-Titular",
+   "papel": "Vice-prefeito de Hortolândia",
+   "partido": "Sem Partido",
+   "uf": "SP",
+   "municipio": "Hortolândia",
+   "profissao": "Líder Comunitário",
+   "real": true,
+   "vivo": true,
+   "foto_url": "",
+   "foto_carrega": false,
+   "profissao_detalhe": "",
+   "profissao_verificada": false,
+   "grupo": "PEDIDO DO DONO (nov/2026)"
   }
  ],
  "ajustes": {
