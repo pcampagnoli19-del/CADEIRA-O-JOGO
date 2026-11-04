@@ -319,3 +319,22 @@ body.v3-shell .pf-head-actions [data-a="guia"] { display: none !important; }
 .tabs .pf-nav-tools [data-a="pfCompacto"] { display: none !important; }
 /* Não encosta no botão de som (fixo no canto). */
 body:not(.v3-shell) .lcd .lcd-top { padding-right: 56px; }
+
+/* ===== Menu lateral sem árvore escondida: todas as áreas e telas visíveis ===== */
+.v3-side .v3-area{margin:0 0 6px;border-radius:10px}
+.v3-side .v3-area.atual{background:transparent;box-shadow:none}
+.v3-side .v3-area-btn{padding:6px 8px;gap:8px;min-height:0}
+.v3-side .v3-area-btn .v3-ico{width:26px;height:26px;font-size:.9rem;border-radius:7px}
+.v3-side .v3-area-txt b{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--v3-tx3)}
+.v3-side .v3-area.atual .v3-area-txt b{color:var(--v3-ouro2)}
+.v3-side .v3-area-txt small{display:none}
+.v3-side .v3-secoes{padding:0 6px 4px 42px}
+.v3-side .v3-secoes::before{left:20px;top:2px}
+.v3-side .v3-secao{padding:5px 10px;font-size:.88rem}
+.v3-side .v3-secao.on::before{left:-25px}
+/* ferramentas do menu lateral em grade compacta, para sobrar espaço para as telas */
+.v3-side .v3-ferr{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding-top:8px}
+.v3-side .v3-ferr-btn{padding:5px 6px;font-size:.76rem;gap:6px;min-height:0}
+.v3-side .v3-ferr-btn kbd{display:none}
+.v3-side .v3-secao{padding:4px 10px}
+.v3-side .v3-area{margin-bottom:4px}
