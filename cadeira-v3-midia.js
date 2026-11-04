@@ -116,10 +116,46 @@
     return { nome: x.nome, handle: "@" + slug(x.nome), tipo: "influencer", sub: x.tipo, seg: x.seg, selo: true, lado: x.lado };
   }
   function contaMidia(vid) { var v = VEIC[vid] || VEIC.g1; return { nome: v.nome, handle: v.handle, tipo: "midia", sub: "Veículo de imprensa", seg: 4e6, selo: true, cor: v.cor, logo: vid }; }
+  /* ---- perfis de cidadãos com personalidade: nome, @, ocupação, bairro e foto de pessoa que não existe
+     (mesmas fontes livres usadas nos políticos fictícios, mas com IDs que não estão no catálogo dos políticos,
+     para nenhum eleitor ter o rosto de um político). Tudo determinístico pela semente. */
+  var PF_F = ["Ana", "Beatriz", "Camila", "Daniela", "Eduarda", "Fernanda", "Gabriela", "Helena", "Isabela", "Juliana", "Karina", "Larissa", "Mariana", "Natália", "Priscila", "Rafaela", "Sabrina", "Tatiane", "Vanessa", "Yasmin",
+    "Aparecida", "Cleide", "Rosângela", "Sueli", "Marlene", "Francisca", "Lúcia", "Valéria", "Débora", "Jaqueline", "Raíssa", "Letícia", "Thaís", "Bianca", "Elaine", "Adriana", "Rosana", "Michele", "Graziela", "Lorena"];
+  var PF_M = ["André", "Bruno", "Caio", "Danilo", "Everton", "Felipe", "Gustavo", "Henrique", "Igor", "João Pedro", "Kaique", "Leandro", "Matheus", "Nelson", "Otávio", "Pedro", "Rafael", "Sérgio", "Thiago", "Vinícius",
+    "Wesley", "Adilson", "Benedito", "Cláudio", "Djalma", "Edivaldo", "Francisco", "Gilberto", "Hélio", "Juscelino", "Luiz Carlos", "Mauro", "Reinaldo", "Valdir", "Washington", "Jefferson", "Rodrigo", "Lucas", "Gabriel", "Murilo"];
+  var PF_S = ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes", "Ribeiro", "Carvalho", "Almeida", "Lopes", "Soares", "Fernandes", "Vieira", "Barbosa", "Rocha", "Dias",
+    "Nascimento", "Andrade", "Moreira", "Nunes", "Marques", "Machado", "Mendes", "Freitas", "Cardoso", "Ramos", "Teixeira", "Araújo", "Batista", "Campos", "Moura", "Cavalcanti", "Siqueira", "Tavares", "Xavier", "Prado"];
+  var PF_OC = [["Professora", "Professor"], ["Enfermeira", "Enfermeiro"], ["Motorista de app", "Motorista de app"], ["Comerciante", "Comerciante"], ["Estudante de Direito", "Estudante de Direito"], ["Aposentada", "Aposentado"],
+    ["Metalúrgica", "Metalúrgico"], ["Microempreendedora", "Microempreendedor"], ["Servidora pública", "Servidor público"], ["Mãe atípica", "Pai de três"], ["Cabeleireira", "Barbeiro"], ["Engenheira", "Engenheiro"],
+    ["Vendedora", "Vendedor"], ["Técnica em enfermagem", "Pedreiro"], ["Advogada", "Advogado"], ["Diarista", "Porteiro"], ["Estudante de ensino médio", "Estudante de ensino médio"], ["Líder comunitária", "Líder comunitário"],
+    ["Feirante", "Feirante"], ["Analista de TI", "Analista de TI"], ["Agente de saúde", "Vigilante"], ["Confeiteira", "Mecânico"], ["Pastora", "Pastor"], ["Bancária", "Taxista"]];
+  var PF_EXTRA = ["", "", "", "", " · mãe do Davi", " · torce pro Santo André", " · corintiana roxa", " · são-paulino sofredor", " · palmeirense", " · cristã", " · da igreja da esquina", " · ativista do bairro", " · fala o que pensa", " · 2 filhos e 1 boleto", " · café, trabalho e Jesus", " · ama um churrasco"];
+  // IDs livres fora do catálogo dos políticos (index.html, FOTOS_CATALOGO)
+  function livres(total, usados) { var u = {}; usados.forEach(function (x) { u[x] = 1; }); var l = []; for (var i = 0; i < total; i++) if (!u[i]) l.push(i); return l; }
+  var FOTO_RU_M = livres(100, [13, 21, 24, 60, 66, 82, 83, 92, 8, 10, 11, 31, 48, 49, 50, 56, 57, 58, 61, 64, 69, 74, 78, 80, 85, 86, 87, 93, 1, 7, 9, 18, 20, 27, 33, 36, 43, 46, 52, 62, 73, 81, 88, 94, 96, 97]);
+  var FOTO_RU_F = livres(100, [0, 4, 14, 50, 52, 57, 70, 71, 75, 82, 90, 3, 6, 11, 17, 19, 23, 24, 28, 37, 39, 41, 42, 44, 51, 56, 58, 62, 65, 68, 73, 76, 79, 86, 88, 92, 1, 2, 8, 10, 13, 18, 22, 26, 27, 29, 31, 36, 38, 40, 43, 45, 46, 48, 49, 53, 59, 66, 69, 74, 77, 80, 81, 85, 87, 89, 91, 93, 95, 96, 97]);
+  var FOTO_XS_M = livres(79, [2, 10, 12, 25, 34, 45, 62, 6, 8, 20, 22, 23, 26, 27, 31, 35, 42, 52, 53, 56, 66, 67, 68, 69, 70, 71, 75, 9, 18, 21, 40, 44, 47, 48, 49, 54, 55, 57, 59, 60, 63, 72, 74, 78]);
+  var FOTO_XS_F = livres(79, [10, 19, 32, 55, 63, 71, 0, 2, 6, 11, 13, 18, 22, 23, 25, 27, 37, 38, 39, 44, 47, 51, 53, 60, 65, 67, 68, 72, 1, 4, 5, 12, 14, 15, 17, 20, 21, 24, 29, 30, 31, 33, 35, 40, 48, 49, 52, 54, 58, 59, 61, 64, 69, 70, 73, 74, 76, 77]);
+  function fotoPessoa(seed, g) {
+    var r = rng(hash("foto|" + seed)), ru = g === "F" ? FOTO_RU_F : FOTO_RU_M, xs = g === "F" ? FOTO_XS_F : FOTO_XS_M, k = Math.floor(r() * (ru.length + xs.length));
+    return k < ru.length ? "https://randomuser.me/api/portraits/" + (g === "F" ? "women" : "men") + "/" + ru[k] + ".jpg" : "https://xsgames.co/randomusers/assets/avatars/" + (g === "F" ? "female" : "male") + "/" + xs[k - ru.length] + ".jpg";
+  }
+  var BAIRROS_PF = ["Centro", "Vila Magini", "Jardim Zaíra", "Parque São Vicente", "Vila Assis", "Jardim Itapeva", "Matriz", "Jardim Primavera", "Parque das Américas", "Jardim Santista", "Vila Bocaina", "Jardim Rosina", "Santo André", "São Bernardo", "Diadema", "Ribeirão Pires"];
+  function perfilPessoa(seed, opt) {
+    opt = opt || {};
+    var r = rng(hash("pf|" + seed)), g = opt.genero || (r() < 0.52 ? "F" : "M");
+    var pn = pick(r, g === "F" ? PF_F : PF_M), sn = pick(r, PF_S), sn2 = pick(r, PF_S);
+    var nome = r() < 0.25 ? pn + " " + sn + " " + sn2 : pn + " " + sn;
+    var p1 = slug(pn.split(" ")[0]), s1 = slug(sn), n2 = entre(r, 1, 99), ano = entre(r, 62, 105) % 100;
+    var estilos = [p1 + "_" + s1, p1 + "." + s1, p1 + s1 + n2, p1 + "_" + (ano < 10 ? "0" : "") + ano, (g === "F" ? "a" : "o") + p1 + s1.slice(0, 4), p1 + "do" + slug(opt.bairro || "abc").slice(0, 6), "real" + p1, p1 + "_oficial", s1 + "_" + p1, p1 + "zinh" + (g === "F" ? "a" : "o")];
+    var handle = "@" + pick(r, estilos).slice(0, 15);
+    var oc = pick(r, PF_OC)[g === "F" ? 0 : 1], bairro = opt.bairro || pick(r, BAIRROS_PF);
+    return { nome: nome, handle: handle, genero: g, foto: fotoPessoa(seed, g), sub: (opt.papel ? uc1(opt.papel) + " · " : oc + " · ") + bairro + (opt.papel ? "" : pick(r, PF_EXTRA)), seg: entre(r, 60, r() < 0.12 ? 48000 : 3200) };
+  }
+  MID.perfilPessoa = perfilPessoa; MID.fotoPessoa = fotoPessoa;
   function contaCidadao(r, bairro) {
-    var n = pick(r, NOMES), s = pick(r, SOBRE);
-    var nome = n + " " + s;
-    return { nome: nome, handle: "@" + slug(n).slice(0, 8) + "_" + slug(bairro || "abc").slice(0, 8) + entre(r, 1, 99), tipo: "eleitor", sub: "Eleitor(a) · " + (bairro || "Grande ABC"), seg: entre(r, 80, 2400), selo: false };
+    var pf = perfilPessoa(Math.floor(r() * 1e9), { bairro: bairro });
+    return { nome: pf.nome, handle: pf.handle, tipo: "eleitor", sub: pf.sub, seg: pf.seg, selo: false, foto: pf.foto };
   }
 
   /* ------------------------------------------------------------------ leitura do estado do jogo */
@@ -535,6 +571,8 @@
   }
   function fotoConta(c) {
     if (c.tipo === "eu") return J_();
+    if (c.foto) return { nome: c.nome, foto: c.foto };
+    if (c.tipo === "eleitor" || c.tipo === "cidadao") return { nome: c.nome, foto: fotoPessoa(c.handle || c.nome, /a$|Dona|Cida|Rose|Kelly|Josi|Simone|Luana|Bruna|Márcia|Vânia|Jéssica|Patrícia|Cláudia/.test(String(c.nome).split(" ")[0]) ? "F" : "M") };
     if (c.tipo !== "politico" && c.tipo !== "influencer") return null;
     var n = npcs().find(function (k) { return k.nome === c.nome; });
     if (!n) return null;
@@ -708,17 +746,56 @@
       } catch (e) { console.warn("midia post", e); }
       return res;
     };
+    // a resposta do jogador segue o tom e o assunto do post (agradece apoio, acolhe cobrança, rebate ataque)
+    function acharPost(id) {
+      var st = estado(); if (!st) return null;
+      for (var k in st.eds) { var ps = (st.eds[k] && st.eds[k].posts) || []; for (var i = 0; i < ps.length; i++) if (ps[i].id === id) return ps[i]; }
+      return null;
+    }
+    var TEMAS_R = [[/sa[uú]de|hospital|ubs|m[eé]dic|vacina/i, "saúde"], [/escola|educa|creche|professor/i, "educação"], [/seguran|pol[ií]cia|crime|viol/i, "segurança"], [/[oô]nibus|transporte|tarifa|metr|trem/i, "transporte"],
+      [/imposto|fiscal|gasto|or[cç]amento|dinheiro p[uú]blico|conta/i, "contas públicas"], [/emprego|trabalho|sal[aá]rio|renda/i, "emprego"], [/militar|for[cç]as armadas|pens[aã]o|previd/i, "previdência"], [/moradia|casa|habita/i, "moradia"]];
+    function respostaPara(id) {
+      var p = acharPost(id), r = rng(hash(id + "r"));
+      var tx = p ? String(p.texto || "") : "", tom = p ? p.tom || "" : "", conta = (p && p.conta) || {};
+      var nome = conta.tipo === "midia" ? "" : String(conta.nome || "").split(" ")[0];
+      var tema = ""; TEMAS_R.some(function (t) { if (t[0].test(tx)) { tema = t[1]; return true; } return false; });
+      var apoio = tom === "apoio" || tom === "pos" || tom === "fav" || /apoio total|parab[eé]ns|isso a[ií]|tamo junto|finalmente|acertou|👏|boa,|mandou bem/i.test(tx);
+      var ataque = !apoio && (tom === "ataque" || tom === "neg" || /vergonha|absurdo|populista|mentir|golpe|ditad|desastre|ataque/i.test(tx));
+      var pergunta = /\?/.test(tx) || tom === "cobranca";
+      var bairro = (String(conta.sub || "").match(/· ([^·]+?)(?: ·|$)/) || [])[1] || "";
+      var v = nome ? nome + ", " : "", l, toast;
+      if (apoio) {
+        l = ["Valeu, " + (nome || "pessoal") + "! É exatamente isso: " + (tema ? tema + " em primeiro lugar." : "prioridade para quem mais precisa."), "Obrigado pelo apoio, " + (nome || "de verdade") + "! Ajuda a divulgar, que a turma do contra já está espalhando mentira.",
+          (nome ? nome + ", " : "") + "tamo junto! " + (tema ? "Na " + tema + " não dá para recuar." : "Agora é acompanhar e cobrar a execução."), "Isso mesmo! Quem paga a conta tem que ver o resultado na ponta. Obrigado pela força 🙏"];
+        toast = "Você agradeceu o apoio e reforçou a mensagem. A base gostou.";
+      } else if (ataque) {
+        l = [v + "com respeito: os números estão no portal da transparência. Leia antes de compartilhar.", "Crítica é bem-vinda; distorção, não. " + (tema ? "Na " + tema + ", o que fizemos está publicado." : "Os fatos estão publicados."),
+          v + "a gente responde com trabalho. Daqui a seis meses a gente conversa de novo.", "Engraçado: quando era a sua turma no poder, ninguém reclamava. " + (tema ? "A " + tema + " melhorou, e isso incomoda." : "")];
+        toast = "Você rebateu a crítica publicamente.";
+      } else if (pergunta) {
+        l = [v + "boa pergunta. " + (tema ? "Sobre " + tema + ": " : "") + "a equipe vai te responder no direct com os detalhes.", v + (bairro ? "a gente vai passar no " + bairro.trim() + " para ver isso de perto." : "vamos ver isso de perto e te dou retorno."),
+          v + "anotado. Cobrança justa a gente não ignora.", v + "é exatamente para resolver isso que estamos trabalhando. Me chama no gabinete."];
+        toast = "Você respondeu à cobrança. Eleitores gostam de ser ouvidos.";
+      } else if (tom === "noticia") {
+        l = ["Obrigado pela cobertura. Os detalhes completos estão no site oficial.", "Para quem quiser entender melhor, fio com os principais pontos 👇", "Matéria correta. Seguimos firmes."];
+        toast = "Você comentou a notícia e pautou a discussão.";
+      } else {
+        l = [v + "o ajuste é necessário, mas está tudo explicado nas regras. " + (tema ? "A " + tema + " não fica de fora." : ""), v + "entendo a preocupação. Abri um canal para ouvir sugestões.", v + "ponto justo. Vamos acompanhar os efeitos e corrigir o que for preciso.", "Obrigado por debater com respeito" + (nome ? ", " + nome : "") + ". É assim que se constrói."];
+        toast = "Você respondeu com equilíbrio e ampliou o debate.";
+      }
+      return { tx: pick(r, l).replace(/\s+$/, ""), toast: toast };
+    }
     function marca(nomeA, campo, testa) {
       var orig = A[nomeA]; if (!orig) return;
       A[nomeA] = function (id) {
-        var e0 = energia(), c0 = caixa();
-        var res = orig.apply(this, arguments);
+        var e0 = energia(), c0 = caixa(), rp = null;
+        if (campo === "resp") { rp = ok(function () { return respostaPara(id); }, null); window.__v3mRespToast = rp && rp.toast; }
+        var res; try { res = orig.apply(this, arguments); } finally { window.__v3mRespToast = null; }
         try {
           if (energia() !== e0 || caixa() !== c0 || (testa && testa())) {
             var st = estado(); st.acoes[id] = st.acoes[id] || {}; st.acoes[id][campo] = true;
             if (campo === "resp") {
-              var r = rng(hash(id + "r"));
-              st.acoes[id].respTx = pick(r, ["Com respeito: os fatos mostram outra coisa. Estou à disposição para debater.", "Quem conhece o nosso trabalho sabe a verdade. Seguimos!", "Fake news não vai colar. Os dados estão no portal da transparência.", "Agradeço a crítica. Vamos conversar pessoalmente?"]);
+              st.acoes[id].respTx = rp ? rp.tx : "Obrigado pelo comentário.";
             }
           }
         } catch (e) {}
