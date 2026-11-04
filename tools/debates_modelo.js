@@ -19,6 +19,7 @@
   if (window.V3DEB) return;
   var IMG = __IMAGENS__;
   var DB = (window.V3DEB = {});
+  DB.IMG = IMG; // reaproveitado pela transmissão da apuração (mediadores e logos)
   function esc_(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function ok(f, d) { try { var v = f(); return v === undefined ? d : v; } catch (e) { return d; } }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
