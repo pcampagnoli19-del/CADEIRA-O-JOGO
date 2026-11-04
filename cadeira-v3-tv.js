@@ -519,6 +519,7 @@
     var el = document.getElementById("v3tv");
     var ap = document.getElementById("apurMapa");
     if (!ap) { if (el) el.remove(); st.aberto = false; return; }
+    if (municipal()) { if (el) el.remove(); return; } // eleição municipal: a cobertura é do Diário do Grande ABC (cadeira-v3-dgabc.js)
     if (!ap.querySelector(".tv-voltar")) { var b = document.createElement("button"); b.className = "tv-voltar"; b.type = "button"; b.setAttribute("data-tv", "voltar"); b.textContent = "📺 Ver na TV"; ap.appendChild(b); }
     if (st.oculto) { if (el) el.remove(); return; }
     if (!el) { el = document.createElement("div"); el.id = "v3tv"; document.body.appendChild(el); }
@@ -540,7 +541,7 @@
   TV.st = st;
   function loop() {
     var ap = document.getElementById("apurMapa");
-    if (ap && !st.aberto) {
+    if (ap && !st.aberto && !municipal()) {
       st.aberto = true; st.oculto = false; st.canal = null; st.uf = null; st.cena = null; st.fila = []; st.senNovos = []; st.seguidos = 0; st.anunc = {}; st.regI = 0; st.rot = 0; st.vbK = null;
       // segura a apuração enquanto o jogador escolhe o canal
       ok(function () { var AP_ = A().AP; if (AP_.pct < 1) AP_.play = false; });
