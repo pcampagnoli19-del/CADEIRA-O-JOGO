@@ -31,7 +31,7 @@
   var DESC_SECAO = {
     mes: "O que decidir agora", eu: "Sua ficha e trajetória", mang: "O que saiu na imprensa", cela: "Você está preso",
     camp: "Cargo-alvo, caixa e pesquisas", marqueteiro: "Estratégia e propaganda", mapa: "Territórios e tráfego", ele: "Disputas e resultados",
-    partido: "Painel do partido", poder: "Executivo e pastas", mob: "Mapa da rede, linhas, estações e obras de transporte", obras: "Obras, equipamentos e programas no mapa do território, por área",
+    partido: "Painel do partido", poder: "Executivo e pastas", mob: "Mapa da rede, linhas, estações e obras de transporte", obras: "Obras, equipamentos e programas no mapa do território, por área", atos: "Discursos, projetos, decretos e MPs escritos por você e avaliados por IA",
     cong: "Plenário e votações", artic: "Bancadas e acordos", jur: "Processos e defesa",
     inf: "Figuras e movimentos", todos: "Todos os personagens", imp: "Relações com veículos, notas e campanhas editoriais", sub: "O lado sombrio",
     pasta: "Sua secretaria ou ministério: indicadores, despachos, equipe e chefe", pre: "Quem está ganhando força para ser candidato(a) em cada partido", jornal: "O que a imprensa publicou sobre você e o país", feed: "O que estão dizendo e o que você responde"
