@@ -29,7 +29,7 @@
     ],
     poder: [
       ["Seu mandato", "O que está nas suas mãos", /cargo|Minhas leis|Gabinete pessoal|Articular uma pasta|Pasta|Despacho/i],
-      ["Obras e programas", "Entregas para a população", /Obras|Programas/i],
+      ["Obras e programas", "Entregas para a população e memória das gestões", /Obras|Programas|Mobilidade|Memória|Rede metropolitana/i],
       ["Brasil e mundo", "Economia, estatais, Congresso e diplomacia", /Exteriores|macroecon|estatais|Anatomia|Congresso|Diplomac/i]
     ],
     jur: [

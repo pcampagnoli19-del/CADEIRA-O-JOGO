@@ -1,0 +1,53 @@
+/* ===== Rede metropolitana de trilhos ===== */
+.v3t-res{font-size:.85rem;margin:4px 0 8px}
+.v3t-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.v3t-bar button{font:inherit;font-size:.78rem;padding:5px 9px;border-radius:7px;border:1px solid var(--linha,#33415566);background:transparent;color:inherit;cursor:pointer}
+.v3t-bar label{font-size:.78rem;display:inline-flex;gap:4px;align-items:center;margin-left:4px}
+.v3t-mapa{border-radius:10px;overflow:hidden;background:#f4f1ea;border:1px solid var(--linha,#33415566);touch-action:none}
+.v3t-svg{display:block;width:100%;height:auto;max-height:72vh;aspect-ratio:1000/823;cursor:grab;user-select:none}
+.v3t-svg:active{cursor:grabbing}
+.v3t-tr .v3t-hit{stroke:transparent;stroke-width:16;fill:none;cursor:pointer;vector-effect:non-scaling-stroke}
+.v3t-ln{fill:none;stroke:var(--c);stroke-width:4.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.v3t-tr.modo-regional .v3t-ln{stroke-width:3.4}
+.v3t-tr.modo-brt .v3t-ln{stroke-width:3;stroke-dasharray:1 5}
+.v3t-tr.st-planejado .v3t-proj{stroke-width:2.6;stroke-dasharray:5 6;opacity:.55}
+.v3t-tr.st-aprovacao .v3t-proj{stroke-width:3.4;stroke-dasharray:8 5;opacity:.9}
+.v3t-tr.st-cancelado .v3t-proj{stroke:#9ca3af;stroke-width:2;stroke-dasharray:1 6;opacity:.7}
+.v3t-tr.st-obras .v3t-proj,.v3t-tr.st-parado .v3t-proj{stroke-width:4.6;stroke-dasharray:3 4;opacity:.45}
+.v3t-tr .v3t-feito{stroke-linecap:butt}
+.v3t-tr.st-obras .v3t-feito{animation:v3tobra 1.6s ease-in-out infinite}
+.v3t-tr.st-parado .v3t-feito{stroke:#b45309}
+@keyframes v3tobra{50%{opacity:.6}}
+.v3t-tr.sel .v3t-ln{stroke-width:7.5}
+.v3t-stub{stroke-dasharray:4 4 !important}
+.v3t-stubt{font-size:calc(var(--fs) * 1.05);font-weight:700;fill:#374151}
+.v3t-melhoria{fill:none;stroke:#facc15;stroke-width:9;opacity:.45;stroke-linecap:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.v3t-melhoria.st-obras,.v3t-melhoria.st-aprovacao,.v3t-melhoria.st-parado{stroke-dasharray:6 6;animation:v3tobra 1.6s infinite}
+.v3t-melhoria.st-operacao{stroke:#22c55e;opacity:.35}
+.v3t-est circle{fill:#fff;stroke:#1f2937;stroke-width:1.4;vector-effect:non-scaling-stroke}
+.v3t-est.int circle{stroke-width:2.2}
+.v3t-est.st-planejado circle,.v3t-est.st-aprovacao circle{fill:#f4f1ea;stroke-dasharray:2 2;opacity:.75}
+.v3t-est.st-obras circle,.v3t-est.st-parado circle{fill:#fde68a}
+.v3t-est.st-cancelado{opacity:.4}
+.v3t-est text{font-size:var(--fs);fill:#1f2937;paint-order:stroke;stroke:#f4f1ea;stroke-width:calc(var(--fs) * .25);display:none;pointer-events:none}
+.v3t-est.pri text{display:block;font-weight:700}
+.v3t-svg.z1 .v3t-est text{display:block}
+.v3t-eq{fill:#2563eb;stroke:#fff;stroke-width:1;vector-effect:non-scaling-stroke}.v3t-eq.st-obras{fill:#f59e0b}
+.v3t-leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.74rem;margin:8px 0;opacity:.85}
+.v3t-leg span{display:inline-flex;align-items:center;gap:5px}
+.v3t-leg .lg{display:inline-block;width:22px;height:0;border-top:4px solid #475569}
+.v3t-leg .op{border-top-style:solid}.v3t-leg .ob{border-top:4px dashed #2563eb}.v3t-leg .pa{border-top:4px dashed #b45309}.v3t-leg .ap{border-top:3px dashed #475569}.v3t-leg .pl{border-top:2px dashed #94a3b8}.v3t-leg .ca{border-top:2px dotted #9ca3af}.v3t-leg .mo{border-top:6px solid rgba(250,204,21,.6)}
+.v3t-chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.v3t-chips button{font:inherit;font-size:.74rem;display:inline-flex;gap:5px;align-items:center;padding:3px 8px 3px 3px;border-radius:99px;border:1px solid var(--linha,#33415566);background:transparent;color:inherit;cursor:pointer}
+.v3t-chips button b{background:var(--c);color:#fff;border-radius:99px;min-width:22px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;padding:0 5px}
+.v3t-chips button.novo b{background:transparent;color:var(--c);border:2px dashed var(--c)}
+.v3t-chips button.on{border-color:var(--c);box-shadow:0 0 0 2px var(--c)}
+.v3t-painel{margin-top:6px}
+.v3t-dica{font-size:.8rem;opacity:.75}
+.v3t-pl{border-left:6px solid var(--c);padding:4px 10px;margin-bottom:8px}.v3t-pl b{display:block;font-size:1.05rem}.v3t-pl small{opacity:.75}
+.v3t-trecho{border:1px solid var(--linha,#33415566);border-radius:8px;padding:8px;margin-bottom:6px}
+.v3t-trecho > small{display:block;opacity:.75;font-size:.76rem;margin-top:3px}
+.v3t-st{font-style:normal;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:99px;color:#fff;background:#64748b}
+.v3t-st.st-operacao{background:#15803d}.v3t-st.st-obras{background:#2563eb}.v3t-st.st-parado{background:#b45309}.v3t-st.st-aprovacao{background:#7c3aed}.v3t-st.st-cancelado{background:#991b1b}
+.v3t-obra{margin-top:6px;padding:6px 8px;border-radius:6px;background:rgba(127,127,127,.08)}
+.v3t-obra b{display:block;font-size:.85rem}.v3t-obra small{opacity:.7;font-size:.74rem}.v3t-obra p{margin:3px 0;font-size:.8rem}

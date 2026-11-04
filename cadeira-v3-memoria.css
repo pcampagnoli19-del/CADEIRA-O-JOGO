@@ -1,0 +1,26 @@
+/* ===== Memória administrativa ===== */
+.v3m-nota{font-size:.78rem;opacity:.75;font-weight:400}
+.v3m-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.v3m-tabs button{font:inherit;font-size:.82rem;padding:6px 10px;border-radius:8px;border:1px solid var(--linha,#33415566);background:transparent;color:inherit;cursor:pointer}
+.v3m-tabs button.on{background:var(--v3-azul,#2f6fe0);border-color:transparent;color:#fff}
+.v3m-cab b{display:block;font-size:1.05rem}.v3m-cab small{opacity:.75}
+.v3m-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin:10px 0}
+.v3m-kpi div{border:1px solid var(--linha,#33415566);border-radius:8px;padding:6px 8px}
+.v3m-kpi b{display:block;font-size:1.15rem}.v3m-kpi small{opacity:.75;font-size:.72rem}
+.v3m h4{margin:14px 0 6px}.v3m h4 small{opacity:.6;font-weight:400}
+.v3m-gest{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.v3m-gest li{display:grid;grid-template-columns:90px 1fr;gap:0 8px;padding:5px 8px;border-left:3px solid var(--linha,#475569);font-size:.85rem}
+.v3m-gest li.eu{border-left-color:#facc15}
+.v3m-gest li span{grid-row:span 2;opacity:.7;font-variant-numeric:tabular-nums}.v3m-gest li small{opacity:.7}
+.v3m-obra{border:1px solid var(--linha,#33415566);border-radius:8px;margin-bottom:6px;padding:6px 8px}
+.v3m-obra summary{display:flex;gap:8px;align-items:flex-start;cursor:pointer;list-style:none}
+.v3m-obra summary::-webkit-details-marker{display:none}
+.v3m-t{flex:1;min-width:0}.v3m-t b{display:block}.v3m-t small{opacity:.72;font-size:.76rem}
+.v3m-st{font-style:normal;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap;background:#475569;color:#fff}
+.v3m-st.ok{background:#15803d}.v3m-st.and{background:#2563eb}.v3m-st.par{background:#b45309}.v3m-st.pla{background:#64748b}.v3m-st.int{background:#991b1b}
+.v3m-bar{height:5px;border-radius:3px;background:rgba(127,127,127,.25);margin:6px 0}.v3m-bar i{display:block;height:100%;border-radius:3px;background:#2563eb}
+.v3m-meta{margin:4px 0;font-size:.78rem;opacity:.8}
+.v3m-ev{list-style:none;margin:4px 0 0;padding:0;font-size:.78rem}
+.v3m-ev li{display:flex;gap:8px;padding:2px 0;border-top:1px dashed var(--linha,#33415544)}.v3m-ev span{opacity:.6;min-width:58px}
+.v3m-prog{list-style:none;margin:0;padding:0;display:grid;gap:4px}.v3m-prog li small{display:block;opacity:.7;font-size:.76rem}
+.v3m-traj{display:grid;gap:6px}.v3m-traj div{padding:6px 8px;border-radius:8px;background:rgba(250,204,21,.1);border-left:3px solid #facc15}.v3m-traj small{display:block;opacity:.8}
