@@ -50832,6 +50832,21 @@ body.v3d-aberto{overflow:hidden}
 .v3d-cal li b{display:block}.v3d-cal li small{opacity:.8}
 .v3d-cal li.feito{opacity:.85}.v3d-cal li.ausente{opacity:.6}.v3d-cal li.hoje{border-color:#f59e0b}
 @media (max-width:560px){.v3d-pulp{width:72px}.v3d-foto{width:38px;height:38px}.v3d-fala{font-size:.95rem}.v3d-barra{grid-template-columns:90px 1fr 40px}}
+/* pré-debate */
+.v3d-abert{display:flex;flex-direction:column;align-items:center;gap:8px;padding:34px 12px;text-align:center;background:radial-gradient(circle at 50% 40%,var(--c2) 0%,transparent 55%),linear-gradient(135deg,var(--c1),rgba(0,0,0,.7));border-radius:14px;overflow:hidden;position:relative}
+.v3d-abert::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 20%,rgba(255,255,255,.12) 25%,transparent 30% 70%,rgba(255,255,255,.1) 75%,transparent 80%);animation:v3dgira 6s linear infinite}
+@keyframes v3dgira{to{transform:rotate(360deg)}}
+.v3d-abert img{position:relative;height:64px;width:auto;max-width:180px;background:#fff;border-radius:10px;padding:6px 10px;animation:v3dzoom 1.2s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes v3dzoom{from{transform:scale(.3);opacity:0}}
+.v3d-abert b{position:relative;font-family:Fraunces,serif;font-size:1.6rem;letter-spacing:.05em;animation:v3dsobe .8s .4s ease both}
+.v3d-abert small{position:relative;text-transform:uppercase;letter-spacing:.12em;opacity:.9;animation:v3dsobe .8s .7s ease both}
+.v3d-abert span{position:relative;background:#dc2626;font-weight:800;font-size:.75rem;padding:3px 10px;border-radius:4px;animation:v3dpisca 1.6s 1s infinite}
+.v3d-pq{background:rgba(0,0,0,.55);border-radius:10px;padding:8px 10px;margin:6px 0}.v3d-pq > small{opacity:.8;font-size:.74rem}
+.v3d-chega{display:flex;align-items:center;gap:12px;margin:10px 0;padding:10px;border-radius:12px;background:rgba(0,0,0,.45);animation:v3dentra .6s ease}
+@keyframes v3dentra{from{transform:translateX(-30px);opacity:0}}
+.v3d-chega .v3d-foto{width:64px;height:64px}.v3d-chega b{display:block;font-size:1.1rem}
+.v3d-gc.rep{border-left-color:#f59e0b}
+.v3d-trans{letter-spacing:.2em;animation:v3dpisca 1.2s infinite}
 
 </style>
 <style id="cadeira-v3-layout">
@@ -51011,6 +51026,23 @@ body.v3d-aberto{overflow:hidden}
 .tv-band .tv-pl-uf{color:#ffd400}
 @media (max-width:1100px){.tv-meio,.tv-band .tv-meio{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:'palco telao' 'banc banc'}.tv-bancada{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
 @media (max-width:820px){.tv-meio,.tv-band .tv-meio,.tv-cnn .tv-meio,.tv-mun .tv-meio,.tv-band.tv-mun .tv-meio,.tv-cnn.tv-mun .tv-meio{grid-template-columns:minmax(0,1fr);grid-template-areas:'banc' 'palco' 'telao'}.tv-palco{max-width:440px;width:100%;justify-self:center}.tv-chips{max-height:none}.tv-ctrl{position:sticky;bottom:0}}
+/* --- abertura e pós-apuração --- */
+.tv-equipe{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:8px}
+.tv-equipe span{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:8px 6px;border-radius:10px;background:rgba(0,0,0,.18);animation:tvsobe .5s ease both}
+.tv-equipe span:nth-child(2){animation-delay:.1s}.tv-equipe span:nth-child(3){animation-delay:.2s}.tv-equipe span:nth-child(4){animation-delay:.3s}.tv-equipe span:nth-child(5){animation-delay:.4s}.tv-equipe span:nth-child(6){animation-delay:.5s}
+.tv-equipe img{width:54px;height:54px;border-radius:50%;object-fit:cover}.tv-equipe b{font-size:.82rem}.tv-equipe small{font-size:.68rem;opacity:.75}
+.tv-equipe.mini img{width:40px;height:40px}
+.tv-lista-it{margin:6px 0;padding-left:20px;line-height:1.7}
+.tv-pq{display:grid;grid-template-columns:minmax(120px,1.2fr) 2fr 52px;gap:8px;align-items:center;margin:4px 0;font-size:.86rem}.tv-pq i{display:block;height:10px;border-radius:5px}.tv-pq b{text-align:right}
+.tv-relogio{display:flex;flex-direction:column;align-items:center;padding:26px 10px;border-radius:14px;background:rgba(0,0,0,.35);text-align:center}
+.tv-relogio small{text-transform:uppercase;letter-spacing:.12em;opacity:.8}.tv-relogio b{font-size:4rem;font-variant-numeric:tabular-nums;line-height:1.1;animation:tvpisca 1s steps(2) infinite}.tv-relogio span{font-weight:800;letter-spacing:.1em}
+.tv-relogio.fim b{animation:none}.tv-relogio.fim span{font-size:1.5rem;color:#fbbf24;animation:tvsobe .6s ease}
+.tv-globo .tv-relogio{background:rgba(11,61,145,.12)}
+.tv-apoios{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.tv-apoios li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:7px 10px;border-radius:8px;background:rgba(0,0,0,.2);border-left:4px solid #64748b}
+.tv-apoios li.apoia{border-left-color:#16a34a}.tv-apoios li.conversar,.tv-apoios li.depois{border-left-color:#d97706}
+.tv-apoios li small{grid-column:1;opacity:.75}.tv-apoios li span{grid-row:span 2;align-self:center;font-weight:700;font-size:.85rem}
+.tv-globo .tv-apoios li{background:rgba(11,61,145,.08)}
 
 </style>
 <style id="cadeira-v3-dgabc">
@@ -51131,6 +51163,13 @@ body.v3d-aberto{overflow:hidden}
 .dg-voltar{position:absolute;right:14px;bottom:70px;z-index:5;background:#0d2c5e;color:#fff;border:0;border-bottom:3px solid #c8102e;padding:8px 14px;font-weight:700;cursor:pointer}
 @media (max-width:1100px){.dg-meio{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);grid-template-areas:'palco telao' 'banc banc'}.dg-bancada{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
 @media (max-width:820px){.dg-meio{grid-template-columns:minmax(0,1fr);grid-template-areas:'banc' 'palco' 'telao';padding:10px}.dg-palco{max-width:440px;width:100%;justify-self:center}.dg-urnas{min-width:0;text-align:left;width:100%}.dg-marca img{height:32px}.dg-capa h2{font-size:1.7rem}.dg-ctrl{position:sticky;bottom:0}.dg-tab{font-size:.76rem}.dg-tab th,.dg-tab td{padding:4px 3px}}
+/* abertura e pós */
+.dg-equipe{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:8px}
+.dg-equipe span{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:8px 6px;background:#fff;border:1px solid var(--dg-lin);border-top:3px solid var(--dg-ver)}
+.dg-equipe img{width:56px;height:56px;border-radius:50%;object-fit:cover}.dg-equipe b{font-size:.8rem;color:var(--dg-az)}.dg-equipe small{font-size:.66rem;color:var(--dg-cin)}
+.dg-relogio{display:flex;flex-direction:column;align-items:center;padding:24px 10px;background:#fff;border:1px solid var(--dg-lin);border-top:4px solid var(--dg-ver);text-align:center}
+.dg-relogio small{text-transform:uppercase;letter-spacing:.12em;color:var(--dg-cin)}.dg-relogio b{font-family:Fraunces,Georgia,serif;font-size:3.6rem;color:var(--dg-az);line-height:1.1}.dg-relogio span{font-weight:800;letter-spacing:.1em;color:var(--dg-ver)}
+.dg-relogio.fim span{font-size:1.4rem}
 
 </style>
 <style id="cadeira-v3-memoria">
@@ -51334,6 +51373,27 @@ body.v3d-aberto{overflow:hidden}
 .v3o-acoes .v3o-ok{background:#15803d;border-color:#15803d;color:#fff}
 .v3o-cer-box .v3o-nota{color:#6b7280;opacity:1}
 @media (max-width:640px){.v3o-hero{padding:12px 14px}.v3o-hero h2{font-size:1.2rem}.v3o-hero p{font-size:.82rem}.v3o-hkpi{grid-template-columns:repeat(2,1fr);width:100%}.v3o-hkpi b{font-size:1.05rem}.v3o-cats button{font-size:.74rem;padding:5px 8px}.v3o-cer-box{padding:14px}}
+
+</style>
+<style id="cadeira-v3-cobertura">
+/* ===== Entrevista ao vivo (TV e Diário) ===== */
+#v3cob-ent{position:fixed;inset:0;z-index:2147480005}
+.v3cob-ov{position:absolute;inset:0;background:rgba(3,6,12,.72);display:flex;align-items:flex-end;justify-content:center;padding:14px;overflow-y:auto}
+.v3cob-box{width:min(760px,100%);background:#0f172a;color:#f8fafc;border-radius:16px 16px 12px 12px;border-top:5px solid #dc2626;box-shadow:0 30px 80px rgba(0,0,0,.6);padding:16px 18px;animation:v3cobsobe .4s ease;max-height:calc(100vh - 28px);overflow-y:auto}
+@keyframes v3cobsobe{from{transform:translateY(30px);opacity:0}}
+.v3cob-box.tv-globo{border-top-color:#1e88e5}.v3cob-box.tv-cnn{border-top-color:#cc0000;background:#0a0a0a}.v3cob-box.tv-band{border-top-color:#ffd400;background:#0a1a4a}.v3cob-box.dg{background:#fbfaf6;color:#1a1f2b;border-top-color:#c8102e}
+.v3cob-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}.v3cob-top img{height:30px;width:auto;max-width:90px;background:#fff;border-radius:5px;padding:2px 5px}
+.v3cob-top b{display:block}.v3cob-top small{opacity:.75;font-size:.75rem}.v3cob-top div{flex:1}
+.v3cob-vivo{background:#dc2626;color:#fff;font-size:.68rem;font-weight:800;padding:3px 8px;border-radius:3px;letter-spacing:.08em}
+.v3cob-rep{display:flex;align-items:center;gap:8px;margin-bottom:6px}.v3cob-rep img{width:42px;height:42px;border-radius:50%;object-fit:cover}.v3cob-rep b{display:block;font-size:.9rem}.v3cob-rep small{opacity:.75;font-size:.72rem}
+.v3cob-q{font-size:1.08rem;line-height:1.45;margin:6px 0 12px;font-weight:600}
+.v3cob-ops{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.v3cob-ops button{font:inherit;text-align:left;padding:10px;border-radius:10px;border:1px solid rgba(148,163,184,.4);background:rgba(255,255,255,.06);color:inherit;cursor:pointer}
+.v3cob-ops button:hover{border-color:#fbbf24}.v3cob-ops b{display:block}.v3cob-ops small{opacity:.8;font-size:.8rem}
+.v3cob-box.dg .v3cob-ops button{background:#fff;border-color:#d9dde5}
+.v3cob-r{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.08);line-height:1.45}.v3cob-box.dg .v3cob-r{background:#eef2f8}
+.v3cob-ok,.v3cob-sem{font:inherit;font-weight:700;margin-top:12px;padding:8px 14px;border-radius:9px;border:1px solid rgba(148,163,184,.5);background:transparent;color:inherit;cursor:pointer}
+.v3cob-ok{background:#16a34a;border-color:#16a34a;color:#fff}
 
 </style>
 <script>
@@ -55391,6 +55451,347 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
 })();
 
 </script>
+<script id="cadeira-v3-cobertura-js">
+/* =============================================================================
+   CADEIRA v3 — Cobertura eleitoral: pesquisas da abertura, entrevistas e apoios
+   Peças usadas pelas transmissões (debates, TV nacional e Diário do Grande ABC):
+   - pesquisas para as aberturas (as publicadas no jogo quando é a corrida do
+     jogador; senão, a pesquisa de véspera de um instituto, próxima do 1º turno);
+   - apoios no 2º turno: ao fim do 1º turno, cada candidato eliminado decide
+     (apoia um finalista, vai conversar com o partido, anuncia depois, fica
+     neutro ou libera os eleitores). O apoio soma pontos ao finalista no 2º
+     turno (pontuação que o motor usa em apurarSegundoTurno). Decisões
+     pendentes se resolvem nas semanas seguintes. O jogador eliminado decide o
+     próprio apoio; o jogador finalista pode pedir apoio (card na Campanha);
+   - entrevistas: perguntas contextualizadas ao jogador (debate e pós-apuração)
+     com consequências em popularidade, escândalo, relações, partido e notícias;
+     falas dos NPCs coerentes com partido, estilo e resultado.
+   Dados: M().v3apoio = { lista: [...] }
+   ============================================================================= */
+(function () {
+  "use strict";
+  if (window.V3COB) return;
+  var CB = (window.V3COB = {});
+  function esc_(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function ok(f, d) { try { var v = f(); return v === undefined ? d : v; } catch (e) { return d; } }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function hash(s) { var h = 2166136261; s = String(s); for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function pick(a, seed) { return a[(seed == null ? Math.floor(Math.random() * a.length) : hash(seed) % a.length)]; }
+  function npc(id) { return ok(function () { return bancoDeNPCs.find(function (n) { return n.id === id; }); }, null); }
+  function npcNome(nome) { return ok(function () { return bancoDeNPCs.find(function (n) { return n.nome === nome; }); }, null); }
+  function limpa(n) { return String(n || "").replace(/\s*\((vice|suplentes?):.*$/i, "").trim(); }
+  function lado(p) { var e = ok(function () { return (PARTIDOS[normPartido(p)] || PARTIDOS[p] || {}).e; }, "C"); return e || "C"; }
+  function sigla(p) { var x = ok(function () { return normPartido(p); }, p) || p; return x === "Sem Partido" ? "sem partido" : x; }
+  function nota(t, tipo) { ok(function () { manchete(t, tipo || "eleicao"); }); }
+  function fem(o) { if (!o) return false; if (o.jogador || o.id === "JOGADOR") return ok(function () { return J().sexo === "F"; }, false); var n = npc(o.id) || npcNome(o.nome); return !!(n && n.sexo === "F"); }
+  function oa(o, m, f) { return fem(o) ? f : m; }
+  var NOME_C = { PRES: "Presidência da República", GOV: "Governo de São Paulo", PREF: "Prefeitura de Mauá", SEN: "Senado", DEPF: "Câmara dos Deputados", DEPE: "Assembleia Legislativa", VER: "Câmara de Mauá" };
+  CB.NOME_C = NOME_C;
+
+  /* ================================================================ pesquisas para as aberturas */
+  var INST = ["Datafolha", "Quaest", "AtlasIntel", "Ipec", "Paraná Pesquisas"];
+  // lista: [{id, nome, partido, share}] (1º turno). Devolve { instituto, margem, itens:[{nome, partido, pct}] }
+  CB.pesquisa = function (cargo, lista, chave) {
+    var meu = ok(function () { return cargoIdPorNome(J().campanha.cargo_alvo); }, null);
+    if (meu === cargo) {
+      var pub = ok(function () { return pesquisasPublicas(); }, []);
+      if (pub && pub[0] && pub[0].lista) return { instituto: pub[0].ins.nome, margem: pub[0].ins.margem, itens: pub[0].lista.slice(0, 6).map(function (y) { return { nome: y.jogador ? ok(function () { return J().nome; }, y.nome) : limpa(y.nome), partido: y.partido, pct: y.share || y.pct || 0, jogador: !!y.jogador }; }) };
+    }
+    var ins = pick(INST, (chave || cargo) + "|ins"), mg = 2 + (hash(ins) % 3);
+    var it = (lista || []).slice().sort(function (a, b) { return (b.share || 0) - (a.share || 0); }).slice(0, 6).map(function (c) {
+      var r = ((hash(c.id + "|" + chave) % 1000) / 1000 - 0.5) * 2 * (mg + 1.5);
+      return { nome: limpa(c.nome), partido: c.partido, pct: Math.max(0.5, (c.share || 0) + r), jogador: !!c.jogador || c.id === "JOGADOR" };
+    });
+    var tot = it.reduce(function (s, x) { return s + x.pct; }, 0) || 1, br = 100 - (6 + hash(chave + "br") % 6);
+    it.forEach(function (x) { x.pct = x.pct / tot * br; });
+    return { instituto: ins, margem: mg, itens: it.sort(function (a, b) { return b.pct - a.pct; }), brancos: 100 - br };
+  };
+
+  /* ================================================================ apoios no 2º turno */
+  function st() { var m = ok(function () { return M(); }, null); if (!m) return null; if (!m.v3apoio) m.v3apoio = { lista: [] }; return m.v3apoio; }
+  function ano() { return ok(function () { return dt().ano; }, 0); }
+  function segundos() { return ok(function () { var E = M().eleicao; return (E.segundos && E.segundos.length ? E.segundos : (E.segundo_turno ? [E.segundo_turno] : [])); }, []); }
+  CB.segundos = segundos;
+  var ROT = { apoia: "declarou apoio a", conversar: "vai conversar com o partido antes de decidir", depois: "vai anunciar a posição nos próximos dias", neutro: "ficou neutro", libera: "liberou os eleitores", nenhum: "não apoia nenhum dos dois", pendente: "ainda não se posicionou" };
+  CB.ROT = ROT;
+  function bonusDe(rec) { return rec.decisao === "apoia" ? Math.max(0.6, (rec.share || 3) * 0.14) : 0; }
+  function aplicar(rec, stt) {
+    if (rec.decisao !== "apoia" || rec.aplicado) return;
+    rec.aplicado = true;
+    var c = (stt.candidatos || []).filter(function (x) { return (x.id && x.id === rec.para.id) || x.nome === rec.para.nome; })[0];
+    if (c && !c.jogador) c.score = (c.score || 0) + bonusDe(rec);
+    var n = npc(rec.quem.id); if (n && rec.para.id) n.apoia_id = rec.para.id;
+  }
+  // decisão de um NPC eliminado, coerente com ideologia, partido e relação com o jogador
+  function decidir(el, stt, forcar) {
+    var a = stt.candidatos[0], b = stt.candidatos[1]; if (!a || !b) return { decisao: "neutro" };
+    var le = lado(el.partido), pa = a.jogador ? ok(function () { return J().partido_atual; }, "") : a.partido || ok(function () { return (npc(a.id) || {}).partidoBase; }, ""), pb = b.jogador ? ok(function () { return J().partido_atual; }, "") : b.partido || ok(function () { return (npc(b.id) || {}).partidoBase; }, "");
+    var la = lado(pa), lb = lado(pb), n = npc(el.id), rel = n ? (n.relacao_com_jogador || 0) : 0;
+    var sa = (la === le ? 3 : la === "C" || le === "C" ? 1 : -2) + (sigla(pa) === sigla(el.partido) ? 4 : 0) + (a.jogador ? rel / 25 : 0);
+    var sb = (lb === le ? 3 : lb === "C" || le === "C" ? 1 : -2) + (sigla(pb) === sigla(el.partido) ? 4 : 0) + (b.jogador ? rel / 25 : 0);
+    var best = sa >= sb ? a : b, dif = Math.abs(sa - sb), r = Math.random();
+    if (forcar) return dif >= 2 ? (r < 0.75 ? { decisao: "apoia", para: best } : { decisao: "libera" }) : r < 0.4 ? { decisao: "apoia", para: best } : r < 0.75 ? { decisao: "neutro" } : { decisao: "libera" };
+    if (dif >= 3) return r < 0.62 ? { decisao: "apoia", para: best } : r < 0.82 ? { decisao: "conversar" } : { decisao: "depois" };
+    if (dif >= 1) return r < 0.4 ? { decisao: "apoia", para: best } : r < 0.65 ? { decisao: "conversar" } : r < 0.85 ? { decisao: "depois" } : { decisao: "libera" };
+    return r < 0.3 ? { decisao: "neutro" } : r < 0.55 ? { decisao: "libera" } : r < 0.8 ? { decisao: "conversar" } : { decisao: "nenhum" };
+  }
+  function registrar(stt, el, d, onde) {
+    var S_ = st(); if (!S_) return null;
+    var rec = { ano: ano(), cargo: stt.cargo, quem: { id: el.id, nome: limpa(el.nome), partido: el.partido || "", share: el.share || 0 }, share: el.share || 0, decisao: d.decisao,
+      para: d.para ? { id: d.para.id || (d.para.jogador ? "JOGADOR" : null), nome: d.para.jogador ? ok(function () { return J().nome; }, "") : limpa(d.para.nome) } : null, onde: onde || "noite", m: ok(function () { return agoraM(); }, 0), jogador: !!el.jogador };
+    S_.lista = S_.lista.filter(function (x) { return !(x.ano === rec.ano && x.cargo === rec.cargo && x.quem.nome === rec.quem.nome); });
+    S_.lista.push(rec); aplicar(rec, stt);
+    return rec;
+  }
+  // gera as declarações da noite do 1º turno para todas as disputas que vão ao 2º turno
+  CB.gerarApoios = function () {
+    var S_ = st(); if (!S_) return [];
+    var out = [];
+    segundos().forEach(function (stt) {
+      (stt.elim || []).slice().sort(function (a, b) { return (b.share || 0) - (a.share || 0); }).slice(0, 5).forEach(function (el) {
+        if ((el.share || 0) < 1.5) return;
+        if (S_.lista.some(function (x) { return x.ano === ano() && x.cargo === stt.cargo && x.quem.nome === limpa(el.nome); })) return;
+        if (el.jogador) { out.push(registrar(stt, el, { decisao: "pendente" })); return; }
+        var d = decidir(el, stt); out.push(registrar(stt, el, d));
+      });
+    });
+    return out.filter(Boolean);
+  };
+  CB.apoiosDe = function (cargo) { var S_ = st(); return S_ ? S_.lista.filter(function (x) { return x.ano === ano() && (!cargo || x.cargo === cargo); }) : []; };
+  CB.fraseApoio = function (rec) {
+    if (rec.decisao === "apoia") return rec.quem.nome + " (" + sigla(rec.quem.partido) + ") " + ROT.apoia + " " + rec.para.nome + ".";
+    return rec.quem.nome + " (" + sigla(rec.quem.partido) + ") " + ROT[rec.decisao] + ".";
+  };
+  // decisões pendentes se resolvem nas semanas seguintes
+  function resolverPendentes() {
+    var S_ = st(); if (!S_) return;
+    var sts = segundos(); if (!sts.length) return;
+    S_.lista.forEach(function (rec) {
+      if (rec.ano !== ano() || rec.jogador || ["conversar", "depois"].indexOf(rec.decisao) < 0) return;
+      if (rec.m >= ok(function () { return agoraM(); }, 0) - 0 && !rec.semana1) { rec.semana1 = true; return; } // espera ao menos uma rodada
+      if (Math.random() > 0.45) return;
+      var stt = sts.filter(function (x) { return x.cargo === rec.cargo; })[0]; if (!stt) return;
+      var el = (stt.elim || []).filter(function (x) { return limpa(x.nome) === rec.quem.nome; })[0] || { id: rec.quem.id, nome: rec.quem.nome, partido: rec.quem.partido, share: rec.share };
+      var d = decidir(el, stt, true), antes = rec.decisao;
+      rec.decisao = d.decisao; rec.para = d.para ? { id: d.para.id || (d.para.jogador ? "JOGADOR" : null), nome: d.para.jogador ? ok(function () { return J().nome; }, "") : limpa(d.para.nome) } : null; rec.m = ok(function () { return agoraM(); }, 0);
+      aplicar(rec, stt);
+      nota((antes === "conversar" ? "Depois de ouvir o partido, " : "") + CB.fraseApoio(rec) + " (2º turno: " + (NOME_C[rec.cargo] || rec.cargo) + ")");
+    });
+  }
+  // o jogador finalista recebe o bônus dos apoios na pontuação do 2º turno
+  function instalarScore() {
+    if (typeof window.scoreJogadorMaj !== "function" || window.scoreJogadorMaj.__v3cob) return;
+    var o = window.scoreJogadorMaj;
+    var n = function (cargo) { var v = o.apply(this, arguments); try { CB.apoiosDe(cargo).forEach(function (r) { if (r.decisao === "apoia" && r.para && r.para.id === "JOGADOR") v += bonusDe(r); }); } catch (e) {} return v; };
+    for (var k in o) { try { n[k] = o[k]; } catch (e) {} }
+    n.__v3cob = true; window.scoreJogadorMaj = n; try { scoreJogadorMaj = n; } catch (e) {}
+  }
+  // decisão do jogador eliminado
+  CB.decidirJogador = function (cargo, decisao, paraId) {
+    var stt = segundos().filter(function (x) { return x.cargo === cargo; })[0]; if (!stt) return null;
+    var el = (stt.elim || []).filter(function (x) { return x.jogador; })[0] || { id: "JOGADOR", nome: ok(function () { return J().nome; }, ""), partido: ok(function () { return J().partido_atual; }, ""), share: 5, jogador: true };
+    var para = paraId ? stt.candidatos.filter(function (c) { return c.id === paraId || c.nome === paraId; })[0] : null;
+    var rec = registrar(stt, el, { decisao: decisao, para: para }, "jogador");
+    var nome = ok(function () { return J().nome; }, "");
+    if (decisao === "apoia" && para) {
+      var n = npc(para.id); if (n) n.relacao_com_jogador = clamp((n.relacao_com_jogador || 0) + 15, -100, 100);
+      var mesmo = lado(J().partido_atual) === lado(para.partido || (n && n.partidoBase));
+      ok(function () { J().relacao_partido = clamp((J().relacao_partido || 50) + (mesmo ? 3 : -5), 0, 100); });
+      if (!mesmo) ok(function () { addEscandalo(1); });
+      nota(nome + " declara apoio a " + limpa(para.nome) + " no 2º turno" + (mesmo ? "." : ", e parte da base critica a escolha."));
+    } else nota(nome + " " + ROT[decisao] + " no 2º turno (" + (NOME_C[cargo] || cargo) + ").");
+    return rec;
+  };
+  // jogador finalista pede apoio a um eliminado
+  CB.pedirApoio = function (cargo, nomeEl) {
+    var stt = segundos().filter(function (x) { return x.cargo === cargo; })[0]; if (!stt) return;
+    var rec = CB.apoiosDe(cargo).filter(function (r) { return r.quem.nome === nomeEl; })[0]; if (!rec || rec.decisao === "apoia") return;
+    if (rec.pedido) { ok(function () { toast("Você já pediu esse apoio.", "err"); }); return; }
+    if (!ok(function () { return gastarEnergia(10); }, true)) return;
+    rec.pedido = true;
+    var jog = stt.candidatos.filter(function (c) { return c.jogador; })[0]; if (!jog) return;
+    var n = npc(rec.quem.id), rel = n ? (n.relacao_com_jogador || 0) : 0, mesmo = lado(rec.quem.partido) === lado(ok(function () { return J().partido_atual; }, ""));
+    var p = clamp(0.22 + rel / 160 + (mesmo ? 0.25 : lado(rec.quem.partido) === "C" ? 0.08 : -0.15) + (rec.decisao === "conversar" || rec.decisao === "depois" ? 0.1 : 0), 0.05, 0.85);
+    if (Math.random() < p) { rec.decisao = "apoia"; rec.para = { id: "JOGADOR", nome: ok(function () { return J().nome; }, "") }; rec.aplicado = false; aplicar(rec, stt); if (n) n.relacao_com_jogador = clamp(rel + 5, -100, 100); nota(rec.quem.nome + " aceita o convite e declara apoio a " + rec.para.nome + " no 2º turno."); ok(function () { toast("Apoio conquistado!", "ok"); }); }
+    else { if (n) n.relacao_com_jogador = clamp(rel - 2, -100, 100); nota(rec.quem.nome + " recusa o pedido de apoio de " + ok(function () { return J().nome; }, "") + " e mantém distância no 2º turno."); ok(function () { toast("Pedido recusado.", "err"); }); }
+    ok(function () { render(); });
+  };
+  function cardApoios() {
+    var sts = segundos(); if (!sts.length) return "";
+    var h = "";
+    sts.forEach(function (stt) {
+      var recs = CB.apoiosDe(stt.cargo); if (!recs.length) return;
+      var jogFin = stt.candidatos.some(function (c) { return c.jogador; }), jogEl = recs.filter(function (r) { return r.jogador && r.decisao === "pendente"; })[0];
+      h += "<h4>" + esc_(NOME_C[stt.cargo] || stt.cargo) + ": " + stt.candidatos.map(function (c) { return esc_(c.jogador ? "você" : limpa(c.nome)); }).join(" × ") + "</h4>";
+      h += recs.map(function (r) {
+        var bt = jogFin && !r.jogador && r.decisao !== "apoia" && !r.pedido && typeof btn === "function" ? btn("Pedir apoio (−10 energia)", "v3cobPedir", [stt.cargo, r.quem.nome], "mini confirma") : (r.pedido && r.decisao !== "apoia" ? "<small>pedido feito</small>" : "");
+        return '<div class="row" style="gap:8px;align-items:center;margin:4px 0"><span class="grow"><b>' + esc_(r.jogador ? "Você" : r.quem.nome) + "</b> <small>(" + esc_(sigla(r.quem.partido)) + ", " + (r.share || 0).toFixed(1).replace(".", ",") + "% no 1º turno)</small><br><small>" + esc_(r.decisao === "apoia" ? "apoia " + r.para.nome : ROT[r.decisao]) + "</small></span>" + bt + "</div>";
+      }).join("");
+      if (jogEl && typeof btn === "function") h += '<p class="txt">Sua posição no 2º turno:</p><div class="row" style="gap:6px;flex-wrap:wrap">' + stt.candidatos.map(function (c) { return btn("Apoiar " + limpa(c.nome), "v3cobDecidir", [stt.cargo, "apoia", c.id || c.nome], "mini confirma"); }).join("") + btn("Liberar eleitores", "v3cobDecidir", [stt.cargo, "libera", ""], "mini") + btn("Neutralidade", "v3cobDecidir", [stt.cargo, "neutro", ""], "mini") + btn("Nenhum dos dois", "v3cobDecidir", [stt.cargo, "nenhum", ""], "mini branco") + "</div>";
+    });
+    return h ? (typeof card === "function" ? card("Apoios no 2º turno", "<p class='txt'><small>Declarações dos candidatos eliminados. Cada apoio soma força ao finalista na disputa do 2º turno.</small></p>" + h) : "") : "";
+  }
+  CB.cardApoios = cardApoios;
+
+  /* ================================================================ entrevistas */
+  // situação do jogador na eleição do ano
+  CB.minhaDisputa = function () { return ok(function () { var d = dt(); return (CAR().eleicoes || []).filter(function (e) { return e.ano === d.ano; }).slice(-1)[0] || null; }, null); };
+  // perguntas pré-debate ao jogador, a partir do contexto real da campanha
+  CB.perguntasPreDebate = function (ctx) {
+    var j = ok(function () { return J(); }, {}), Q = [], pos = ctx.pos, lider = ctx.lider, esc = j.escandalo || 0, cargo = ctx.cargoTxt;
+    if (pos === 1) Q.push({ id: "lider", q: "Você chega ao debate liderando a pesquisa" + (ctx.pct ? " com " + ctx.pct.toFixed(0) + "%" : "") + ". Vai jogar parado, só para não errar?", ops: [
+      { id: "humilde", rot: "Humildade", fala: "Pesquisa é fotografia. Vim aqui para conversar com quem ainda não decidiu.", ef: { pop: 0.6, imp: 1 } },
+      { id: "confiante", rot: "Confiança", fala: "O eleitor já percebeu quem tem projeto. Hoje vou mostrar de novo.", ef: { pop: 0.3, base: 1, risco: 0.15 } },
+      { id: "ataque", rot: "Ataque", fala: "Quem está atrás vai partir para a baixaria. Eu vou responder com resultados.", ef: { pop: -0.2, base: 1.5, rival: -4 } }] });
+    else Q.push({ id: "atras", q: "As pesquisas mostram você em " + pos + "º lugar" + (lider ? ", atrás de " + lider : "") + ". O que muda hoje?", ops: [
+      { id: "virada", rot: "Prometer virada", fala: "Já virei eleição antes. A campanha começa de verdade agora.", ef: { pop: 0.4, base: 1, risco: 0.2 } },
+      { id: "propostas", rot: "Focar em propostas", fala: "Vou apresentar três propostas concretas que ninguém aqui tem coragem de fazer.", ef: { pop: 0.7, imp: 1 } },
+      { id: "pesquisa", rot: "Desacreditar a pesquisa", fala: "Essas pesquisas erram toda eleição. O sentimento da rua é outro.", ef: { pop: -0.3, base: 1.2, imp: -1 } }] });
+    if (esc >= 25) Q.push({ id: "polemica", q: "Seu nome apareceu no noticiário pelos casos que estão sendo investigados. Vai ser cobrado hoje. Qual a resposta?", ops: [
+      { id: "transparencia", rot: "Transparência", fala: "Estou à disposição da Justiça e já entreguei todos os documentos. Não tenho o que esconder.", ef: { pop: 0.5, esc: -1, imp: 1 } },
+      { id: "perseguicao", rot: "Perseguição política", fala: "Isso é perseguição de quem tem medo da minha candidatura.", ef: { pop: -0.2, base: 1.5, esc: 1, imp: -1 } },
+      { id: "desviar", rot: "Mudar de assunto", fala: "O eleitor quer saber de emprego e saúde, não de fofoca.", ef: { pop: 0.1, risco: 0.25 } }] });
+    else if (ctx.temAliados) Q.push({ id: "aliancas", q: "Sua aliança com " + ctx.temAliados + " é criticada pelos adversários. Ela atrapalha?", ops: [
+      { id: "defende", rot: "Defender a aliança", fala: "Governar exige maioria. Quem não sabe fazer aliança não governa.", ef: { pop: 0.2, part: 2 } },
+      { id: "distancia", rot: "Tomar distância", fala: "Quem manda na minha candidatura sou eu, não os partidos.", ef: { pop: 0.4, part: -3 } },
+      { id: "programa", rot: "Falar do programa", fala: "A aliança é em torno de um programa, e eu vou apresentá-lo hoje.", ef: { pop: 0.4 } }] });
+    else Q.push({ id: "trajetoria", q: "Por que alguém com a sua trajetória está preparado para " + cargo + "?", ops: [
+      { id: "experiencia", rot: "Experiência", fala: (j.cargo_atual && !/Cidad/.test(j.cargo_atual) ? "Já fui " + j.cargo_atual + " e entreguei resultado." : "Conheço a vida real das pessoas, e isso nenhum gabinete ensina."), ef: { pop: 0.5 } },
+      { id: "renovacao", rot: "Renovação", fala: "Justamente por não ser mais do mesmo. O eleitor está cansado dos mesmos nomes.", ef: { pop: 0.4, base: 0.5 } },
+      { id: "equipe", rot: "Equipe", fala: "Ninguém governa sozinho: tenho a melhor equipe técnica desta disputa.", ef: { pop: 0.3, imp: 1 } }] });
+    return Q;
+  };
+  // aplica as consequências de uma resposta (entrevista)
+  CB.aplicarResposta = function (op, ctx) {
+    var j = ok(function () { return J(); }, null); if (!j) return { txt: "" };
+    var ef = op.ef || {}, r = Math.random(), azar = ef.risco && r < ef.risco, d = (ef.pop || 0) * (0.7 + Math.random() * 0.6) - (azar ? 1.2 : 0);
+    j.popularidade = clamp((j.popularidade || 0) + d, 0, 100);
+    if (ef.esc) ok(function () { addEscandalo(ef.esc); });
+    if (ef.part) j.relacao_partido = clamp((j.relacao_partido || 50) + ef.part, 0, 100);
+    if (ef.base) ok(function () { if (typeof perfilMexe === "function") perfilMexe("rb", ef.base * 0.5); });
+    if (ef.rival && ctx && ctx.rivalId) { var n = npc(ctx.rivalId); if (n) n.relacao_com_jogador = clamp((n.relacao_com_jogador || 0) + ef.rival, -100, 100); }
+    var veic = (ctx && ctx.canal) || "TV";
+    var txt = azar ? "Frase de " + j.nome + " na entrevista à " + veic + " (\"" + op.fala + "\") repercute mal e vira munição dos adversários." : (ef.imp || 0) > 0 ? j.nome + " em entrevista à " + veic + ": \"" + op.fala + "\" A resposta é bem recebida por analistas." : (ef.imp || 0) < 0 ? j.nome + " à " + veic + ": \"" + op.fala + "\" Comentaristas criticam o tom." : j.nome + " à " + veic + ": \"" + op.fala + "\"";
+    nota(txt, azar || (ef.imp || 0) < 0 ? "imprensa" : "eleicao");
+    return { txt: txt, delta: d, azar: azar };
+  };
+  // falas de NPC (pré-debate e pós-apuração), coerentes com estilo, cargo e situação
+  CB.falaNpc = function (c, momento, ctx) {
+    var n = npc(c.id) || npcNome(limpa(c.nome)) || {}, nome = limpa(c.nome), le = lado(c.partido || n.partidoBase), inc = /Prefeito de Mauá|Governador de SP|Presidente da República/.test(n.cargo || "");
+    var est = (n.retorica || 50) > (n.carisma || 50) + 8 ? "agressivo" : (n.inteligencia || 50) > (n.carisma || 50) ? "tecnico" : "popular", s = nome + momento;
+    if (momento === "chegada") return pick([
+      nome + " chega acompanhad" + oa(c, "o", "a") + " de lideranças do " + sigla(c.partido) + " e acena para a militância.",
+      nome + " desembarca em silêncio, revisando anotações com a assessoria.",
+      nome + " chega sorrindo e posa para fotos com apoiadores na porta do estúdio."], s);
+    if (momento === "pre") {
+      if (inc) return "Venho mostrar o que entregamos. Quem quer mudar tudo precisa explicar o que vai colocar no lugar.";
+      if (est === "agressivo") return pick(["Hoje o eleitor vai conhecer a verdade sobre quem governa e sobre quem quer governar.", "Vou cobrar cada promessa não cumprida. Quem tem medo de debate não deveria ser candidato."], s);
+      if (est === "tecnico") return pick(["Trouxe números. O debate tem que ser sobre gestão, não sobre gritaria.", "Vou apresentar um plano com começo, meio e fim, e quanto custa cada proposta."], s);
+      return pick(["Vim falar com quem acorda cedo e pega dois ônibus para trabalhar.", "O povo quer resposta simples para problema real. É isso que eu vou dar."], s);
+    }
+    if (momento === "eleito") return pick(["Agradeço a cada eleitor. A partir de amanhã governo para todos, inclusive para quem não votou em mim.", "Foi uma vitória do trabalho de rua. Agora é arregaçar as mangas.", "Essa vitória é de quem acreditou num projeto. Vamos honrar cada voto."], s);
+    if (momento === "segundo") return pick(["Começa agora uma nova eleição. Vamos conversar com todos que querem mudar o rumo.", "O segundo turno é a hora de comparar projetos. Estou pront" + oa(c, "o", "a") + ".", "Agradeço os " + (c.share ? Math.round(c.share) + "% de " : "") + "votos de hoje. A partir de amanhã, vamos atrás de cada apoio.", "Ninguém ganha sozinho. Minha porta está aberta para quem ficou pelo caminho."], s);
+    if (momento === "derrota") return est === "agressivo" ? pick(["A máquina pesou. Mas vamos fiscalizar cada passo de quem ganhou.", "Perdemos a eleição, não a convicção. A oposição começa hoje."], s) : pick(["Respeito o resultado e cumprimento o vencedor. Seguimos na luta.", "O eleitor falou e a democracia venceu. Vou continuar servindo de outra forma."], s);
+    return "";
+  };
+  // perguntas ao jogador depois do resultado
+  CB.perguntasPos = function () {
+    var e = CB.minhaDisputa(); if (!e) return null;
+    var res = String(e.resultado || ""), cargo = e.cargo || "";
+    var stt = segundos().filter(function (s) { return (s.candidatos || []).some(function (c) { return c.jogador; }); })[0];
+    var elim = CB.apoiosDe().filter(function (r) { return r.jogador && r.decisao === "pendente"; })[0];
+    if (elim) {
+      var s2 = segundos().filter(function (s) { return s.cargo === elim.cargo; })[0];
+      return { tipo: "apoio", cargo: elim.cargo, q: "Você ficou fora do 2º turno. Vai apoiar alguém na disputa entre " + s2.candidatos.map(function (c) { return limpa(c.nome); }).join(" e ") + "?", ops: s2.candidatos.map(function (c) { return { id: "apoia|" + (c.id || c.nome), rot: "Apoiar " + limpa(c.nome), fala: "Meu apoio no segundo turno é de " + limpa(c.nome) + ". É o projeto mais próximo do que defendi." }; }).concat([
+        { id: "conversar", rot: "Conversar com o partido", fala: "Vou ouvir o partido e a militância antes de qualquer decisão." },
+        { id: "depois", rot: "Anunciar depois", fala: "Ainda é cedo. Anuncio minha posição nos próximos dias." },
+        { id: "libera", rot: "Liberar os eleitores", fala: "Meus eleitores são livres e vão decidir com a própria consciência." },
+        { id: "nenhum", rot: "Nenhum dos dois", fala: "Nenhum dos dois representa o que defendemos nesta campanha." }]) };
+    }
+    if (stt) return { tipo: "segundo", cargo: stt.cargo, q: "Você está no 2º turno. Qual é o recado para quem votou nos outros candidatos?", ops: [
+      { id: "pontes", rot: "Construir pontes", fala: "Meu convite é para todos que querem mudar. Vou procurar cada candidato derrotado ainda esta semana.", ef: { pop: 0.6, imp: 1 } },
+      { id: "proprio", rot: "Seguir com o próprio projeto", fala: "Quem votou em mim votou num projeto. Não vou mudar de lado para ganhar apoio.", ef: { pop: 0.3, base: 1 } },
+      { id: "ataque", rot: "Atacar o adversário", fala: "O segundo turno vai mostrar quem é quem. Meu adversário vai ter que explicar muita coisa.", ef: { pop: -0.2, base: 1.5, risco: 0.2 } }] };
+    if (/Eleit/.test(res)) return { tipo: "vitoria", cargo: cargo, q: "Você foi " + oa({ jogador: true }, "eleito", "eleita") + " " + cargo.toLowerCase() + ". Qual é a primeira mensagem?", ops: [
+      { id: "humilde", rot: "Agradecer e trabalhar", fala: "Obrigado a cada eleitor. A partir de amanhã governo para todos.", ef: { pop: 0.8, imp: 1 } },
+      { id: "aliados", rot: "Dividir com aliados", fala: "Essa vitória é do partido e dos aliados que caminharam comigo.", ef: { pop: 0.4, part: 4 } },
+      { id: "provocar", rot: "Provocar os adversários", fala: "Disseram que eu não chegava. Cheguei, e com voto.", ef: { pop: -0.2, base: 1.5, risco: 0.25 } }] };
+    return { tipo: "derrota", cargo: cargo, q: "O resultado não veio. O que você diz aos seus eleitores?", ops: [
+      { id: "reconhece", rot: "Reconhecer a derrota", fala: "Respeito o resultado e cumprimento os eleitos. Seguimos juntos.", ef: { pop: 0.6, imp: 1 } },
+      { id: "luta", rot: "Anunciar próximos passos", fala: "Perdemos uma eleição, não a causa. Vou continuar organizando nosso grupo.", ef: { pop: 0.3, base: 1 } },
+      { id: "culpa", rot: "Culpar a máquina e as fake news", fala: "Enfrentamos a máquina e uma enxurrada de mentiras.", ef: { pop: -0.3, base: 1.5, esc: 1, imp: -1 } }] };
+  };
+  CB.responderPos = function (P, opId) {
+    var op = P.ops.filter(function (o) { return o.id === opId; })[0]; if (!op) return "";
+    if (P.tipo === "apoio") {
+      var parts = opId.split("|"), dec = parts[0], para = parts[1] || null;
+      CB.decidirJogador(P.cargo, dec, para);
+      return "Você: \"" + op.fala + "\"";
+    }
+    var r = CB.aplicarResposta(op, { canal: "TV" });
+    if (P.tipo === "segundo" && opId === "pontes") ok(function () { var top = CB.apoiosDe(P.cargo).filter(function (x) { return x.decisao !== "apoia"; }).sort(function (a, b) { return b.share - a.share; })[0]; if (top) top.pontes = true; });
+    return r.txt;
+  };
+
+  /* ================================================================ overlay de entrevista ao vivo (usado na TV e no Diário) */
+  var ent = null;
+  CB.abrirEntrevista = function (P, cfg) {
+    if (!P) return; ent = { P: P, cfg: cfg || {}, resp: null };
+    desenharEnt();
+  };
+  function desenharEnt() {
+    var el = document.getElementById("v3cob-ent");
+    if (!ent) { if (el) el.remove(); return; }
+    if (!el) { el = document.createElement("div"); el.id = "v3cob-ent"; document.body.appendChild(el); }
+    var c = ent.cfg, P = ent.P;
+    el.innerHTML = '<div class="v3cob-ov"><div class="v3cob-box ' + esc_(c.tema || "") + '"><div class="v3cob-top">' + (c.logo ? '<img src="' + esc_(c.logo) + '" alt="">' : "") + "<div><b>" + esc_(c.titulo || "Entrevista ao vivo") + "</b><small>" + esc_(c.sub || "") + '</small></div><span class="v3cob-vivo">AO VIVO</span></div>' +
+      (c.reporter ? '<div class="v3cob-rep">' + (c.reporter.foto ? '<img src="' + esc_(c.reporter.foto) + '" alt="">' : "") + "<div><b>" + esc_(c.reporter.nome) + "</b><small>" + esc_(c.reporter.papel || "repórter") + "</small></div></div>" : "") +
+      '<p class="v3cob-q">' + esc_(P.q) + "</p>" +
+      (ent.resp ? '<p class="v3cob-r">' + esc_(ent.resp) + '</p><button type="button" class="v3cob-ok" data-v3cob="fechar">Encerrar entrevista</button>' :
+        '<div class="v3cob-ops">' + P.ops.map(function (o) { return '<button type="button" data-v3cob="op" data-id="' + esc_(o.id) + '"><b>' + esc_(o.rot) + '</b><small>"' + esc_(o.fala) + '"</small></button>'; }).join("") + '</div><button type="button" class="v3cob-sem" data-v3cob="fechar">Recusar a entrevista</button>') + "</div></div>";
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-v3cob]"); if (!b || !ent) return;
+    e.preventDefault(); e.stopPropagation();
+    var k = b.getAttribute("data-v3cob");
+    if (k === "op") { ent.resp = CB.responderPos(ent.P, b.getAttribute("data-id")); ent.feito = true; desenharEnt(); if (ent.cfg.aoResponder) ok(ent.cfg.aoResponder); return; }
+    if (k === "fechar") { var cfg = ent.cfg, feito = ent.feito; ent = null; desenharEnt(); if (!feito) nota(ok(function () { return J().nome; }, "") + " evita a imprensa na noite da apuração.", "imprensa"); if (cfg.aoFechar) ok(cfg.aoFechar); }
+  }, true);
+
+  /* ================================================================ instalação */
+  function instalar() {
+    instalarScore();
+    if (typeof window.A === "object" || typeof A === "object") ok(function () {
+      if (!A.v3cobPedir) A.v3cobPedir = function (cargo, nome) { CB.pedirApoio(cargo, nome); };
+      if (!A.v3cobDecidir) A.v3cobDecidir = function (cargo, dec, para) { CB.decidirJogador(cargo, dec, para || null); render(); };
+    });
+    // as declarações nascem junto com o resultado do 1º turno
+    if (typeof window.apurarEleicao === "function" && !window.apurarEleicao.__v3cob) {
+      var o = window.apurarEleicao;
+      var n = function () { var r = o.apply(this, arguments); try { CB.gerarApoios(); } catch (e) { console.warn("v3cob apoios", e); } return r; };
+      for (var k in o) { try { n[k] = o[k]; } catch (e) {} }
+      n.__v3cob = true; window.apurarEleicao = n; try { apurarEleicao = n; } catch (e) {}
+    }
+    if (typeof window.avancarMes === "function" && !window.avancarMes.__v3cob) {
+      var a = window.avancarMes;
+      var m = function () { var r = a.apply(this, arguments); try { resolverPendentes(); } catch (e) {} return r; };
+      for (var k2 in a) { try { m[k2] = a[k2]; } catch (e) {} }
+      m.__v3cob = true; window.avancarMes = m; try { avancarMes = m; } catch (e) {}
+    }
+    if (typeof VIEWS !== "undefined" && typeof VIEWS.camp === "function" && !VIEWS.camp.__v3cob) {
+      var vc = VIEWS.camp;
+      var w = function () { var h = vc.apply(this, arguments); try { var c = cardApoios(); if (c && String(h).indexOf("Apoios no 2º turno") < 0) h = c + h; } catch (e) {} return h; };
+      for (var k3 in vc) { try { w[k3] = vc[k3]; } catch (e) {} }
+      w.__v3cob = true; VIEWS.camp = w;
+    }
+  }
+  instalar();
+  document.addEventListener("DOMContentLoaded", function () { setTimeout(instalar, 0); });
+  window.addEventListener("load", function () { setTimeout(instalar, 90); });
+  var n0 = 0, t0 = setInterval(function () { instalar(); if (++n0 > 24) clearInterval(t0); }, 500);
+})();
+
+</script>
 <script id="cadeira-v3-debates-js">
 /* =============================================================================
    CADEIRA v3 — Debates eleitorais (gerado por tools/gerar_debates.py)
@@ -55632,7 +56033,9 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
       pts: {}, plateia: 50, redes: 30, log: [], destaques: [], gafes: [], fase: "abertura", cena: null, posAqui: {}, fim: false, avisos: 0 };
     cands.forEach(function (c) { S_.ativo.pts[c.id] = { arg: 0, prop: 0, ataque: 0, defesa: 0, gafe: 0, postura: 0 }; });
     ev.status = "hoje";
-    S_.ativo.cena = cenaAbertura();
+    var pre = ok(function () { return preShow(); }, []);
+    S_.ativo.cena = pre.length ? pre.shift() : cenaAbertura();
+    S_.ativo.fila_cenas = pre.length ? pre.concat([cenaAbertura()]) : [];
     render_();
   }
   DB.iniciar = iniciar;
@@ -55647,7 +56050,43 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
 
   function cenaAbertura() {
     var a = A_(), E = EMISSORAS[a.e], m = E.mediadores[0];
-    return { tipo: "fala", quem: { med: m }, txt: "Boa noite. Começa agora o " + E.vinheta + " entre os candidatos a " + CARGO_TXT[a.cargo] + (a.turno === 2 ? " no segundo turno" : "") + ". Estão aqui " + a.cands.map(function (c) { return c.nome; }).join(", ") + ". Cada um terá tempo para responder, replicar e treplicar. Vamos ao primeiro bloco.", botao: "Começar" };
+    return { tipo: "fala", rot: "ABERTURA OFICIAL", quem: { med: m }, txt: "Boa noite. Está no ar o " + E.vinheta + " entre os candidatos a " + CARGO_TXT[a.cargo] + (a.turno === 2 ? " no segundo turno" : "") + ". Participam " + a.cands.map(function (c) { return c.nome; }).join(", ") + ". As regras: cada candidato tem tempo para responder, a quem perguntou cabe a réplica e a quem respondeu, a tréplica. A plateia não pode se manifestar. A ordem dos blocos foi definida em sorteio com as assessorias. Vamos ao primeiro bloco.", botao: "Começar o debate" };
+  }
+  /* ---------- pré-debate: vinheta, apresentação, chegada e entrevistas ---------- */
+  function reporterDeb(e) {
+    var tv = ok(function () { return window.V3TV.IMG; }, {}) || {}, dg = ok(function () { return window.V3DGABC.IMG; }, {}) || {};
+    return { globo: { nome: "Maju Coutinho", foto: tv.rep_globo_se }, band: { nome: "Cynthia Martins", foto: tv.rep_band_se }, dgabc: { nome: "Mariana Gutierrez", foto: dg.mariana } }[e] || { nome: "Reportagem " + EMISSORAS[e].nome, foto: "" };
+  }
+  function preShow() {
+    var a = A_(), E = EMISSORAS[a.e], m = E.mediadores[0], rep = reporterDeb(a.e), l = [];
+    var tot = a.cands.reduce(function (s2, c) { return s2 + Math.max(5, c.pop || 20); }, 0) || 1;
+    var base = a.cands.map(function (c) { return { id: c.id, nome: c.nome, partido: c.partido, share: Math.max(5, c.pop || 20) / tot * 90 }; });
+    var pq = ok(function () { return window.V3COB.pesquisa(a.cargo, base, "deb" + a.ev); }, null);
+    var pos = 1, pct = 0, lider = "";
+    if (pq) { pos = pq.itens.length + 1; pq.itens.forEach(function (x, i) { if (x.jogador || x.nome === J().nome) { pos = i + 1; pct = x.pct; } }); lider = (pq.itens.filter(function (x) { return !x.jogador && x.nome !== J().nome; })[0] || {}).nome || ""; }
+    l.push({ tipo: "pvinheta", rot: "AO VIVO" });
+    l.push({ tipo: "papres", rot: "APRESENTAÇÃO", pq: pq, txt: "Boa noite. Em instantes, o " + E.vinheta + ". " + (a.turno === 2 ? "É o confronto final entre os dois candidatos que disputam o segundo turno para " + CARGO_TXT[a.cargo] + "." : a.cands.length + " candidatos disputam " + CARGO_TXT[a.cargo] + ".") + (pq && pq.itens[0] ? " Na última pesquisa " + pq.instituto + ", " + pq.itens[0].nome + " aparece à frente, com " + Math.round(pq.itens[0].pct) + "%." : "") + " Os temas que mais preocupam o eleitor, segundo as pesquisas, são saúde, segurança e emprego.", quem: { med: m } });
+    a.cands.slice(1).concat([a.cands[0]]).forEach(function (c) {
+      l.push({ tipo: "pchegada", rot: "CHEGADA DOS CANDIDATOS", cand: c.id, rep: rep, txt: c.jog ? "Você chega ao estúdio. Assessores, militantes e câmeras na porta." : ok(function () { return window.V3COB.falaNpc({ id: c.npc || c.id, nome: c.nome, partido: c.partido }, "chegada"); }, c.nome + " chega ao estúdio.") });
+    });
+    a.cands.slice(1).sort(function (x, y) { return (y.pop || 0) - (x.pop || 0); }).slice(0, 2).forEach(function (c) {
+      var q = c.inc ? "O senhor chega como quem governa. Vai defender a gestão ou propor mudanças?" : c.esc > 20 ? "Seu nome está no noticiário pelas investigações. Vai ser cobrado hoje?" : c.estilo === "agressivo" ? "Dá para esperar um debate duro da sua parte?" : "Qual é a sua estratégia para esta noite?";
+      if (c.sexo === "F") q = q.replace("O senhor", "A senhora");
+      l.push({ tipo: "pentNpc", rot: "ENTREVISTAS", cand: c.id, rep: rep, q: q, txt: ok(function () { return window.V3COB.falaNpc({ id: c.npc || c.id, nome: c.nome, partido: c.partido }, "pre"); }, "") });
+    });
+    var temAliados = ok(function () { var co = J().campanha.coligacao; return co && co.length ? co.slice(0, 2).join(" e ") : ""; }, "");
+    var Q = ok(function () { return window.V3COB.perguntasPreDebate({ pos: pos, pct: pct, lider: lider, cargoTxt: CARGO_TXT[a.cargo], temAliados: temAliados }); }, []);
+    Q.forEach(function (x) { l.push({ tipo: "pentJog", rot: "ENTREVISTAS", rep: rep, q: x.q, ops: x.ops }); });
+    l.push({ tipo: "ptransicao", rot: "VAI COMEÇAR" });
+    return l;
+  }
+  function responderPre(opId) {
+    var a = A_(), c = a.cena; if (!c || c.tipo !== "pentJog") return;
+    var op = c.ops.filter(function (o) { return o.id === opId; })[0]; if (!op) return;
+    var r = ok(function () { return window.V3COB.aplicarResposta(op, { canal: EMISSORAS[a.e].nome, rivalId: (rivais()[0] || {}).npc }); }, { delta: 0 });
+    a.plateia = clamp(a.plateia + (r.azar ? -6 : (r.delta || 0) * 4), 5, 95); a.redes = clamp(a.redes + (op.ef && op.ef.base ? 6 : 2) + (r.azar ? 8 : 0), 0, 100);
+    a.cena = { tipo: "pfala", rot: c.rot, quem: { cand: "JOGADOR" }, txt: op.fala, extra: r.azar ? "A frase repercute mal nos bastidores." : (r.delta || 0) > 0.4 ? "Boa repercussão entre os jornalistas." : "Os adversários anotam a resposta." };
+    render_();
   }
 
   /* ---------- opções de resposta (contextualizadas) ---------- */
@@ -55932,11 +56371,27 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     var mo = a.fila[Math.max(0, a.i)] || {};
     var h = '<div class="v3d v3d-' + E.tema + '" style="--bg:url(' + bg + ')"><div class="v3d-fundo"></div><div class="v3d-tela">';
     h += '<header class="v3d-top"><img class="v3d-logo" src="' + logo + '" alt=""><div class="v3d-tit"><b>' + esc_(E.titulo) + "</b><small>" + esc_(NOME_CARGO[a.cargo]) + (a.turno === 2 ? " • 2º TURNO" : "") + '</small></div><span class="v3d-vivo">● AO VIVO</span></header>';
-    h += '<div class="v3d-bloco">' + esc_(a.i < 0 ? "ABERTURA" : mo.titulo || "") + "</div>";
+    h += '<div class="v3d-bloco">' + esc_(a.i < 0 ? ((a.cena && a.cena.rot) || "ABERTURA") : mo.titulo || "") + "</div>";
     h += placar(a);
     var c = a.cena || {};
     h += '<div class="v3d-cena">';
-    if (c.tipo === "vinheta") h += '<div class="v3d-vinheta">' + esc_(c.txt) + '</div><button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
+    if (c.tipo === "pvinheta") h += '<div class="v3d-abert"><img src="' + logo + '" alt=""><b>' + esc_(E.titulo) + "</b><small>" + esc_(NOME_CARGO[a.cargo]) + (a.turno === 2 ? " • 2º turno" : "") + " • " + esc_(data().ano) + '</small><span>AO VIVO</span></div><button type="button" class="b confirma v3d-go" data-v3d="cont">Entrar na transmissão</button>';
+    else if (c.tipo === "papres") {
+      h += quemHtml(c.quem) + '<p class="v3d-fala">' + esc_(c.txt) + "</p>";
+      if (c.pq) h += '<div class="v3d-pq"><small>' + esc_(c.pq.instituto) + " • margem ±" + c.pq.margem + " pontos</small>" + c.pq.itens.map(function (x) { return '<div class="v3d-barra' + (x.jogador || x.nome === J().nome ? " eu" : "") + '"><span>' + esc_(x.jogador || x.nome === J().nome ? "Você" : x.nome) + '</span><i style="width:' + Math.min(100, x.pct * 1.5) + '%"></i><b>' + Math.round(x.pct) + "%</b></div>"; }).join("") + "</div>";
+      h += '<button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
+    } else if (c.tipo === "pchegada" || c.tipo === "pentNpc") {
+      var cc = byId(c.cand);
+      h += '<div class="v3d-gc rep">' + (c.rep.foto ? '<img src="' + esc_(c.rep.foto) + '" alt="">' : '<span class="v3d-ini big">🎤</span>') + "<div><b>" + esc_(c.rep.nome) + "</b><small>repórter • na porta do estúdio</small></div></div>";
+      if (c.tipo === "pchegada") h += '<div class="v3d-chega">' + fotoHtml(cc, "v3d-foto") + "<div><b>" + esc_(cc.jog ? "Você" : cc.nome) + "</b><small>" + esc_(cc.partido) + '</small></div></div><p class="v3d-fala">' + esc_(c.txt) + "</p>";
+      else h += '<p class="v3d-fala"><b>' + esc_(c.rep.nome) + ":</b> " + esc_(c.q) + "</p>" + quemHtml({ cand: c.cand }) + '<p class="v3d-fala">' + esc_(c.txt) + "</p>";
+      h += '<button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
+    } else if (c.tipo === "pentJog") {
+      h += '<div class="v3d-gc rep">' + (c.rep.foto ? '<img src="' + esc_(c.rep.foto) + '" alt="">' : '<span class="v3d-ini big">🎤</span>') + "<div><b>" + esc_(c.rep.nome) + '</b><small>entrevista antes do debate</small></div></div><p class="v3d-fala">' + esc_(c.q) + '</p><p class="v3d-vez">🎙️ Sua resposta</p><div class="v3d-ops">' + c.ops.map(function (o) { return '<button type="button" class="v3d-op" data-v3d="preop" data-id="' + esc_(o.id) + '"><b>' + esc_(o.rot) + '</b><em>"' + esc_(o.fala) + '"</em></button>'; }).join("") + "</div>";
+    } else if (c.tipo === "pfala") {
+      h += quemHtml(c.quem) + '<p class="v3d-fala">' + esc_(c.txt) + "</p>" + (c.extra ? '<p class="v3d-tag ' + (/mal/.test(c.extra) ? "ruim" : "bom") + '">' + esc_(c.extra) + "</p>" : "") + '<button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
+    } else if (c.tipo === "ptransicao") h += '<div class="v3d-vinheta v3d-trans">O DEBATE VAI COMEÇAR</div><button type="button" class="b confirma v3d-go" data-v3d="cont">Ao vivo</button>';
+    else if (c.tipo === "vinheta") h += '<div class="v3d-vinheta">' + esc_(c.txt) + '</div><button type="button" class="b confirma v3d-go" data-v3d="cont">Continuar</button>';
     else if (c.tipo === "fala") {
       h += quemHtml(c.quem) + '<p class="v3d-fala">' + esc_(c.txt) + "</p>";
       if (c.nota && c.nota.gafe) h += '<p class="v3d-tag ruim">⚠️ ' + esc_(c.nota.gafe) + "</p>";
@@ -55991,6 +56446,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     e.preventDefault();
     if (k === "entrar") iniciar(id);
     else if (k === "cont") continuar();
+    else if (k === "preop") responderPre(id);
     else if (k === "op") escolher(id);
     else if (k === "alvo") escolherAlvo(id);
     else if (k === "sair") sair();
@@ -56223,7 +56679,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
       comentaristas: [{ nome: "Reinaldo Azevedo", papel: "comentarista da BandNews" }],
       reporteres: { n: { nome: "Brena Dianná", img: "rep_band_n" }, ne: { nome: "Maria Lorena Alves", img: "rep_band_ne" }, co: { nome: "Lana Canepa", img: "rep_band_co" }, se: { nome: "Cynthia Martins", img: "rep_band_se" }, s: { nome: "Sérgio Stock", img: "rep_band_s" } } }
   };
-  TV.CANAIS = CANAIS;
+  TV.CANAIS = CANAIS; TV.IMG = IMG;
 
   var REG = {
     se: { nome: "Sudeste", ufs: ["SP", "MG", "RJ", "ES"] },
@@ -56368,6 +56824,9 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     st.seguidos = 0;
     if (p >= 100) {
       if (st.cena.tipo === "final") return novaCena("final", {}, 1e9);
+      // pós-apuração: eleitos, derrotados e apoios, entrevista do jogador
+      if (!st.pos) st.pos = posRoteiro();
+      if (st.pos.length) { var ps = st.pos.shift(); return novaCena(ps.tipo, ps.d || {}, ps.dur); }
       return novaCena(st.cena.tipo === "governos" || turno2() ? "final" : "governos", {}, st.cena.tipo === "governos" || turno2() ? 1e9 : D.governos);
     }
     // 2) rotação do programa
@@ -56388,9 +56847,23 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     }
     return novaCena("nacional", {}, D.nacional);
   }
+  function posRoteiro() {
+    var l = [{ tipo: "posEleito", dur: 12000 }];
+    var ap = ok(function () { return V3COB.apoiosDe(); }, []).filter(function (r) { return r.cargo === "PRES" || r.cargo === "GOV"; });
+    if (!turno2()) l.push({ tipo: "posDerrota", dur: 12000 });
+    if (ap.length) l.push({ tipo: "posApoios", dur: 6000 + Math.min(6, ap.length) * 2500, d: { lista: ap.slice(0, 6) } });
+    if (ok(function () { return V3COB.perguntasPos(); }, null)) l.push({ tipo: "posJogador", dur: 60000 });
+    return l;
+  }
+  /* abertura antes das urnas fecharem (16h30 → 17h, horário de Brasília) */
+  var PRE = [["Boa noite", "16h30"], ["A eleição", "16h38"], ["Pesquisas", "16h45"], ["Como funciona a apuração", "16h52"], ["Contagem regressiva", "16h58"]];
+  function iniciarPre() { st.pre = true; novaCena("pre", { k: 0 }, 9500); }
+  function fimPre() { st.pre = false; novaCena("urnas", {}, 6500); retomar(VEL_TV); }
   function uniq(grupo) { var u = {}; grupo.forEach(function (e) { u[e.uf] = 1; }); return Object.keys(u); }
   function dirigir() {
     if (!st.canal) return;
+    if (st.cena && st.cena.tipo === "pre") { if (agora() - st.cena.ini > st.cena.dur) { var k = st.cena.d.k + 1; if (k < PRE.length) novaCena("pre", { k: k }, k === PRE.length - 1 ? 7000 : 9500); else fimPre(); } return; }
+    if (st.cena && st.cena.tipo === "posJogador" && st.entAberta) return;
     varrerDecisoes();
     var c = st.cena, t = agora();
     var urgente = st.fila.length && c && ["nacional", "senado", "governos", "comentario"].indexOf(c.tipo) >= 0 && t - c.ini > 3000;
@@ -56562,6 +57035,63 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     if (!pr) { out.painel = '<p class="tv-nota">Aguardando os dados da apuração.</p>'; out.bancada = quemHtml(ancora(ch), "Boa noite. Estamos aguardando os primeiros boletins do Tribunal Superior Eleitoral."); return out; }
     var painelPr = "<h3>" + esc_(pr.titulo) + "</h3>" + barras(pr, 4) + '<p class="tv-st">' + selo(pr) + "</p>";
     switch (c.tipo) {
+      case "pre":
+        var k = c.d.k, eq = ch.ancoras.concat(ch.comentaristas || []), N0 = ok(function () { return A().nac(); }, {});
+        out.mom = "Antes das urnas fecharem • " + PRE[k][0];
+        if (k === 0) {
+          out.painel = "<h3>Nossa equipe esta noite</h3><div class='tv-equipe'>" + eq.map(function (p) { var q = pessoa(p); return '<span>' + (q.foto ? '<img src="' + esc_(q.foto) + '" alt="">' : "") + "<b>" + esc_(q.nome) + "</b><small>" + esc_(q.papel) + "</small></span>"; }).join("") + "</div><h4>Repórteres nas regiões</h4><div class='tv-equipe mini'>" + Object.keys(ch.reporteres).map(function (r) { var q = reporter(ch, r); return '<span>' + (q.foto ? '<img src="' + esc_(q.foto) + '" alt="">' : "") + "<b>" + esc_(q.nome) + "</b><small>" + esc_(REG[r].nome) + "</small></span>"; }).join("") + "</div>";
+          out.bancada = quemHtml(ch.abertura ? pessoa(ch.abertura) : ancora(ch), "Boa noite! A " + ch.nome + " está no ar com a cobertura completa " + (turno2() ? "do segundo turno" : "das eleições " + ok(function () { return dt().ano; }, "")) + ". Daqui a pouco as urnas fecham em todo o país. Comigo, " + ch.ancoras.map(function (a) { return a.nome; }).join(" e ") + ", nossos comentaristas e repórteres nas cinco regiões.");
+        } else if (k === 1) {
+          var el = ok(function () { return A().eleitoresBR(); }, 0);
+          var itens = turno2() ? ["Presidente da República (2º turno)", "Governos estaduais com 2º turno"] : ["Presidente da República", "27 governos estaduais", "Senado: " + ok(function () { return A().nac().vagas || 2; }, 2) + " vaga(s) por estado", "Câmara dos Deputados e Assembleias Legislativas"];
+          out.painel = "<h3>O que está em jogo</h3><ul class='tv-lista-it'>" + itens.map(function (x) { return "<li>" + esc_(x) + "</li>"; }).join("") + "</ul>" + (el ? "<p class='tv-dif'><b>" + Math.round(el / 1e6) + " milhões</b> de eleitores aptos</p>" : "");
+          out.bancada = quemHtml(ancora(ch), turno2() ? "Hoje o eleitor volta às urnas para decidir a Presidência e os governos onde ninguém passou de 50% dos votos válidos." : "Hoje o eleitor escolhe presidente, governadores, senadores e deputados. É a maior eleição da história do país em número de eleitores.");
+        } else if (k === 2) {
+          var lp = (turno2() ? N0.pres : (N0.pres1 && N0.pres1.length ? N0.pres1 : N0.pres)) || [], pq = ok(function () { return V3COB.pesquisa("PRES", lp, "tv" + ok(function () { return dt().ano; }, "")); }, null);
+          var lg = ok(function () { var p = A().painel("SP"); return (p.gov1 && p.gov1.length ? p.gov1 : p.gov) || []; }, []), pg = lg.length ? ok(function () { return V3COB.pesquisa("GOV", lg, "tvgov"); }, null) : null;
+          function barr(q, t) { return q ? "<h4>" + esc_(t) + " <small>" + esc_(q.instituto) + " • margem ±" + q.margem + "</small></h4>" + q.itens.slice(0, 5).map(function (x, i) { return '<div class="tv-pq"><span>' + esc_(x.nome) + " <small>" + esc_(x.partido) + '</small></span><i style="width:' + Math.min(100, x.pct * 1.6) + "%;background:" + ok(function () { return A().corDe(x.partido, i); }, "#64748b") + '"></i><b>' + fmtP1(x.pct) + "%</b></div>"; }).join("") : ""; }
+          out.painel = "<h3>Últimas pesquisas</h3>" + barr(pq, "Presidente") + barr(pg, "Governo de São Paulo") + "<p class='tv-nota'>Pesquisa não é resultado: daqui a pouco os números são das urnas.</p>";
+          out.bancada = quemHtml(ancora(ch), pq && pq.itens[0] ? "Na última pesquisa, " + pq.itens[0].nome + " aparecia na frente, com " + fmtP1(pq.itens[0].pct) + "%" + (pq.itens[1] ? ", seguido de " + pq.itens[1].nome + ", com " + fmtP1(pq.itens[1].pct) + "%" : "") + ". A margem de erro é de " + pq.margem + " pontos." : "Vamos ver se as urnas confirmam as pesquisas.") + quemHtml(comentarista(ch), "O que pesa hoje é a abstenção e o voto de última hora. Pesquisas de véspera já erraram por mais que a margem.", "coment");
+        } else if (k === 3) {
+          out.painel = "<h3>Como funciona a apuração</h3><ol class='tv-lista-it'><li>Às <b>17h de Brasília</b> as urnas fecham em todo o país.</li><li>Cada urna imprime o <b>boletim de urna</b> e envia o resultado ao TSE.</li><li>A totalização é feita em minutos; os estados avançam em ritmos diferentes.</li><li>Presidente e governador precisam de mais de <b>50% dos votos válidos</b> para vencer no 1º turno.</li><li>No mapa, a cor mostra quem lidera em cada estado.</li></ol>";
+          out.bancada = quemHtml(ancora(ch), "Assim que as urnas fecharem, os primeiros boletins chegam ao TSE. Nossos repórteres vão entrar ao vivo de todas as regiões, estado por estado.");
+        } else {
+          out.painel = "<div class='tv-relogio'><small>Horário de Brasília</small><b>16:58</b><span>As urnas fecham às 17h</span></div>" + suaDisputa();
+          out.bancada = quemHtml(ancora(ch), "Faltam dois minutos para o fechamento das urnas. Fique com a gente: os primeiros números estão chegando.");
+        }
+        break;
+      case "urnas":
+        out.mom = "17h00 • Urnas fechadas";
+        out.painel = "<div class='tv-relogio fim'><small>Horário de Brasília</small><b>17:00</b><span>URNAS FECHADAS</span></div>";
+        out.bancada = quemHtml(ancora(ch), "São 17 horas em Brasília: as urnas estão oficialmente fechadas em todo o país. Começa agora a apuração.");
+        break;
+      case "posEleito":
+        out.mom = "Pós-apuração • Os vencedores";
+        var dp = decisao(pr), g0 = corridaGov("SP"), dg = g0 && decisao(g0);
+        function quemFala(x, mom) { var q = pessoa({ nome: limpaNome(x.nome) }); q.papel = (x.partido || "") + " • ao vivo"; return quemHtml(q, ok(function () { return V3COB.falaNpc(x, mom); }, ""), "rep"); }
+        out.painel = "<h3>" + esc_(pr.titulo) + "</h3>" + barras(pr, dp && dp.tipo === "segundo" ? 2 : 1) + (g0 ? "<h4>Governo de São Paulo</h4>" + barras(g0, dg && dg.tipo === "segundo" ? 2 : 1, true) : "");
+        out.bancada = (dp ? dp.quem.slice(0, 2).map(function (x) { return x.jogador ? "" : quemFala(x, dp.tipo === "segundo" ? "segundo" : "eleito"); }).join("") : "") + quemHtml(ancora(ch), dp && dp.tipo === "segundo" ? "Os dois finalistas já falaram: começa amanhã uma nova campanha." : "A primeira fala de quem venceu, ao vivo.");
+        break;
+      case "posDerrota":
+        out.mom = "Pós-apuração • Quem ficou pelo caminho"; var dpd = decisao(pr);
+        var perd = pr.lista.slice(dpd && dpd.tipo === "segundo" ? 2 : 1, dpd && dpd.tipo === "segundo" ? 4 : 3).filter(function (x) { return !x.jogador; });
+        out.painel = "<h3>Os outros candidatos</h3>" + barras({ lista: pr.lista.slice(dpd && dpd.tipo === "segundo" ? 2 : 1), fin: [], f: 0, nodec: true }, 4, true);
+        out.bancada = perd.map(function (x) { var q = pessoa({ nome: limpaNome(x.nome) }); q.papel = x.partido + " • " + fmtP1(x.share) + "%"; return quemHtml(q, ok(function () { return V3COB.falaNpc(x, "derrota"); }, ""), "rep"); }).join("") + quemHtml(comentarista(ch), "A derrota também reorganiza o tabuleiro: quem ficou de fora vira peça-chave das alianças.", "coment");
+        break;
+      case "posApoios":
+        out.mom = "Pós-apuração • Apoios no 2º turno";
+        var la = c.d.lista || [];
+        out.painel = "<h3>Quem apoia quem</h3><ul class='tv-apoios'>" + la.map(function (r) { return "<li class='" + r.decisao + "'><b>" + esc_(r.jogador ? "Você" : r.quem.nome) + "</b> <small>" + esc_(r.quem.partido) + " • " + (r.cargo === "PRES" ? "Presidência" : "Governo de SP") + "</small><span>" + esc_(r.decisao === "apoia" ? "apoia " + r.para.nome : ok(function () { return V3COB.ROT[r.decisao]; }, r.decisao)) + "</span></li>"; }).join("") + "</ul>";
+        var ap1 = la.filter(function (r) { return r.decisao === "apoia"; })[0], pd = la.filter(function (r) { return r.decisao === "conversar" || r.decisao === "depois"; })[0];
+        out.bancada = quemHtml(reporter(ch, "se", true), (ap1 ? "Acabamos de confirmar: " + ap1.quem.nome + " declarou apoio a " + ap1.para.nome + " no segundo turno. " : "Ninguém declarou apoio ainda. ") + (pd ? pd.quem.nome + " disse que só decide nos próximos dias." : ""), "rep");
+        break;
+      case "posJogador":
+        out.mom = "Pós-apuração • Entrevista";
+        out.painel = "<h3>Ao vivo com " + esc_(ok(function () { return J().nome; }, "")) + "</h3>" + suaDisputa();
+        out.bancada = quemHtml(reporter(ch, "se", true), "Estamos com " + ok(function () { return J().nome; }, "") + ", que vai falar sobre o resultado.", "rep");
+        if (!st.entFeita) { st.entFeita = true; st.entAberta = true; var P = ok(function () { return V3COB.perguntasPos(); }, null); var rp = reporter(ch, "se", true);
+          setTimeout(function () { ok(function () { V3COB.abrirEntrevista(P, { titulo: ch.nome + " • entrevista", sub: P ? P.cargo : "", logo: img(ch.logo), tema: "tv-" + ch.tema, reporter: { nome: rp.nome, foto: rp.foto, papel: rp.papel }, aoFechar: function () { st.entAberta = false; st.cena.dur = 0; } }); }); }, 50); }
+        break;
       case "abertura":
         out.mom = "Abertura";
         out.painel = "<h3>" + esc_(pr.titulo) + "</h3>" + barras(pr, 6);
@@ -56665,11 +57195,12 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   function telaCanal() {
     var ch = CANAIS[st.canal], pr = principal(), cn = cenaAtual(ch), AP_ = ok(function () { return A().AP; }, {});
     var h = '<div class="tv tv-' + ch.tema + (municipal() ? " tv-mun" : "") + '" style="--bg:url(' + img(ch.estudio) + ')"><div class="tv-fundo"></div><div class="tv-tela">';
-    h += '<header class="tv-top"><img class="tv-logo" src="' + img(ch.logo) + '" alt=""><div class="tv-prog"><b>' + esc_(ch.programa) + "</b><small>" + (turno2() ? "2º turno" : "1º turno") + " • " + esc_(ok(function () { return A().horaApuracao(); }, "")) + '</small></div><span class="tv-vivo">● AO VIVO</span>' + urnas(pct() / 100, municipal() ? "Mauá" : "Brasil") + "</header>";
+    h += '<header class="tv-top"><img class="tv-logo" src="' + img(ch.logo) + '" alt=""><div class="tv-prog"><b>' + esc_(ch.programa) + "</b><small>" + (turno2() ? "2º turno" : "1º turno") + " • " + esc_(st.cena && st.cena.tipo === "pre" ? PRE[st.cena.d.k][1] : st.cena && st.cena.tipo === "urnas" ? "17h00" : ok(function () { return A().horaApuracao(); }, "")) + '</small></div><span class="tv-vivo">● AO VIVO</span>' + urnas(pct() / 100, municipal() ? "Mauá" : "Brasil") + "</header>";
     h += '<div class="tv-meio"><section class="tv-palco">' + (municipal() ? "" : '<div class="tv-mapbox">' + mapaBase() + '</div><div class="tv-mapcap"></div>') + "</section>";
     h += '<section class="tv-telao"><div class="tv-mom">' + esc_(cn.mom) + "</div>" + cn.painel + (st.cena && (st.cena.tipo === "nacional" || st.cena.tipo === "abertura") ? suaDisputa() : "") + "</section>";
     h += '<aside class="tv-bancada">' + cn.bancada + "</aside></div>";
     h += '<div class="tv-ticker"><span class="tv-tk-rot">' + (st.canal === "cnn" ? "ÚLTIMAS" : "APURAÇÃO") + '</span><div class="tv-tk"><span>' + esc_(ticker()) + "</span></div></div>";
+    if (st.cena && st.cena.tipo === "pre") { h += '<nav class="tv-ctrl"><button type="button" data-tv="preprox">Próximo ›</button><button type="button" data-tv="prepular">Pular abertura</button><button type="button" data-tv="trocar">📺 Trocar canal</button><button type="button" data-tv="classica">Tela clássica</button></nav>'; return h + "</div></div>"; }
     h += '<nav class="tv-ctrl"><button type="button" data-tv="play">' + (AP_.play ? "⏸ Pausar" : "▶ Continuar") + "</button>" + VEL.map(function (v) { return '<button type="button" data-tv="vel" data-id="' + v[1] + '" class="' + (Math.abs((AP_.vel || 0) - v[1]) < 1e-6 ? "on" : "") + '">' + v[0] + "</button>"; }).join("") +
       '<button type="button" data-tv="trocar">📺 Trocar canal</button><button type="button" data-tv="classica">Tela clássica</button>' + (pct() >= 100 ? '<button type="button" class="fim" data-tv="encerrar">Encerrar apuração</button>' : "") + "</nav>";
     return h + "</div></div>";
@@ -56707,7 +57238,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   function loop() {
     var ap = document.getElementById("apurMapa");
     if (ap && !st.aberto && !municipal()) {
-      st.aberto = true; st.oculto = false; st.canal = null; st.uf = null; st.cena = null; st.fila = []; st.senNovos = []; st.seguidos = 0; st.anunc = {}; st.regI = 0; st.rot = 0; st.vbK = null;
+      st.aberto = true; st.oculto = false; st.canal = null; st.uf = null; st.cena = null; st.fila = []; st.senNovos = []; st.seguidos = 0; st.anunc = {}; st.pre = false; st.pos = null; st.entFeita = false; st.entAberta = false; st.regI = 0; st.rot = 0; st.vbK = null;
       // segura a apuração enquanto o jogador escolhe o canal
       ok(function () { var AP_ = A().AP; if (AP_.pct < 1) AP_.play = false; });
     }
@@ -56721,9 +57252,11 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     if (!b.closest("#v3tv") && !b.closest("#apurMapa")) return;
     var k = b.getAttribute("data-tv"), id = b.getAttribute("data-id"), AP_ = ok(function () { return A().AP; }, null);
     e.preventDefault(); e.stopPropagation();
-    if (k === "canal") { var primeira = !st.canal && !st.cena; st.canal = id; try { localStorage.setItem("cadeira_tv_canal", id); } catch (er) {} if (primeira) retomar(VEL_TV); }
+    if (k === "canal") { var primeira = !st.canal && !st.cena; st.canal = id; try { localStorage.setItem("cadeira_tv_canal", id); } catch (er) {} if (primeira) { if (pct() < 1 && !municipal()) iniciarPre(); else retomar(VEL_TV); } }
+    else if (k === "preprox") { if (st.cena && st.cena.tipo === "pre") st.cena.dur = 0; dirigir(); }
+    else if (k === "prepular") { fimPre(); }
     else if (k === "trocar") st.canal = null;
-    else if (k === "classica") { st.oculto = true; if (AP_ && !AP_.play && AP_.pct < 1) retomar(1); }
+    else if (k === "classica") { st.oculto = true; if (st.pre) { st.pre = false; st.cena = null; retomar(1); } else if (AP_ && !AP_.play && AP_.pct < 1) retomar(1); }
     else if (k === "voltar") st.oculto = false;
     else if (k === "play" && AP_) { AP_.play = !AP_.play; AP_.last = performance.now(); }
     else if (k === "vel" && AP_) { AP_.vel = +id; AP_.last = performance.now(); }
@@ -56786,7 +57319,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     camara: { nome: "Marcela Vasconcelos", img: "marcela", papel: "repórter • Câmara de Mauá" },
     bairros: { nome: "Mariana Gutierrez", img: "mariana", papel: "repórter • bairros de Mauá" }
   };
-  DG.EQ = EQ;
+  DG.EQ = EQ; DG.IMG = IMG;
   var VEL = [["1x", 0.12], ["2x", 0.25], ["4x", 0.5], ["Rápido", 1]];
   var D = { abertura: 11000, candidatos: 11000, prefeitura: 10000, introBairro: 3200, porBairro: 4600, regioes: 11000, camaraPasso: 7000, introPan: 3500, porCidade: 6500, plantao: 9000 };
 
@@ -56961,6 +57494,8 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
       return novaCena("camara", { passos: ["nova", "conta", "eleitos", "destaques"], plantao: true }, 4 * D.camaraPasso);
     }
     if (p >= 100) {
+      if (!st.pos) { st.pos = [{ tipo: "posEleito", dur: 12000 }]; var apm = ok(function () { return V3COB.apoiosDe("PREF"); }, []); if (apm.length) st.pos.push({ tipo: "posApoios", dur: 7000 + Math.min(5, apm.length) * 2500, d: { lista: apm.slice(0, 5) } }); if (ok(function () { return V3COB.perguntasPos(); }, null)) st.pos.push({ tipo: "posJogador", dur: 60000 }); }
+      if (st.pos.length && st.cena.tipo !== "final") { var ps = st.pos.shift(); return novaCena(ps.tipo, ps.d || {}, ps.dur); }
       var pend = panPendentes();
       if (pend.length && !st.panFinal) { st.panFinal = 1; var lp = pend.slice(0, 3); lp.forEach(function (c) { st.panVistas[c.cidade] = 1; }); return novaCena("panorama", { cidades: lp }, D.introPan + lp.length * D.porCidade); }
       return novaCena("final", {}, 1e9);
@@ -56977,7 +57512,11 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     }
     return novaCena("prefeitura", {}, D.prefeitura);
   }
+  var PRE = [["Boa noite", "16h30"], ["A eleição em Mauá", "16h38"], ["Pesquisa", "16h45"], ["Como funciona", "16h52"], ["Contagem regressiva", "16h58"]];
+  function fimPre() { st.pre = false; novaCena("urnas", {}, 6500); ok(function () { var AP_ = A().AP; AP_.vel = VEL[0][1]; AP_.play = true; AP_.last = performance.now(); }); }
   function dirigir() {
+    if (st.cena && st.cena.tipo === "pre") { if (agora() - st.cena.ini > st.cena.dur) { var k = st.cena.d.k + 1; if (k < PRE.length) novaCena("pre", { k: k }, k === PRE.length - 1 ? 7000 : 9500); else fimPre(); } return; }
+    if (st.cena && st.cena.tipo === "posJogador" && st.entAberta) return;
     varrer();
     var c = st.cena, t = agora();
     var urgente = st.fila.length && c && ["prefeitura", "regioes", "candidatos"].indexOf(c.tipo) >= 0 && t - c.ini > 3000;
@@ -57148,6 +57687,52 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     if (!pr) { out.tag = "Apuração"; out.h = "<p>Aguardando os dados da apuração de Mauá.</p>"; out.banc = fala("ancora", "Boa noite. Estamos aguardando os primeiros boletins do cartório eleitoral."); return out; }
     var tit = '<h3>Prefeitura de Mauá ' + selo(pr) + "</h3>";
     switch (c.tipo) {
+      case "pre":
+        var k = c.d.k;
+        out.tag = "Antes das urnas fecharem • " + PRE[k][0];
+        if (k === 0) {
+          out.h = '<div class="dg-capa"><small>Cobertura especial</small><h2>Noite eleitoral no ABC</h2><p>A redação do Diário acompanha a apuração de Mauá e das cidades da região.</p></div><div class="dg-equipe">' + Object.keys(EQ).map(function (kk) { var q = pessoa(kk); return "<span>" + (q.foto ? '<img src="' + esc_(q.foto) + '" alt="">' : "") + "<b>" + esc_(q.nome) + "</b><small>" + esc_(q.papel) + "</small></span>"; }).join("") + "</div>";
+          out.banc = fala("ancora", "Boa noite! Começa a cobertura especial do Diário do Grande ABC " + (turno2() ? "do segundo turno em Mauá" : "da eleição municipal de " + ano()) + ". Comigo, Nilton Valentim e Evaldo Novelini nos comentários, Marcela Vasconcelos na Câmara e Mariana Gutierrez nos bairros.");
+        } else if (k === 1) {
+          var el = ok(function () { return A().nac().elMaua; }, 0);
+          out.h = "<h3>O que está em jogo em Mauá</h3><ul class='dg-dest'><li><b>Prefeitura</b>: " + (pr ? ordena(pr.fin).length : "") + (turno2() ? " finalistas no 2º turno" : " candidaturas") + "</li>" + (turno2() ? "" : "<li><b>Câmara Municipal</b>: " + ((legVER() || {}).N || 23) + " cadeiras pelo quociente eleitoral</li>") + (el ? "<li><b>" + fmtV(el) + "</b> eleitores aptos</li>" : "") + "</ul>";
+          out.banc = fala("ancora", turno2() ? "Mauá volta às urnas para escolher o prefeito entre os dois mais votados do primeiro turno." : "Mauá escolhe hoje o prefeito e os vereadores. Com mais de 200 mil eleitores, a cidade pode ter segundo turno.");
+        } else if (k === 2) {
+          var q = pr ? ok(function () { return V3COB.pesquisa("PREF", turno2() ? pr.fin : (ok(function () { return A().prefAtual().base; }, pr.fin)), "dg" + ano()); }, null) : null;
+          out.h = "<h3>Última pesquisa • Prefeitura</h3>" + (q ? "<small class='dg-pc'>" + esc_(q.instituto) + " • margem ±" + q.margem + " pontos</small>" + q.itens.slice(0, 5).map(function (x, i2) { return '<div class="dg-cand" style="--c:' + cor(x.partido, i2) + '"><div class="dg-foto"><span class="dg-ini">' + esc_(x.nome.charAt(0)) + '</span></div><div class="dg-ci"><b>' + esc_(x.nome) + "</b><small>" + esc_(sigla(x.partido)) + '</small><div class="dg-bar"><i style="width:' + Math.min(100, x.pct * 1.6) + '%"></i></div></div><div class="dg-num"><b>' + fmtP1(x.pct) + "%</b></div></div>"; }).join("") : "<p>Sem pesquisa registrada.</p>");
+          out.banc = fala("analista", q && q.itens[0] ? q.itens[0].nome + " chegou à reta final na frente, mas a diferença para " + (q.itens[1] ? q.itens[1].nome : "o segundo colocado") + " está perto da margem de erro. Em Mauá, a periferia decide." : "A eleição chega aberta.", "coment");
+        } else if (k === 3) {
+          out.h = "<h3>Como funciona a apuração</h3><ol class='dg-dest'><li>As urnas fecham às <b>17h</b>.</li><li>Os boletins de cada seção chegam ao cartório eleitoral e ao TSE.</li><li>Prefeito: mais de <b>50% dos votos válidos</b> vence no 1º turno.</li>" + (turno2() ? "" : "<li>Vereadores: os votos de cada partido ou federação definem as cadeiras pelo <b>quociente eleitoral</b>; as que sobram vão pela maior média.</li>") + "</ol>";
+          out.banc = fala("camara", turno2() ? "Hoje a apuração é só da Prefeitura." : "Na Câmara, não basta ser bem votado: o partido precisa alcançar o quociente. Vou explicar cada cadeira ao longo da noite.", "rep");
+        } else {
+          out.h = "<div class='dg-relogio'><small>Horário de Brasília</small><b>16:58</b><span>As urnas fecham às 17h</span></div>" + suaDisputa();
+          out.banc = fala("bairros", "Aqui nos bairros os últimos eleitores ainda estão nas filas. Faltam dois minutos.", "rep");
+        }
+        break;
+      case "urnas":
+        out.tag = "17h00 • Urnas fechadas";
+        out.h = "<div class='dg-relogio fim'><small>Horário de Brasília</small><b>17:00</b><span>URNAS FECHADAS</span></div>";
+        out.banc = fala("ancora", "São 17 horas: as urnas estão fechadas em Mauá. Começa a apuração.");
+        break;
+      case "posEleito":
+        var dpe = decisao(pr);
+        out.tag = "Pós-apuração • Prefeitura";
+        out.h = tit + placar(pr, dpe && dpe.tipo === "segundo" ? 2 : 1);
+        out.banc = (dpe ? dpe.quem.filter(function (x) { return !x.jogador; }).map(function (x) { return '<div class="dg-fala rep"><div class="dg-gc"><span class="dg-ini">' + esc_(limpaNome(x.nome).charAt(0)) + "</span><div><b>" + esc_(limpaNome(x.nome)) + "</b><small>" + esc_(sigla(x.partido)) + " • ao vivo</small></div></div><p>" + esc_(ok(function () { return V3COB.falaNpc(x, dpe.tipo === "segundo" ? "segundo" : "eleito"); }, "")) + "</p></div>"; }).join("") : "") + fala("bairros", "Estamos no comitê, com a militância. A primeira fala depois do resultado.", "rep");
+        break;
+      case "posApoios":
+        var la = c.d.lista || [];
+        out.tag = "Pós-apuração • Apoios no 2º turno";
+        out.h = "<h3>Quem apoia quem no 2º turno</h3><ul class='dg-dest'>" + la.map(function (r) { return "<li><b>" + esc_(r.jogador ? "Você" : r.quem.nome) + "</b> (" + esc_(sigla(r.quem.partido)) + "): " + esc_(r.decisao === "apoia" ? "apoia " + r.para.nome : ok(function () { return V3COB.ROT[r.decisao]; }, r.decisao)) + "</li>"; }).join("") + "</ul>";
+        out.banc = fala("analista", "Os apoios vão pesar: quem ficou de fora tem voto em bairros que os finalistas não alcançaram.", "coment");
+        break;
+      case "posJogador":
+        out.tag = "Pós-apuração • Entrevista";
+        out.h = "<h3>Ao vivo com " + esc_(ok(function () { return J().nome; }, "")) + "</h3>" + suaDisputa();
+        out.banc = fala("bairros", "Estamos com " + ok(function () { return J().nome; }, "") + ", que fala ao Diário sobre o resultado.", "rep");
+        if (!st.entFeita) { st.entFeita = true; st.entAberta = true; var Pq = ok(function () { return V3COB.perguntasPos(); }, null), rq = pessoa("bairros");
+          setTimeout(function () { ok(function () { V3COB.abrirEntrevista(Pq, { titulo: "Diário do Grande ABC • entrevista", sub: Pq ? Pq.cargo : "", logo: img("dgabc"), tema: "dg", reporter: { nome: rq.nome, foto: rq.foto, papel: rq.papel }, aoFechar: function () { st.entAberta = false; st.cena.dur = 0; } }); }); }, 50); }
+        break;
       case "abertura":
         out.tag = "Especial Eleições " + ano();
         out.h = '<div class="dg-capa"><small>Cobertura especial</small><h2>Mauá decide</h2><p>Prefeitura, Câmara Municipal e o resultado nas outras cidades do Grande ABC e do Estado, ao vivo da redação do Diário.</p></div>' + placar(pr, 4, true);
@@ -57254,11 +57839,12 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   function tela() {
     var cn = cena(), AP_ = ok(function () { return A().AP; }, {}), p = pct();
     var h = '<div class="dg" style="--bg:url(' + img("estudio") + ')"><div class="dg-fundo"></div><div class="dg-tela">';
-    h += '<header class="dg-top"><div class="dg-marca"><img src="' + img("dgabc") + '" alt="Diário do Grande ABC"><div><b>Especial Eleições ' + ano() + "</b><small>" + (turno2() ? "2º turno" : "1º turno") + " • Mauá • " + esc_(ok(function () { return A().horaApuracao(); }, "")) + '</small></div></div><span class="dg-vivo">AO VIVO</span><div class="dg-urnas"><b>' + fmtP(p) + '%</b><small>seções apuradas em Mauá</small><div class="dg-urnas-b"><i style="width:' + Math.min(100, p) + '%"></i></div></div></header>';
+    h += '<header class="dg-top"><div class="dg-marca"><img src="' + img("dgabc") + '" alt="Diário do Grande ABC"><div><b>Especial Eleições ' + ano() + "</b><small>" + (turno2() ? "2º turno" : "1º turno") + " • Mauá • " + esc_(st.cena && st.cena.tipo === "pre" ? PRE[st.cena.d.k][1] : st.cena && st.cena.tipo === "urnas" ? "17h00" : ok(function () { return A().horaApuracao(); }, "")) + '</small></div></div><span class="dg-vivo">AO VIVO</span><div class="dg-urnas"><b>' + fmtP(p) + '%</b><small>seções apuradas em Mauá</small><div class="dg-urnas-b"><i style="width:' + Math.min(100, p) + '%"></i></div></div></header>';
     h += '<div class="dg-meio"><section class="dg-palco" data-mapa="maua"><div class="dg-mapbox">' + svgMapa("maua") + svgMapa("gsp") + '</div><div class="dg-mapcap"></div></section>';
     h += '<section class="dg-telao"><div class="dg-tag">' + esc_(cn.tag) + "</div>" + cn.h + "</section>";
     h += '<aside class="dg-bancada">' + cn.banc + "</aside></div>";
     h += '<div class="dg-ticker"><span class="dg-tk-rot">ÚLTIMAS DO DIÁRIO</span><div class="dg-tk"><span>' + esc_(ticker()) + "</span></div></div>";
+    if (st.cena && st.cena.tipo === "pre") { h += '<nav class="dg-ctrl"><button type="button" data-dg="preprox">Próximo ›</button><button type="button" data-dg="prepular">Pular abertura</button><button type="button" data-dg="classica">Tela clássica</button></nav>'; return h + "</div></div>"; }
     h += '<nav class="dg-ctrl"><button type="button" data-dg="play">' + (AP_.play ? "⏸ Pausar" : "▶ Continuar") + "</button>" + VEL.map(function (v) { return '<button type="button" data-dg="vel" data-id="' + v[1] + '" class="' + (Math.abs((AP_.vel || 0) - v[1]) < 1e-6 ? "on" : "") + '">' + v[0] + "</button>"; }).join("") +
       '<button type="button" data-dg="classica">Tela clássica</button>' + (p >= 100 ? '<button type="button" class="fim" data-dg="encerrar">Encerrar apuração</button>' : "") + "</nav>";
     return h + "</div></div>";
@@ -57308,8 +57894,8 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   function loop() {
     var ap = document.getElementById("apurMapa");
     if (ap && municipal() && !st.aberto) {
-      st.aberto = true; st.oculto = false; st.cena = null; st.rot = 0; st.anunc = {}; st.fila = []; st.panVistas = {}; st.panFinal = 0; st.vbK = null; cacheCam = { k: null, r: null };
-      ok(function () { var AP_ = A().AP; if (AP_.pct < 1) { AP_.vel = VEL[0][1]; AP_.play = true; AP_.last = performance.now(); } });
+      st.aberto = true; st.oculto = false; st.cena = null; st.rot = 0; st.anunc = {}; st.fila = []; st.panVistas = {}; st.panFinal = 0; st.vbK = null; cacheCam = { k: null, r: null }; st.pos = null; st.entFeita = false; st.entAberta = false;
+      ok(function () { var AP_ = A().AP; if (AP_.pct < 1) { AP_.play = false; st.pre = true; novaCena("pre", { k: 0 }, 9500); } });
     }
     if (ap || document.getElementById("v3dg")) desenhar();
   }
@@ -57321,11 +57907,13 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     var k = b.getAttribute("data-dg"), id = b.getAttribute("data-id"), AP_ = ok(function () { return A().AP; }, null);
     if (k === "" || (k === "bairro" && !painelBairros())) return;
     e.preventDefault(); e.stopPropagation();
-    if (k === "classica") st.oculto = true;
+    if (k === "classica") { st.oculto = true; if (st.pre) fimPre(); }
     else if (k === "voltar") st.oculto = false;
     else if (k === "play" && AP_) { AP_.play = !AP_.play; AP_.last = performance.now(); }
     else if (k === "vel" && AP_) { AP_.vel = +id; AP_.last = performance.now(); }
     else if (k === "bairro") novaCena("estado", { id: id }, 12000);
+    else if (k === "preprox") { if (st.cena && st.cena.tipo === "pre") st.cena.dur = 0; dirigir(); }
+    else if (k === "prepular") { fimPre(); }
     else if (k === "encerrar") { var t = document.getElementById("v3dg"); if (t) t.remove(); st.aberto = false; ok(function () { A().fechar(); }); return; }
     desenhar();
   }, true);

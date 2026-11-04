@@ -1,0 +1,18 @@
+/* ===== Entrevista ao vivo (TV e Diário) ===== */
+#v3cob-ent{position:fixed;inset:0;z-index:2147480005}
+.v3cob-ov{position:absolute;inset:0;background:rgba(3,6,12,.72);display:flex;align-items:flex-end;justify-content:center;padding:14px;overflow-y:auto}
+.v3cob-box{width:min(760px,100%);background:#0f172a;color:#f8fafc;border-radius:16px 16px 12px 12px;border-top:5px solid #dc2626;box-shadow:0 30px 80px rgba(0,0,0,.6);padding:16px 18px;animation:v3cobsobe .4s ease;max-height:calc(100vh - 28px);overflow-y:auto}
+@keyframes v3cobsobe{from{transform:translateY(30px);opacity:0}}
+.v3cob-box.tv-globo{border-top-color:#1e88e5}.v3cob-box.tv-cnn{border-top-color:#cc0000;background:#0a0a0a}.v3cob-box.tv-band{border-top-color:#ffd400;background:#0a1a4a}.v3cob-box.dg{background:#fbfaf6;color:#1a1f2b;border-top-color:#c8102e}
+.v3cob-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}.v3cob-top img{height:30px;width:auto;max-width:90px;background:#fff;border-radius:5px;padding:2px 5px}
+.v3cob-top b{display:block}.v3cob-top small{opacity:.75;font-size:.75rem}.v3cob-top div{flex:1}
+.v3cob-vivo{background:#dc2626;color:#fff;font-size:.68rem;font-weight:800;padding:3px 8px;border-radius:3px;letter-spacing:.08em}
+.v3cob-rep{display:flex;align-items:center;gap:8px;margin-bottom:6px}.v3cob-rep img{width:42px;height:42px;border-radius:50%;object-fit:cover}.v3cob-rep b{display:block;font-size:.9rem}.v3cob-rep small{opacity:.75;font-size:.72rem}
+.v3cob-q{font-size:1.08rem;line-height:1.45;margin:6px 0 12px;font-weight:600}
+.v3cob-ops{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.v3cob-ops button{font:inherit;text-align:left;padding:10px;border-radius:10px;border:1px solid rgba(148,163,184,.4);background:rgba(255,255,255,.06);color:inherit;cursor:pointer}
+.v3cob-ops button:hover{border-color:#fbbf24}.v3cob-ops b{display:block}.v3cob-ops small{opacity:.8;font-size:.8rem}
+.v3cob-box.dg .v3cob-ops button{background:#fff;border-color:#d9dde5}
+.v3cob-r{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.08);line-height:1.45}.v3cob-box.dg .v3cob-r{background:#eef2f8}
+.v3cob-ok,.v3cob-sem{font:inherit;font-weight:700;margin-top:12px;padding:8px 14px;border-radius:9px;border:1px solid rgba(148,163,184,.5);background:transparent;color:inherit;cursor:pointer}
+.v3cob-ok{background:#16a34a;border-color:#16a34a;color:#fff}

@@ -71,3 +71,18 @@ body.v3d-aberto{overflow:hidden}
 .v3d-cal li b{display:block}.v3d-cal li small{opacity:.8}
 .v3d-cal li.feito{opacity:.85}.v3d-cal li.ausente{opacity:.6}.v3d-cal li.hoje{border-color:#f59e0b}
 @media (max-width:560px){.v3d-pulp{width:72px}.v3d-foto{width:38px;height:38px}.v3d-fala{font-size:.95rem}.v3d-barra{grid-template-columns:90px 1fr 40px}}
+/* pré-debate */
+.v3d-abert{display:flex;flex-direction:column;align-items:center;gap:8px;padding:34px 12px;text-align:center;background:radial-gradient(circle at 50% 40%,var(--c2) 0%,transparent 55%),linear-gradient(135deg,var(--c1),rgba(0,0,0,.7));border-radius:14px;overflow:hidden;position:relative}
+.v3d-abert::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 20%,rgba(255,255,255,.12) 25%,transparent 30% 70%,rgba(255,255,255,.1) 75%,transparent 80%);animation:v3dgira 6s linear infinite}
+@keyframes v3dgira{to{transform:rotate(360deg)}}
+.v3d-abert img{position:relative;height:64px;width:auto;max-width:180px;background:#fff;border-radius:10px;padding:6px 10px;animation:v3dzoom 1.2s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes v3dzoom{from{transform:scale(.3);opacity:0}}
+.v3d-abert b{position:relative;font-family:Fraunces,serif;font-size:1.6rem;letter-spacing:.05em;animation:v3dsobe .8s .4s ease both}
+.v3d-abert small{position:relative;text-transform:uppercase;letter-spacing:.12em;opacity:.9;animation:v3dsobe .8s .7s ease both}
+.v3d-abert span{position:relative;background:#dc2626;font-weight:800;font-size:.75rem;padding:3px 10px;border-radius:4px;animation:v3dpisca 1.6s 1s infinite}
+.v3d-pq{background:rgba(0,0,0,.55);border-radius:10px;padding:8px 10px;margin:6px 0}.v3d-pq > small{opacity:.8;font-size:.74rem}
+.v3d-chega{display:flex;align-items:center;gap:12px;margin:10px 0;padding:10px;border-radius:12px;background:rgba(0,0,0,.45);animation:v3dentra .6s ease}
+@keyframes v3dentra{from{transform:translateX(-30px);opacity:0}}
+.v3d-chega .v3d-foto{width:64px;height:64px}.v3d-chega b{display:block;font-size:1.1rem}
+.v3d-gc.rep{border-left-color:#f59e0b}
+.v3d-trans{letter-spacing:.2em;animation:v3dpisca 1.2s infinite}
