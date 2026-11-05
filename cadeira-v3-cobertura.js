@@ -149,6 +149,14 @@
     return rec;
   };
   // jogador finalista pede apoio a um eliminado
+  // apoio fechado numa conversa (ligação pós-eleição): aplica direto, sem sorteio
+  CB.apoioAcertado = function (cargo, nomeEl) {
+    var stt = segundos().filter(function (x) { return x.cargo === cargo; })[0]; if (!stt) return false;
+    var rec = CB.apoiosDe(cargo).filter(function (r) { return r.quem.nome === nomeEl; })[0]; if (!rec || rec.decisao === "apoia") return false;
+    if (!stt.candidatos.some(function (c) { return c.jogador; })) return false;
+    rec.decisao = "apoia"; rec.para = { id: "JOGADOR", nome: ok(function () { return J().nome; }, "") }; rec.aplicado = false; aplicar(rec, stt);
+    nota(rec.quem.nome + " declara apoio a " + rec.para.nome + " no 2º turno depois de conversa por telefone."); return true;
+  };
   CB.pedirApoio = function (cargo, nomeEl) {
     var stt = segundos().filter(function (x) { return x.cargo === cargo; })[0]; if (!stt) return;
     var rec = CB.apoiosDe(cargo).filter(function (r) { return r.quem.nome === nomeEl; })[0]; if (!rec || rec.decisao === "apoia") return;
