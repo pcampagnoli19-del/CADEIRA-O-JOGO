@@ -37278,6 +37278,7 @@ document.addEventListener("click", function(e){
     r.casaNome = nomeCasa(pl.esfera);
     r.cargo = cargoDaEsfera(pl.esfera);
     r.ano = anoMandato(pl) || r.ano;
+    if (r.status === "SANCIONADO" && !r.anoSancao) { try { r.anoSancao = dt().ano; } catch (eA) {} }
     if (pl.voto != null) r.voto = pl.voto;
   }
 
@@ -48247,17 +48248,24 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
     var proj = (j && j.carreira && j.carreira.projetos) || [];
     return proj.filter(function (p) { return p && p.status === "SANCIONADO"; });
   }
+  // ano da lei: o do número (PL nº 112/2028), senão o da sanção, senão o do mandato
+  function anoLei(p) {
+    var m = String(p && p.nome || "").match(/n[ºo°]?\s*\d+\s*\/\s*(\d{4})/i);
+    if (m) return Number(m[1]);
+    if (p && p.anoSancao) return Number(p.anoSancao);
+    return p && p.ano != null && isFinite(Number(p.ano)) ? Number(p.ano) : null;
+  }
   function htmlItemLei(p) {
     var casa = p.casaNome || (p.esfera === "M" ? "Câmara Municipal de Mauá" : p.esfera === "E" ? "Assembleia Legislativa de São Paulo" : p.esfera === "S" ? "Senado Federal" : "Câmara dos Deputados");
     var cargo = p.cargo || (p.esfera === "M" ? "Vereador de Mauá" : "");
-    return "<li style=\"margin:4px 0\"><b>" + escLei(p.nome) + "</b> — lei aprovada e sancionada na <b>" + escLei(casa) + "</b>" + (cargo ? ", no mandato de <b>" + escLei(cargo) + "</b>" : "") + (p.ano ? " (" + p.ano + ")" : "") + (p.voto != null ? ", com " + p.voto + "% dos votos" : "") + ".</li>";
+    return "<li style=\"margin:4px 0\"><b>" + escLei(p.nome) + "</b> — lei aprovada e sancionada na <b>" + escLei(casa) + "</b>" + (cargo ? ", no mandato de <b>" + escLei(cargo) + "</b>" : "") + (p.ano ? " iniciado em " + p.ano : "") + (anoLei(p) && anoLei(p) !== Number(p.ano) ? ", lei de " + anoLei(p) : "") + (p.voto != null ? ", com " + p.voto + "% dos votos" : "") + ".</li>";
   }
   function anosDasLeis(leis) {
     var seen = {};
     var anos = [];
     (leis || []).forEach(function (p) {
-      if (!p || p.ano == null || p.ano === "" || !isFinite(Number(p.ano))) return;
-      var n = Number(p.ano);
+      var n = anoLei(p);
+      if (n == null || !isFinite(n)) return;
       if (seen[n]) return;
       seen[n] = true;
       anos.push(n);
@@ -48283,7 +48291,7 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
   }
   function filtrar(leis, sel) {
     if (sel === "todos") return (leis || []).slice();
-    return (leis || []).filter(function (p) { return p && String(p.ano) === String(sel); });
+    return (leis || []).filter(function (p) { return p && String(anoLei(p)) === String(sel); });
   }
   window.htmlItemLeiJogador = htmlItemLei;
   window.htmlBlocoLeisJogador = function (chave) {
@@ -48293,6 +48301,12 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
     var vis = filtrar(leis, sel);
     var ulId = chave === "wiki" ? "wiki-leis-mandato" : "poder-leis-mandato";
     var ul = vis.length ? '<ul id="' + ulId + '" style="margin:8px 0 14px 18px;line-height:1.45">' + vis.map(htmlItemLei).join("") + "</ul>" : "";
+    if (chave === "wiki") {
+      // na wiki do personagem a lista fica recolhida: só o resumo aparece até abrir
+      if (!leis.length) return "";
+      var aberto = S.leisWikiAberto ? " open" : "";
+      return '<details class="leis-wiki"' + aberto + ' data-leis-wiki="1"><summary>📜 Leis sancionadas: <b>' + leis.length + "</b>" + (anos.length ? " (" + anos[0] + (anos.length > 1 ? "–" + anos[anos.length - 1] : "") + ")" : "") + ' <span>ver lista</span></summary>' + htmlFiltro(chave, anos, sel) + ul + "</details>";
+    }
     return htmlFiltro(chave, anos, sel) + ul;
   };
   A.leisAno = function (chave, ano) {
@@ -48314,8 +48328,9 @@ try { (window.CATALOGO_MOVIMENTOS || CATALOGO_MOVIMENTOS).push.apply((window.CAT
     });
     VIEWS.poder._leisAno = true;
   }
+  document.addEventListener("toggle", function (e) { var d = e.target; if (d && d.getAttribute && d.getAttribute("data-leis-wiki")) S.leisWikiAberto = d.open; }, true);
   var st = document.createElement("style");
-  st.textContent = ".leis-anos{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;align-items:center}.leis-anos .b{flex:0 0 auto;white-space:nowrap}";
+  st.textContent = ".leis-wiki{margin:8px 0 12px;border:1px solid rgba(56,189,248,.35);border-radius:8px;padding:6px 10px;background:rgba(30,41,59,.5)}.leis-wiki summary{cursor:pointer;font-size:13px}.leis-wiki summary span{font-size:11px;opacity:.7;margin-left:6px}.leis-wiki[open] summary span{display:none}.leis-anos{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;align-items:center}.leis-anos .b{flex:0 0 auto;white-space:nowrap}";
   document.head.appendChild(st);
 })();
 </script>
