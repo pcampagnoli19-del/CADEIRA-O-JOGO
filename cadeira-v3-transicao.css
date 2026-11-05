@@ -1,0 +1,33 @@
+/* CADEIRA v3 — Transição de governo e cards das pastas com foto em destaque */
+.v24g{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))!important;gap:10px!important}
+.v24g .v24c.v3pc{padding:0;overflow:hidden;display:flex;flex-direction:column;gap:0;border-radius:14px;transition:transform .15s,box-shadow .15s}
+.v24g .v24c.v3pc:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.v3pc-foto{display:block;position:relative;aspect-ratio:4/5;background:linear-gradient(160deg,#334155,#0f172a);overflow:hidden}
+.v3pc-foto img,.v3pc-foto .foto,.v3pc-foto>*{width:100%!important;height:100%!important;max-width:none!important;object-fit:cover;object-position:50% 18%;border-radius:0!important;display:block}
+.v3pc-foto::after{content:"";position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none}
+.v3pc.vago .v3pc-foto{display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(135deg,rgba(148,163,184,.12) 0 10px,rgba(148,163,184,.04) 10px 20px);border-bottom:2px dashed rgba(148,163,184,.4)}
+.v3pc.vago .v3pc-foto::after{display:none}.v3pc-foto i{font-style:normal;font-size:2.6rem;opacity:.5;width:auto!important;height:auto!important}
+.v3pc-txt{display:flex;flex-direction:column;gap:2px;padding:8px 10px 10px;text-align:left}
+.v3pc-pasta{display:flex;gap:5px;align-items:flex-start;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;opacity:.75;line-height:1.25}
+.v3pc-txt b{font-size:.95rem;line-height:1.2}.v3pc-txt small{font-size:.74rem;opacity:.75}.v3pc-vago{color:#f59e0b}
+.v24h{align-items:center!important;gap:12px!important}.v24h .foto,.v24h img{border-radius:12px!important}
+/* transição */
+.v3t-hero{padding:16px;border-radius:14px;background:linear-gradient(135deg,rgba(29,78,216,.18),rgba(201,162,39,.12));border:1px solid rgba(201,162,39,.35);margin-bottom:12px}
+.v3t-hero small{text-transform:uppercase;letter-spacing:.06em;font-size:.72rem;opacity:.75}.v3t-hero h2{margin:4px 0}.v3t-hero p{margin:0;opacity:.9}
+.v3t-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}.v3t-kpi>div{background:rgba(0,0,0,.18);border-radius:10px;padding:8px}.v3t-kpi b{display:block;font-size:1.1rem}.v3t-kpi small{opacity:.75;font-size:.72rem}
+.v3t-sec{margin:14px 0}.v3t-sec h3{margin:0 0 6px}.v3t-nota{font-size:.82rem;opacity:.8;margin:0 0 8px}
+.v3t-estr{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
+.v3t-estr button{text-align:left;font:inherit;color:inherit;padding:8px 10px;border-radius:10px;cursor:pointer;border:1px solid rgba(34,197,94,.5);background:rgba(34,197,94,.1)}
+.v3t-estr button.off{border-color:rgba(148,163,184,.35);background:rgba(148,163,184,.06);opacity:.7}.v3t-estr button.ess{border-color:rgba(201,162,39,.6);background:rgba(201,162,39,.12);cursor:default}
+.v3t-estr b{display:block;font-size:.84rem}.v3t-estr small{font-size:.7rem;opacity:.75}
+.v3t-pasta{border:1px solid rgba(148,163,184,.3);border-radius:12px;padding:10px;margin:8px 0;background:rgba(148,163,184,.05)}
+.v3t-ph b{display:block}.v3t-ph small{opacity:.7;font-size:.76rem}
+.v3t-ok,.v3t-ind{display:flex;align-items:center;gap:10px;margin-top:8px;padding:8px;border-radius:10px;background:rgba(0,0,0,.15)}
+.v3t-ok{border-left:4px solid #22c55e}.v3t-ind{border-left:4px solid #eab308}
+.v3t-ok span,.v3t-ind span{flex:1;min-width:0}.v3t-ok b,.v3t-ind b{display:block}.v3t-ok small,.v3t-ind small{font-size:.74rem;opacity:.8}.v3t-ind em{display:block;font-size:.76rem;opacity:.85}
+.v3t-bts{display:flex;flex-direction:column;gap:4px}
+.v3t-prop{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.v3t-prop select{flex:1;min-width:180px;font:inherit;padding:6px;border-radius:8px}.v3t-prop small{width:100%;font-size:.72rem;opacity:.7}
+.v3t-res{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}.v3t-res>div{padding:10px;border-radius:10px;border:1px dashed rgba(148,163,184,.5)}.v3t-res b{display:block}.v3t-res small{display:block;font-size:.74rem;opacity:.75;margin:2px 0 6px}
+#v3t-chip{position:fixed;left:12px;bottom:262px;z-index:9001}
+#v3t-chip button{display:flex;align-items:center;gap:8px;border:0;border-radius:99px;padding:8px 14px 8px 10px;background:#a16207;color:#fff;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35);font:inherit;text-align:left}
+#v3t-chip span b{display:block;font-size:.8rem}#v3t-chip span small{font-size:.7rem;opacity:.9}
