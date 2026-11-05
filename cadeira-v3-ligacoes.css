@@ -1,5 +1,5 @@
 /* CADEIRA v3 — ligações pós-eleição */
-#v3lig{position:fixed;inset:0;z-index:100200}
+#v3lig{position:fixed;inset:0;z-index:2147482900}
 .v3l-ov{position:absolute;inset:0;background:rgba(3,7,18,.78);display:flex;align-items:center;justify-content:center;padding:10px;animation:v3lIn .25s ease}
 @keyframes v3lIn{from{opacity:0}to{opacity:1}}
 .v3l-tel{width:min(420px,100%);max-height:calc(100% - 10px);overflow:hidden;display:flex;flex-direction:column;border-radius:28px;background:linear-gradient(180deg,#0f172a,#020617);color:#f1f5f9;box-shadow:0 30px 70px rgba(0,0,0,.6);border:6px solid #1e293b;font-family:system-ui,sans-serif}

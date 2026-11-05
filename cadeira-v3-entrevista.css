@@ -1,5 +1,5 @@
 /* CADEIRA v3 — entrevistas ao vivo com IA */
-#v3ent{position:fixed;inset:0;z-index:100000}
+#v3ent{position:fixed;inset:0;z-index:2147483000}
 .v3e-ov{position:absolute;inset:0;background:rgba(4,8,16,.78);display:flex;align-items:flex-end;justify-content:center;padding:10px;animation:v3eIn .25s ease}
 @media (min-width:700px){.v3e-ov{align-items:center}}
 @keyframes v3eIn{from{opacity:0}to{opacity:1}}

@@ -51478,7 +51478,7 @@ body.v3d-aberto{overflow:hidden}
 </style>
 <style id="cadeira-v3-entrevista">
 /* CADEIRA v3 — entrevistas ao vivo com IA */
-#v3ent{position:fixed;inset:0;z-index:100000}
+#v3ent{position:fixed;inset:0;z-index:2147483000}
 .v3e-ov{position:absolute;inset:0;background:rgba(4,8,16,.78);display:flex;align-items:flex-end;justify-content:center;padding:10px;animation:v3eIn .25s ease}
 @media (min-width:700px){.v3e-ov{align-items:center}}
 @keyframes v3eIn{from{opacity:0}to{opacity:1}}
@@ -51536,7 +51536,7 @@ body.v3d-aberto{overflow:hidden}
 .v3m-jornal article.v3m-princ:hover,.v3m-jornal article.v3m-mat:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.12)}
 .v3m-jornal article.v3m-princ h2::after,.v3m-jornal article.v3m-mat h3::after{content:" ›";opacity:.45;font-weight:400}
 p.news{cursor:pointer}p.news:hover{text-decoration:underline;text-underline-offset:3px}
-#v3news{position:fixed;inset:0;z-index:99990}
+#v3news{position:fixed;inset:0;z-index:2147482800}
 .v3n-ov{position:absolute;inset:0;background:rgba(8,12,20,.72);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:14px 10px;animation:v3nIn .25s ease}
 @keyframes v3nIn{from{opacity:0}to{opacity:1}}
 .v3n-box{width:min(760px,100%);background:#fbfaf7;color:#1c1917;border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);font-family:Georgia,"Times New Roman",serif}
@@ -51571,7 +51571,7 @@ p.news{cursor:pointer}p.news:hover{text-decoration:underline;text-underline-offs
 </style>
 <style id="cadeira-v3-ligacoes">
 /* CADEIRA v3 — ligações pós-eleição */
-#v3lig{position:fixed;inset:0;z-index:100200}
+#v3lig{position:fixed;inset:0;z-index:2147482900}
 .v3l-ov{position:absolute;inset:0;background:rgba(3,7,18,.78);display:flex;align-items:center;justify-content:center;padding:10px;animation:v3lIn .25s ease}
 @keyframes v3lIn{from{opacity:0}to{opacity:1}}
 .v3l-tel{width:min(420px,100%);max-height:calc(100% - 10px);overflow:hidden;display:flex;flex-direction:column;border-radius:28px;background:linear-gradient(180deg,#0f172a,#020617);color:#f1f5f9;box-shadow:0 30px 70px rgba(0,0,0,.6);border:6px solid #1e293b;font-family:system-ui,sans-serif}
@@ -51615,7 +51615,7 @@ p.news{cursor:pointer}p.news:hover{text-decoration:underline;text-underline-offs
 </style>
 <style id="cadeira-v3-posse">
 /* CADEIRA v3 — cerimônia de posse */
-#v3posse{position:fixed;inset:0;z-index:100500;background:#000;color:#f8fafc}
+#v3posse{position:fixed;inset:0;z-index:2147483100;background:#000;color:#f8fafc}
 .v3p-ov,.v3p-palco{position:absolute;inset:0;overflow:hidden}
 .v3p-bg{position:absolute;inset:-6%;background-size:cover;background-position:center;animation:v3pKb0 16s ease-out forwards;filter:saturate(1.05)}
 .v3p-bg.kb1{animation-name:v3pKb1}.v3p-bg.kb2{animation-name:v3pKb2}
@@ -53859,9 +53859,87 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     return clamp(j.popularidade * 0.9 + (ok(function () { return CARGO_NIVEL[j.cargo_atual]; }, 2) || 2) * 2.5 + (a.influencia || 30) / 8 + (j.relacao_partido || 0) / 6 + ((a.carisma || 50) - 50) / 6 + (j.padrinho_id ? 5 : 0), 5, 95);
   }
 
+  /* ---------------------------------------------------------------- 2026: candidatos reais
+     Na primeira eleição do jogo, Presidente, Governador de SP e Senado por SP são disputados
+     pelos candidatos que de fato registraram candidatura em 2026 (TSE, agosto de 2026).
+     Quem não existe no banco é criado como personagem real (sem foto inventada).
+     O resultado continua sendo simulado pelo jogo. */
+  var REAIS = {
+    PRES: [["Luiz Inácio Lula", "PT"], ["Flávio Bolsonaro", "PL"], ["Ronaldo Caiado", "PSD"], ["Romeu Zema", "NOVO"], ["Renan Santos", "Missão"], ["Augusto Cury", "Avante"], ["Samara Martins", "UP"], ["Hertz Dias", "PSTU"], ["Edmilson Costa", "PCB"], ["Rui Costa Pimenta", "PCO"], ["Clariana Barão", "DC", "F", 45], ["Wilson Grassi", "Democrata", "M", 60]],
+    GOV: [["Tarcísio de Freitas", "Republicanos"], ["Fernando Haddad", "PT"], ["Vivian Mendes", "UP"], ["Vera Lúcia", "PSTU"], ["Carlos Machado", "PCB", "M", 41], ["Izadora Dias", "PCO", "F", 31], ["Policial Edjane", "Agir", "F", 48]],
+    SEN: [["Guilherme Derrite", "PP"], ["André do Prado", "PL"], ["Simone Tebet", "PSB"], ["Marina Silva", "REDE"], ["Ricardo Salles", "NOVO"], ["Geraldo Rufino", "Podemos"], ["Soninha Francine", "Cidadania", "F", 58], ["Guto Schiavetto", "Missão", "M", 40], ["William Teixeira", "Agir", "M", 45], ["Dra. Eliana Ferreira", "PSTU", "F", 50], ["Ednelson Cesaretti", "PCO", "M", 55], ["Maíra de Souza", "UP", "F", 35], ["Petter Maahs", "PCB", "M", 33]]
+  };
+  var ANO_REAL = 2026;
+  PRE.REAIS = REAIS;
+  function sig(p) { return ok(function () { return normPartido(p); }, p) || p; }
+  function npcReal(def, c) {
+    var nome = def[0], l = ok(function () { return bancoDeNPCs; }, []);
+    var n = l.filter(function (x) { return x && (x.nome === nome || String(x.nome).indexOf(nome + " (") === 0); })[0];
+    if (n) {
+      if (!n.v3real26) { n.v3real26 = true; if (sig(partOf(n)) !== sig(def[1])) { n.partido = def[1]; n.partidoBase = def[1]; } if (c !== "PRES" && !n.uf) n.uf = "SP"; }
+      return n;
+    }
+    var mod = l.filter(function (x) { return x && x.vivo && x.cargo === "Liderança / Ex-Titular" && x.real; })[0] || l[0];
+    n = JSON.parse(JSON.stringify(mod));
+    Object.assign(n, { id: "REAL26_" + nome.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 18), nome: nome, partido: def[1], partidoBase: def[1], sexo: def[2] || "M", idade: def[3] || 50,
+      cargo: "Liderança / Ex-Titular", papel: "Candidat" + (def[2] === "F" ? "a" : "o") + " em 2026", real: true, vivo: true, uf: "SP", municipio_domicilio: "São Paulo", popularidade: 9 + Math.random() * 6, carisma: 45 + Math.random() * 10,
+      relacao_com_jogador: 0, base_votos: 20000, caixa1: 50000, caixa2: 0, inelegivel: false, status_judicial: "FICHA_LIMPA", mandato_fim: null, ambicao_alta: true, v3real26: true });
+    delete n.foto; delete n._fotoProc; n.gaveta_dossies = []; n.vicios_ocultos = []; n.padrinho_politico_id = null;
+    ok(function () { bancoDeNPCs.push(n); });
+    return n;
+  }
+  function reaisDe(c) { return (REAIS[c] || []).map(function (d) { return npcReal(d, c); }).filter(Boolean); }
+  function eh2026(c) { return !!REAIS[c] && dataJ().ano === ANO_REAL; }
+  PRE.reaisDe = reaisDe;
+  function scoreN(n) { var inc = TITULAR.PRES === n.cargo || TITULAR.GOV === n.cargo; return (n.popularidade || 20) + ((n.carisma || 50) - 50) / 6 + 6 + (inc ? 4 : 0) + ok(function () { return (PARTIDOS[n.partidoBase] || { fundo: 0 }).fundo * 0.25; }, 0); }
+  function nomeBase(x) { return String((x && (x.nome || (x.npc && x.npc.nome))) || "").replace(/\s*\((vice|suplentes?):.*$/i, "").trim(); }
+  function instalarReais() {
+    var cm = window.candidatosMajoritarios;
+    if (typeof cm === "function" && !cm.__reais26) {
+      var nc = function (c) {
+        var l = cm.apply(this, arguments) || [];
+        try {
+          if (!eh2026(c)) return l;
+          var reais = reaisDe(c), ids = {}; reais.forEach(function (n) { ids[n.id] = 1; });
+          var j = J(), pj = j && j.campanha && j.campanha.candidatura_ativa && ok(function () { return cargoIdPorNome(j.campanha.cargo_alvo); }, null) === c ? sig(j.partido_atual) : null;
+          var out = [];
+          reais.forEach(function (n) { if (pj && sig(partOf(n)) === pj) return; var ex = l.filter(function (x) { return x.npc && x.npc.id === n.id; })[0]; out.push(ex || { npc: n, score: scoreN(n) }); });
+          return out;
+        } catch (e) { return l; }
+      };
+      for (var k in cm) { try { nc[k] = cm[k]; } catch (e2) {} }
+      nc.__reais26 = true; window.candidatosMajoritarios = nc;
+    }
+    var pm = window.projetarMajoritaria;
+    if (typeof pm === "function" && !pm.__reais26) {
+      var np = function (c) {
+        var l = pm.apply(this, arguments) || [];
+        try {
+          if (!eh2026(c)) return l;
+          var nomes = {}; reaisDe(c).forEach(function (n) { nomes[n.nome] = 1; });
+          var f = l.filter(function (x) { return x.jogador || x.id === "JOGADOR" || nomes[nomeBase(x)] || (x.npc && nomes[x.npc.nome]); });
+          if (f.length >= 2 && f.length !== l.length) {
+            var w = f.map(function (x) { return Math.exp((x.score || 0) / 16); }), t = w.reduce(function (a, b) { return a + b; }, 0) || 1;
+            f.forEach(function (x, i) { x.share = w[i] / t * 100; }); f.sort(function (a, b) { return (b.share || 0) - (a.share || 0); });
+          }
+          return f.length >= 2 ? f : l;
+        } catch (e) { return l; }
+      };
+      for (var k2 in pm) { try { np[k2] = pm[k2]; } catch (e3) {} }
+      np.__reais26 = true; window.projetarMajoritaria = np;
+    }
+  }
+  PRE.instalarReais = instalarReais;
+
   /* ---------------------------------------------------------------- corrida */
   function novaCorrida(c, ano) {
     var cor = { c: c, ano: ano, partidos: {}, inicio: mesIdx(dataJ().ano, dataJ().mes), formada: false };
+    if (ano === ANO_REAL && REAIS[c]) {
+      // 2026: cada partido tem o seu candidato real como nome único (sem disputa interna fictícia)
+      cor.reais = true;
+      reaisDe(c).forEach(function (n) { var p = partOf(n), b = Math.max(70, Math.round(base(c, n))); if (cor.partidos[p]) return; cor.partidos[p] = { nomes: [{ id: n.id, f: b, h: [b], fato: "", pop: n.popularidade || 30, cargo: n.cargo, baixo: 0 }], saiu: [] }; });
+      return cor;
+    }
     var por = {};
     ok(function () { return bancoDeNPCs; }, []).forEach(function (n) { if (elegivel(c, n)) (por[partOf(n)] = por[partOf(n)] || []).push(n); });
     Object.keys(por).forEach(function (p) {
@@ -53873,8 +53951,15 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   function corrida(c) {
     var st = estado(); if (!st) return null;
     var ano = alvoAno(c, dataJ()), k = chave(c, ano);
-    if (!st.corridas[k]) st.corridas[k] = novaCorrida(c, ano);
-    return st.corridas[k];
+    var cr = st.corridas[k];
+    // saves antigos: troca a corrida fictícia de 2026 pela dos candidatos reais enquanto as prévias não terminaram
+    if (cr && ano === ANO_REAL && REAIS[c] && !cr.reais) {
+      var P = ok(function () { return M().previas.atual; }, null), g = P && P.ano === ano && P.grupos && P.grupos[c];
+      var decidido = g && Object.keys(g).some(function (p) { return g[p].venc; });
+      if (!decidido) { cr = null; if (g) delete P.grupos[c]; }
+    }
+    if (!cr) cr = st.corridas[k] = novaCorrida(c, ano);
+    return cr;
   }
   function share(lista) {
     var w = lista.map(function (x) { return Math.exp(x.f / 11); }), t = w.reduce(function (a, b) { return a + b; }, 0) || 1;
@@ -53950,8 +54035,8 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
         }
       }
     });
-    // novos nomes que despontam (cargo novo, popularidade em alta)
-    if (Math.random() < 0.35) {
+    // novos nomes que despontam (cargo novo, popularidade em alta); em 2026 o páreo é o real
+    if (!cor.reais && Math.random() < 0.35) {
       var novos = ok(function () { return bancoDeNPCs; }, []).filter(function (n) { return elegivel(c, n) && !vistos[n.id] && (n.ambicao_alta || (n.popularidade || 0) >= 45); });
       if (novos.length) {
         var n = pick(novos), p = partOf(n);
@@ -54160,6 +54245,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   /* ---------------------------------------------------------------- instalação */
   function instalar() {
     instalarAcoes();
+    instalarReais();
     if (typeof VIEWS !== "undefined" && !VIEWS.pre) VIEWS.pre = function () { return view(); };
     try { if (!TABS.some(function (t) { return t[0] === "pre"; })) TABS.push(["pre", "Pré-candidaturas"]); } catch (e) {}
     var N = window.NAVH;
@@ -54177,6 +54263,8 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   instalar();
   document.addEventListener("DOMContentLoaded", function () { setTimeout(instalar, 0); });
   window.addEventListener("load", function () { setTimeout(instalar, 0); });
+  // as camadas de chapa são instaladas depois: a dos candidatos reais precisa ficar por fora
+  setInterval(function () { try { instalarReais(); } catch (e) {} }, 1500);
 })();
 
 </script>

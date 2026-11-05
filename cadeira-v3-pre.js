@@ -74,9 +74,87 @@
     return clamp(j.popularidade * 0.9 + (ok(function () { return CARGO_NIVEL[j.cargo_atual]; }, 2) || 2) * 2.5 + (a.influencia || 30) / 8 + (j.relacao_partido || 0) / 6 + ((a.carisma || 50) - 50) / 6 + (j.padrinho_id ? 5 : 0), 5, 95);
   }
 
+  /* ---------------------------------------------------------------- 2026: candidatos reais
+     Na primeira eleição do jogo, Presidente, Governador de SP e Senado por SP são disputados
+     pelos candidatos que de fato registraram candidatura em 2026 (TSE, agosto de 2026).
+     Quem não existe no banco é criado como personagem real (sem foto inventada).
+     O resultado continua sendo simulado pelo jogo. */
+  var REAIS = {
+    PRES: [["Luiz Inácio Lula", "PT"], ["Flávio Bolsonaro", "PL"], ["Ronaldo Caiado", "PSD"], ["Romeu Zema", "NOVO"], ["Renan Santos", "Missão"], ["Augusto Cury", "Avante"], ["Samara Martins", "UP"], ["Hertz Dias", "PSTU"], ["Edmilson Costa", "PCB"], ["Rui Costa Pimenta", "PCO"], ["Clariana Barão", "DC", "F", 45], ["Wilson Grassi", "Democrata", "M", 60]],
+    GOV: [["Tarcísio de Freitas", "Republicanos"], ["Fernando Haddad", "PT"], ["Vivian Mendes", "UP"], ["Vera Lúcia", "PSTU"], ["Carlos Machado", "PCB", "M", 41], ["Izadora Dias", "PCO", "F", 31], ["Policial Edjane", "Agir", "F", 48]],
+    SEN: [["Guilherme Derrite", "PP"], ["André do Prado", "PL"], ["Simone Tebet", "PSB"], ["Marina Silva", "REDE"], ["Ricardo Salles", "NOVO"], ["Geraldo Rufino", "Podemos"], ["Soninha Francine", "Cidadania", "F", 58], ["Guto Schiavetto", "Missão", "M", 40], ["William Teixeira", "Agir", "M", 45], ["Dra. Eliana Ferreira", "PSTU", "F", 50], ["Ednelson Cesaretti", "PCO", "M", 55], ["Maíra de Souza", "UP", "F", 35], ["Petter Maahs", "PCB", "M", 33]]
+  };
+  var ANO_REAL = 2026;
+  PRE.REAIS = REAIS;
+  function sig(p) { return ok(function () { return normPartido(p); }, p) || p; }
+  function npcReal(def, c) {
+    var nome = def[0], l = ok(function () { return bancoDeNPCs; }, []);
+    var n = l.filter(function (x) { return x && (x.nome === nome || String(x.nome).indexOf(nome + " (") === 0); })[0];
+    if (n) {
+      if (!n.v3real26) { n.v3real26 = true; if (sig(partOf(n)) !== sig(def[1])) { n.partido = def[1]; n.partidoBase = def[1]; } if (c !== "PRES" && !n.uf) n.uf = "SP"; }
+      return n;
+    }
+    var mod = l.filter(function (x) { return x && x.vivo && x.cargo === "Liderança / Ex-Titular" && x.real; })[0] || l[0];
+    n = JSON.parse(JSON.stringify(mod));
+    Object.assign(n, { id: "REAL26_" + nome.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 18), nome: nome, partido: def[1], partidoBase: def[1], sexo: def[2] || "M", idade: def[3] || 50,
+      cargo: "Liderança / Ex-Titular", papel: "Candidat" + (def[2] === "F" ? "a" : "o") + " em 2026", real: true, vivo: true, uf: "SP", municipio_domicilio: "São Paulo", popularidade: 9 + Math.random() * 6, carisma: 45 + Math.random() * 10,
+      relacao_com_jogador: 0, base_votos: 20000, caixa1: 50000, caixa2: 0, inelegivel: false, status_judicial: "FICHA_LIMPA", mandato_fim: null, ambicao_alta: true, v3real26: true });
+    delete n.foto; delete n._fotoProc; n.gaveta_dossies = []; n.vicios_ocultos = []; n.padrinho_politico_id = null;
+    ok(function () { bancoDeNPCs.push(n); });
+    return n;
+  }
+  function reaisDe(c) { return (REAIS[c] || []).map(function (d) { return npcReal(d, c); }).filter(Boolean); }
+  function eh2026(c) { return !!REAIS[c] && dataJ().ano === ANO_REAL; }
+  PRE.reaisDe = reaisDe;
+  function scoreN(n) { var inc = TITULAR.PRES === n.cargo || TITULAR.GOV === n.cargo; return (n.popularidade || 20) + ((n.carisma || 50) - 50) / 6 + 6 + (inc ? 4 : 0) + ok(function () { return (PARTIDOS[n.partidoBase] || { fundo: 0 }).fundo * 0.25; }, 0); }
+  function nomeBase(x) { return String((x && (x.nome || (x.npc && x.npc.nome))) || "").replace(/\s*\((vice|suplentes?):.*$/i, "").trim(); }
+  function instalarReais() {
+    var cm = window.candidatosMajoritarios;
+    if (typeof cm === "function" && !cm.__reais26) {
+      var nc = function (c) {
+        var l = cm.apply(this, arguments) || [];
+        try {
+          if (!eh2026(c)) return l;
+          var reais = reaisDe(c), ids = {}; reais.forEach(function (n) { ids[n.id] = 1; });
+          var j = J(), pj = j && j.campanha && j.campanha.candidatura_ativa && ok(function () { return cargoIdPorNome(j.campanha.cargo_alvo); }, null) === c ? sig(j.partido_atual) : null;
+          var out = [];
+          reais.forEach(function (n) { if (pj && sig(partOf(n)) === pj) return; var ex = l.filter(function (x) { return x.npc && x.npc.id === n.id; })[0]; out.push(ex || { npc: n, score: scoreN(n) }); });
+          return out;
+        } catch (e) { return l; }
+      };
+      for (var k in cm) { try { nc[k] = cm[k]; } catch (e2) {} }
+      nc.__reais26 = true; window.candidatosMajoritarios = nc;
+    }
+    var pm = window.projetarMajoritaria;
+    if (typeof pm === "function" && !pm.__reais26) {
+      var np = function (c) {
+        var l = pm.apply(this, arguments) || [];
+        try {
+          if (!eh2026(c)) return l;
+          var nomes = {}; reaisDe(c).forEach(function (n) { nomes[n.nome] = 1; });
+          var f = l.filter(function (x) { return x.jogador || x.id === "JOGADOR" || nomes[nomeBase(x)] || (x.npc && nomes[x.npc.nome]); });
+          if (f.length >= 2 && f.length !== l.length) {
+            var w = f.map(function (x) { return Math.exp((x.score || 0) / 16); }), t = w.reduce(function (a, b) { return a + b; }, 0) || 1;
+            f.forEach(function (x, i) { x.share = w[i] / t * 100; }); f.sort(function (a, b) { return (b.share || 0) - (a.share || 0); });
+          }
+          return f.length >= 2 ? f : l;
+        } catch (e) { return l; }
+      };
+      for (var k2 in pm) { try { np[k2] = pm[k2]; } catch (e3) {} }
+      np.__reais26 = true; window.projetarMajoritaria = np;
+    }
+  }
+  PRE.instalarReais = instalarReais;
+
   /* ---------------------------------------------------------------- corrida */
   function novaCorrida(c, ano) {
     var cor = { c: c, ano: ano, partidos: {}, inicio: mesIdx(dataJ().ano, dataJ().mes), formada: false };
+    if (ano === ANO_REAL && REAIS[c]) {
+      // 2026: cada partido tem o seu candidato real como nome único (sem disputa interna fictícia)
+      cor.reais = true;
+      reaisDe(c).forEach(function (n) { var p = partOf(n), b = Math.max(70, Math.round(base(c, n))); if (cor.partidos[p]) return; cor.partidos[p] = { nomes: [{ id: n.id, f: b, h: [b], fato: "", pop: n.popularidade || 30, cargo: n.cargo, baixo: 0 }], saiu: [] }; });
+      return cor;
+    }
     var por = {};
     ok(function () { return bancoDeNPCs; }, []).forEach(function (n) { if (elegivel(c, n)) (por[partOf(n)] = por[partOf(n)] || []).push(n); });
     Object.keys(por).forEach(function (p) {
@@ -88,8 +166,15 @@
   function corrida(c) {
     var st = estado(); if (!st) return null;
     var ano = alvoAno(c, dataJ()), k = chave(c, ano);
-    if (!st.corridas[k]) st.corridas[k] = novaCorrida(c, ano);
-    return st.corridas[k];
+    var cr = st.corridas[k];
+    // saves antigos: troca a corrida fictícia de 2026 pela dos candidatos reais enquanto as prévias não terminaram
+    if (cr && ano === ANO_REAL && REAIS[c] && !cr.reais) {
+      var P = ok(function () { return M().previas.atual; }, null), g = P && P.ano === ano && P.grupos && P.grupos[c];
+      var decidido = g && Object.keys(g).some(function (p) { return g[p].venc; });
+      if (!decidido) { cr = null; if (g) delete P.grupos[c]; }
+    }
+    if (!cr) cr = st.corridas[k] = novaCorrida(c, ano);
+    return cr;
   }
   function share(lista) {
     var w = lista.map(function (x) { return Math.exp(x.f / 11); }), t = w.reduce(function (a, b) { return a + b; }, 0) || 1;
@@ -165,8 +250,8 @@
         }
       }
     });
-    // novos nomes que despontam (cargo novo, popularidade em alta)
-    if (Math.random() < 0.35) {
+    // novos nomes que despontam (cargo novo, popularidade em alta); em 2026 o páreo é o real
+    if (!cor.reais && Math.random() < 0.35) {
       var novos = ok(function () { return bancoDeNPCs; }, []).filter(function (n) { return elegivel(c, n) && !vistos[n.id] && (n.ambicao_alta || (n.popularidade || 0) >= 45); });
       if (novos.length) {
         var n = pick(novos), p = partOf(n);
@@ -375,6 +460,7 @@
   /* ---------------------------------------------------------------- instalação */
   function instalar() {
     instalarAcoes();
+    instalarReais();
     if (typeof VIEWS !== "undefined" && !VIEWS.pre) VIEWS.pre = function () { return view(); };
     try { if (!TABS.some(function (t) { return t[0] === "pre"; })) TABS.push(["pre", "Pré-candidaturas"]); } catch (e) {}
     var N = window.NAVH;
@@ -392,4 +478,6 @@
   instalar();
   document.addEventListener("DOMContentLoaded", function () { setTimeout(instalar, 0); });
   window.addEventListener("load", function () { setTimeout(instalar, 0); });
+  // as camadas de chapa são instaladas depois: a dos candidatos reais precisa ficar por fora
+  setInterval(function () { try { instalarReais(); } catch (e) {} }, 1500);
 })();

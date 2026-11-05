@@ -1,5 +1,5 @@
 /* CADEIRA v3 — cerimônia de posse */
-#v3posse{position:fixed;inset:0;z-index:100500;background:#000;color:#f8fafc}
+#v3posse{position:fixed;inset:0;z-index:2147483100;background:#000;color:#f8fafc}
 .v3p-ov,.v3p-palco{position:absolute;inset:0;overflow:hidden}
 .v3p-bg{position:absolute;inset:-6%;background-size:cover;background-position:center;animation:v3pKb0 16s ease-out forwards;filter:saturate(1.05)}
 .v3p-bg.kb1{animation-name:v3pKb1}.v3p-bg.kb2{animation-name:v3pKb2}
