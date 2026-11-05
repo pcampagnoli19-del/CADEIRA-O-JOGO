@@ -61093,6 +61093,19 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     var jn = ok(function () { return J().nome; }, ""); if (jn && s.indexOf(jn) >= 0) out.unshift({ nome: jn, jogador: true });
     return out;
   }
+  // projetos do jogador com o STATUS ATUAL (manchetes antigas podem dizer "pronto para o plenário" de algo já sancionado)
+  var ST_TXT = { SANCIONADO: "sancionado (virou lei)", VETADO: "vetado", ARQUIVADO: "rejeitado/arquivado", TRAMITANDO: "em tramitação" };
+  function projetos() {
+    var l = ok(function () { return CAR().projetos; }, []) || [];
+    return l.filter(function (p) { return p && p.nome; }).slice(-30).map(function (p) { return { nome: String(p.nome), status: ST_TXT[p.status] || p.status || "em tramitação", ano: p.anoSancao || p.ano, casa: p.casaNome || "", votos: p.voto != null ? p.voto + "%" : null }; });
+  }
+  function nucleo(n) { return String(n || "").replace(/^(PL|PEC|PLC|PLP|Projeto de Lei)\s*(n[ºo°]?\s*\d+\s*\/\s*\d{4})?\s*[–:-]?\s*/i, "").trim(); }
+  function anotar(txt, projs) {
+    var t = String(txt);
+    for (var i = 0; i < projs.length; i++) { var k = nucleo(projs[i].nome); if (k.length >= 8 && t.indexOf(k) >= 0) return t + " [status atual do projeto: " + projs[i].status + "]"; }
+    return t;
+  }
+  NW.projetosJogador = projetos;
   function cronologia(tit, fa, ents) {
     var chaves = ents.map(function (e) { return e.nome; }), q = (String(tit).match(/["“]([^"”]{6,})["”]/) || [])[1];
     if (q) chaves.push(q);
@@ -61100,6 +61113,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     if (fa && fa.thread && S_) S_.fatos.forEach(function (x) { if (x.thread === fa.thread && x.id !== fa.id) l.push({ txt: x.tit, ano: x.ano, mes: x.mes }); });
     if (chaves.length) ok(function () { M().manchetes.forEach(function (x) { if (!x || !x.txt || slug(x.txt) === s0) return; if (chaves.some(function (c) { return x.txt.indexOf(c) >= 0; })) l.push({ txt: x.txt, ano: x.ano, mes: x.mes }); }); });
     var vistos = {}; l = l.filter(function (x) { var k = slug(x.txt).slice(0, 60); if (vistos[k]) return false; vistos[k] = 1; return true; });
+    var pr = projetos(); l.forEach(function (x) { x.txt = anotar(x.txt, pr); });
     return l.slice(0, 8);
   }
   function infoNpc(n) { if (n.jogador) { var j = J(); return { nome: j.nome, papel: j.cargo_atual + " (" + j.partido_atual + ")", jogador: true, aprovacao: Math.round(j.popularidade || 0) + "%" }; } return { nome: n.nome, papel: (n.papel || n.cargo || "") + (n.partido ? " (" + n.partido + ")" : ""), uf: n.uf, idade: n.idade }; }
@@ -61133,7 +61147,8 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
       manchete: m.tit, linha_fina: m.lead || "", editoria: m.sec + (m.kick ? " / " + m.kick : ""), data: (fa ? fa.mes + "/" + fa.ano : (dd.mes || D().mes) + "/" + (dd.ano || D().ano)),
       fato: fa ? { tipo: fa.tipo, local: fa.local, esfera: fa.esfera, dados: fa.dados || null, declaracoes: fa.declaracoes || [], atores: fa.atores || [], resumo: fa.resumo || "" } : null,
       personagens: ents.map(infoNpc), cronologia: crono.map(function (x) { return x.mes + "/" + x.ano + ": " + x.txt; }),
-      jogador_envolvido: !!m.jog || ents.some(function (e) { return e.jogador; }), contexto_do_pais: contextoPais(), situacao_do_jogador: fa ? fa.ctx : null
+      jogador_envolvido: !!m.jog || ents.some(function (e) { return e.jogador; }), contexto_do_pais: contextoPais(),
+      projetos_do_jogador_status_atual: (!!m.jog || ents.some(function (e) { return e.jogador; })) ? projetos() : undefined, situacao_do_jogador: fa ? fa.ctx : null
     } };
   }
   function offline(m, X) {
@@ -61153,7 +61168,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     return [
       "Você é redator(a) de " + veicNome(vid) + " (linha editorial: " + (LINHA[vid] || "jornalismo geral") + ") num jogo de simulação política brasileiro.",
       "Escreva a MATÉRIA COMPLETA da manchete abaixo usando SOMENTE os DADOS fornecidos.",
-      "REGRAS: 1) não invente fatos, números, datas, votos, resultados, cargos ou nomes que não estejam nos dados; 2) só use aspas (declaracoes) com falas que estejam nos dados; se não houver, devolva declaracoes []; 3) numeros só com valores presentes nos dados; 4) se faltar informação, diga que os detalhes não foram divulgados, sem especular como fato; 5) pirâmide invertida, 4 a 6 parágrafos curtos, português do Brasil; 6) o enquadramento pode seguir a linha do veículo, mas os fatos são os mesmos para qualquer jornal; 7) a cronologia serve para contextualizar desdobramentos.",
+      "REGRAS: 0) o status atual dos projetos (projetos_do_jogador_status_atual e as marcas [status atual do projeto]) vale mais que manchetes antigas: nunca diga que um projeto sancionado ainda está em tramitação ou pronto para o plenário; 1) não invente fatos, números, datas, votos, resultados, cargos ou nomes que não estejam nos dados; 2) só use aspas (declaracoes) com falas que estejam nos dados; se não houver, devolva declaracoes []; 3) numeros só com valores presentes nos dados; 4) se faltar informação, diga que os detalhes não foram divulgados, sem especular como fato; 5) pirâmide invertida, 4 a 6 parágrafos curtos, português do Brasil; 6) o enquadramento pode seguir a linha do veículo, mas os fatos são os mesmos para qualquer jornal; 7) a cronologia serve para contextualizar desdobramentos.",
       "DADOS (JSON): " + JSON.stringify(X.base),
       "Devolva: subtitulo (linha fina), local (cidade da notícia), corpo (parágrafos), declaracoes, numeros, contexto (1 frase de pano de fundo), proximos_passos (1 frase)."
     ].join("\n");
@@ -61259,8 +61274,50 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     NW.abrir({ sec: fa ? fa.sec : SEC_TIPO[x.tipo] || "Política", kick: fa ? fa.kick : "", tit: vid ? kv[2] : t, lead: fa ? fa.lead : "", veic: vid || (fa && fa.veic) || (x.tipo === "economia" ? "valor" : /Mauá|ABC/.test(t) ? "dgabc" : "folha"), jog: fa ? fa.jog : ok(function () { return t.indexOf(J().nome) >= 0; }, false), fid: fa && fa.id, _ctx: { ano: x.ano, mes: x.mes } });
   };
 
+  /* ---------------- leis do jogador viram matéria */
+  function casaDe(pl) { return pl.casaNome || { M: "Câmara Municipal de Mauá", E: "Assembleia Legislativa de São Paulo", C: "Câmara dos Deputados", S: "Senado Federal" }[pl.esfera] || "Plenário"; }
+  function materiaLei(pl, desfecho) {
+    var S_ = st(); if (!S_ || !pl) return;
+    var nome = pl.titulo || pl.nome; if (!nome) return;
+    var j = ok(function () { return J(); }, {}) || {};
+    var meu = ok(function () { return (M().leg.pls || []).indexOf(pl) >= 0 || (CAR().projetos || []).some(function (p) { return p.nome === nome; }); }, false);
+    if (!meu) return;
+    S_.leis = S_.leis || {};
+    var k = (pl.id || nome) + "|" + desfecho; if (S_.leis[k]) return; S_.leis[k] = 1;
+    var casa = casaDe(pl), loc = pl.esfera === "M" ? "Mauá (SP)" : pl.esfera === "E" ? "São Paulo" : "Brasília", vt = pl.voto != null ? Math.round(pl.voto * 10) / 10 : null;
+    var veic = pl.esfera === "M" ? "dgabc" : pl.esfera === "E" ? (hash(nome) % 2 ? "estadao" : "folha") : (hash(nome) % 2 ? "g1" : "folha");
+    var curto = nucleo(nome) || nome, tema = pl.tema || "", ement = pl.descr || pl.ementa || "";
+    var tit, lead, peso = 72;
+    if (desfecho === "SANCIONADO") {
+      var T = [curto + " vira lei: projeto de " + j.nome + " é sancionado", "Sancionada lei de " + j.nome + " que cria o " + curto, j.nome + " emplaca lei: " + curto + " é aprovado e sancionado"];
+      tit = T[hash(nome) % T.length];
+      lead = "Aprovado " + (vt != null ? "com " + String(vt).replace(".", ",") + "% dos votos " : "") + "na " + casa + ", o texto" + (tema ? " da área de " + String(tema).toLowerCase() : "") + " foi sancionado e passa a valer." + (ement ? " " + String(ement).slice(0, 180) : "");
+    } else if (desfecho === "VETADO") {
+      tit = "Projeto de " + j.nome + " é vetado: " + curto; peso = 60;
+      lead = "Depois de aprovado" + (vt != null ? " com " + String(vt).replace(".", ",") + "% dos votos" : "") + " na " + casa + ", o texto foi vetado pelo Executivo. O veto ainda pode ser derrubado.";
+    } else {
+      tit = "Plenário rejeita projeto de " + j.nome + ": " + curto; peso = 58;
+      lead = "A proposta não alcançou os votos necessários na " + casa + (vt != null ? " (" + String(vt).replace(".", ",") + "% a favor)" : "") + " e foi arquivada.";
+    }
+    NW.fato({ tipo: "lei", sec: pl.esfera === "M" ? "Grande ABC" : "Política", kick: desfecho === "SANCIONADO" ? "Lei sancionada" : desfecho === "VETADO" ? "Veto" : "Plenário", tit: tit, lead: lead, jog: true, peso: peso, veic: veic, local: loc, esfera: pl.esfera,
+      atores: [j.nome], thread: "pl-" + (pl.id || slug(nome)), tipoM: "leg",
+      dados: { projeto: nome, autor: j.nome + " (" + (j.partido_atual || "") + ")", cargo_do_autor: j.cargo_atual, casa: casa, resultado: ST_TXT[desfecho] || desfecho, votos_a_favor: vt != null ? String(vt).replace(".", ",") + "%" : null, tema: tema || null, ementa: ement ? String(ement).slice(0, 300) : null, tramitacao_iniciada_em: pl.mes != null ? ok(function () { var a = Math.floor(pl.mes / 12), mm = pl.mes % 12 + 1; return mm + "/" + a; }, null) : null } });
+  }
+  NW.materiaLei = materiaLei;
+  var ultFim = {};
+  function vigiarPLs() {
+    var l = ok(function () { return M().leg.pls; }, null); if (!l) return;
+    l.forEach(function (pl) { if (!pl || !pl.fim) return; var k = (pl.id || pl.titulo) + "@" + pl.mes; if (ultFim[k] === pl.fim) return; var antes = ultFim[k]; ultFim[k] = pl.fim; if (antes === undefined && !pl._v3nVisto) { pl._v3nVisto = 1; if (agora() - (pl.mes || 0) > 6) return; } materiaLei(pl, pl.fim); });
+  }
+
   /* ---------------- instalação */
   function instalar() {
+    if (typeof window.marcarLeiAprovadaNoMandato === "function" && !window.marcarLeiAprovadaNoMandato.__v3n) {
+      var ml = window.marcarLeiAprovadaNoMandato;
+      var nm = function (ref) { var r = ml.apply(this, arguments); try { if (ref && typeof ref === "object" && (ref.titulo || ref.nome)) materiaLei(ref, "SANCIONADO"); } catch (e) {} return r; };
+      for (var kk in ml) { try { nm[kk] = ml[kk]; } catch (e4) {} }
+      nm.__v3n = true; window.marcarLeiAprovadaNoMandato = nm;
+    }
     var MID = window.MIDIA3;
     if (MID && MID.edicao && !MID.edicao.__v3n) {
       var o = MID.edicao;
@@ -61278,6 +61335,8 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
   document.addEventListener("DOMContentLoaded", function () { setTimeout(instalar, 0); });
   window.addEventListener("load", function () { setTimeout(instalar, 140); });
   var n0 = 0, t0 = setInterval(function () { instalar(); if (++n0 > 24) clearInterval(t0); }, 500);
+  // vetos e rejeições (e sanções por caminhos que não passam pela marcação) também viram matéria
+  setInterval(function () { try { vigiarPLs(); } catch (e) {} }, 3000);
 })();
 
 </script>
