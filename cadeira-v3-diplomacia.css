@@ -98,3 +98,8 @@
 .dip-mbox > .x { position: absolute; top: 14px; right: 14px; background: transparent !important; border: 1px solid var(--v3-ln2) !important; color: var(--v3-tx2) !important; border-radius: 999px !important; padding: 5px 12px !important; font-weight: 600; cursor: pointer; }
 .dip-mbox > .x:hover { color: var(--v3-tx) !important; border-color: var(--v3-ouro) !important; }
 .dip-mbox { position: relative; }
+/* negociação com as suas palavras (IA) */
+.d3-ia{display:grid;gap:6px;margin:10px 0;padding:10px;border-radius:12px;border:1px solid rgba(37,99,235,.4);background:rgba(37,99,235,.08)}
+.d3-ia textarea{width:100%;box-sizing:border-box;font:16px system-ui,sans-serif;padding:8px 10px;border-radius:10px;border:1px solid rgba(148,163,184,.35);background:rgba(0,0,0,.2);color:inherit;resize:vertical}
+.d3-ia small{font-size:.72rem;opacity:.75}.d3-ia-load{margin:0;font-style:italic;opacity:.85}
+.d3-log p.info{font-size:.8rem;opacity:.75;font-style:italic}
