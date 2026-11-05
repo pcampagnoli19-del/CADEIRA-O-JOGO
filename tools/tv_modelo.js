@@ -75,7 +75,7 @@
   var VEL = [["1x", 0.12], ["2x", 0.25], ["4x", 0.5], ["Rápido", 1]];
   var VEL_TV = 0.12;
   // duração das cenas (ms de tempo real)
-  var D = { abertura: 11000, nacional: 10000, porEstado: 4200, introReg: 3200, plantao: 7500, senado: 10000, governos: 10000, comentario: 10000, estado: 12000 };
+  var D = { deputados: 13000, abertura: 11000, nacional: 10000, porEstado: 4200, introReg: 3200, plantao: 7500, senado: 10000, governos: 10000, comentario: 10000, estado: 12000 };
 
   /* ================================================================ dados (somente leitura) */
   function municipal() { return ok(function () { return tipoEleicao(dt().ano) === "MUNICIPAL"; }, false); }
@@ -209,9 +209,20 @@
       return novaCena(st.cena.tipo === "governos" || turno2() ? "final" : "governos", {}, st.cena.tipo === "governos" || turno2() ? 1e9 : D.governos);
     }
     // 2) rotação do programa
-    var ciclo2 = ["nacional", "regional", "comentario", "regional", "senado", "regional", "governos", "regional"];
+    // só São Paulo tem acompanhamento contínuo do governo; os outros estados entram apenas no plantão de quando o governador é definido
+    var ciclo2 = ["nacional", "sp", "comentario", "deputados", "senado", "sp", "governos", "deputados"];
     for (var t = 0; t < ciclo2.length; t++) {
       var tipo = ciclo2[st.rot++ % ciclo2.length];
+      if (tipo === "sp") {
+        var gsp = corridaGov("SP");
+        if (p < 6 || !gsp || gsp.eleito1 || ok(function () { return A().govEncerradoUF("SP"); }, false)) continue;
+        return novaCena("estado", { uf: "SP" }, D.estado);
+      }
+      if (tipo === "deputados") {
+        if (p < 20 || turno2() || !legDados("DEPF")) continue;
+        st.depI = (st.depI || 0) + 1;
+        return novaCena("deputados", { cod: st.depI % 2 ? "DEPF" : "DEPE" }, D.deputados);
+      }
       if (tipo === "regional") {
         if (p < 6) continue;
         var ativas = regioesAtivas(); if (!ativas.length) continue;
@@ -228,6 +239,7 @@
   }
   function posRoteiro() {
     var l = [{ tipo: "posEleito", dur: 12000 }];
+    if (!turno2() && legDados("DEPF")) l.push({ tipo: "deputados", d: { cod: "DEPF" }, dur: D.deputados }, { tipo: "deputados", d: { cod: "DEPE" }, dur: D.deputados });
     var ap = ok(function () { return V3COB.apoiosDe(); }, []).filter(function (r) { return r.cargo === "PRES" || r.cargo === "GOV"; });
     if (!turno2()) l.push({ tipo: "posDerrota", dur: 12000 });
     if (ap.length) l.push({ tipo: "posApoios", dur: 6000 + Math.min(6, ap.length) * 2500, d: { lista: ap.slice(0, 6) } });
@@ -347,6 +359,30 @@
     return '<div class="tv-sua ' + (/Eleit/.test(e.resultado) ? "ok" : "nao") + '"><b>Sua disputa: ' + esc_(e.resultado) + "</b><small>" + esc_(e.cargo) + (e.votos ? " • " + fmtV(e.votos) + " votos" : "") + "</small></div>";
   }
   function pessoa(p, papel) { return { nome: p.nome, papel: papel || p.papel, foto: p.img ? img(p.img) : fotoNome(p.nome) }; }
+  // deputados federais e estaduais (eleição proporcional já apurada pelo jogo; a TV revela conforme as urnas)
+  function legDados(cod) {
+    var L = ok(function () { return M().eleicao._leg2[cod]; }, null); if (!L || !L.eleitos || !L.eleitos.length) return null;
+    var cont = {}; L.eleitos.forEach(function (e) { cont[e.partido] = (cont[e.partido] || 0) + 1; });
+    var banc = Object.keys(cont).sort(function (a, b) { return cont[b] - cont[a]; }).map(function (p) { return [p, cont[p]]; });
+    var nm = (L.named || []).slice().sort(function (a, b) { return (b.v || 0) - (a.v || 0); });
+    var eu = nm.filter(function (x) { return x.jogador; })[0] || null, euPos = eu ? nm.indexOf(eu) + 1 : 0;
+    return { N: L.N || L.eleitos.length, banc: banc, mais: nm.slice(0, 3), eu: eu, euPos: euPos, euEleito: L.eleitos.some(function (e) { return e.jogador; }) };
+  }
+  var COR_P = { PT: "#c8102e", PL: "#1d3f8f", PP: "#2a7fd4", MDB: "#16a34a", PSD: "#f2a900", PSB: "#f97316", PSOL: "#facc15", "União Brasil": "#0ea5e9", Republicanos: "#2563eb", PSDB: "#1e40af", PDT: "#dc2626", Podemos: "#22c55e", NOVO: "#f59e0b", REDE: "#14b8a6", PCdoB: "#b91c1c", Avante: "#7c3aed", Solidariedade: "#ea580c", Cidadania: "#db2777", PV: "#15803d", PRD: "#0369a1", Missão: "#a855f7" };
+  function painelDep(cod) {
+    var L = legDados(cod); if (!L) return "";
+    var p = pct(), casa = cod === "DEPF" ? "Câmara dos Deputados • bancada de SP" : "Assembleia Legislativa de SP", mx = L.banc[0] ? L.banc[0][1] : 1;
+    var h = "<h3>" + casa + ' <small class="tv-pc">' + (p >= 100 ? "resultado final" : "projeção com " + fmtP1(p) + "% das urnas") + "</small></h3>";
+    h += '<div class="tv-dep">' + L.banc.slice(0, 9).map(function (b) { var cor = COR_P[b[0]] || ok(function () { return PARTIDOS[b[0]].cor; }, "") || "#64748b"; return '<div class="tv-dep-l"><span class="tv-dep-p">' + esc_(b[0]) + '</span><span class="tv-dep-b"><i style="width:' + Math.max(4, b[1] / mx * 100) + "%;background:" + esc_(cor) + '"></i></span><b>' + b[1] + "</b></div>"; }).join("") + "</div>";
+    h += '<p class="tv-dep-n">' + L.N + " cadeiras · mais votados: " + L.mais.map(function (x) { return esc_(limpaNome(x.nome)) + " (" + esc_(x.partido) + ", " + fmtV((x.v || 0) * Math.min(1, p / 100)) + ")"; }).join(" · ") + "</p>";
+    if (L.eu) h += '<p class="tv-dep-eu ' + (L.euEleito ? "sim" : "nao") + '">Você: ' + fmtV((L.eu.v || 0) * Math.min(1, p / 100)) + " votos · " + L.euPos + "º mais votado · " + (p >= 100 ? (L.euEleito ? "ELEITO(A)" : "não eleito(a)") : (L.euEleito ? "dentro das vagas" : "fora das vagas por enquanto")) + "</p>";
+    return h;
+  }
+  function falaDep(cod) {
+    var L = legDados(cod); if (!L) return "";
+    var b1 = L.banc[0], b2 = L.banc[1], casa = cod === "DEPF" ? "na bancada paulista da Câmara dos Deputados" : "na Assembleia Legislativa";
+    return (pct() >= 100 ? "Resultado fechado " + casa + ": " : "Pela projeção " + casa + ", ") + (b1 ? "o " + b1[0] + " faz a maior bancada, com " + b1[1] + " cadeiras" : "") + (b2 ? ", seguido pelo " + b2[0] + ", com " + b2[1] : "") + "." + (L.mais[0] ? " O mais votado é " + limpaNome(L.mais[0].nome) + ", do " + L.mais[0].partido + "." : "") + (L.eu ? (L.euEleito ? " E você está entre os eleitos!" : " Você ainda não aparece entre os eleitos.") : "");
+  }
   function ancora(ch) { return pessoa(ch.ancoras[st.quem % ch.ancoras.length]); }
   function reporter(ch, reg, aoVivo) { var r = ch.reporteres[reg]; return pessoa(r, (aoVivo ? "ao vivo • " : "") + "Região " + REG[reg].nome); }
   function comentarista(ch) { return pessoa(ch.comentaristas[st.quem % ch.comentaristas.length]); }
@@ -519,6 +555,11 @@
         out.painel = "<h3>Senado • quem lidera em cada estado</h3><div class='tv-chips'>" + ufsOrd().map(function (u) { return chipUF(u, "sen"); }).join("") + "</div>";
         var nEl = ufsOrd().reduce(function (n, u) { return n + eleitoIds(corridaSen(u)).length; }, 0);
         out.bancada = quemHtml(ancora(ch), "Agora, o Senado. " + (nEl ? nEl + " senador" + (nEl > 1 ? "es já estão eleitos" : " já está eleito") + " até aqui." : "Nenhum senador está matematicamente eleito ainda.") + " Veja quem lidera em cada estado.");
+        break;
+      case "deputados":
+        out.mom = c.d.cod === "DEPF" ? "Deputados federais" : "Deputados estaduais";
+        out.painel = painelDep(c.d.cod);
+        out.bancada = quemHtml(ancora(ch), falaDep(c.d.cod));
         break;
       case "governos":
         out.mom = "Governos estaduais";

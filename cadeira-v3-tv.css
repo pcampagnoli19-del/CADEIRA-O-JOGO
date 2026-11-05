@@ -175,3 +175,11 @@
 .tv-apoios li.apoia{border-left-color:#16a34a}.tv-apoios li.conversar,.tv-apoios li.depois{border-left-color:#d97706}
 .tv-apoios li small{grid-column:1;opacity:.75}.tv-apoios li span{grid-row:span 2;align-self:center;font-weight:700;font-size:.85rem}
 .tv-globo .tv-apoios li{background:rgba(11,61,145,.08)}
+/* deputados federais e estaduais na noite da apuração */
+.tv-dep{display:grid;gap:5px;margin:8px 0}
+.tv-dep-l{display:grid;grid-template-columns:110px 1fr 34px;gap:8px;align-items:center;font-size:.86rem}
+.tv-dep-p{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv-dep-b{height:12px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}.tv-dep-b i{display:block;height:100%;border-radius:6px}
+.tv-dep-l b{text-align:right;font-variant-numeric:tabular-nums}
+.tv-dep-n{font-size:.78rem;opacity:.85;margin:6px 0 0}
+.tv-dep-eu{margin:8px 0 0;padding:6px 10px;border-radius:8px;font-weight:700;font-size:.86rem}.tv-dep-eu.sim{background:rgba(34,197,94,.22)}.tv-dep-eu.nao{background:rgba(239,68,68,.18)}
