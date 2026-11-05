@@ -3,7 +3,7 @@
 .v3m-jornal article.v3m-princ:hover,.v3m-jornal article.v3m-mat:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.12)}
 .v3m-jornal article.v3m-princ h2::after,.v3m-jornal article.v3m-mat h3::after{content:" ›";opacity:.45;font-weight:400}
 p.news{cursor:pointer}p.news:hover{text-decoration:underline;text-underline-offset:3px}
-#v3news{position:fixed;inset:0;z-index:99990}
+#v3news{position:fixed;inset:0;z-index:2147482800}
 .v3n-ov{position:absolute;inset:0;background:rgba(8,12,20,.72);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:14px 10px;animation:v3nIn .25s ease}
 @keyframes v3nIn{from{opacity:0}to{opacity:1}}
 .v3n-box{width:min(760px,100%);background:#fbfaf7;color:#1c1917;border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);font-family:Georgia,"Times New Roman",serif}
