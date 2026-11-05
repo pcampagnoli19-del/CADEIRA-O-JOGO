@@ -53545,13 +53545,23 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     var rel = DIP.relacao(inst.id), oc = DIP.ocupAtual(inst.id);
     var gov = cargo !== "PRES";
     var r = rng(hash(inst.id + DIP.mesAtual() + modo));
-    var disp = clamp(Math.round(rel.pessoal * 0.45 + rel.institucional * 0.2 + 8 - rel.rancor * 0.25 + (opts.prep || 0)), 10, 80);
+    // pauta varia a cada encontro: sorteia entre os interesses do país, sem repetir a última
+    if (!gov && inst.interesses && inst.interesses.length > 1) {
+      d.v3 = d.v3 || {}; d.v3.ultPauta = d.v3.ultPauta || {};
+      var ult = d.v3.ultPauta[inst.id], op = inst.interesses.filter(function (x) { return x !== ult; });
+      if (!opts.pauta || opts.pauta === ult || opts.pauta === inst.interesses[0]) opts.pauta = op[Math.floor(Math.random() * op.length)];
+      d.v3.ultPauta[inst.id] = opts.pauta;
+    }
+    // peso relativo: país menor que o Brasil chega mais disposto a ceder; potência maior, menos
+    var pesoInst = inst.peso ? ((inst.peso.economico || 0) + (inst.peso.diplomatico || 0) + (inst.peso.militar || 0)) / 3 : 50;
+    var assim = clamp(Math.round((55 - pesoInst) / 2.5), -12, 18);
+    var disp = clamp(Math.round(rel.pessoal * 0.45 + rel.institucional * 0.2 + 8 - rel.rancor * 0.25 + (opts.prep || 0) + assim), 10, 85);
     var pedidos = pedidosDe(inst, opts.pauta, gov, r).sort(function () { return r() - 0.5; });
     DIP._cena = {
       fase: modo === "viagem" ? "voo" : "reuniao", v3: true, instId: inst.id, modo: modo, pauta: opts.pauta, gov: gov,
       disp: disp, rodada: 0, rodadas: modo === "telefone" ? 2 : modo === "video" ? 3 : 4,
       ganho: ganhoDe(opts.pauta, inst, gov), valor: 1, upgrades: 0, pedidos: pedidos, pedidoAtual: pedidos[0] || null, cedidos: [],
-      log: [{ quem: "ele", txt: voz(oc).abre }], usouPessoal: 0, _custosOk: true
+      log: [{ quem: "ele", txt: voz(oc).abre }].concat(assim >= 8 ? [{ quem: "info", txt: "O Brasil tem muito mais peso que este parceiro: eles chegam dispostos a ceder." }] : assim <= -6 ? [{ quem: "info", txt: "Potência de peso maior: a outra parte negocia de cima." }] : []), usouPessoal: 0, _custosOk: true, assim: assim
     };
     return true;
   };
@@ -53636,7 +53646,7 @@ window.V3GEO = {"land":["-59.5,-80 -60,-80.5 -60,-81 -62.5,-81 -64.5,-81 -65.5,-
     c.iaCarregando = true; c.log.push({ quem: "eu", txt: txt });
     var persona = { nome: oc.nome, cargo: inst.nome, arquetipo: (DIP.ARQUETIPOS[oc.arquetipo] || {}).nome, tracos: oc.tracos, manias: oc.rasgos, ideologia: oc.ideologia, perfil: oc.biografia,
       relacao_com_o_brasil: { institucional: rel.institucional, pessoal: rel.pessoal, confianca: rel.confianca, rancor: rel.rancor } };
-    var mesa = { o_brasil_quer: valorTxt(c), o_que_voce_pede_agora: c.pedidoAtual ? c.pedidoAtual.txt : "nada pendente", ja_cedido_pelo_brasil: c.cedidos.map(function (p) { return p.txt; }), disposicao_para_assinar: c.disp, precisa_de: limiar(oc), rodada: (c.rodada + 1) + " de " + c.rodadas, modo: c.modo };
+    var mesa = { o_brasil_quer: valorTxt(c), o_que_voce_pede_agora: c.pedidoAtual ? c.pedidoAtual.txt : "nada pendente", ja_cedido_pelo_brasil: c.cedidos.map(function (p) { return p.txt; }), disposicao_para_assinar: c.disp, precisa_de: limiar(oc), peso_relativo: (c.assim || 0) >= 8 ? "o Brasil é muito mais forte que o seu país: você tende a ceder a exigências brasileiras" : (c.assim || 0) <= -6 ? "seu país é mais forte que o Brasil" : "equilíbrio", rodada: (c.rodada + 1) + " de " + c.rodadas, modo: c.modo };
     var prompt = ["Você interpreta " + oc.nome + " (" + inst.nome + ") numa NEGOCIAÇÃO bilateral com o Brasil, num jogo de simulação política.",
       "SUA PERSONA (JSON, traços de 0 a 100): " + JSON.stringify(persona),
       "A MESA (JSON): " + JSON.stringify(mesa),
