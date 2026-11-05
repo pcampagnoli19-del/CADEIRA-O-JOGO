@@ -1,0 +1,15 @@
+/* CADEIRA v3 — pauta do mês */
+.pm-box{max-width:680px}
+.pm-top{display:flex;gap:10px;align-items:center;margin-bottom:10px}.pm-top>span{font-size:1.8rem}.pm-top h2{margin:0}.pm-top small{opacity:.75}
+.pm-lista{list-style:none;padding:0;margin:0;display:grid;gap:10px;counter-reset:pm}
+.pm-lista li{position:relative;padding:12px 12px 12px 44px;border-radius:12px;border:1px solid var(--linha,rgba(148,163,184,.3));background:rgba(148,163,184,.06)}
+.pm-lista li::before{counter-increment:pm;content:counter(pm);position:absolute;left:12px;top:12px;width:22px;height:22px;border-radius:50%;background:rgba(148,163,184,.25);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem}
+.pm-lista li.vez{border-color:var(--destaque,#f1c40f);box-shadow:0 0 0 2px rgba(241,196,15,.25)}.pm-lista li.vez::before{background:var(--destaque,#f1c40f);color:#111}
+.pm-lista li.apr{border-left:4px solid #22c55e}.pm-lista li.rej{border-left:4px solid #ef4444}
+.pm-h{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}.pm-h b{font-size:.98rem}
+.pm-tipo{font-size:.68rem;font-weight:800;padding:2px 6px;border-radius:5px;background:rgba(37,99,235,.25)}.pm-meu{font-size:.68rem;font-weight:800;padding:2px 6px;border-radius:5px;background:rgba(201,162,39,.3)}
+.pm-lista p{margin:6px 0 4px;font-size:.86rem;opacity:.9}.pm-meta{display:block;font-size:.74rem;opacity:.7}
+.pm-bts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pm-res{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin-top:8px;font-size:.84rem}.pm-res b{font-size:.9rem}.li-apr .pm-res b{color:#22c55e}
+.pm-lista li.apr .pm-res b{color:#22c55e}.pm-lista li.rej .pm-res b{color:#ef4444}.pm-res em{font-style:normal;opacity:.75}
+.pm-rod{display:flex;justify-content:flex-end;margin-top:12px}
