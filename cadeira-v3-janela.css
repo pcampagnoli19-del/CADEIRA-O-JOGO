@@ -1,0 +1,24 @@
+/* CADEIRA v3 — Deadline Day da janela partidária */
+.jn-box{max-width:780px;border:2px solid var(--destaque,#f1c40f);max-height:92vh;overflow:auto}
+.jn-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}.jn-raio{font-size:1.8rem}
+.jn-top h2{margin:0;color:var(--destaque,#f1c40f);text-transform:uppercase;letter-spacing:1px;font-size:1.15rem}.jn-top small{opacity:.85}
+.jn-h4{margin:14px 0 6px}.jn-h4 small{font-weight:400;opacity:.7;font-size:.75rem}.jn-h4.pos{color:#2ecc71}.jn-h4.neg{color:#e74c3c}
+.jn-bal{display:flex;flex-wrap:wrap;gap:8px}
+.jn-chip{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:92px;padding:7px 10px;border-radius:8px;border:1px solid var(--linha,rgba(255,255,255,.15));background:rgba(255,255,255,.06);color:inherit;font:inherit;cursor:pointer;transition:transform .12s,border-color .12s}
+.jn-chip:hover,.jn-chip:focus-visible{border-color:var(--destaque,#f1c40f);box-shadow:0 4px 14px rgba(0,0,0,.35);z-index:5}
+.jn-cn{display:flex;align-items:center;gap:4px}.jn-s{font-size:1.15rem}.jn-es{font-size:.66rem;opacity:.65}
+.pos{color:#2ecc71}.neg{color:#e74c3c}
+.jn-tip{display:none;position:fixed;left:0;top:0;width:230px;z-index:2147483600;background:#0b1220;color:#e5e7eb;border:1px solid var(--destaque,#f1c40f);border-radius:10px;padding:8px 10px;text-align:left;box-shadow:0 12px 30px rgba(0,0,0,.5);font-size:.78rem}
+.jn-tip b{display:block;margin-bottom:4px}.jn-tip em{display:block;font-style:normal;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;margin-top:5px}
+.jn-tip i{display:block;font-style:normal;line-height:1.35}.jn-tip small{opacity:.65}
+@media (hover:hover){.jn-chip:hover .jn-tip{display:block}}
+.jn-lista{max-height:360px;overflow:auto;padding-right:4px}
+.jn-card{display:flex;gap:10px;align-items:center;padding:10px;margin-bottom:8px;border-radius:10px;border:1px solid var(--linha,rgba(255,255,255,.12));background:rgba(255,255,255,.04)}
+.jn-card.chega{border-left:4px solid #2ecc71}.jn-card.sai{border-left:4px solid #e74c3c}
+.jn-foto{width:46px;height:58px;border-radius:6px;overflow:hidden;flex:none;background:#222}
+.jn-info{flex:1;min-width:0}.jn-l1{display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap}.jn-l1 small{display:block;opacity:.75;font-size:.75rem}
+.jn-seta{display:flex;align-items:center;gap:5px}.jn-seta i{font-style:normal;color:var(--destaque,#f1c40f);font-weight:900}
+.jn-info p{margin:5px 0 0;font-size:.78rem;font-style:italic;opacity:.9;border-left:2px solid var(--destaque,#f1c40f);padding-left:6px}
+.jn-part .b.mini{margin-bottom:8px}.jn-ph{display:flex;align-items:center;gap:10px}.jn-ph h3{margin:0}.jn-ph small{opacity:.75}.jn-saldo{margin-left:auto;font-size:1.8rem}
+.jn-res,.jn-dest{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:10px 0}
+.jn-res>div,.jn-dest>div{background:rgba(255,255,255,.05);border-radius:8px;padding:8px}.jn-res small,.jn-dest small{display:block;font-size:.7rem;opacity:.75}.jn-res b{font-size:1.3rem}.jn-res em,.jn-dest em{display:block;font-style:normal;font-size:.72rem;opacity:.7}
