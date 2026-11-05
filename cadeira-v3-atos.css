@@ -75,3 +75,13 @@
 .v3a-mans{margin-top:12px;display:grid;gap:6px}.v3a-mans>div{padding:8px 10px;border-radius:10px;background:rgba(127,127,127,.07);border-left:3px solid #94a3b8}
 .v3a-mans small{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}.v3a-mans b{font-size:.9rem;line-height:1.3}
 .v3a-usos{margin:10px 0 14px}.v3a-usos .v3a-uso{margin:6px 0}.v3a-cfg-h{margin:18px 0 4px;padding-top:12px;border-top:1px solid rgba(127,127,127,.25)}
+/* ---- medidores da gestão e iniciativas criadas por ato */
+.v3a-med{margin:10px 0 14px;border:1px solid rgba(127,127,127,.25);border-radius:12px;padding:8px 12px;background:rgba(127,127,127,.05)}
+.v3a-med summary{cursor:pointer;display:flex;flex-direction:column;gap:2px}.v3a-med summary small{opacity:.7;font-size:.74rem}
+.v3a-med-l{display:grid;gap:10px;margin-top:10px}@media (min-width:720px){.v3a-med-l{grid-template-columns:1fr 1fr}}
+.v3a-med-t{display:flex;justify-content:space-between;gap:6px;font-size:.88rem}.v3a-med-t i{font-style:normal;font-size:.76rem;margin-left:4px;opacity:.8}.v3a-med-t i.pos{color:#16a34a;opacity:1}.v3a-med-t i.neg{color:#dc2626;opacity:1}
+.v3a-med-b{height:8px;border-radius:99px;background:rgba(127,127,127,.18);overflow:hidden;margin:4px 0}.v3a-med-b i{display:block;height:100%;border-radius:99px;background:#2563eb;transition:width .4s}
+.v3a-med-i small{display:block;font-size:.72rem;opacity:.75;line-height:1.3}
+.v3a-ini{grid-column:1/-1;padding:12px 14px;border-radius:12px;border:1px solid rgba(37,99,235,.4);background:rgba(37,99,235,.08)}
+.v3a-ini-h small{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;opacity:.75}.v3a-ini-h b{display:block;font-size:1.05rem;margin:2px 0}.v3a-ini-h span{font-size:.8rem;opacity:.8}
+.v3a-ini-i{display:grid;gap:8px;margin:10px 0;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}.v3a-ini-i b{display:block;font-size:.82rem}.v3a-ini-i span{font-size:.8rem}.v3a-ini-i i{font-style:normal}.v3a-ini-i i.pos{color:#16a34a}.v3a-ini-i i.neg{color:#dc2626}
