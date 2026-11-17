@@ -517,6 +517,8 @@
     var vs = g.unid === "bi" ? (Math.round(v * 10) / 10).toString().replace(".", ",") : String(Math.round(v));
     return g.txt.replace("{v}", vs);
   }
+  D3.ganhoDe = ganhoDe; D3.pedidosDe = pedidosDe; D3.voz = function (oc) { return voz(oc); };
+  D3.ganhoTxt = function (pauta, inst) { var g = ganhoDe(pauta, inst, false); var vs = g.unid === "bi" ? String(g.base).replace(".", ",") : String(g.base); return g.txt.replace("{v}", vs); };
   function limiar(oc) { return /A1|A5/.test(oc.arquetipo || "") ? 58 : /A2|A8/.test(oc.arquetipo || "") ? 54 : 50; }
   function chance(c, oc, tipo) {
     var t = oc.tracos || {};

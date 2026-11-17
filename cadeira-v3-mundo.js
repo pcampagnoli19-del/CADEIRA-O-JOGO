@@ -58,6 +58,26 @@
   var PAIS = {}; P0.forEach(function (r) { PAIS[r[0]] = { k: r[0], nome: r[1], flag: r[2], geo: r[3], pib0: r[4], g: r[5], lang: r[6], inst: r[7] }; });
   var POR_INST = {}; P0.forEach(function (r) { if (r[7]) POR_INST[r[7]] = r[0]; });
   var POR_GEO = {}; P0.forEach(function (r) { POR_GEO[r[3]] = r[0]; });
+  var ISO3 = { eua: "USA", china: "CHN", alemanha: "DEU", india: "IND", japao: "JPN", reino_unido: "GBR", franca: "FRA", italia: "ITA", russia: "RUS", canada: "CAN", brasil: "BRA", coreia: "KOR", australia: "AUS", espanha: "ESP", mexico: "MEX", indonesia: "IDN", turquia: "TUR", holanda: "NLD", arabia: "SAU", suica: "CHE", polonia: "POL", argentina: "ARG", africa_sul: "ZAF", colombia: "COL", ira: "IRN", chile: "CHL", peru: "PER", equador: "ECU", venezuela: "VEN", uruguai: "URY", bolivia: "BOL", paraguai: "PRY", guiana: "GUY", suriname: "SUR" };
+  var POR_ISO = {}; Object.keys(ISO3).forEach(function (k) { POR_ISO[ISO3[k]] = k; });
+  // [iso3, id numérico, nome, bandeira, PIB US$ tri (2025), população mi, região, renda]
+  var WB = {}, WBL = (window.V3PAISES || []); WBL.forEach(function (r) { WB[r[0]] = r; });
+  var POR_NUM = {}; WBL.forEach(function (r) { POR_NUM[r[1]] = r[0]; });
+  var GREN = { A: 3.2, MA: 5.0, MB: 6.5, B: 6.0 };
+  // PIB de partida em 2026 = Banco Mundial 2025 corrigido pelo crescimento do país
+  Object.keys(PAIS).forEach(function (k) { var w = WB[ISO3[k]]; if (w) { PAIS[k].pib0 = w[4] * (1 + PAIS[k].g / 100); PAIS[k].pop = w[5]; PAIS[k].ren = w[7]; PAIS[k].reg = w[6]; } });
+  var REGN = { asia: "Ásia e Pacífico", europa: "Europa e Ásia Central", latam: "América Latina e Caribe", oriente: "Oriente Médio e Norte da África", nam: "América do Norte", sasia: "Sul da Ásia", africa: "África Subsaariana" };
+  var RENN = { A: "alta", MA: "média-alta", MB: "média-baixa", B: "baixa" };
+  function pibX(iso) {
+    var s = st(), w = WB[iso]; if (!w) return 0; s.pibX = s.pibX || {};
+    if (s.pibX[iso] == null) { var anos = Math.max(0, (mesAbs() - (2026 * 12 + 1)) / 12) + 1; s.pibX[iso] = w[4] * Math.pow(1 + (GREN[w[7]] || 4) / 100, anos); }
+    return s.pibX[iso];
+  }
+  function info(k) { // k = chave conhecida ou iso3
+    if (PAIS[k]) { var w = WB[ISO3[k]]; return { k: k, iso: ISO3[k], nome: PAIS[k].nome, flag: PAIS[k].flag, pop: k === "brasil" ? ok(function () { return M().v24.mac.pop / 1e6; }, 213) : (w ? w[5] : 0), reg: w ? w[6] : "", ren: w ? w[7] : "", inst: PAIS[k].inst, num: PAIS[k].geo }; }
+    var r = WB[k]; if (!r) return null; return { k: k, iso: k, nome: r[2], flag: r[3], pop: r[5], reg: r[6], ren: r[7], inst: null, num: r[1] };
+  }
+  MU.info = info;
   var G7_0 = ["eua", "japao", "alemanha", "reino_unido", "franca", "italia", "canada"];
   var G20_0 = ["eua", "china", "alemanha", "india", "japao", "reino_unido", "franca", "italia", "russia", "canada", "brasil", "coreia", "australia", "mexico", "indonesia", "turquia", "arabia", "argentina", "africa_sul"];
   var BRICS = ["brasil", "russia", "india", "china", "africa_sul", "indonesia", "ira"];
@@ -67,6 +87,7 @@
     var m = ok(function () { return M(); }, null); if (!m) return null;
     if (!m.v3mundo) {
       var pib = {}; P0.forEach(function (r) { if (r[0] !== "brasil") pib[r[0]] = r[4]; });
+      Object.keys(pib).forEach(function (k) { pib[k] = PAIS[k].pib0; });
       m.v3mundo = { pib: pib, mes: mesAbs(), rankBR: null, clubes: { g7: G7_0.slice(), g20: G20_0.slice() }, cont: {}, prest: 50, ev: {}, pend: null, exig: {}, news: [], seq: 0, feitosBR: {} };
     }
     var s = m.v3mundo; s.cont = s.cont || {}; s.exig = s.exig || {}; s.news = s.news || []; s.ev = s.ev || {};
@@ -79,8 +100,15 @@
     return mac && mac.pib ? mac.pib / dol / 1e12 : 2.25;
   }
   function pibDe(k) { if (k === "brasil") return pibBR(); var s = st(); return (s && s.pib[k]) || (PAIS[k] && PAIS[k].pib0) || 0.01; }
+  var RK = null, RKm = null;
   function ranking() {
-    return P0.map(function (r) { return { k: r[0], pib: pibDe(r[0]) }; }).sort(function (a, b) { return b.pib - a.pib; }).map(function (x, i) { x.pos = i + 1; return x; });
+    var chave = mesAbs() + "|" + pibBR().toFixed(4);
+    if (RK && RKm === chave) return RK;
+    var l = [];
+    if (WBL.length) WBL.forEach(function (r) { var k = POR_ISO[r[0]] || r[0]; l.push({ k: k, pib: PAIS[k] ? pibDe(k) : pibX(r[0]) }); });
+    else P0.forEach(function (r) { l.push({ k: r[0], pib: pibDe(r[0]) }); });
+    RK = l.sort(function (a, b) { return b.pib - a.pib; }).map(function (x, i) { x.pos = i + 1; return x; }); RKm = chave;
+    return RK;
   }
   MU.ranking = ranking;
   function posDe(k) { var r = ranking(); for (var i = 0; i < r.length; i++) if (r[i].k === k) return i + 1; return 99; }
@@ -114,11 +142,16 @@
       var g = p.g; if (k === "guiana") g = Math.max(4, 16 - (D().ano - 2026) * 2.5);
       s.pib[k] *= Math.pow(1 + (g + (Math.random() * 3 - 1.5)) / 100, pulou / 12);
     });
+    WBL.forEach(function (r) { if (POR_ISO[r[0]]) return; var v = pibX(r[0]); s.pibX[r[0]] = v * Math.pow(1 + ((GREN[r[7]] || 4) + (Math.random() * 4 - 2)) / 100, pulou / 12); });
+    RK = null;
     var pos = posDe("brasil"); s.rankBR = pos;
     if (pos !== antes) mudouRank(antes, pos);
     clubes(s);
     cupulas(s);
     filler(s);
+    (s.recados || []).forEach(function (r) { if (r.estado === "pendente" && mm - r.m >= 2) { r.estado = "ignorado"; ok(function () { var rel = DIP.relacao(r.inst); rel.pessoal = cl(rel.pessoal - 3, 0, 100); }); } });
+    if (cid() === "PRES" && Math.random() < 0.6) ok(function () { novoRecado(s); });
+    if (Math.random() < 0.45) ok(function () { mundoIA(s); });
     if (s.news.length > 160) s.news.length = 160;
   }
   MU.tick = tick;
@@ -126,7 +159,7 @@
     var r = ranking(), sub = pos < antes;
     var outro = sub ? r[pos] : r[pos - 2]; // quem foi ultrapassado / quem passou o Brasil
     if (!outro) return;
-    var p = PAIS[outro.k];
+    var p = info(outro.k); if (!p) return;
     var tit = sub ? "Brasil ultrapassa " + p.nome + " e vira a " + pos + "ª maior economia do mundo" : p.nome + " passa o Brasil, que cai para " + pos + "º no ranking das economias";
     fato({ tipo: "economia", sec: "Economia", kick: "Ranking mundial", tit: tit, lead: "PIB brasileiro estimado em US$ " + nf(pibBR(), 2) + " trilhões, contra US$ " + nf(outro.pib, 2) + " tri " + (p.nome.match(/^[AEIOU]/) ? "da " : "de ") + p.nome + ".", peso: 70, jog: cid() === "PRES" });
     noticiaExt(outro.k, sub ? "rank_perde" : "rank_ganha", { pos: pos });
@@ -217,10 +250,12 @@
     var ids = e.id === "g7" ? st().clubes.g7 : e.id === "g20" ? st().clubes.g20 : e.id === "brics" ? BRICS : e.id === "merc" ? MERCOSUL : ["eua", "china", "franca", "alemanha", "india", "japao", "argentina", "mexico"];
     return ids.filter(function (k) { return k !== "brasil" && PAIS[k] && PAIS[k].inst; }).map(function (k) { return PAIS[k].inst; });
   }
+  function icEv(e) { var L = window.V3MUNDO_LOGOS || {}; return L[e.id] ? '<img alt="' + esc_(e.nome) + '" src="' + L[e.id] + '">' : e.ic; }
+  MU.icEv = icEv;
   function htmlCupula() {
     var s = st(), p = s && s.pend; if (!p) return "";
     var e = p.ev, L = LINHAS[e.tipo] || LINHAS.clube, sel = p.linha == null ? -1 : p.linha, bil = p.bil || null;
-    var h = '<div class="mu-cup"><div class="mu-cup-h"><span class="mu-cup-ic">' + e.ic + "</span><div><b>" + esc_(e.nome) + "</b><small>" + esc_(e.local) + " · " + MES[D().mes] + (p.convidado ? " · Brasil como convidado" : "") + "</small></div></div>";
+    var h = '<div class="mu-cup"><div class="mu-cup-h"><span class="mu-cup-ic">' + icEv(e) + "</span><div><b>" + esc_(e.nome) + "</b><small>" + esc_(e.local) + " · " + MES[D().mes] + (p.convidado ? " · Brasil como convidado" : "") + "</small></div></div>";
     if (e.nota) h += '<p class="mu-nota">' + esc_(e.nota) + "</p>";
     h += "<h4>Linha do discurso</h4><div class='mu-ops'>" + L.map(function (l, i) { return '<button type="button" class="mu-op' + (sel === i ? " on" : "") + '" data-mu="linha" data-i="' + i + '"><b>' + esc_(l[0]) + "</b><small>" + esc_(l[1]) + "</small></button>"; }).join("") + "</div>";
     var parts = participantes(e).slice(0, 10);
@@ -425,39 +460,64 @@
     var s = st(), sel = MU._sel || null, z = MU._zoom || "mundo", vb = VIEWS_[z];
     var P = paths(), ativos = {};
     DIP.INSTITUICOES.forEach(function (inst) { var k = POR_INST[inst.id]; if (k) ativos[PAIS[k].geo] = inst.id; });
-    var h = '<svg class="mu-mapa z-' + z + '" viewBox="' + vb.join(" ") + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa-múndi: toque num país destacado">';
+    var h = '<svg class="mu-mapa z-' + z + '" viewBox="' + vb.join(" ") + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa-múndi: toque num país">';
     h += '<rect x="0" y="0" width="' + W + '" height="' + H + '" class="mu-mar"/>';
     Object.keys(P).forEach(function (gid) {
       var inst = ativos[gid], br = gid === "076", nome = (window.V3MUNDO[gid] || [""])[0];
       if (inst) { var rel = ok(function () { return DIP.relacao(inst).pessoal; }, 50); h += '<path d="' + P[gid] + '" class="mu-p ativo' + (sel === inst ? " sel" : "") + '" style="fill:' + corRel(rel) + '" data-mu="pais" data-id="' + inst + '"><title>' + esc_(DIP.instPorId(inst).nome) + "</title></path>"; }
-      else h += '<path d="' + P[gid] + '" class="mu-p' + (br ? " br" : "") + '"><title>' + esc_(br ? "Brasil" : nome) + "</title></path>";
+      else { var iso = POR_NUM[gid], selG = MU._bal && MU._bal.num === gid; h += '<path d="' + P[gid] + '" class="mu-p' + (br ? " br" : "") + (iso ? " clic" : "") + (selG ? " sel" : "") + '"' + (iso ? ' data-mu="geo" data-id="' + gid + '"' : "") + '><title>' + esc_(br ? "Brasil" : (iso && WB[iso] ? WB[iso][2] : nome)) + "</title></path>"; }
     });
     // capitais dos países clicáveis
     DIP.INSTITUICOES.forEach(function (inst) { if (inst.tipo !== "pais") return; var c = DIP.CAPITAIS[inst.capital_id]; if (!c) return; var q = px(c.lng, c.lat); h += '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="' + (z === "mundo" ? 3.2 : 2) + '" class="mu-cap' + (sel === inst.id ? " sel" : "") + '" data-mu="pais" data-id="' + inst.id + '"/>'; });
     var bsb = px(-47.9, -15.8); h += '<circle cx="' + bsb[0] + '" cy="' + bsb[1] + '" r="' + (z === "mundo" ? 4 : 2.6) + '" class="mu-bsb"/>';
+    if (MU._bal && MU._bal.cx != null) h += '<circle cx="' + MU._bal.cx.toFixed(1) + '" cy="' + MU._bal.cy.toFixed(1) + '" r="' + (z === "mundo" ? 7 : 4) + '" class="mu-pino"/>';
     return h + "</svg>";
   }
-  function htmlPainel(instId) {
-    var inst = DIP.instPorId(instId); if (!inst) return "";
-    var oc = DIP.ocupAtual(instId), rel = DIP.relacao(instId), k = POR_INST[instId], p = k && PAIS[k], f = MU.forcaRel(instId), pos_ = postura(f);
-    var v3 = ok(function () { return DIP.estado().v3; }, null), pr = v3 && v3.prox && v3.prox[instId];
-    var h = '<div class="mu-painel"><div class="mu-ph">' + DIP.silhuetaHtml(oc, 64) + '<div class="mu-pn"><small>' + (p ? p.flag + " " : "") + esc_(inst.nome) + "</small><b>" + esc_(oc ? oc.nome : "—") + "</b><span>" + esc_((DIP.ARQUETIPOS[oc && oc.arquetipo] || {}).nome || "") + "</span></div></div>";
-    if (oc && oc.biografia) h += '<p class="mu-bio">' + esc_(oc.biografia) + "</p>";
-    h += '<div class="mu-kv">';
-    if (p) h += "<span>PIB<b>US$ " + nf(pibDe(k), pibDe(k) < 0.1 ? 3 : 2) + " tri</b><i>" + posDe(k) + "º do mundo</i></span>";
-    h += "<span>Relação pessoal<b style='color:" + corRel(rel.pessoal) + "'>" + Math.round(rel.pessoal) + "</b><i>rancor " + Math.round(rel.rancor || 0) + "</i></span>";
-    if (pos_) h += '<span class="mu-pos ' + pos_.c + '">Postura diante do Brasil<b>' + pos_.t + "</b><i>" + (f >= 1 ? "Brasil " + nf(f, f < 10 ? 1 : 0) + "x maior" : "eles " + nf(1 / f, 1 / f < 10 ? 1 : 0) + "x maiores") + "</i></span>";
-    if (pr) h += "<span>Próxima eleição<b>" + MES[pr.mesE] + "/" + pr.ano + "</b><i>posse em " + MES[pr.mesP] + "</i></span>";
-    h += "</div>";
-    if (pos_) h += '<p class="mu-nota">' + esc_(pos_.d) + "</p>";
-    var pode = ok(function () { return DIP.podeDiplomacia(); }, false);
-    h += '<div class="mu-bts">' + (pode ? '<button type="button" class="b confirma" data-mu="preparar" data-id="' + instId + '">Preparar reunião</button>' : "") +
-      '<button type="button" class="b branco" data-dip-acao="ver-inst" data-dip-id="' + instId + '">Ficha completa</button>' +
-      (podeExigir(instId) ? '<button type="button" class="b corrige" data-mu="exigir" data-id="' + instId + '">Fazer exigência</button>' : "") + "</div>";
-    if (!pode) h += '<p class="mu-nota">Só Presidente e Governador têm agenda internacional.</p>';
-    if (MU._exigindo === instId) {
-      var ult = st().exig[instId], falta = ult ? 6 - (mesAbs() - ult) : 0;
-      h += '<div class="mu-exig"><h4>O que o Brasil exige?</h4>' + (falta > 0 ? "<p class='mu-nota'>Você pressionou este país há pouco. Volte em " + falta + " mes(es).</p>" : exigencias(instId).map(function (x) { return '<button type="button" class="mu-op" data-mu="exige" data-id="' + instId + '" data-e="' + x[0] + '"><b>' + esc_(x[1]) + "</b><small>Ganho: " + esc_(x[2]) + "</small></button>"; }).join("")) + "<p class='mu-nota'>Exigir sempre azeda a relação e os vizinhos reparam. Quanto maior o Brasil em relação a eles, maior a chance de cederem.</p></div>";
+  var RENDA = { A: "alta", MA: "média-alta", MB: "média-baixa", B: "baixa" };
+  function fmtPib(v) { return v >= 1 ? "US$ " + nf(v, 2) + " tri" : v >= 0.001 ? "US$ " + nf(v * 1000, v >= 0.1 ? 0 : 1) + " bi" : "US$ " + nf(v * 1e6, 0) + " mi"; }
+  function fmtPop(v) { return v >= 1 ? nf(v, v >= 100 ? 0 : 1) + " milhões" : nf(v * 1000, 0) + " mil"; }
+  function pedeCede(instId) {
+    var inst = DIP.instPorId(instId), pede = [], cede = [];
+    ok(function () { var r = Math.random; pede = DIP3.pedidosDe(inst, (inst.interesses || [])[0], false, r).slice(0, 3).map(function (x) { return x.txt; }); });
+    ok(function () { var vistos = {}; (inst.interesses || []).forEach(function (pa) { var t = DIP3.ganhoTxt(pa, inst); if (!vistos[t] && cede.length < 3) { vistos[t] = 1; cede.push(t); } }); });
+    return { pede: pede, cede: cede };
+  }
+  function htmlBalao() {
+    var b = MU._bal; if (!b) return '<p class="mu-dica">Toque em qualquer país do mapa. Os coloridos têm canal diplomático: dá para negociar com o líder.</p>';
+    var instId = DIP.instPorId(b.k) ? b.k : null, inst = instId && DIP.instPorId(instId);
+    var key = instId ? POR_INST[instId] : b.k, p = key ? info(key) : null;
+    var h = '<div class="mu-balao" style="--ax:' + (MU._ax || 50) + '%"><button type="button" class="mu-bx" data-mu="fecha-bal" aria-label="Fechar">✕</button>';
+    if (inst) {
+      var oc = DIP.ocupAtual(instId), rel = DIP.relacao(instId), f = MU.forcaRel(instId), pos_ = postura(f);
+      var v3 = ok(function () { return DIP.estado().v3; }, null), pr = v3 && v3.prox && v3.prox[instId];
+      h += '<div class="mu-ph">' + DIP.silhuetaHtml(oc, 56) + '<div class="mu-pn"><small>' + (p ? p.flag + " " : "") + esc_(inst.nome) + "</small><b>" + esc_(oc ? oc.nome : "—") + "</b><span>" + esc_((DIP.ARQUETIPOS[oc && oc.arquetipo] || {}).nome || "") + "</span></div></div>";
+      h += '<div class="mu-kv">';
+      if (p) { var pib = key === "brasil" ? pibBR() : (PAIS[key] ? pibDe(key) : pibX(key)); h += "<span>População<b>" + fmtPop(p.pop) + "</b><i>" + esc_(REGN[p.reg] || "") + "</i></span><span>PIB<b>" + fmtPib(pib) + "</b><i>" + posDe(key) + "º do mundo</i></span><span>PIB per capita<b>US$ " + nf(pib * 1e6 / (p.pop || 1), 0) + "</b><i>renda " + (RENDA[p.ren] || "—") + "</i></span>"; }
+      h += "<span>Relação<b style='color:" + corRel(rel.pessoal) + "'>" + Math.round(rel.pessoal) + "</b><i>confiança " + Math.round(rel.confianca || 0) + " · rancor " + Math.round(rel.rancor || 0) + "</i></span>";
+      if (pos_) h += '<span class="mu-pos ' + pos_.c + '">Postura diante do Brasil<b>' + pos_.t + "</b><i>" + (f >= 1 ? "Brasil " + nf(f, f < 10 ? 1 : 0) + "x maior" : "eles " + nf(1 / f, 1 / f < 10 ? 1 : 0) + "x maiores") + "</i></span>";
+      if (pr) h += "<span>Próxima eleição<b>" + MES[pr.mesE] + "/" + pr.ano + "</b><i>posse em " + MES[pr.mesP] + "</i></span>";
+      h += "</div>";
+      var pc = pedeCede(instId);
+      if (pc.pede.length || pc.cede.length) h += '<div class="mu-pc"><div><h5>O que deve pedir</h5><ul>' + pc.pede.map(function (t) { return "<li>" + esc_(t) + "</li>"; }).join("") + '</ul></div><div><h5>O que pode ceder</h5><ul>' + pc.cede.map(function (t) { return "<li>" + esc_(t) + "</li>"; }).join("") + "</ul></div></div>";
+      h += htmlLeitura(instId);
+      var pode = ok(function () { return DIP.podeDiplomacia(); }, false);
+      h += '<div class="mu-bts">' + (pode ? '<button type="button" class="b confirma" data-mu="preparar" data-id="' + instId + '">Preparar reunião</button>' : "") +
+        '<button type="button" class="b branco" data-dip-acao="ver-inst" data-dip-id="' + instId + '">Ficha completa</button>' +
+        (podeExigir(instId) ? '<button type="button" class="b corrige" data-mu="exigir" data-id="' + instId + '">Fazer exigência</button>' : "") + "</div>";
+      if (!pode) h += '<p class="mu-nota">Só Presidente e Governador têm agenda internacional.</p>';
+      if (MU._exigindo === instId) {
+        var ult = st().exig[instId], falta = ult ? 6 - (mesAbs() - ult) : 0;
+        h += '<div class="mu-exig"><h4>O que o Brasil exige?</h4>' + (falta > 0 ? "<p class='mu-nota'>Você pressionou este país há pouco. Volte em " + falta + " mes(es).</p>" : exigencias(instId).map(function (x) { return '<button type="button" class="mu-op" data-mu="exige" data-id="' + instId + '" data-e="' + x[0] + '"><b>' + esc_(x[1]) + "</b><small>Ganho: " + esc_(x[2]) + "</small></button>"; }).join("")) + "<p class='mu-nota'>Exigir sempre azeda a relação e os vizinhos reparam. Quanto maior o Brasil em relação a eles, maior a chance de cederem.</p></div>";
+      }
+    } else if (p) {
+      var pibv = p.k === "brasil" ? pibBR() : (PAIS[p.k] ? pibDe(p.k) : pibX(p.iso));
+      h += '<div class="mu-ph"><span class="mu-flag">' + p.flag + '</span><div class="mu-pn"><small>' + esc_(REGN[p.reg] || "") + "</small><b>" + esc_(p.nome) + "</b>" + (p.k === "brasil" ? "<span>Você está aqui</span>" : "<span>Sem canal diplomático no jogo</span>") + "</div></div>";
+      h += '<div class="mu-kv"><span>População<b>' + fmtPop(p.pop) + "</b></span><span>PIB<b>" + fmtPib(pibv) + "</b><i>" + posDe(p.k) + "º do mundo</i></span><span>PIB per capita<b>US$ " + nf(pibv * 1e6 / (p.pop || 1), 0) + "</b><i>renda " + (RENDA[p.ren] || "—") + "</i></span>";
+      var cl2 = ["g7", "g20", "brics", "mercosul"].filter(function (c) { return membro(c, p.k); }).map(function (c) { return c === "mercosul" ? "Mercosul" : c.toUpperCase(); });
+      if (cl2.length) h += "<span>Clubes<b>" + cl2.join(" · ") + "</b></span>";
+      if (p.k !== "brasil") { var f2 = pibBR() / (pibv || 1e-6); h += "<span>Peso relativo<b>" + (f2 >= 1 ? "Brasil " + nf(f2, f2 < 10 ? 1 : 0) + "x maior" : "Eles " + nf(1 / f2, 1 / f2 < 10 ? 1 : 0) + "x maiores") + "</b></span>"; }
+      h += "</div>";
+      if (p.k !== "brasil") h += '<p class="mu-nota">O Itamaraty acompanha este país pela embaixada. Os países coloridos no mapa têm líder com quem dá para negociar diretamente.</p>';
     }
     return h + "</div>";
   }
@@ -468,22 +528,24 @@
   }
   function htmlRanking() {
     var r = ranking(), br = posDe("brasil");
-    var lin = r.filter(function (x) { return x.pos <= 12 || x.k === "brasil" || Math.abs(x.pos - br) <= 1; }).map(function (x) { var p = PAIS[x.k]; return '<li class="' + (x.k === "brasil" ? "br" : "") + '"><i>' + x.pos + "º</i>" + p.flag + " " + esc_(p.nome) + (membro("g7", x.k) ? ' <em>G7</em>' : "") + "<b>US$ " + nf(x.pib, 2) + " tri</b></li>"; }).join("");
-    return '<details class="mu-rank"><summary>📊 Ranking mundial do PIB</summary><ol>' + lin + "</ol><p class='mu-nota'>O PIB brasileiro em dólar vem da economia do jogo: crescimento, inflação e câmbio. Dólar barato e crescimento alto aproximam o Brasil do topo.</p></details>";
+    var lin = r.filter(function (x) { return x.pos <= 12 || x.k === "brasil" || Math.abs(x.pos - br) <= 1; }).map(function (x) { var p = info(x.k); return '<li class="' + (x.k === "brasil" ? "br" : "") + '"><i>' + x.pos + "º</i>" + p.flag + " " + esc_(p.nome) + (membro("g7", x.k) ? ' <em>G7</em>' : "") + "<b>US$ " + nf(x.pib, 2) + " tri</b></li>"; }).join("");
+    return '<details class="mu-rank"><summary>📊 Ranking mundial do PIB</summary><ol>' + lin + "</ol><button type='button' class='b mini' data-mu='aba-rank'>Ver o ranking completo (" + ranking().length + " países)</button><p class='mu-nota'>O PIB brasileiro em dólar vem da economia do jogo: crescimento, inflação e câmbio. Dólar barato e crescimento alto aproximam o Brasil do topo.</p></details>";
   }
   function htmlAgenda() {
     var l = proximos(6);
-    return '<details class="mu-ag" open><summary>📅 Agenda internacional</summary><ul>' + l.map(function (e) { return "<li><span>" + e.ic + "</span><div><b>" + esc_(e.nome) + "</b><small>" + MES[e.mes] + "/" + e.ano + " · " + esc_(e.local) + (e.conv === "convidado" ? " · Brasil só vai se for convidado" : "") + "</small></div></li>"; }).join("") + "</ul></details>";
+    return '<details class="mu-ag" open><summary>📅 Agenda internacional</summary><ul>' + l.map(function (e) { return "<li><span>" + icEv(e) + "</span><div><b>" + esc_(e.nome) + "</b><small>" + MES[e.mes] + "/" + e.ano + " · " + esc_(e.local) + (e.conv === "convidado" ? " · Brasil só vai se for convidado" : "") + "</small></div></li>"; }).join("") + "</ul></details>";
   }
   function uiMapa() {
     var s = st(); if (!s) return "<p>Inicie uma carreira.</p>";
-    var c = DIP._cena || {}; MU._sel = c.sel || MU._sel || null;
+    var c = DIP._cena || {}; MU._sel = c.sel || MU._sel || null; if (MU._sel && (!MU._bal || MU._bal.k !== MU._sel)) MU._bal = { k: MU._sel };
+    if (s.recados && s.recados.some(function (r) { return r.estado === "pendente"; }) && cid() === "PRES") var recH = htmlRecados();
     var orgs = DIP.INSTITUICOES.filter(function (i) { return i.tipo === "organismo"; });
     var h = '<div class="mu-tela"><h2>🌍 Relações Exteriores</h2>' + htmlStatus();
     if (s.pend && cid() === "PRES") h += htmlCupula();
+    if (recH) h += recH;
     h += '<div class="mu-zoom">' + [["mundo", "Mundo"], ["americas", "Américas"], ["sul", "América do Sul"], ["europa", "Europa"], ["asia", "Ásia"]].map(function (z) { return '<button type="button" class="' + ((MU._zoom || "mundo") === z[0] ? "on" : "") + '" data-mu="zoom" data-id="' + z[0] + '">' + z[1] + "</button>"; }).join("") + "</div>";
     h += '<div class="mu-mapa-w">' + htmlMapa() + '</div><div class="mu-leg"><i style="background:#2f7de1"></i>relação boa <i style="background:#e0a800"></i>morna <i style="background:#d9534f"></i>ruim <i class="br"></i>Brasil' + ((MU._zoom || "mundo") === "mundo" ? " · arraste para o lado" : "") + "</div>";
-    h += MU._sel ? htmlPainel(MU._sel) : '<p class="mu-dica">Toque num país colorido para ver o líder e preparar a reunião.</p>';
+    h += htmlBalao();
     h += '<div class="mu-orgs"><h4>Organismos internacionais</h4><div>' + orgs.map(function (i) { var oc = DIP.ocupAtual(i.id); return '<button type="button" class="' + (MU._sel === i.id ? "on" : "") + '" data-mu="pais" data-id="' + i.id + '">' + DIP.silhuetaHtml(oc, 28) + "<span>" + esc_(i.nome) + "<small>" + esc_(oc ? oc.nome : "") + "</small></span></button>"; }).join("") + "</div></div>";
     var st0 = DIP.estado() || {}; if (!st0.convites || !st0.convites.length) ok(function () { st0.convites = DIP.gerarConvites(); });
     var conv = (st0.convites || []).map(function (cv, i) { return '<li><span>' + esc_(cv.texto) + '</span><button type="button" class="b mini confirma" data-dip-acao="aceitar-convite" data-dip-id="' + i + '">Preparar</button></li>'; }).join("");
@@ -511,6 +573,137 @@
     return h;
   }
 
+  /* ================================================================ 6a) IA: o mundo tem vontade própria */
+  function IA() { return ok(function () { return window.V3ATOS && V3ATOS.temIA() ? V3ATOS : null; }, null); }
+  var GAT = { tarifas: "tarifas e protecionismo", critica_modelo: "críticas ao modelo dele", descumprir_contratos: "contrato descumprido", agro_desleal: "concorrência desleal do agro", concorrencia_montadoras: "disputa no setor automotivo", leniencia_narco: "leniência com o narcotráfico", tarifa_itaipu: "mexer na tarifa de Itaipu sem acordo", protecionismo: "protecionismo", leniencia_crime: "leniência com o crime", ingerencia: "ingerência em assuntos internos", critica_fujimorismo: "ataques ao fujimorismo", ambiguidade_venezuela: "ambiguidade com a Venezuela em Essequibo", garimpo_ilegal: "garimpo ilegal na fronteira", atraso_obra: "obra atrasada", licitacao_suspeita: "licitação suspeita" };
+  function persona(instId) {
+    var inst = DIP.instPorId(instId), oc = DIP.ocupAtual(instId), rel = DIP.relacao(instId), k = POR_INST[instId], f = MU.forcaRel(instId), j = ok(function () { return J(); }, {});
+    return { lider: oc.nome, pais_ou_organismo: inst.nome, idioma: PAIS[k] ? (LANGN[PAIS[k].lang] || "inglês") : "inglês", arquetipo: (DIP.ARQUETIPOS[oc.arquetipo] || {}).nome, tracos_0a100: oc.tracos, ideologia_menos100a100: oc.ideologia, manias: oc.rasgos, biografia: oc.biografia,
+      relacao_com_o_brasil: { pessoal: Math.round(rel.pessoal), confianca: Math.round(rel.confianca || 0), rancor: Math.round(rel.rancor || 0) }, peso_relativo: f == null ? "organismo internacional" : (f >= 1 ? "o Brasil é " + nf(f, 1) + "x maior" : "eles são " + nf(1 / f, 1) + "x maiores que o Brasil") + " (" + ((postura(f) || {}).t || "") + ")",
+      interesses: (inst.interesses || []).map(function (x) { return pautaTxt(x, instId)[0]; }), gosta_de: inst.gosta, se_irrita_com: (inst.gatilhos || []).map(function (g) { return GAT[g] || g; }),
+      acordos_recentes: ok(function () { return DIP.estado().acordos.filter(function (a) { return a.instId === instId; }).slice(-3).map(function (a) { return a.descricao; }); }, []),
+      presidente_do_brasil: { nome: j.nome, partido: j.partido_atual, cargo: j.cargo_atual }, brasil_no_ranking: posDe("brasil") + "ª economia", data: MES[D().mes] + "/" + D().ano };
+  }
+  var LEIT_SCHEMA = { type: "object", properties: { humor: { type: "string" }, quer_agora: { type: "string" }, pode_oferecer: { type: "string" }, linha_vermelha: { type: "string" }, conselho: { type: "string" } }, required: ["humor", "quer_agora", "pode_oferecer", "linha_vermelha", "conselho"] };
+  var CONSELHO = { A1: "Elogie em público e fale em números: ele quer sair da reunião com uma vitória para mostrar.", A2: "Paciência e gestos de longo prazo; pressa e improviso pegam mal.", A3: "Capriche no protocolo e na história comum; ele dá valor à cerimônia.", A4: "Leve dados e proposta técnica item a item.", A5: "Ideologia em primeiro lugar: evite confrontar as bandeiras dele em público.", A6: "Tudo tem preço: chegue sabendo o que pode dar em troca.", A7: "Fale em regras e compromissos multilaterais verificáveis.", A8: "Condições claras e cronograma; promessas vagas não passam." };
+  function leituraOff(instId) {
+    var oc = DIP.ocupAtual(instId), rel = DIP.relacao(instId), inst = DIP.instPorId(instId), pc = pedeCede(instId);
+    var humor = rel.pessoal >= 65 ? "Simpático ao Brasil e aberto a fechar algo logo." : rel.pessoal >= 45 ? "Cordial, mas desconfiado: quer ver contrapartida." : "Frio e irritado com Brasília; qualquer deslize vira crise.";
+    return { humor: humor, quer_agora: pc.pede[0] || "Um gesto de boa vontade do Brasil.", pode_oferecer: pc.cede[0] || "Cooperação técnica.", linha_vermelha: ((inst.gatilhos || []).map(function (g) { return GAT[g] || g; })[0] || "ser contrariado em público"), conselho: CONSELHO[oc.arquetipo] || CONSELHO.A4 };
+  }
+  function leitura(instId, forcar) {
+    var s = st(); s.leit = s.leit || {}; var c = s.leit[instId];
+    if (c && c.m === mesAbs() && !forcar) return c;
+    var off = leituraOff(instId); off.m = mesAbs(); off.ia = null; s.leit[instId] = off;
+    var ia = IA(); if (!ia) return off;
+    off.carregando = true; var pp = persona(instId);
+    ia.iaJSON("Você é o analista-chefe do Itamaraty num jogo realista de política brasileira. Faça a leitura do momento deste líder estrangeiro para o Presidente do Brasil, em português do Brasil, curto e direto (1 frase por campo), coerente com a personalidade, a ideologia, a relação e o peso de cada país. Pode ter opinião e ser criativo, sem inventar fatos graves sobre pessoas reais.\nPerfil: " + JSON.stringify(pp) + "\nResponda só o JSON com humor (como ele está em relação ao Brasil agora), quer_agora (o que ele vai querer na próxima conversa), pode_oferecer (o que dá para arrancar dele), linha_vermelha (o que não pode acontecer) e conselho (como abordar).", LEIT_SCHEMA, 0.8)
+      .then(function (j) { if (j && j.quer_agora) { j.m = mesAbs(); j.ia = j._ia || "IA"; s.leit[instId] = j; } else off.carregando = false; refreshSe(); }, function () { off.carregando = false; off.erro = true; refreshSe(); });
+    return off;
+  }
+  function leituraAuto(instId) { if (instId && IA()) { var s = st(); var c = s.leit && s.leit[instId]; if (!c || c.m !== mesAbs()) leitura(instId); } }
+  function htmlLeitura(instId) {
+    var s = st(), c = (s.leit && s.leit[instId] && s.leit[instId].m === mesAbs()) ? s.leit[instId] : leituraOff(instId);
+    var h = '<div class="mu-leit"><h5>🧠 Leitura do Itamaraty' + (c.ia ? ' <small>(' + esc_(c.ia) + ")</small>" : "") + (c.carregando ? ' <small class="mu-esp">pensando…</small>' : "") + "</h5>";
+    h += "<p><b>Humor:</b> " + esc_(c.humor) + "</p><p><b>Vai querer:</b> " + esc_(c.quer_agora) + "</p><p><b>Dá para arrancar:</b> " + esc_(c.pode_oferecer) + "</p><p><b>Linha vermelha:</b> " + esc_(c.linha_vermelha) + "</p><p><b>Como abordar:</b> " + esc_(c.conselho) + "</p>";
+    if (IA() && !c.carregando) h += '<button type="button" class="b mini branco" data-mu="leitura" data-id="' + instId + '">' + (c.ia ? "Nova leitura" : "Pedir leitura à IA") + "</button>";
+    return h + "</div>";
+  }
+  function refreshSe() { if (document.querySelector("[data-dip-modal] .mu-tela")) refresh(); }
+
+  /* ---------------- recados: líderes tomam a iniciativa */
+  var REC_SCHEMA = { type: "object", properties: { tipo: { type: "string" }, titulo: { type: "string" }, fala_original: { type: "string" }, fala_pt: { type: "string" }, oferece: { type: "string" }, pede: { type: "string" }, aprovacao_se_aceitar: { type: "number" }, relacao_se_aceitar: { type: "number" }, relacao_se_recusar: { type: "number" }, crescimento_se_aceitar: { type: "number" }, manchete_original: { type: "string" }, manchete_pt: { type: "string" } }, required: ["tipo", "titulo", "fala_original", "fala_pt", "oferece", "pede", "manchete_pt"] };
+  var REC_OFF = {
+    A1: ["proposta", "Quer um acordo rápido e vistoso", "Vamos fazer um grande acordo, o maior da história entre nós. Mas eu preciso de algo em troca, e rápido."], A2: ["proposta", "Propõe parceria de longo prazo", "Propomos um plano de cooperação de dez anos. Esperamos reciprocidade e discrição."],
+    A3: ["convite", "Convida para visita de Estado", "Seria uma honra recebê-lo para uma visita de Estado. Nossos povos merecem esse gesto."], A4: ["proposta", "Envia proposta técnica", "Nossa equipe preparou uma proposta técnica. Sugerimos começar pelos pontos mais simples."],
+    A5: ["critica", "Cobra o Brasil publicamente", "O Brasil precisa decidir de que lado está. Não dá para ficar em cima do muro para sempre."], A6: ["pedido", "Pede um favor e oferece outro", "Tenho uma proposta simples: você me ajuda nisso e eu te ajudo naquilo. Negócio é negócio."],
+    A7: ["pedido", "Pede compromisso multilateral", "Contamos com o Brasil para apoiar a resolução. O sistema multilateral depende de países como o seu."], A8: ["pedido", "Impõe condições para apoio", "Nosso apoio depende de metas fiscais claras e verificáveis."]
+  };
+  function escolherLider() {
+    var l = DIP.INSTITUICOES.map(function (i) { var oc = DIP.ocupAtual(i.id), rel = DIP.relacao(i.id); return { id: i.id, w: 10 + ((oc.tracos || {}).imprevisibilidade || 40) / 3 + Math.abs(rel.pessoal - 50) + (POR_INST[i.id] && PAIS[POR_INST[i.id]].g ? 0 : 0) }; });
+    var t = l.reduce(function (a, x) { return a + x.w; }, 0), r = Math.random() * t; for (var i = 0; i < l.length; i++) { r -= l[i].w; if (r <= 0) return l[i].id; } return l[0].id;
+  }
+  function novoRecado(s) {
+    s.recados = s.recados || [];
+    if (s.recados.filter(function (r) { return r.estado === "pendente"; }).length >= 3) return;
+    var instId = escolherLider(), oc = DIP.ocupAtual(instId), inst = DIP.instPorId(instId), pc = pedeCede(instId), o = REC_OFF[oc.arquetipo] || REC_OFF.A4;
+    var rc = { id: "R" + (++s.seq), inst: instId, lider: oc.nome, m: mesAbs(), estado: "pendente", tipo: o[0], titulo: o[1], fala_pt: o[2], fala_original: null, oferece: pc.cede[0] || "cooperação", pede: pc.pede[0] || "apoio político", ap: 0.4, rA: 8, rR: -6, cr: 0.02, ia: null };
+    s.recados.unshift(rc); if (s.recados.length > 12) s.recados.length = 12;
+    var ia = IA(); if (!ia) return;
+    rc.carregando = true; var pp = persona(instId);
+    ia.iaJSON("Você dá vida a um líder estrangeiro num jogo realista de política brasileira. Neste mês, ele toma a INICIATIVA de mandar um recado ao Presidente do Brasil, de acordo com a personalidade, a ideologia, a relação, os interesses e o peso dos dois países (quem é mais fraco tende a pedir com cuidado; quem é mais forte, a cobrar). Seja criativo e específico (cite temas concretos: produtos, obras, votos na ONU, fronteira, eleições, cúpulas), sem inventar crimes ou escândalos de pessoas reais.\nPerfil do líder: " + JSON.stringify(pp) + "\nResponda só o JSON: tipo (proposta, pedido, convite, critica, elogio ou ultimato), titulo (curto, em português), fala_original (o recado na voz dele, 1 a 3 frases, no idioma " + pp.idioma + "), fala_pt (a mesma fala em português do Brasil), oferece (o que ele dá se o Brasil aceitar), pede (o que ele quer do Brasil), aprovacao_se_aceitar (-2 a 2, efeito na aprovação do Presidente), relacao_se_aceitar (0 a 15), relacao_se_recusar (-15 a 0), crescimento_se_aceitar (-0.1 a 0.1, pontos de PIB), manchete_original (como a imprensa do país dele noticia o recado, no idioma " + pp.idioma + ") e manchete_pt (a mesma manchete em português).", REC_SCHEMA, 0.95)
+      .then(function (j) {
+        rc.carregando = false; if (!j || !j.fala_pt) { refreshSe(); return; }
+        rc.tipo = j.tipo || rc.tipo; rc.titulo = j.titulo || rc.titulo; rc.fala_pt = j.fala_pt; rc.fala_original = j.fala_original || null; rc.oferece = j.oferece || rc.oferece; rc.pede = j.pede || rc.pede;
+        rc.ap = cl(+j.aprovacao_se_aceitar || 0, -2, 2); rc.rA = cl(+j.relacao_se_aceitar || 6, 0, 15); rc.rR = cl(+j.relacao_se_recusar || -6, -15, 0); rc.cr = cl(+j.crescimento_se_aceitar || 0, -0.1, 0.1); rc.ia = j._ia || "IA";
+        var k = POR_INST[instId]; if (k && j.manchete_original) { var p = PAIS[k]; s.news.unshift({ id: "X" + (++s.seq), pk: k, lang: p.lang === "pt" ? "en" : p.lang, veic: (VEIC[p.lang] || {})[k] || (VEIC[p.lang] || {})._ || "Reuters", t: j.manchete_original, l: j.fala_original || "", tPt: j.manchete_pt || rc.titulo, lPt: j.fala_pt, ano: D().ano, mes: D().mes, tipo: "recado_br" }); }
+        refreshSe();
+      }, function () { rc.carregando = false; refreshSe(); });
+  }
+  var TIPO_IC = { proposta: "🤝", pedido: "🙏", convite: "✉️", critica: "⚠️", elogio: "👏", ultimato: "⛔" };
+  function htmlRecados() {
+    var s = st(), l = (s.recados || []).filter(function (r) { return r.estado === "pendente"; }); if (!l.length) return "";
+    return '<div class="mu-recs"><h4>📨 Recados de líderes</h4>' + l.map(function (r) {
+      var oc = ok(function () { return DIP.ocupAtual(r.inst); }, null), inst = DIP.instPorId(r.inst), tr = MU._recTr && MU._recTr[r.id], orig = r.fala_original && !tr;
+      return '<div class="mu-rec"><div class="mu-ph">' + ok(function () { return DIP.silhuetaHtml(oc && oc.nome === r.lider ? oc : { nome: r.lider }, 44); }, "") + '<div class="mu-pn"><small>' + (TIPO_IC[r.tipo] || "📨") + " " + esc_(inst ? inst.nome : "") + "</small><b>" + esc_(r.titulo) + "</b><span>" + esc_(r.lider) + (r.ia ? " · " + esc_(r.ia) : "") + "</span></div></div>" +
+        (r.carregando ? '<p class="mu-esp">Escrevendo o recado…</p>' : '<blockquote>“' + esc_(orig ? r.fala_original : r.fala_pt) + '”</blockquote>' + (r.fala_original ? '<button type="button" class="mu-tr" data-mu="rec-tr" data-id="' + r.id + '">' + (tr ? "Ver no original" : "Traduzir") + "</button>" : "")) +
+        '<div class="mu-pc"><div><h5>Oferece</h5><p>' + esc_(r.oferece) + '</p></div><div><h5>Pede</h5><p>' + esc_(r.pede) + "</p></div></div>" +
+        '<div class="mu-bts"><button type="button" class="b confirma" data-mu="rec" data-id="' + r.id + '" data-r="aceita">Aceitar</button><button type="button" class="b" data-mu="rec" data-id="' + r.id + '" data-r="negocia">Negociar</button><button type="button" class="b branco" data-mu="rec" data-id="' + r.id + '" data-r="recusa">Recusar</button></div></div>';
+    }).join("") + "</div>";
+  }
+  function responderRecado(id, r) {
+    var s = st(), rc = (s.recados || []).filter(function (x) { return x.id === id; })[0]; if (!rc || rc.estado !== "pendente") return;
+    var rel = DIP.relacao(rc.inst), inst = DIP.instPorId(rc.inst);
+    if (r === "negocia") { rc.estado = "negociando"; DIP._cena = { fase: "briefing", instId: rc.inst, modo: "video", pauta: (inst.interesses || [])[0], preparacao: 45, transparencia: "fechada", comitiva: [] }; return; }
+    if (r === "aceita") {
+      rc.estado = "aceito"; rel.pessoal = cl(rel.pessoal + rc.rA, 0, 100); rel.confianca = cl((rel.confianca || 40) + 4, 0, 100); rel.rancor = cl((rel.rancor || 0) - 4, 0, 100);
+      ok(function () { mudarAprovTodos(rc.ap); }); if (rc.cr) ok(function () { M().v24.mac.cresc += rc.cr; });
+      fato({ tipo: "diplomacia", sec: "Mundo", kick: inst.nome, tit: "Brasil aceita proposta de " + rc.lider + ": " + rc.oferece.charAt(0).toLowerCase() + rc.oferece.slice(1), lead: "Em troca, " + rc.pede.charAt(0).toLowerCase() + rc.pede.slice(1) + ".", peso: 62, jog: true });
+    } else {
+      rc.estado = "recusado"; rel.pessoal = cl(rel.pessoal + rc.rR, 0, 100); rel.rancor = cl((rel.rancor || 0) + 6, 0, 100);
+      fato({ tipo: "diplomacia", sec: "Mundo", kick: inst.nome, tit: "Brasil recusa pedido de " + rc.lider, lead: rc.lider + " queria: " + rc.pede.charAt(0).toLowerCase() + rc.pede.slice(1) + ".", peso: 55, jog: true });
+    }
+    rel.historico = rel.historico || []; rel.historico.push({ mes: DIP.mesAtual(), tipo: "recado", resumo: rc.titulo + " · " + rc.estado });
+  }
+  MU._novoRecado = function () { novoRecado(st()); }; MU._responder = responderRecado;
+
+  /* ---------------- o mundo gira sozinho: a IA escreve o que acontece lá fora */
+  var MUNDO_SCHEMA = { type: "object", properties: { pais: { type: "string" }, titulo_original: { type: "string" }, linha_original: { type: "string" }, titulo_pt: { type: "string" }, linha_pt: { type: "string" } }, required: ["pais", "titulo_original", "titulo_pt"] };
+  function mundoIA(s) {
+    var ia = IA(); if (!ia || MU._iaMundo) return;
+    var ids = DIP.INSTITUICOES.filter(function (i) { return i.tipo === "pais" && POR_INST[i.id]; }).map(function (i) { return i.id; });
+    var a = rnd(ids), b = rnd(ids.filter(function (x) { return x !== a; }));
+    var pa = PAIS[POR_INST[a]], la = pa.lang === "pt" ? "en" : pa.lang;
+    var lider = function (id) { var oc = DIP.ocupAtual(id); return { pais: DIP.instPorId(id).nome, lider: oc.nome, arquetipo: (DIP.ARQUETIPOS[oc.arquetipo] || {}).nome, ideologia: oc.ideologia }; };
+    MU._iaMundo = true;
+    ia.iaJSON("Você é a editoria internacional de um jogo realista de política (" + MES[D().mes] + "/" + D().ano + "). Invente UM acontecimento plausível do mês envolvendo estes dois líderes ou só o primeiro, coerente com a personalidade e a ideologia deles (acordo, atrito, viagem, discurso, crise interna, eleição, economia). Não invente crimes ou escândalos pessoais de pessoas reais.\nLíder 1: " + JSON.stringify(lider(a)) + "\nLíder 2: " + JSON.stringify(lider(b)) + "\nResponda só o JSON: pais (\"" + a + "\"), titulo_original e linha_original (como um jornal do país do líder 1 publicaria, no idioma " + (LANGN[la] || "inglês") + "), titulo_pt e linha_pt (tradução para o português do Brasil).", MUNDO_SCHEMA, 1)
+      .then(function (j) { MU._iaMundo = false; if (!j || !j.titulo_original) return; var k = POR_INST[a]; s.news.unshift({ id: "X" + (++s.seq), pk: k, lang: la, veic: (VEIC[la] || {})[k] || (VEIC[la] || {})._ || "Reuters", t: j.titulo_original, l: j.linha_original || "", tPt: j.titulo_pt, lPt: j.linha_pt || "", ano: D().ano, mes: D().mes, tipo: "ia", ia: j._ia }); }, function () { MU._iaMundo = false; });
+  }
+  MU._mundoIA = function () { mundoIA(st()); };
+
+  /* ================================================================ 6b) ABA: ranking completo */
+  function viewRanking() {
+    var s = st(); if (!s) return "";
+    var ord = MU._ord || "pib", reg = MU._reg || "todas", r = ranking(), br = posDe("brasil");
+    var lin = r.map(function (x) { var p = info(x.k); return { x: x, p: p, pc: p.pop ? x.pib * 1e6 / p.pop : 0 }; }).filter(function (o) { return o.p && (reg === "todas" || o.p.reg === reg || (reg === "clubes" && (membro("g20", o.x.k) || membro("brics", o.x.k)))); });
+    if (ord === "pop") lin.sort(function (a, b) { return b.p.pop - a.p.pop; }); else if (ord === "pc") lin.sort(function (a, b) { return b.pc - a.pc; });
+    var h = '<section class="card mu-rkp"><h3>📊 Ranking das economias do mundo</h3>' + htmlStatus() +
+      '<p class="txt"><small>PIB em dólares correntes, com base no Banco Mundial (2025) e atualizado mês a mês pelo jogo. O do Brasil vem da economia que você governa: crescimento, inflação e câmbio.</small></p>' +
+      '<div class="mu-filt">' + [["pib", "Por PIB"], ["pop", "Por população"], ["pc", "Por PIB per capita"]].map(function (o) { return '<button type="button" class="' + (ord === o[0] ? "on" : "") + '" data-mu="ord" data-id="' + o[0] + '">' + o[1] + "</button>"; }).join("") + "</div>" +
+      '<div class="mu-filt">' + [["todas", "Mundo"], ["latam", "América Latina"], ["nam", "América do Norte"], ["europa", "Europa"], ["asia", "Ásia e Pacífico"], ["sasia", "Sul da Ásia"], ["oriente", "Oriente Médio"], ["africa", "África"], ["clubes", "G20 e BRICS"]].map(function (o) { return '<button type="button" class="' + (reg === o[0] ? "on" : "") + '" data-mu="reg" data-id="' + o[0] + '">' + o[1] + "</button>"; }).join("") + "</div>" +
+      '<input type="search" id="mu-busca" class="mu-busca" placeholder="Buscar país…" aria-label="Buscar país">' +
+      '<div class="mu-tbw"><table class="mu-tb"><thead><tr><th>#</th><th>País</th><th>PIB (US$)</th><th>População</th><th>Per capita</th></tr></thead><tbody>' +
+      lin.map(function (o, i) {
+        var x = o.x, p = o.p, tags = (membro("g7", x.k) ? "<em>G7</em>" : "") + (membro("g20", x.k) ? "<em>G20</em>" : "") + (membro("brics", x.k) ? "<em>BRICS</em>" : "") + (membro("mercosul", x.k) ? "<em>Mercosul</em>" : "");
+        return '<tr class="' + (x.k === "brasil" ? "br" : "") + '" data-n="' + esc_(p.nome.toLowerCase()) + '"' + (p.inst ? ' data-mu="ir-pais" data-id="' + p.inst + '"' : "") + "><td>" + (ord === "pib" ? x.pos : i + 1) + "º</td><td>" + p.flag + " " + esc_(p.nome) + (p.inst ? ' <span class="mu-dip" title="Dá para negociar">🤝</span>' : "") + "<div class='mu-tags'>" + tags + "</div></td><td>" + (x.pib >= 1 ? nf(x.pib, 2) + " tri" : x.pib >= 0.001 ? nf(x.pib * 1000, x.pib >= 0.1 ? 0 : 1) + " bi" : nf(x.pib * 1e6, 0) + " mi") + "</td><td>" + (p.pop >= 1 ? nf(p.pop, p.pop >= 100 ? 0 : 1) + " mi" : nf(p.pop * 1000, 0) + " mil") + "</td><td>" + (o.pc ? "US$ " + nf(o.pc, 0) : "—") + "</td></tr>";
+      }).join("") + "</tbody></table></div>" +
+      '<p class="mu-nota">🤝 = país com canal diplomático no jogo (toque para abrir no mapa). O Brasil está em <b>' + br + "º</b>.</p>" +
+      '<button type="button" class="b confirma" data-a="dipAbrir">🌍 Abrir o mapa das Relações Exteriores</button></section>';
+    return h;
+  }
+  MU.viewRanking = viewRanking;
+  document.addEventListener("input", function (e) { if (!e.target || e.target.id !== "mu-busca") return; var q = e.target.value.trim().toLowerCase(); Array.prototype.forEach.call(document.querySelectorAll(".mu-tb tbody tr"), function (tr) { tr.style.display = !q || tr.getAttribute("data-n").indexOf(q) >= 0 ? "" : "none"; }); });
+
   /* ================================================================ 7) MÍDIA: aba Exterior */
   var LANGN = { en: "inglês", es: "espanhol", fr: "francês", de: "alemão", it: "italiano", zh: "chinês", ru: "russo", ja: "japonês", ar: "árabe", tr: "turco", nl: "holandês" };
   function viewExterior() {
@@ -533,12 +726,34 @@
   // no celular o mapa-múndi fica mais largo que a tela: centra nas Américas
   function centra() { var w = document.querySelector(".mu-mapa-w"); if (!w || w.__c) return; w.__c = 1; if (w.scrollWidth > w.clientWidth + 20) { var sv = w.querySelector("svg"); var keep = MU._scroll; w.scrollLeft = keep != null ? keep : sv.clientWidth * 0.18; } w.addEventListener("scroll", function () { MU._scroll = w.scrollLeft; }, { passive: true }); }
   setInterval(centra, 400);
-  function refresh() { ok(function () { DIP.refreshUI(); }); setTimeout(centra, 0); }
+  function posBalao() {
+    var w = document.querySelector(".mu-mapa-w"), sv = w && w.querySelector("svg"), bl = document.querySelector(".mu-balao"); if (!w || !sv || !bl || !MU._bal || MU._bal.cx == null) return;
+    var vb = VIEWS_[MU._zoom || "mundo"], sr = sv.getBoundingClientRect(), wr = w.getBoundingClientRect();
+    var sc = Math.min(sr.width / vb[2], sr.height / vb[3]), offX = (sr.width - vb[2] * sc) / 2;
+    var x = sr.left + offX + (MU._bal.cx - vb[0]) * sc - wr.left;
+    if (x < 0 || x > wr.width) { w.scrollLeft += x - wr.width / 2; x = wr.width / 2; }
+    MU._ax = cl(x / wr.width * 100, 6, 94); bl.style.setProperty("--ax", MU._ax + "%");
+  }
+  function refresh() { ok(function () { DIP.refreshUI(); }); setTimeout(centra, 0); setTimeout(posBalao, 30); }
   document.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("[data-mu]"); if (!b) return;
     e.preventDefault(); e.stopPropagation();
     var a = b.getAttribute("data-mu"), id = b.getAttribute("data-id"), s = st();
-    if (a === "pais") { MU._sel = MU._sel === id ? null : id; MU._exigindo = null; DIP._cena = { fase: "mapa", sel: MU._sel }; refresh(); setTimeout(function () { var p = document.querySelector(".mu-painel"); if (p && p.scrollIntoView) p.scrollIntoView({ block: "nearest", behavior: "smooth" }); }, 30); return; }
+    if (a === "pais" || a === "geo") {
+      var k = a === "pais" ? id : POR_NUM[id];
+      if (MU._bal && MU._bal.k === k) { MU._bal = null; MU._sel = null; }
+      else {
+        var c0 = null; ok(function () { if (b.getBBox) { var bb = b.tagName === "circle" ? { x: +b.getAttribute("cx"), y: +b.getAttribute("cy"), width: 0, height: 0 } : b.getBBox(); c0 = [bb.x + bb.width / 2, bb.y + bb.height / 2]; } });
+        if (a === "pais") { var cap = ok(function () { var c = DIP.CAPITAIS[DIP.instPorId(id).capital_id]; return c && px(c.lng, c.lat); }, null); if (cap && DIP.instPorId(id).tipo === "pais") c0 = cap; }
+        MU._bal = { k: k, num: a === "geo" ? id : null, cx: c0 ? c0[0] : null, cy: c0 ? c0[1] : null }; MU._sel = a === "pais" ? id : null;
+        if (a === "pais" || k) leituraAuto(a === "pais" ? id : null);
+      }
+      MU._exigindo = null; DIP._cena = { fase: "mapa", sel: MU._sel }; refresh(); setTimeout(posBalao, 20); return;
+    }
+    if (a === "fecha-bal") { MU._bal = null; MU._sel = null; DIP._cena = { fase: "mapa" }; refresh(); return; }
+    if (a === "leitura") { leitura(id, true); refresh(); return; }
+    if (a === "rec") { responderRecado(id, b.getAttribute("data-r")); refresh(); return; }
+    if (a === "rec-tr") { MU._recTr = MU._recTr || {}; MU._recTr[id] = !MU._recTr[id]; refresh(); return; }
     if (a === "zoom") { MU._zoom = id; refresh(); return; }
     if (a === "preparar") { var inst = DIP.instPorId(id); DIP._cena = { fase: "briefing", instId: id, modo: cid() === "PRES" ? "viagem" : "video", pauta: (inst.interesses || [])[0], preparacao: 40, transparencia: "fechada", comitiva: [] }; refresh(); return; }
     if (a === "modo") { if (DIP._cena) DIP._cena.modo = id; refresh(); return; }
@@ -549,6 +764,10 @@
     if (a === "bil" && s && s.pend) { s.pend.bil = s.pend.bil === id ? null : id; refresh(); return; }
     if (a === "ir") { irCupula(); refresh(); return; }
     if (a === "chanceler" && s && s.pend) { s.ev[s.pend.key] = "chanceler"; fato({ tipo: "diplomacia", sec: "Mundo", kick: s.pend.ev.nome, tit: "Presidente não vai à " + s.pend.ev.nome + " e manda o chanceler", lead: "A ausência é lida como desprestígio pela diplomacia.", peso: 50, jog: true }); s.prest = cl(s.prest - 2, 0, 100); s.pend = (s.fila || []).shift() || null; refresh(); return; }
+    if (a === "ord") { MU._ord = id; ok(function () { render(); }); return; }
+    if (a === "reg") { MU._reg = id; ok(function () { render(); }); return; }
+    if (a === "aba-rank") { ok(function () { var m = document.querySelector("[data-dip-modal]"); if (m) m.remove(); }); ok(function () { S.tab = "rankmundo"; S.modal = null; render(); window.scrollTo(0, 0); }); return; }
+    if (a === "ir-pais") { MU._sel = id; MU._bal = { k: id }; DIP._cena = { fase: "mapa", sel: id }; ok(function () { DIP.abrirUI(); }); return; }
     if (a === "filt") { MU._filtro = id; ok(function () { render(); }); return; }
     if (a === "trad") { MU._trad = MU._trad || {}; MU._trad[id] = !MU._trad[id]; ok(function () { render(); }); return; }
     if (a === "tradtudo") { MU._tradTudo = !MU._tradTudo; MU._trad = {}; ok(function () { render(); }); return; }
@@ -576,6 +795,9 @@
     var N = window.NAVH;
     if (N && N.HUBS && !N.__mu) { var hm = N.HUBS.filter(function (x) { return x.id === "midia"; })[0]; if (hm) { N.__mu = true; hm.subs.splice(1, 0, ["exterior", "Notícias do exterior"]); } }
     if (typeof VIEWS !== "undefined" && !VIEWS.exterior) VIEWS.exterior = function () { return viewExterior(); };
+    if (typeof VIEWS !== "undefined" && !VIEWS.rankmundo) VIEWS.rankmundo = function () { return viewRanking(); };
+    if (N && N.HUBS && !N.__mu2) { var hp = N.HUBS.filter(function (x) { return x.id === "poder"; })[0]; if (hp) { N.__mu2 = true; hp.subs.push(["rankmundo", "Ranking mundial"]); } }
+    ok(function () { if (!TABS.some(function (t) { return t[0] === "rankmundo"; })) TABS.push(["rankmundo", "Ranking mundial"]); });
     ok(function () { if (!TABS.some(function (t) { return t[0] === "exterior"; })) TABS.push(["exterior", "Exterior"]); });
   }
   instalar();
