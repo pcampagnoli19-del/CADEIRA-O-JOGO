@@ -38,27 +38,34 @@
   var P0 = [
     ["eua", "Estados Unidos", "🇺🇸", "840", 31.0, 4.0, "en", "eua"], ["china", "China", "🇨🇳", "156", 20.0, 4.3, "zh", "china"],
     ["alemanha", "Alemanha", "🇩🇪", "276", 5.0, 2.6, "de", "alemanha"], ["india", "Índia", "🇮🇳", "356", 4.5, 9.5, "en", "india"],
-    ["japao", "Japão", "🇯🇵", "392", 4.3, 1.6, "ja", "japao"], ["reino_unido", "Reino Unido", "🇬🇧", "826", 4.0, 3.0, "en", null],
-    ["franca", "França", "🇫🇷", "250", 3.4, 2.6, "fr", "franca"], ["italia", "Itália", "🇮🇹", "380", 2.5, 2.2, "it", null],
-    ["russia", "Rússia", "🇷🇺", "643", 2.3, 2.5, "ru", "russia"], ["canada", "Canadá", "🇨🇦", "124", 2.3, 3.2, "en", null],
+    ["japao", "Japão", "🇯🇵", "392", 4.3, 1.6, "ja", "japao"], ["reino_unido", "Reino Unido", "🇬🇧", "826", 4.0, 3.0, "en", "reino_unido"],
+    ["franca", "França", "🇫🇷", "250", 3.4, 2.6, "fr", "franca"], ["italia", "Itália", "🇮🇹", "380", 2.5, 2.2, "it", "italia"],
+    ["russia", "Rússia", "🇷🇺", "643", 2.3, 2.5, "ru", "russia"], ["canada", "Canadá", "🇨🇦", "124", 2.3, 3.2, "en", "canada"],
     ["brasil", "Brasil", "🇧🇷", "076", 2.25, 0, "pt", null],
-    ["coreia", "Coreia do Sul", "🇰🇷", "410", 1.95, 3.0, "en", null], ["australia", "Austrália", "🇦🇺", "036", 1.9, 3.5, "en", null],
-    ["espanha", "Espanha", "🇪🇸", "724", 1.9, 3.6, "es", null], ["mexico", "México", "🇲🇽", "484", 1.9, 4.0, "es", "mexico"],
-    ["indonesia", "Indonésia", "🇮🇩", "360", 1.5, 6.5, "en", null], ["turquia", "Turquia", "🇹🇷", "792", 1.5, 6.0, "tr", "turquia"],
-    ["holanda", "Países Baixos", "🇳🇱", "528", 1.3, 3.0, "nl", null], ["arabia", "Arábia Saudita", "🇸🇦", "682", 1.1, 4.0, "ar", "arabia"],
-    ["suica", "Suíça", "🇨🇭", "756", 1.0, 2.5, "de", null], ["polonia", "Polônia", "🇵🇱", "616", 1.0, 5.0, "en", null],
-    ["argentina", "Argentina", "🇦🇷", "032", 0.68, 6.0, "es", "argentina"], ["africa_sul", "África do Sul", "🇿🇦", "710", 0.43, 4.0, "en", null],
-    ["colombia", "Colômbia", "🇨🇴", "170", 0.43, 4.5, "es", "colombia"], ["ira", "Irã", "🇮🇷", "364", 0.4, 3.0, "en", null],
+    ["coreia", "Coreia do Sul", "🇰🇷", "410", 1.95, 3.0, "en", "coreia"], ["australia", "Austrália", "🇦🇺", "036", 1.9, 3.5, "en", "australia"],
+    ["espanha", "Espanha", "🇪🇸", "724", 1.9, 3.6, "es", "espanha"], ["mexico", "México", "🇲🇽", "484", 1.9, 4.0, "es", "mexico"],
+    ["indonesia", "Indonésia", "🇮🇩", "360", 1.5, 6.5, "en", "indonesia"], ["turquia", "Turquia", "🇹🇷", "792", 1.5, 6.0, "tr", "turquia"],
+    ["holanda", "Países Baixos", "🇳🇱", "528", 1.3, 3.0, "nl", "holanda"], ["arabia", "Arábia Saudita", "🇸🇦", "682", 1.1, 4.0, "ar", "arabia"],
+    ["suica", "Suíça", "🇨🇭", "756", 1.0, 2.5, "de", null], ["polonia", "Polônia", "🇵🇱", "616", 1.0, 5.0, "en", "polonia"],
+    ["argentina", "Argentina", "🇦🇷", "032", 0.68, 6.0, "es", "argentina"], ["africa_sul", "África do Sul", "🇿🇦", "710", 0.43, 4.0, "en", "africa_sul"],
+    ["colombia", "Colômbia", "🇨🇴", "170", 0.43, 4.5, "es", "colombia"], ["ira", "Irã", "🇮🇷", "364", 0.4, 3.0, "en", "ira"],
     ["chile", "Chile", "🇨🇱", "152", 0.36, 4.0, "es", "chile"], ["peru", "Peru", "🇵🇪", "604", 0.31, 4.5, "es", "peru"],
     ["equador", "Equador", "🇪🇨", "218", 0.13, 3.0, "es", "equador"], ["venezuela", "Venezuela", "🇻🇪", "862", 0.09, 4.0, "es", "venezuela"],
     ["uruguai", "Uruguai", "🇺🇾", "858", 0.085, 3.5, "es", "uruguai"], ["bolivia", "Bolívia", "🇧🇴", "068", 0.05, 2.0, "es", "bolivia"],
     ["paraguai", "Paraguai", "🇵🇾", "600", 0.046, 5.0, "es", "paraguai"], ["guiana", "Guiana", "🇬🇾", "328", 0.027, 16, "en", "guiana"],
-    ["suriname", "Suriname", "🇸🇷", "740", 0.005, 4.0, "nl", "suriname"]
+    ["suriname", "Suriname", "🇸🇷", "740", 0.005, 4.0, "nl", "suriname"],
+    ["portugal", "Portugal", "🇵🇹", "620", 0.32, 4.0, "pt", "portugal"], ["hungria", "Hungria", "🇭🇺", "348", 0.23, 4.5, "en", "hungria"],
+    ["ucrania", "Ucrânia", "🇺🇦", "804", 0.2, 5.0, "en", "ucrania"], ["cuba", "Cuba", "🇨🇺", "192", 0.1, 1.0, "es", "cuba"],
+    ["panama", "Panamá", "🇵🇦", "591", 0.09, 5.0, "es", "panama"], ["vietna", "Vietnã", "🇻🇳", "704", 0.5, 9.0, "en", "vietna"],
+    ["israel", "Israel", "🇮🇱", "376", 0.58, 4.0, "en", "israel"], ["emirados", "Emirados Árabes", "🇦🇪", "784", 0.55, 5.0, "ar", "emirados"],
+    ["catar", "Catar", "🇶🇦", "634", 0.22, 4.0, "ar", "catar"], ["egito", "Egito", "🇪🇬", "818", 0.35, 6.0, "ar", "egito"],
+    ["nigeria", "Nigéria", "🇳🇬", "566", 0.29, 5.0, "en", "nigeria"], ["angola", "Angola", "🇦🇴", "024", 0.12, 4.0, "pt", "angola"],
+    ["mocambique", "Moçambique", "🇲🇿", "508", 0.022, 5.0, "pt", "mocambique"], ["coreia_norte", "Coreia do Norte", "🇰🇵", "408", 0.028, 2.0, "en", "coreia_norte"]
   ];
   var PAIS = {}; P0.forEach(function (r) { PAIS[r[0]] = { k: r[0], nome: r[1], flag: r[2], geo: r[3], pib0: r[4], g: r[5], lang: r[6], inst: r[7] }; });
   var POR_INST = {}; P0.forEach(function (r) { if (r[7]) POR_INST[r[7]] = r[0]; });
   var POR_GEO = {}; P0.forEach(function (r) { POR_GEO[r[3]] = r[0]; });
-  var ISO3 = { eua: "USA", china: "CHN", alemanha: "DEU", india: "IND", japao: "JPN", reino_unido: "GBR", franca: "FRA", italia: "ITA", russia: "RUS", canada: "CAN", brasil: "BRA", coreia: "KOR", australia: "AUS", espanha: "ESP", mexico: "MEX", indonesia: "IDN", turquia: "TUR", holanda: "NLD", arabia: "SAU", suica: "CHE", polonia: "POL", argentina: "ARG", africa_sul: "ZAF", colombia: "COL", ira: "IRN", chile: "CHL", peru: "PER", equador: "ECU", venezuela: "VEN", uruguai: "URY", bolivia: "BOL", paraguai: "PRY", guiana: "GUY", suriname: "SUR" };
+  var ISO3 = { eua: "USA", china: "CHN", alemanha: "DEU", india: "IND", japao: "JPN", reino_unido: "GBR", franca: "FRA", italia: "ITA", russia: "RUS", canada: "CAN", brasil: "BRA", coreia: "KOR", australia: "AUS", espanha: "ESP", mexico: "MEX", indonesia: "IDN", turquia: "TUR", holanda: "NLD", arabia: "SAU", suica: "CHE", polonia: "POL", argentina: "ARG", africa_sul: "ZAF", colombia: "COL", ira: "IRN", chile: "CHL", peru: "PER", equador: "ECU", venezuela: "VEN", uruguai: "URY", bolivia: "BOL", paraguai: "PRY", guiana: "GUY", suriname: "SUR", portugal: "PRT", hungria: "HUN", ucrania: "UKR", cuba: "CUB", panama: "PAN", vietna: "VNM", israel: "ISR", emirados: "ARE", catar: "QAT", egito: "EGY", nigeria: "NGA", angola: "AGO", mocambique: "MOZ", coreia_norte: "PRK" };
   var POR_ISO = {}; Object.keys(ISO3).forEach(function (k) { POR_ISO[ISO3[k]] = k; });
   // [iso3, id numérico, nome, bandeira, PIB US$ tri (2025), população mi, região, renda]
   var WB = {}, WBL = (window.V3PAISES || []); WBL.forEach(function (r) { WB[r[0]] = r; });
@@ -74,7 +81,7 @@
     return s.pibX[iso];
   }
   function info(k) { // k = chave conhecida ou iso3
-    if (PAIS[k]) { var w = WB[ISO3[k]]; return { k: k, iso: ISO3[k], nome: PAIS[k].nome, flag: PAIS[k].flag, pop: k === "brasil" ? ok(function () { return M().v24.mac.pop / 1e6; }, 213) : (w ? w[5] : 0), reg: w ? w[6] : "", ren: w ? w[7] : "", inst: PAIS[k].inst, num: PAIS[k].geo }; }
+    if (PAIS[k]) { var w = WB[ISO3[k]]; return { k: k, iso: ISO3[k], nome: PAIS[k].nome, flag: PAIS[k].flag, pop: k === "brasil" ? ok(function () { return M().v24.mac.pop / 1e6; }, 213) : (w ? w[5] : k === "coreia_norte" ? 26.5 : 0), reg: w ? w[6] : "", ren: w ? w[7] : "", inst: PAIS[k].inst, num: PAIS[k].geo }; }
     var r = WB[k]; if (!r) return null; return { k: k, iso: k, nome: r[2], flag: r[3], pop: r[5], reg: r[6], ren: r[7], inst: null, num: r[1] };
   }
   MU.info = info;
@@ -99,13 +106,13 @@
     var mac = ok(function () { return M().v24.mac; }, null);
     return mac && mac.pib ? mac.pib / dol / 1e12 : 2.25;
   }
-  function pibDe(k) { if (k === "brasil") return pibBR(); var s = st(); return (s && s.pib[k]) || (PAIS[k] && PAIS[k].pib0) || 0.01; }
+  function pibDe(k) { if (k === "brasil") return pibBR(); var s = st(); if (s && s.pib[k] == null && PAIS[k]) s.pib[k] = PAIS[k].pib0; return (s && s.pib[k]) || (PAIS[k] && PAIS[k].pib0) || 0.01; }
   var RK = null, RKm = null;
   function ranking() {
     var chave = mesAbs() + "|" + pibBR().toFixed(4);
     if (RK && RKm === chave) return RK;
     var l = [];
-    if (WBL.length) WBL.forEach(function (r) { var k = POR_ISO[r[0]] || r[0]; l.push({ k: k, pib: PAIS[k] ? pibDe(k) : pibX(r[0]) }); });
+    if (WBL.length) { WBL.forEach(function (r) { var k = POR_ISO[r[0]] || r[0]; l.push({ k: k, pib: PAIS[k] ? pibDe(k) : pibX(r[0]) }); }); P0.forEach(function (r) { if (!WB[ISO3[r[0]]]) l.push({ k: r[0], pib: pibDe(r[0]) }); }); }
     else P0.forEach(function (r) { l.push({ k: r[0], pib: pibDe(r[0]) }); });
     RK = l.sort(function (a, b) { return b.pib - a.pib; }).map(function (x, i) { x.pos = i + 1; return x; }); RKm = chave;
     return RK;
@@ -322,15 +329,15 @@
 
   /* ================================================================ 5) NOTÍCIAS DO EXTERIOR */
   // um veículo por país; a Reuters pode assinar notícia de qualquer lugar, inclusive do Brasil
-  var VEIC = { en: { eua: "The New York Times", reino_unido: "The Guardian", india: "The Times of India", guiana: "Stabroek News", canada: "The Globe and Mail", australia: "The Sydney Morning Herald", coreia: "The Korea Herald", africa_sul: "News24", indonesia: "The Jakarta Post", polonia: "TVP World", ira: "Tehran Times", brasil: "Reuters", _: "Reuters" },
-    es: { argentina: "Clarín", mexico: "El Universal", colombia: "El Tiempo", chile: "El Mercurio", peru: "El Comercio", equador: "El Universo", venezuela: "El Nacional", uruguai: "El País (Uruguai)", bolivia: "La Razón", paraguai: "ABC Color", espanha: "El País", _: "El País" },
-    fr: { _: "Le Monde" }, de: { suica: "Neue Zürcher Zeitung", _: "Der Spiegel" }, it: { _: "Corriere della Sera" }, zh: { _: "Xinhua (新华社)" }, ru: { _: "TASS (ТАСС)" }, ja: { _: "Nikkei (日本経済新聞)" }, ar: { _: "Asharq Al-Awsat (الشرق الأوسط)" }, tr: { _: "Hürriyet" }, nl: { holanda: "De Telegraaf", suriname: "De Ware Tijd", _: "De Telegraaf" } };
-  var VLOGO = { "The New York Times": "nyt", "The Guardian": "guardian", "The Times of India": "toi", "Stabroek News": "stabroek", "The Globe and Mail": "globe", "The Sydney Morning Herald": "smh", "The Korea Herald": "koreaherald", "News24": "news24", "Reuters": "reuters", "Clarín": "clarin", "El Universal": "eluniversal", "El Tiempo": "eltiempo", "El Mercurio": "elmercurio", "El Comercio": "elcomercio", "El Universo": "eluniverso", "El Nacional": "elnacional", "El País (Uruguai)": "elpaisuy", "La Razón": "larazon", "ABC Color": "abccolor", "El País": "elpais", "Le Monde": "lemonde", "Der Spiegel": "spiegel", "Corriere della Sera": "corriere", "Xinhua (新华社)": "xinhua", "TASS (ТАСС)": "tass", "Nikkei (日本経済新聞)": "nikkei", "Asharq Al-Awsat (الشرق الأوسط)": "asharq", "Hürriyet": "hurriyet", "De Telegraaf": "telegraaf", "De Ware Tijd": "waretijd" };
+  var VEIC = { en: { eua: "The New York Times", reino_unido: "The Guardian", india: "The Times of India", guiana: "Stabroek News", canada: "The Globe and Mail", australia: "The Sydney Morning Herald", coreia: "The Korea Herald", africa_sul: "News24", indonesia: "The Jakarta Post", polonia: "TVP World", ira: "Tehran Times", hungria: "Hungary Today", ucrania: "The Kyiv Independent", vietna: "VnExpress International", israel: "The Times of Israel", nigeria: "Punch", coreia_norte: "KCNA", brasil: "Reuters", _: "Reuters" },
+    es: { argentina: "Clarín", mexico: "El Universal", colombia: "El Tiempo", chile: "El Mercurio", peru: "El Comercio", equador: "El Universo", venezuela: "El Nacional", uruguai: "El País (Uruguai)", bolivia: "La Razón", paraguai: "ABC Color", espanha: "El País", cuba: "Granma", panama: "La Prensa (Panamá)", _: "El País" },
+    fr: { _: "Le Monde" }, de: { suica: "Neue Zürcher Zeitung", _: "Der Spiegel" }, it: { _: "Corriere della Sera" }, zh: { _: "Xinhua (新华社)" }, ru: { _: "TASS (ТАСС)" }, ja: { _: "Nikkei (日本経済新聞)" }, ar: { emirados: "Al Khaleej (الخليج)", catar: "Al Jazeera (الجزيرة)", egito: "Al-Ahram (الأهرام)", _: "Asharq Al-Awsat (الشرق الأوسط)" }, pt: { portugal: "Público", angola: "Jornal de Angola", mocambique: "Notícias (Maputo)", _: "Público" }, tr: { _: "Hürriyet" }, nl: { holanda: "De Telegraaf", suriname: "De Ware Tijd", _: "De Telegraaf" } };
+  var VLOGO = { "The New York Times": "nyt", "The Guardian": "guardian", "The Times of India": "toi", "Stabroek News": "stabroek", "The Globe and Mail": "globe", "The Sydney Morning Herald": "smh", "The Korea Herald": "koreaherald", "News24": "news24", "Reuters": "reuters", "Clarín": "clarin", "El Universal": "eluniversal", "El Tiempo": "eltiempo", "El Mercurio": "elmercurio", "El Comercio": "elcomercio", "El Universo": "eluniverso", "El Nacional": "elnacional", "El País (Uruguai)": "elpaisuy", "La Razón": "larazon", "ABC Color": "abccolor", "El País": "elpais", "Le Monde": "lemonde", "Der Spiegel": "spiegel", "Corriere della Sera": "corriere", "Xinhua (新华社)": "xinhua", "TASS (ТАСС)": "tass", "Nikkei (日本経済新聞)": "nikkei", "Asharq Al-Awsat (الشرق الأوسط)": "asharq", "Hürriyet": "hurriyet", "De Telegraaf": "telegraaf", "De Ware Tijd": "waretijd", "Tehran Times": "tehrantimes", "The Jakarta Post": "jakartapost", "Neue Zürcher Zeitung": "nzz", "TVP World": "tvpworld" };
   function veicDe(lang, pk) { return (VEIC[lang] || {})[pk] || (VEIC[lang] || {})._ || "Reuters"; }
   var BR = { en: "Brazil", es: "Brasil", fr: "le Brésil", de: "Brasilien", it: "il Brasile", zh: "巴西", ru: "Бразилия", ja: "ブラジル", ar: "البرازيل", tr: "Brezilya", nl: "Brazilië" };
   var BRB = { en: "Brazil", es: "Brasil", fr: "Brésil", de: "Brasilien", it: "Brasile", zh: "巴西", ru: "Бразилии", ja: "ブラジル", ar: "البرازيل", tr: "Brezilya", nl: "Brazilië" };
   var NOMEL = { // nome do próprio país no idioma do jornal
-    brasil: "Brazil", eua: "the U.S.", reino_unido: "the U.K.", india: "India", guiana: "Guyana", canada: "Canada", australia: "Australia", coreia: "South Korea", indonesia: "Indonesia", polonia: "Poland", africa_sul: "South Africa", ira: "Iran",
+    brasil: "Brazil", hungria: "Hungary", ucrania: "Ukraine", vietna: "Vietnam", israel: "Israel", nigeria: "Nigeria", coreia_norte: "the DPRK", cuba: "Cuba", panama: "Panamá", emirados: "الإمارات", catar: "قطر", egito: "مصر", portugal: "Portugal", angola: "Angola", mocambique: "Moçambique", eua: "the U.S.", reino_unido: "the U.K.", india: "India", guiana: "Guyana", canada: "Canada", australia: "Australia", coreia: "South Korea", indonesia: "Indonesia", polonia: "Poland", africa_sul: "South Africa", ira: "Iran",
     argentina: "Argentina", mexico: "México", colombia: "Colombia", chile: "Chile", peru: "Perú", equador: "Ecuador", venezuela: "Venezuela", uruguai: "Uruguay", bolivia: "Bolivia", paraguai: "Paraguay", espanha: "España",
     franca: "France", alemanha: "Deutschland", suica: "Schweiz", italia: "Italia", china: "中国", russia: "Россия", japao: "日本", arabia: "السعودية", turquia: "Türkiye", holanda: "Nederland", suriname: "Suriname" };
   // modelos: [título, linha fina] no idioma; {L} líder, {N} número, {P} país, {B} Brasil, {X} extra
@@ -382,7 +389,7 @@
   function preenche(s, v) { return String(s).replace(/\{(\w)\}/g, function (_, k) { return v[k] != null ? v[k] : ""; }); }
   function noticiaExt(pk, tipo, o) {
     var s = st(); if (!s || !PAIS[pk]) return null;
-    var p = PAIS[pk], lang = p.lang === "pt" ? "en" : p.lang, md = T[tipo]; if (!md) return null;
+    var p = PAIS[pk], md = T[tipo]; if (!md) return null; var lang = p.lang === "pt" ? (pk !== "brasil" && md.pt ? "pt" : "en") : p.lang;
     if (!md[lang]) lang = md.en ? "en" : "es";
     var reuters = md.en && (pk === "brasil" || Math.random() < 0.18);
     if (reuters) lang = "en";
@@ -390,7 +397,7 @@
     var ev = o.ev, v = { L: o.lider || o.nome || "", N: o.pct != null ? String(o.pct).replace(".", lang === "en" ? "." : ",") : o.pos || "", P: NOMEL[pk] || p.nome, B: BRB[lang] || "Brazil", X: o.x || (ev ? evNome(ev, lang) : "") || o.c || "", Y: o.y || o.linha || o.ex || "" };
     var vp = { L: v.L, N: o.pct != null ? String(o.pct).replace(".", ",") : o.pos || "", P: p.nome, B: "Brasil", X: o.xPt || (ev ? ev.nome : v.X), Y: o.yPt || v.Y };
     if (tipo === "rank_perde") v.N = o.pos;
-    var nat = md[lang], pt = md.pt || ["", ""];
+    var nat = md[lang], pt = md.pt || ["", ""]; if (lang === "pt") v = vp;
     var n = { id: "X" + (++s.seq), pk: pk, lang: lang, veic: reuters ? "Reuters" : veicDe(lang, pk), t: preenche(nat[0], v).replace(/^the /, "The "), l: preenche(nat[1], v), tPt: preenche(pt[0], vp), lPt: preenche(pt[1], vp), ano: D().ano, mes: D().mes, tipo: tipo };
     if (o.tPt) n.tPt = o.tPt; if (o.lPt) n.lPt = o.lPt;
     if (s.news.slice(0, 8).some(function (x) { return x.t === n.t; })) return null;
@@ -410,9 +417,9 @@
   }
   // eventos vindos da diplomacia (eleições, posses, encontros)
   function onEvt(o) {
-    var pk = POR_INST[o.inst]; if (!pk) return;
-    if (o.t === "eleicao" && o.regra !== "partido" && o.regra !== "controle") noticiaExt(pk, "eleicao", { lider: o.nome, pct: o.pct });
-    else if (o.t === "posse") noticiaExt(pk, "posse", { lider: o.nome });
+    var pk = POR_INST[o.inst]; if (!pk) { if (o.t === "posse" && DIP.instPorId(o.inst) && DIP.instPorId(o.inst).tipo === "pais") { var oc0 = ok(function () { return DIP.ocupAtual(o.inst); }, null); reagir({ pais: o.inst, alvo: o.nome, lado: ladoDe(oc0 && oc0.ideologia), quando: "posse" }); } return; }
+    if (o.t === "eleicao" && o.regra !== "partido" && o.regra !== "controle") { noticiaExt(pk, "eleicao", { lider: o.nome, pct: o.pct }); if (!o.reeleito) { var evE = { pais: o.inst, alvo: o.nome, lado: o.lado || "C", quando: "eleicao" }; reagir(evE); minhaReacao(evE); } }
+    else if (o.t === "posse") { noticiaExt(pk, "posse", { lider: o.nome }); var ja = (st().tweets || []).some(function (t) { return t.sobre === o.nome; }); if (!ja) { var ocN = ok(function () { return DIP.ocupAtual(o.inst); }, null); var evP = { pais: o.inst, alvo: o.nome, lado: ladoDe(ocN && ocN.ideologia), quando: "posse" }; reagir(evP); minhaReacao(evP); } }
     else if (o.t === "saida") noticiaExt(pk, "saida", { lider: o.nome, x: o.novo, xPt: o.novo });
     else if (o.t === "campanha") noticiaExt(pk, "campanha", { x: (o.cands || []).join(", "), xPt: (o.cands || []).join(", ") });
     else if (o.t === "encontro" && !o.gov) {
@@ -447,10 +454,101 @@
       if (["eua", "china", "argentina", "franca", "alemanha", "russia", "venezuela", "paraguai"].indexOf(pk) >= 0) noticiaExt(pk, "eleicao_br", { lider: nome, y: y[lang] || y.en, yPt: txtPt + "." });
       if (venc.jogador && inst) ok(function () { var r = DIP.relacao(inst); r.pessoal = cl(r.pessoal + afin * 6, 0, 100); });
     });
+    reagir({ pais: "brasil", alvo: nome, lado: lado, quando: "eleicao", extra: (pct ? pct + "% dos votos, " : "") + "partido " + partido });
     noticiaExt("brasil", "eleicao_br", { lider: nome, y: "Leaders react: " + reac.length + " governments have commented on the result.", yPt: reac.slice(0, 2).join("; ") + "." });
     fato({ tipo: "diplomacia", sec: "Mundo", kick: "Repercussão", tit: "Mundo reage à eleição de " + nome + (pct ? " (" + String(pct).replace(".", ",") + "%)" : ""), lead: reac.slice(0, 4).join("; ") + ".", peso: 74, jog: !!venc.jogador });
   }
   MU._repercussao = repercussao;
+  /* ================================================================ 5b) REDES: líderes reagem a trocas de governo */
+  // Quando um país troca de líder (ou o Brasil elege presidente), outros chefes de Estado postam.
+  // O tom depende da afinidade ideológica e do temperamento: apaixonado, caloroso, protocolar, frio ou ácido.
+  var HANDLE = { "Donald Trump": "@realDonaldTrump", "Javier Milei": "@JMilei", "Emmanuel Macron": "@EmmanuelMacron", "Narendra Modi": "@narendramodi", "Friedrich Merz": "@_FriedrichMerz", "Volodymyr Zelensky": "@ZelenskyyUa", "Benjamin Netanyahu": "@netanyahu", "Giorgia Meloni": "@GiorgiaMeloni", "Pedro Sánchez": "@sanchezcastejon", "José Antonio Kast": "@joseantoniokast", "Daniel Noboa": "@DanielNoboaOk", "Lee Jae-myung": "@Jaemyung_Lee", "Claudia Sheinbaum": "@Claudiashein", "Mark Carney": "@MarkJCarney", "Anthony Albanese": "@AlboMP", "Recep T. Erdoğan": "@RTErdogan", "Gustavo Petro": "@petrogustavo", "Ursula von der Leyen": "@vonderleyen", "António Guterres": "@antonioguterres", "Keiko Fujimori": "@KeikoFujimori", "Yamandú Orsi": "@OrsiYamandu", "Santiago Peña": "@SantiPenap", "Rodrigo Paz": "@rodrigopazp", "Irfaan Ali": "@presidentaligy", "Cyril Ramaphosa": "@CyrilRamaphosa", "Bola Tinubu": "@officialABAT", "Prabowo Subianto": "@prabowo", "Péter Magyar": "@magyarpeterMP", "Donald Tusk": "@donaldtusk", "Rob Jetten": "@RobJetten", "Andy Burnham": "@AndyBurnhamGM", "Luís Montenegro": "@LMontenegro_PSD", "Miguel Díaz-Canel": "@DiazCanelB", "Masoud Pezeshkian": "@drpezeshkian", "Abdelattah al-Sisi": "@AlsisiOfficial", "Delcy Rodríguez": "@delcyrodriguezv" };
+  var SEM_REDE = /Xi Jinping|Vladimir Putin|Kim Jong-un|Mohammed bin Salman|Mohamed bin Zayed|Tamim bin Hamad|Tô Lâm|Mojtaba/;
+  function handle(n) { return HANDLE[n] || "@" + String(n).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z]/g, ""); }
+  function ladoDe(ideo) { var e = ideo && ideo.economica; return e == null ? "C" : e > 30 ? "D" : e < -10 ? "E" : "C"; }
+  function tomDe(oc, ladoAlvo, alvoBrasil) {
+    var t = oc.tracos || {}, meu = ladoDe(oc.ideologia), mesmo = meu === ladoAlvo, oposto = meu !== "C" && ladoAlvo !== "C" && meu !== ladoAlvo;
+    if (mesmo && (t.vaidade > 65 || t.ideologismo > 75 || t.sensibilidade_publica > 80)) return "apaixonado";
+    if (mesmo) return "caloroso";
+    if (oposto && (t.ideologismo > 70 || t.imprevisibilidade > 70 || t.rancor > 75)) return "acido";
+    if (oposto) return "frio";
+    return "protocolar";
+  }
+  var TW = {
+    apaixonado: { pt: ["Que dia histórico! {A} venceu e o povo {P} escolheu a liberdade e o futuro. Meu irmão, conte comigo: juntos vamos fazer grandes coisas! 🔥", "{A}, PARABÉNS! Vitória do povo, vitória de todos nós que acreditamos. O mundo ganhou um grande líder hoje. 🙌"], en: ["What a historic day! {A} won and the people chose freedom and the future. My friend, count on me — together we will do great things! 🔥", "CONGRATULATIONS {A}! A victory for the people and for everyone who believes. The world gained a great leader today. 🙌"], es: ["¡Qué día histórico! Ganó {A} y el pueblo eligió la libertad y el futuro. ¡Hermano, cuenta conmigo: juntos haremos grandes cosas! 🔥", "¡FELICITACIONES {A}! Victoria del pueblo, victoria de todos los que creemos. El mundo ganó hoy un gran líder. 🙌"] },
+    caloroso: { pt: ["Parabéns, {A}, pela vitória. Nossos países têm uma amizade sólida e vamos aprofundá-la. Conte com nossa parceria.", "Meus cumprimentos calorosos a {A}. Muito a construir juntos: comércio, clima e paz."], en: ["Congratulations, {A}, on your victory. Our nations share a strong friendship and we will deepen it. Count on our partnership.", "Warm congratulations to {A}. Much to build together: trade, climate and peace."], es: ["Felicitaciones, {A}, por la victoria. Nuestros países tienen una amistad sólida y la vamos a profundizar.", "Mis cálidas felicitaciones a {A}. Mucho por construir juntos: comercio, clima y paz."] },
+    protocolar: { pt: ["Cumprimento {A} pela eleição. Desejamos êxito e seguiremos trabalhando pela cooperação entre nossos países.", "Felicito {A}. A relação entre nossos Estados está acima de governos."], en: ["I congratulate {A} on the election. We wish success and will keep working for cooperation between our countries.", "Congratulations to {A}. The relationship between our nations goes beyond any government."], es: ["Saludo a {A} por su elección. Le deseamos éxito y seguiremos trabajando por la cooperación.", "Felicito a {A}. La relación entre nuestros Estados está por encima de los gobiernos."] },
+    frio: { pt: ["Tomamos nota do resultado. Esperamos que o novo governo respeite os compromissos assumidos.", "Respeitamos a decisão soberana do povo. Vamos observar os primeiros passos de {A}."], en: ["We take note of the result. We expect the new government to honor existing commitments.", "We respect the people's sovereign decision. We will watch {A}'s first steps closely."], es: ["Tomamos nota del resultado. Esperamos que el nuevo gobierno respete los compromisos asumidos.", "Respetamos la decisión soberana del pueblo. Observaremos los primeros pasos de {A}."] },
+    acido: { pt: ["Mais um que promete o paraíso e vai entregar a conta. Boa sorte ao povo {P}: vai precisar.", "O mundo está de olho, {A}. Quem flerta com o atraso colhe isolamento."], en: ["Another one promising paradise and delivering the bill. Good luck to the people — they'll need it.", "The world is watching, {A}. Those who flirt with the past reap isolation."], es: ["Otro más que promete el paraíso y va a pasar la factura. Suerte al pueblo: la va a necesitar.", "El mundo está mirando, {A}. Quien coquetea con el atraso cosecha aislamiento."] }
+  };
+  var GENT = { brasil: "brasileiro", argentina: "argentino", eua: "americano", franca: "francês", chile: "chileno", peru: "peruano", colombia: "colombiano", mexico: "mexicano", paraguai: "paraguaio", uruguai: "uruguaio", bolivia: "boliviano", equador: "equatoriano", venezuela: "venezuelano", alemanha: "alemão", italia: "italiano", espanha: "espanhol", portugal: "português", reino_unido: "britânico", coreia: "coreano", japao: "japonês", india: "indiano" };
+  var TOMN = { apaixonado: "😍 apaixonado", caloroso: "🤝 caloroso", protocolar: "🎩 protocolar", frio: "🧊 frio", acido: "🌶️ ácido" };
+  function reatores(alvoInst, n) {
+    var l = DIP.INSTITUICOES.filter(function (i) { return i.tipo === "pais" && i.id !== alvoInst; });
+    var alvo = alvoInst && DIP.instPorId(alvoInst);
+    var peso = function (i) { var w = (i.peso ? i.peso.diplomatico : 30) + (alvo && i.eixo === alvo.eixo ? 40 : 0) + Math.random() * 40; return w; };
+    return l.map(function (i) { return { i: i, w: peso(i) }; }).sort(function (a, b) { return b.w - a.w; }).slice(0, n).map(function (x) { return x.i.id; });
+  }
+  // evento: { pais: instId ou "brasil", alvo: nome do novo líder, ideo / lado, quando: "eleicao" | "posse" }
+  function reagir(ev) {
+    var s = st(); if (!s) return; s.tweets = s.tweets || [];
+    var ids = reatores(ev.pais === "brasil" ? null : ev.pais, ev.pais === "brasil" ? 8 : 5), out = [];
+    var gent = GENT[ev.pais] || (ev.pais === "brasil" ? "brasileiro" : "");
+    ids.forEach(function (id) {
+      var oc = DIP.ocupAtual(id); if (!oc || (ev.pais !== "brasil" && oc.nome === ev.alvo)) return;
+      var k = POR_INST[id], p = k && PAIS[k], tom = tomDe(oc, ev.lado, ev.pais === "brasil");
+      var lang = p ? (p.lang === "es" ? "es" : p.lang === "pt" ? "pt" : "en") : "en";
+      var arr = TW[tom][lang] || TW[tom].en, i = Math.floor(Math.random() * arr.length);
+      var f = function (t) { return t.replace(/\{A\}/g, ev.alvo).replace(/ \{P\}/g, gent ? " " + gent : "").replace(/\{P\}/g, gent); };
+      var tw = { id: "T" + (++s.seq), autor: oc.nome, inst: id, handle: SEM_REDE.test(oc.nome) ? null : handle(oc.nome), oficial: SEM_REDE.test(oc.nome), flag: p ? p.flag : "🌐", tom: tom, lang: lang, txt: f(arr[i]), txtPt: f(TW[tom].pt[i]), sobre: ev.alvo, pais: ev.pais, ano: D().ano, mes: D().mes, likes: Math.round((oc.tracos && oc.tracos.vaidade || 50) * (300 + Math.random() * 3000)) };
+      out.push(tw);
+    });
+    out.forEach(function (t) { s.tweets.unshift(t); }); if (s.tweets.length > 120) s.tweets.length = 120;
+    if (out.length) ok(function () { manchete("Nas redes, líderes reagem " + (ev.quando === "posse" ? "à posse" : "à vitória") + " de " + ev.alvo + ": " + out.slice(0, 2).map(function (t) { return t.autor.split(" ").slice(-1)[0] + " (" + TOMN[t.tom].split(" ")[1] + ")"; }).join(", ") + ".", "mundo"); });
+    // com IA: reescreve cada post na voz do líder, mantendo o tom
+    var ia = IA(); if (!ia || !out.length) return;
+    var pedido = out.map(function (t) { var oc = DIP.ocupAtual(t.inst); return { autor: t.autor, tom: t.tom, idioma: LANGN[(PAIS[POR_INST[t.inst]] || {}).lang] || "inglês", arquetipo: (DIP.ARQUETIPOS[oc.arquetipo] || {}).nome, ideologia: oc.ideologia, manias: oc.rasgos }; });
+    ia.iaJSON("Num jogo realista de política, " + ev.alvo + " acaba de " + (ev.quando === "posse" ? "tomar posse" : "vencer a eleição") + " em " + (ev.pais === "brasil" ? "o Brasil" : DIP.instPorId(ev.pais).nome) + (ev.extra ? " (" + ev.extra + ")" : "") + ". Escreva o post que cada líder abaixo publicaria na rede social (ou nota oficial, se não usa redes), no idioma indicado, curto (até 280 caracteres), na voz e no estilo de cada um e no TOM indicado: apaixonado (efusivo, emoji, afeto pessoal), caloroso, protocolar (diplomático), frio (seco, cobrando compromissos) ou ácido (irônico, provocador, sem ofensa grave nem acusação de crime). Dê também a tradução em português do Brasil.\nLíderes: " + JSON.stringify(pedido) + "\nResponda só o JSON {\"posts\":[{\"autor\":\"...\",\"texto_original\":\"...\",\"texto_pt\":\"...\"}]} na mesma ordem.", { type: "object", properties: { posts: { type: "array", items: { type: "object", properties: { autor: { type: "string" }, texto_original: { type: "string" }, texto_pt: { type: "string" } } } } }, required: ["posts"] }, 0.95)
+      .then(function (j) { (j && j.posts || []).forEach(function (p_, i) { var t = out.filter(function (x) { return x.autor === p_.autor; })[0] || out[i]; if (t && p_.texto_original) { t.txt = p_.texto_original; t.txtPt = p_.texto_pt || t.txtPt; t.ia = j._ia || "IA"; } }); }, function () {});
+    return out;
+  }
+  MU.reagir = reagir;
+  // o jogador também pode postar sobre a posse de um líder estrangeiro
+  function minhaReacao(ev) { var s = st(); if (!s || ev.pais === "brasil") return; if (["PRES", "GOV", "SEN", "DEPF"].indexOf(cid()) < 0) return; s.minhas = s.minhas || []; s.minhas.unshift({ id: "M" + (++s.seq), ev: ev, estado: "pendente", m: mesAbs() }); if (s.minhas.length > 6) s.minhas.length = 6; }
+  var MEU_TOM = [["apaixonado", "😍 Apaixonado", "Parabéns efusivo, emoji e tudo. Agrada quem pensa igual; a oposição critica."], ["caloroso", "🤝 Caloroso", "Cumprimentos simpáticos e parceria."], ["protocolar", "🎩 Protocolar", "Nota diplomática, sem risco."], ["acido", "🌶️ Ácido", "Provoca. Rende likes na sua base e azeda a relação."], ["silencio", "🤐 Ficar quieto", "Não posta nada. O silêncio também é lido."]];
+  function htmlMinhas() {
+    var s = st(), l = (s.minhas || []).filter(function (x) { return x.estado === "pendente"; }); if (!l.length) return "";
+    return '<div class="mu-minhas"><h4>📣 Você vai postar?</h4>' + l.slice(0, 2).map(function (x) {
+      var nm = DIP.instPorId(x.ev.pais) ? DIP.instPorId(x.ev.pais).nome : "";
+      return '<div class="mu-rec"><p><b>' + esc_(x.ev.alvo) + "</b> " + (x.ev.quando === "posse" ? "assumiu" : "venceu") + " " + esc_(nm ? "(" + nm + ")" : "") + ". Líderes do mundo já estão postando.</p><div class='mu-ops'>" + MEU_TOM.map(function (t) { return '<button type="button" class="mu-op" data-mu="meupost" data-id="' + x.id + '" data-t="' + t[0] + '"><b>' + t[1] + "</b><small>" + t[2] + "</small></button>"; }).join("") + "</div></div>";
+    }).join("") + "</div>";
+  }
+  function postar(id, tom) {
+    var s = st(), x = (s.minhas || []).filter(function (y) { return y.id === id; })[0]; if (!x || x.estado !== "pendente") return;
+    x.estado = tom; var ev = x.ev, j = ok(function () { return J(); }, {}), pres = cid() === "PRES";
+    var rel = ok(function () { return DIP.relacao(ev.pais); }, null), meuLado = ok(function () { return (PARTIDOS[j.partido_atual] || {}).e; }, "C") || "C";
+    var afim = meuLado === ev.lado, d = { apaixonado: 10, caloroso: 6, protocolar: 2, acido: -14, silencio: -3 }[tom] * (pres ? 1 : 0.4);
+    if (rel) { rel.pessoal = cl(rel.pessoal + d, 0, 100); if (tom === "acido") rel.rancor = cl((rel.rancor || 0) + 10, 0, 100); }
+    var ap = tom === "acido" ? (afim ? -0.4 : 0.3) : tom === "apaixonado" ? (afim ? 0.3 : -0.4) : 0;
+    ok(function () { mudarAprovTodos(ap); });
+    if (tom !== "silencio") {
+      var gent = GENT[POR_INST[ev.pais]] || "";
+      var arr = TW[tom].pt, txt = arr[Math.floor(Math.random() * arr.length)].replace(/\{A\}/g, ev.alvo).replace(/ \{P\}/g, gent ? " " + gent : "").replace(/\{P\}/g, gent);
+      s.tweets.unshift({ id: "T" + (++s.seq), autor: j.nome, inst: null, handle: handle(j.nome), flag: "🇧🇷", tom: tom, lang: "pt", txt: txt, txtPt: txt, sobre: ev.alvo, pais: ev.pais, ano: D().ano, mes: D().mes, likes: Math.round(500 + Math.random() * 40000), meu: true });
+      if (tom === "acido" || tom === "apaixonado") fato({ tipo: "diplomacia", sec: "Mundo", kick: "Redes", tit: j.nome + " posta mensagem " + (tom === "acido" ? "ácida" : "efusiva") + " sobre " + ev.alvo + " e repercute no exterior", lead: "“" + txt + "”", peso: 58, jog: true });
+    } else if (pres) fato({ tipo: "diplomacia", sec: "Mundo", kick: "Redes", tit: "Silêncio do Planalto sobre " + ev.alvo + " chama atenção", lead: "O Presidente não cumprimentou o novo líder.", peso: 48, jog: true });
+  }
+  function htmlTweets(lim) {
+    var s = st(), l = (s.tweets || []).slice(0, lim || 30), tr = MU._trad || {};
+    if (!l.length) return '<p class="txt">Nenhuma reação ainda. Quando algum país troca de líder (ou o Brasil elege presidente), os chefes de Estado se manifestam aqui.</p>';
+    return '<div class="mu-tws">' + l.map(function (t) {
+      var ver = tr[t.id] || MU._tradTudo || t.lang === "pt";
+      return '<div class="mu-tw' + (t.meu ? " meu" : "") + '"><div class="mu-twh">' + (t.meu && ok(function () { return J().foto; }, null) ? '<img alt="" src="' + J().foto + '">' : ok(function () { return DIP.silhuetaHtml({ nome: t.autor }, 36); }, "")) + '<div><b>' + esc_(t.autor) + " " + t.flag + "</b><small>" + (t.oficial ? "nota oficial" : esc_(t.handle || "")) + " · " + MES[t.mes] + "/" + t.ano + '</small></div><span class="mu-tom ' + t.tom + '">' + TOMN[t.tom] + "</span></div><p>" + esc_(ver ? t.txtPt : t.txt) + "</p>" +
+        '<div class="mu-twf"><span>♥ ' + nf(t.likes, 0) + "</span>" + (t.lang !== "pt" ? '<button type="button" class="mu-tr" data-mu="trad" data-id="' + t.id + '">' + (ver ? "Ver original" : "Traduzir") + "</button>" : "") + (t.ia ? "<small>" + esc_(t.ia) + "</small>" : "") + "</div></div>";
+    }).join("") + "</div>";
+  }
+  MU.htmlTweets = htmlTweets;
+
 
   /* ================================================================ 6) MAPA */
   var W = 1440, H = 720, K = 4;
@@ -502,7 +600,8 @@
     if (inst) {
       var oc = DIP.ocupAtual(instId), rel = DIP.relacao(instId), f = MU.forcaRel(instId), pos_ = postura(f);
       var v3 = ok(function () { return DIP.estado().v3; }, null), pr = v3 && v3.prox && v3.prox[instId];
-      h += '<div class="mu-ph">' + DIP.silhuetaHtml(oc, 56) + '<div class="mu-pn"><small>' + (p ? p.flag + " " : "") + esc_(inst.nome) + "</small><b>" + esc_(oc ? oc.nome : "—") + "</b><span>" + esc_((DIP.ARQUETIPOS[oc && oc.arquetipo] || {}).nome || "") + "</span></div></div>";
+      h += '<div class="mu-ph">' + DIP.silhuetaHtml(oc, 56) + '<div class="mu-pn"><small>' + (p ? p.flag + " " : "") + esc_(inst.nome) + "</small><b>" + esc_(oc ? oc.nome : "—") + "</b><span>" + esc_((oc && oc.cargo && oc.cargo !== "Chefe de Estado" ? oc.cargo + " · " : "") + ((DIP.ARQUETIPOS[oc && oc.arquetipo] || {}).nome || "")) + "</span></div></div>";
+      if (inst.outro) h += '<div class="mu-outro">' + DIP.silhuetaHtml({ nome: inst.outro[0] }, 34) + "<span><small>" + esc_(inst.outro[1]) + "</small><b>" + esc_(inst.outro[0]) + "</b></span></div>";
       h += '<div class="mu-kv">';
       if (p) { var pib = key === "brasil" ? pibBR() : (PAIS[key] ? pibDe(key) : pibX(key)); h += "<span>População<b>" + fmtPop(p.pop) + "</b><i>" + esc_(REGN[p.reg] || "") + "</i></span><span>PIB<b>" + fmtPib(pib) + "</b><i>" + posDe(key) + "º do mundo</i></span><span>PIB per capita<b>US$ " + nf(pib * 1e6 / (p.pop || 1), 0) + "</b><i>renda " + (RENDA[p.ren] || "—") + "</i></span>"; }
       h += "<span>Relação<b style='color:" + corRel(rel.pessoal) + "'>" + Math.round(rel.pessoal) + "</b><i>confiança " + Math.round(rel.confianca || 0) + " · rancor " + Math.round(rel.rancor || 0) + "</i></span>";
@@ -555,6 +654,8 @@
     var h = '<div class="mu-tela"><h2>🌍 Relações Exteriores</h2>' + htmlStatus();
     if (s.pend && cid() === "PRES") h += htmlCupula();
     if (recH) h += recH;
+    var mh = htmlMinhas(); if (mh) h += mh;
+    if ((s.tweets || []).length) h += '<details class="mu-ag"><summary>🐦 Reações nas redes</summary>' + htmlTweets(6) + "</details>";
     h += '<div class="mu-zoom">' + [["mundo", "Mundo"], ["americas", "Américas"], ["sul", "América do Sul"], ["europa", "Europa"], ["asia", "Ásia"]].map(function (z) { return '<button type="button" class="' + ((MU._zoom || "mundo") === z[0] ? "on" : "") + '" data-mu="zoom" data-id="' + z[0] + '">' + z[1] + "</button>"; }).join("") + "</div>";
     h += '<div class="mu-mapa-w">' + htmlMapa() + '</div><div class="mu-leg"><i style="background:#2f7de1"></i>relação boa <i style="background:#e0a800"></i>morna <i style="background:#d9534f"></i>ruim <i class="br"></i>Brasil' + ((MU._zoom || "mundo") === "mundo" ? " · arraste para o lado" : "") + "</div>";
     h += htmlBalao();
@@ -717,18 +818,19 @@
   document.addEventListener("input", function (e) { if (!e.target || e.target.id !== "mu-busca") return; var q = e.target.value.trim().toLowerCase(); Array.prototype.forEach.call(document.querySelectorAll(".mu-tb tbody tr"), function (tr) { tr.style.display = !q || tr.getAttribute("data-n").indexOf(q) >= 0 ? "" : "none"; }); });
 
   /* ================================================================ 7) MÍDIA: aba Exterior */
-  var LANGN = { en: "inglês", es: "espanhol", fr: "francês", de: "alemão", it: "italiano", zh: "chinês", ru: "russo", ja: "japonês", ar: "árabe", tr: "turco", nl: "holandês" };
+  var LANGN = { pt: "português", en: "inglês", es: "espanhol", fr: "francês", de: "alemão", it: "italiano", zh: "chinês", ru: "russo", ja: "japonês", ar: "árabe", tr: "turco", nl: "holandês" };
   function viewExterior() {
     var s = st(); if (!s) return "";
     var f = MU._filtro || "todas", tr = MU._trad || {};
     var l = s.news.filter(function (n) { return f === "todas" || (f === "brasil" ? /_br|rank|exige|encontro|clube|eleicao_br/.test(n.tipo) : n.lang === f); }).slice(0, 40);
     var langs = {}; s.news.forEach(function (n) { langs[n.lang] = 1; });
+    if (f === "redes") return '<section class="card mu-ext"><h3>🌐 Notícias do exterior</h3><div class="mu-filt">' + [["todas", "Todas"], ["redes", "🐦 Redes dos líderes"], ["brasil", "Sobre o Brasil"]].map(function (x) { return '<button type="button" class="' + (f === x[0] ? "on" : "") + '" data-mu="filt" data-id="' + x[0] + '">' + esc_(x[1]) + "</button>"; }).join("") + '<button type="button" data-mu="tradtudo">Traduzir tudo</button></div>' + htmlMinhas() + htmlTweets(40) + "</section>";
     var h = '<section class="card mu-ext"><h3>🌐 Notícias do exterior</h3><p class="txt"><small>Manchetes da imprensa estrangeira no idioma original. Toque em <b>Traduzir</b> para ler em português.</small></p>';
-    h += '<div class="mu-filt">' + [["todas", "Todas"], ["brasil", "Sobre o Brasil"]].concat(Object.keys(langs).map(function (k) { return [k, LANGN[k] || k]; })).map(function (x) { return '<button type="button" class="' + (f === x[0] ? "on" : "") + '" data-mu="filt" data-id="' + x[0] + '">' + esc_(x[1]) + "</button>"; }).join("") + '<button type="button" data-mu="tradtudo">Traduzir tudo</button></div>';
+    h += '<div class="mu-filt">' + [["todas", "Todas"], ["redes", "🐦 Redes dos líderes"], ["brasil", "Sobre o Brasil"]].concat(Object.keys(langs).map(function (k) { return [k, LANGN[k] || k]; })).map(function (x) { return '<button type="button" class="' + (f === x[0] ? "on" : "") + '" data-mu="filt" data-id="' + x[0] + '">' + esc_(x[1]) + "</button>"; }).join("") + '<button type="button" data-mu="tradtudo">Traduzir tudo</button></div>';
     if (!l.length) h += '<p class="txt">Nada ainda. As notícias de fora aparecem conforme os meses passam: eleições, posses, cúpulas, acordos e o ranking das economias.</p>';
     h += '<div class="mu-nlist">' + l.map(function (n) {
       var t = tr[n.id] || MU._tradTudo, p = PAIS[n.pk];
-      return '<article class="mu-n' + (t ? " pt" : "") + '"' + (n.lang === "ar" && !t ? ' dir="rtl"' : "") + '><div class="mu-nh"><span>' + (window.V3IMPRENSA_EXT && V3IMPRENSA_EXT[VLOGO[n.veic]] ? '<img class="mu-vl" alt="' + esc_(n.veic) + '" src="' + V3IMPRENSA_EXT[VLOGO[n.veic]] + '">' : "") + (p ? p.flag : "🌐") + " " + esc_(n.veic) + "</span><small>" + MES[n.mes] + "/" + n.ano + "</small></div><h4>" + esc_(t ? n.tPt : n.t) + "</h4><p>" + esc_(t ? n.lPt : n.l) + '</p><button type="button" class="mu-tr" data-mu="trad" data-id="' + n.id + '">' + (t ? "Ver original (" + (LANGN[n.lang] || n.lang) + ")" : "Traduzir") + "</button></article>";
+      return '<article class="mu-n' + (t ? " pt" : "") + '"' + (n.lang === "ar" && !t ? ' dir="rtl"' : "") + '><div class="mu-nh"><span>' + (window.V3IMPRENSA_EXT && V3IMPRENSA_EXT[VLOGO[n.veic]] ? '<img class="mu-vl" alt="' + esc_(n.veic) + '" src="' + V3IMPRENSA_EXT[VLOGO[n.veic]] + '">' : "") + (p ? p.flag : "🌐") + " " + esc_(n.veic) + "</span><small>" + MES[n.mes] + "/" + n.ano + "</small></div><h4>" + esc_(t ? n.tPt : n.t) + "</h4><p>" + esc_(t ? n.lPt : n.l) + "</p>" + (n.lang === "pt" ? "" : '<button type="button" class="mu-tr" data-mu="trad" data-id="' + n.id + '">' + (t ? "Ver original (" + (LANGN[n.lang] || n.lang) + ")" : "Traduzir") + "</button>") + "</article>";
     }).join("") + "</div></section>";
     return h;
   }
@@ -764,6 +866,7 @@
     }
     if (a === "fecha-bal") { MU._bal = null; MU._sel = null; DIP._cena = { fase: "mapa" }; refresh(); return; }
     if (a === "leitura") { leitura(id, true); refresh(); return; }
+    if (a === "meupost") { postar(id, b.getAttribute("data-t")); if (document.querySelector("[data-dip-modal] .mu-tela")) refresh(); else ok(function () { render(); }); return; }
     if (a === "rec") { responderRecado(id, b.getAttribute("data-r")); refresh(); return; }
     if (a === "rec-tr") { MU._recTr = MU._recTr || {}; MU._recTr[id] = !MU._recTr[id]; refresh(); return; }
     if (a === "zoom") { MU._zoom = id; refresh(); return; }
