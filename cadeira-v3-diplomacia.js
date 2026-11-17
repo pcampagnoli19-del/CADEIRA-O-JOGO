@@ -80,7 +80,7 @@
       cands: [{ nome: "Vicky Dávila", lado: "D", arq: "A5", forca: 18, bio: "Jornalista; direita antiestablishment." }, { nome: "Iván Cepeda", lado: "E", arq: "A7", forca: 18, bio: "Senador do Pacto Histórico." }, { nome: "Sergio Fajardo", lado: "C", arq: "A4", forca: 12, bio: "Ex-governador de Antioquia; centro." }],
       nomes: ["Camilo Restrepo", "Daniela Ospina", "Andrés Quintero", "Natalia Arango", "Felipe Cárdenas"] },
     venezuela: { mesEleicao: 7, mesPosse: 1, limite: 0, mandatosAtual: 1, ladoAtual: "E", regra: "controle",
-      cands: [{ nome: "María Corina Machado", lado: "D", arq: "A5", forca: 30, bio: "Líder da oposição; Nobel da Paz 2025." }, { nome: "Diosdado Cabello", lado: "E", arq: "A5", forca: 14, bio: "Chavismo duro." }, { nome: "Edmundo González", lado: "C", arq: "A4", forca: 12, bio: "Diplomata; candidato da oposição em 2024." }],
+      cands: [{ nome: "María Corina Machado", lado: "D", arq: "A5", forca: 30, bio: "Líder da oposição; Nobel da Paz 2025." }, { nome: "Diosdado Cabello", lado: "E", arq: "A5", forca: 14, bio: "Chavismo duro." }, { nome: "Jorge Rodríguez", lado: "E", arq: "A2", forca: 12, bio: "Presidente da Assembleia Nacional e irmão de Delcy; operador do chavismo." }, { nome: "Edmundo González", lado: "C", arq: "A4", forca: 12, bio: "Diplomata; candidato da oposição em 2024." }],
       nomes: ["Gabriela Pérez", "Luis Mendoza", "Carolina Rojas", "Javier Blanco", "Mariana Lugo"] },
     turquia: { mesEleicao: 5, mesPosse: 6, limite: 0, mandatosAtual: 3, ladoAtual: "D",
       cands: [{ nome: "Mansur Yavaş", lado: "C", arq: "A4", forca: 26, bio: "Prefeito de Ancara; oposição moderada." }, { nome: "Özgür Özel", lado: "E", arq: "A3", forca: 18, bio: "Líder do CHP." }, { nome: "Hakan Fidan", lado: "D", arq: "A2", forca: 12, bio: "Chanceler; ex-chefe da inteligência." }],
@@ -105,10 +105,118 @@
       nomes: ["Faisal bin Abdullah", "Turki bin Faisal"] }
   };
   D3.SUC = SUC;
+  // eventos do mundo para quem quiser ouvir (notícias do exterior)
+  function evt(o) { try { if (typeof D3.onEvt === "function") D3.onEvt(o); } catch (e) {} }
+  /* ------------------------------------------------------------------ América do Sul (nov/2026) */
+  var SULAM = [
+    { id: "paraguai", nome: "Paraguai", cap: ["assuncao", "Assunção", -25.26, -57.58], cor: "#d52b1e", peso: [14, 12, 20], prod: "energia de Itaipu e soja", em: "no Paraguai", de: "do Paraguai",
+      int: ["energia_petroleo_gas", "fronteira_migracao", "narcotrafico_garimpo", "mercosul_integracao"], gosta: ["mercosul", "itaipu"], gat: ["tarifa_itaipu"],
+      suc: { regra: "eleicao", mandato_anos: 5, limite_mandatos: 1, proxima_transicao_ano: 2028, hazard_base: 0.05 }, vet: { economica: 50, costumes: 60, soberania: 40 },
+      oc: { id: "alliana_p", nome: "Pedro Alliana", arquetipo: "A6", inicio_ano: 2026, fim_previsto_ano: 2028, nascimento_ano: 1972, tracos: { pragmatismo: 80, paciencia: 50 }, ideologia: { economica: 50, costumes: 60, soberania: 40 }, cor: "#d52b1e",
+        bio: "Assumiu em 6/11/2026, após a renúncia de Santiago Peña no escândalo do Ueno Bank. Colorado, ex-presidente da Câmara; governa sob pressão e sem vice." },
+      s: { mesEleicao: 4, mesPosse: 8, limite: 1, mandatosAtual: 1, ladoAtual: "D", cands: [
+        { nome: "Basilio Núñez", lado: "D", arq: "A6", forca: 20, bio: "\"Bachi\", senador colorado e operador do partido no Congresso." },
+        { nome: "Efraín Alegre", lado: "C", arq: "A3", forca: 18, bio: "Liberal (PLRA); três vezes candidato à presidência." },
+        { nome: "Miguel Prieto", lado: "C", arq: "A4", forca: 16, bio: "Ex-prefeito de Ciudad del Este; renovação fora dos partidos tradicionais." },
+        { nome: "Payo Cubas", lado: "D", arq: "A5", forca: 10, bio: "Antissistema da Cruzada Nacional; estilo explosivo." }],
+        nomes: ["Rodrigo Benítez", "Carolina Giménez", "Luis Ayala", "Mirta Duarte", "Óscar Villalba"] } },
+    { id: "uruguai", nome: "Uruguai", cap: ["montevideu", "Montevidéu", -34.90, -56.16], cor: "#5aaee0", peso: [20, 10, 35], prod: "carne e lácteos", em: "no Uruguai", de: "do Uruguai",
+      int: ["mercosul_integracao", "acordo_comercial", "investimento_direto", "turismo_cultura"], gosta: ["institucionalidade", "mercosul"], gat: ["protecionismo"],
+      suc: { regra: "eleicao", mandato_anos: 5, limite_mandatos: 1, proxima_transicao_ano: 2030, hazard_base: 0.01 }, vet: { economica: -20, costumes: -30, soberania: 10 },
+      oc: { id: "orsi_y", nome: "Yamandú Orsi", arquetipo: "A4", inicio_ano: 2025, fim_previsto_ano: 2030, nascimento_ano: 1967, tracos: { paciencia: 80, formalidade: 60, pragmatismo: 80 }, ideologia: { economica: -20, costumes: -30, soberania: 10 }, cor: "#5aaee0",
+        bio: "Professor de história e ex-intendente de Canelones, da Frente Ampla. Moderado, discreto e herdeiro político de Pepe Mujica." },
+      s: { mesEleicao: 10, mesPosse: 3, limite: 1, mandatosAtual: 1, ladoAtual: "E", cands: [
+        { nome: "Carolina Cosse", lado: "E", arq: "A7", forca: 22, bio: "Vice-presidente; engenheira e ex-intendente de Montevidéu." },
+        { nome: "Álvaro Delgado", lado: "D", arq: "A4", forca: 18, bio: "Partido Nacional; candidato blanco em 2024." },
+        { nome: "Andrés Ojeda", lado: "C", arq: "A3", forca: 16, bio: "Partido Colorado; advogado midiático." }],
+        nomes: ["Martín Pereira", "Valentina Silva", "Diego Fernández", "Lucía Rodríguez", "Santiago Méndez"] } },
+    { id: "chile", nome: "Chile", cap: ["santiago_cl", "Santiago", -33.45, -70.67], cor: "#d52b1e", peso: [35, 35, 40], prod: "cobre e vinho", em: "no Chile", de: "do Chile",
+      int: ["hidrogenio_verde_minerais_criticos", "acordo_comercial", "fronteira_migracao", "investimento_direto"], gosta: ["seguranca", "abertura"], gat: ["leniencia_crime"],
+      suc: { regra: "eleicao", mandato_anos: 4, limite_mandatos: 1, proxima_transicao_ano: 2030, hazard_base: 0.02 }, vet: { economica: 70, costumes: 70, soberania: 50 },
+      oc: { id: "kast_ja", nome: "José Antonio Kast", arquetipo: "A5", inicio_ano: 2026, fim_previsto_ano: 2030, nascimento_ano: 1966, tracos: { ideologismo: 85, formalidade: 65, paciencia: 50 }, ideologia: { economica: 70, costumes: 70, soberania: 50 }, cor: "#1e3a8a",
+        bio: "Fundador do Partido Republicano; venceu em 2025 com discurso de ordem, imigração e segurança. Posse em 11/3/2026." },
+      s: { mesEleicao: 11, mesPosse: 3, limite: 1, mandatosAtual: 1, ladoAtual: "D", cands: [
+        { nome: "Jeannette Jara", lado: "E", arq: "A7", forca: 22, bio: "Comunista; ex-ministra do Trabalho, candidata da esquerda em 2025." },
+        { nome: "Evelyn Matthei", lado: "D", arq: "A4", forca: 20, bio: "Direita tradicional (UDI); ex-prefeita de Providencia." },
+        { nome: "Johannes Kaiser", lado: "D", arq: "A5", forca: 16, bio: "Libertário; youtuber virado deputado." }],
+        nomes: ["Francisca Muñoz", "Tomás Contreras", "Javiera Soto", "Matías Reyes", "Camila Fuentes"] } },
+    { id: "bolivia", nome: "Bolívia", cap: ["lapaz", "La Paz", -16.50, -68.15], cor: "#007934", peso: [14, 15, 15], prod: "gás natural", em: "na Bolívia", de: "da Bolívia",
+      int: ["energia_petroleo_gas", "hidrogenio_verde_minerais_criticos", "narcotrafico_garimpo", "fronteira_migracao"], gosta: ["gas", "credito"], gat: ["ingerencia"],
+      suc: { regra: "eleicao", mandato_anos: 5, limite_mandatos: 1, proxima_transicao_ano: 2030, hazard_base: 0.04 }, vet: { economica: 40, costumes: 30, soberania: 50 },
+      oc: { id: "paz_r", nome: "Rodrigo Paz", arquetipo: "A6", inicio_ano: 2025, fim_previsto_ano: 2030, nascimento_ano: 1967, tracos: { pragmatismo: 80, transacionalismo: 75 }, ideologia: { economica: 40, costumes: 30, soberania: 50 }, cor: "#007934",
+        bio: "Senador do PDC, filho do ex-presidente Jaime Paz Zamora. Encerrou duas décadas do MAS no poder; enfrenta crise de combustível e dólar." },
+      s: { mesEleicao: 8, mesPosse: 11, limite: 1, mandatosAtual: 1, ladoAtual: "C", cands: [
+        { nome: "Jorge Quiroga", lado: "D", arq: "A4", forca: 20, bio: "\"Tuto\", ex-presidente; liberal." },
+        { nome: "Edmand Lara", lado: "C", arq: "A5", forca: 18, bio: "Vice-presidente, ex-policial; rompido com Paz, populista." },
+        { nome: "Samuel Doria Medina", lado: "C", arq: "A4", forca: 16, bio: "Empresário do cimento; centro-direita." },
+        { nome: "Andrónico Rodríguez", lado: "E", arq: "A3", forca: 14, bio: "Ex-presidente do Senado; herdeiro do campo do MAS." }],
+        nomes: ["Marcelo Choque", "Daniela Mamani", "Raúl Quispe", "Ximena Vargas", "Álvaro Gutiérrez"] } },
+    { id: "peru", nome: "Peru", cap: ["lima", "Lima", -12.05, -77.04], cor: "#d91023", peso: [30, 30, 30], prod: "cobre e frutas", em: "no Peru", de: "do Peru",
+      int: ["hidrogenio_verde_minerais_criticos", "acordo_comercial", "narcotrafico_garimpo", "investimento_direto"], gosta: ["seguranca", "investimento"], gat: ["critica_fujimorismo"],
+      suc: { regra: "eleicao", mandato_anos: 5, limite_mandatos: 1, proxima_transicao_ano: 2031, hazard_base: 0.06 }, vet: { economica: 70, costumes: 60, soberania: 40 },
+      oc: { id: "fujimori_k", nome: "Keiko Fujimori", arquetipo: "A3", inicio_ano: 2026, fim_previsto_ano: 2031, nascimento_ano: 1975, tracos: { rancor: 70, formalidade: 70, sensibilidade_publica: 80 }, ideologia: { economica: 70, costumes: 60, soberania: 40 }, cor: "#f97316",
+        bio: "Venceu na quarta tentativa (50,1% contra Roberto Sánchez) e tomou posse em 28/7/2026. Promete mão dura contra a pior crise de segurança do país." },
+      s: { mesEleicao: 4, mesPosse: 7, limite: 1, mandatosAtual: 1, ladoAtual: "D", cands: [
+        { nome: "Rafael López Aliaga", lado: "D", arq: "A5", forca: 22, bio: "Renovação Popular; ex-prefeito de Lima, ultraconservador." },
+        { nome: "Roberto Sánchez", lado: "E", arq: "A3", forca: 20, bio: "Juntos pelo Peru; derrotado por Keiko em 2026, contestou o resultado." },
+        { nome: "Luis Galarreta", lado: "D", arq: "A6", forca: 14, bio: "Primeiro vice-presidente; quadro fujimorista." }],
+        nomes: ["César Huamán", "Rosa Quispe", "Jorge Salazar", "Milagros Torres", "Renzo Paredes"] } },
+    { id: "equador", nome: "Equador", cap: ["quito", "Quito", -0.18, -78.47], cor: "#ffd100", peso: [20, 20, 20], prod: "banana e camarão", em: "no Equador", de: "do Equador",
+      int: ["narcotrafico_garimpo", "acordo_comercial", "cooperacao_defesa", "energia_petroleo_gas"], gosta: ["seguranca", "carteis"], gat: ["leniencia_narco"],
+      suc: { regra: "eleicao", mandato_anos: 4, limite_mandatos: 2, proxima_transicao_ano: 2029, hazard_base: 0.03 }, vet: { economica: 60, costumes: 30, soberania: 30 },
+      oc: { id: "noboa_d", nome: "Daniel Noboa", arquetipo: "A6", inicio_ano: 2023, fim_previsto_ano: 2029, nascimento_ano: 1987, tracos: { vaidade: 75, pragmatismo: 80, sensibilidade_publica: 85 }, ideologia: { economica: 60, costumes: 30, soberania: 30 }, cor: "#0f766e",
+        bio: "Herdeiro do império da banana; reeleito em 2025. Guerra declarada às facções do narcotráfico e alinhado aos EUA." },
+      s: { mesEleicao: 2, mesPosse: 5, limite: 2, mandatosAtual: 2, ladoAtual: "D", cands: [
+        { nome: "Luisa González", lado: "E", arq: "A3", forca: 24, bio: "Revolução Cidadã; candidata do correísmo." },
+        { nome: "Jan Topić", lado: "D", arq: "A5", forca: 16, bio: "Ex-militar; discurso de segurança ao estilo Bukele." },
+        { nome: "María José Pinto", lado: "D", arq: "A4", forca: 16, bio: "Vice-presidente de Noboa; médica." }],
+        nomes: ["Andrés Cevallos", "Paola Andrade", "Esteban Vera", "Gabriela Mora", "Xavier Ortega"] } },
+    { id: "guiana", nome: "Guiana", cap: ["georgetown", "Georgetown", 6.80, -58.16], cor: "#009e49", peso: [12, 8, 15], prod: "petróleo", em: "na Guiana", de: "da Guiana",
+      int: ["energia_petroleo_gas", "cooperacao_defesa", "fronteira_migracao", "investimento_direto"], gosta: ["soberania_essequibo", "petroleo"], gat: ["ambiguidade_venezuela"],
+      suc: { regra: "eleicao", mandato_anos: 5, limite_mandatos: 2, proxima_transicao_ano: 2030, hazard_base: 0.02 }, vet: { economica: 40, costumes: 20, soberania: 70 },
+      oc: { id: "ali_i", nome: "Irfaan Ali", arquetipo: "A6", inicio_ano: 2020, fim_previsto_ano: 2030, nascimento_ano: 1980, tracos: { pragmatismo: 85, transacionalismo: 80 }, ideologia: { economica: 40, costumes: 20, soberania: 70 }, cor: "#009e49",
+        bio: "Reeleito em 2025 pelo PPP/C; comanda a economia que mais cresce no mundo com o petróleo e defende Essequibo contra a Venezuela." },
+      s: { mesEleicao: 9, mesPosse: 9, limite: 2, mandatosAtual: 2, ladoAtual: "C", cands: [
+        { nome: "Bharrat Jagdeo", lado: "C", arq: "A2", forca: 20, bio: "Vice-presidente e ex-presidente; o homem forte do PPP." },
+        { nome: "Azruddin Mohamed", lado: "D", arq: "A5", forca: 16, bio: "Empresário do ouro, líder do WIN e da oposição; sancionado pelos EUA." },
+        { nome: "Aubrey Norton", lado: "E", arq: "A3", forca: 14, bio: "Líder do PNC/APNU." }],
+        nomes: ["Anand Persaud", "Keisha Williams", "Ravi Singh", "Sharon Adams", "Devon Joseph"] } },
+    { id: "suriname", nome: "Suriname", cap: ["paramaribo", "Paramaribo", 5.85, -55.20], cor: "#377e3f", peso: [6, 4, 10], prod: "ouro e petróleo", em: "no Suriname", de: "do Suriname",
+      int: ["energia_petroleo_gas", "investimento_direto", "narcotrafico_garimpo", "cooperacao_defesa"], gosta: ["investimento", "petroleo"], gat: ["garimpo_ilegal"],
+      suc: { regra: "eleicao", mandato_anos: 5, limite_mandatos: 2, proxima_transicao_ano: 2030, hazard_base: 0.02 }, vet: { economica: -10, costumes: 20, soberania: 40 },
+      oc: { id: "simons_j", nome: "Jennifer Geerlings-Simons", arquetipo: "A7", inicio_ano: 2025, fim_previsto_ano: 2030, nascimento_ano: 1953, tracos: { paciencia: 80, formalidade: 70 }, ideologia: { economica: -10, costumes: 20, soberania: 40 }, cor: "#377e3f",
+        bio: "Médica e primeira mulher a presidir o Suriname (2025), eleita pelo parlamento à frente do NDP. Aposta no petróleo offshore." },
+      s: { mesEleicao: 5, mesPosse: 7, limite: 2, mandatosAtual: 1, ladoAtual: "E", cands: [
+        { nome: "Chan Santokhi", lado: "C", arq: "A4", forca: 18, bio: "Ex-presidente (2020-2025), do VHP." },
+        { nome: "Gregory Rusland", lado: "C", arq: "A4", forca: 14, bio: "Vice-presidente." },
+        { nome: "Ronnie Brunswijk", lado: "D", arq: "A6", forca: 12, bio: "Ex-vice-presidente e ex-guerrilheiro; dono de time de futebol." }],
+        nomes: ["Rishi Ramdin", "Sharita Pinas", "Marvin Kartodikromo", "Natasha Lie", "Glenn Sabajo"] } }
+  ];
+  SULAM.forEach(function (p) { SUC[p.id] = p.s; });
+  D3.SULAM = SULAM;
+  function sulamDIP() {
+    if (typeof DIP === "undefined" || !DIP.INSTITUICOES || DIP.__sulam) return;
+    DIP.__sulam = true;
+    SULAM.forEach(function (p) {
+      DIP.CAPITAIS[p.cap[0]] = { nome: p.cap[1], lat: p.cap[2], lng: p.cap[3] };
+      if (!DIP.INSTITUICOES.some(function (i) { return i.id === p.id; }))
+        DIP.INSTITUICOES.push({ id: p.id, nome: p.nome, tipo: "pais", eixo: "latam", regime: "presidencialista", capital_id: p.cap[0],
+          peso: { economico: p.peso[0], militar: p.peso[1], diplomatico: p.peso[2] }, interesses: p.int, sucessao: p.suc, ocupante_id: p.oc.id,
+          vetor_politico: p.vet, cor: p.cor, gosta: p.gosta, gatilhos: p.gat });
+      if (!DIP.OCUPANTES.some(function (o) { return o.id === p.oc.id; })) {
+        var o = p.oc, arq = DIP.ARQUETIPOS[o.arquetipo] || DIP.ARQUETIPOS.A4, tr = Object.assign({}, arq.tracos, o.tracos || {});
+        DIP.OCUPANTES.push({ id: o.id, nome: o.nome, origem: "real", instituicao_id: p.id, cargo: "Chefe de Estado", nascimento_ano: o.nascimento_ano, inicio_ano: o.inicio_ano, fim_previsto_ano: o.fim_previsto_ano,
+          ideologia: o.ideologia, arquetipo: o.arquetipo, tracos: tr, rasgos: [], popularidade: 50, capital_politico: 50, saude: 85, status: "ativo", biografia: o.bio,
+          icone: { cor: o.cor, iniciais: iniciais(o.nome), silhueta: "statista" }, conhecimento_inicial: ["pragmatismo", "formalidade", "vaidade"] });
+      }
+    });
+  }
+  D3.sulamDIP = sulamDIP;
   // preposição para manchetes ("na França", "nos EUA", "no Japão")
   var EM = { eua: "nos EUA", china: "na China", russia: "na Rússia", ue: "na Comissão Europeia", franca: "na França", alemanha: "na Alemanha", india: "na Índia", argentina: "na Argentina", mexico: "no México", colombia: "na Colômbia", venezuela: "na Venezuela", arabia: "na Arábia Saudita", turquia: "na Turquia", japao: "no Japão", onu: "na ONU", fmi: "no FMI", omc: "na OMC", bm: "no Banco Mundial" };
   var DE = { eua: "dos EUA", china: "da China", russia: "da Rússia", ue: "da Comissão Europeia", franca: "da França", alemanha: "da Alemanha", india: "da Índia", argentina: "da Argentina", mexico: "do México", colombia: "da Colômbia", venezuela: "da Venezuela", arabia: "da Arábia Saudita", turquia: "da Turquia", japao: "do Japão", onu: "da ONU", fmi: "do FMI", omc: "da OMC", bm: "do Banco Mundial" };
-  var FEM = /^(Alexandria|Kaja|Roberta|Teresa|Alice|Patricia|Victoria|Xóchitl|Vicky|María|Rebeca|Michelle|Mia|Nadia|Gita|Amina|Sarah|Danielle|Rachel|Megan|Irina|Anna|Elena|Claire|Camille|Léa|Inès|Katrin|Miriam|Lena|Priya|Kavita|Ananya|Lucía|Florencia|Andrea|Valeria|Paola|Daniela|Natalia|Gabriela|Carolina|Mariana|Elif|Zeynep|Selin|Haruka|Aiko|Yui|Amara|Margrethe|Clara|Isabel|Jennifer|Ellen|Ursula|Claudia|Delcy|Sanae|Kristalina|Ngozi|Zhou|Sun)\b/;
+  var FEM = /^(Keiko|Jennifer|Jeannette|Evelyn|Luisa|Delcy|Alexandria|Kaja|Roberta|Teresa|Alice|Patricia|Victoria|Xóchitl|Vicky|María|Rebeca|Michelle|Mia|Nadia|Gita|Amina|Sarah|Danielle|Rachel|Megan|Irina|Anna|Elena|Claire|Camille|Léa|Inès|Katrin|Miriam|Lena|Priya|Kavita|Ananya|Lucía|Florencia|Andrea|Valeria|Paola|Daniela|Natalia|Gabriela|Carolina|Mariana|Elif|Zeynep|Selin|Haruka|Aiko|Yui|Amara|Margrethe|Clara|Isabel|Jennifer|Ellen|Ursula|Claudia|Delcy|Sanae|Kristalina|Ngozi|Zhou|Sun)\b/;
+  SULAM.forEach(function (p) { EM[p.id] = p.em; DE[p.id] = p.de; });
   function oa(nome) { return FEM.test(nome) ? "a" : "o"; }
 
   function st() {
@@ -210,6 +318,7 @@
     v3.lideresAntigos = v3.lideresAntigos.slice(0, 40);
     d.historico_mundial = d.historico_mundial || [];
     d.historico_mundial.push({ mes: DIP.mesAtual(), instId: inst.id, de: antigo && antigo.nome, para: novo.nome, motivo: motivo });
+    evt({ t: "posse", inst: inst.id, nome: novo.nome, antigo: antigo && antigo.nome });
     manchete_("Posse " + (EM[inst.id] || inst.nome) + ": " + novo.nome + " assume no lugar de " + ((antigo && antigo.nome) || "antecessor") + ". O Itamaraty refaz a relação do zero.", "mundo");
   }
 
@@ -227,6 +336,7 @@
         if (agora >= iE - 10 && agora < iE && (!e || e.ano !== p.ano)) {
           e = abrirEleicao(inst, s, v3, p);
           if (e && e.regra !== "partido" && e.regra !== "controle") manchete_((e.regra === "nomeacao" ? "Sucessão " : "Corrida eleitoral ") + (DE[inst.id] || inst.nome) + ": " + e.cands.slice(0, 3).map(function (c) { return c.nome + (c.incumbente ? " (no cargo)" : ""); }).join(", ") + " disputam a vaga em " + nomeMes(p.mesE) + "/" + p.ano + ".", "mundo");
+          if (e && e.regra !== "partido" && e.regra !== "controle") evt({ t: "campanha", inst: inst.id, regra: e.regra, cands: e.cands.slice(0, 3).map(function (c) { return c.nome; }), mes: p.mesE, ano: p.ano });
         }
         if (agora >= iE && (!e || e.ano !== p.ano)) e = abrirEleicao(inst, s, v3, p);
         if (e && e.ano === p.ano && e.fase === "campanha" && agora >= iE) {
@@ -238,6 +348,7 @@
             : e.regra === "partido" ? w.nome + (w.incumbente ? " é reconduzid" + g + " pelo partido e segue no poder " : " é escolhid" + g + " pelo partido para assumir o poder ") + (EM[inst.id] || inst.nome)
             : w.nome + (w.incumbente ? " é reeleit" + g : " vence a eleição") + " " + (EM[inst.id] || inst.nome) + " com " + String(w.pct).replace(".", ",") + "% (" + e.cands[1].nome + ": " + String(e.cands[1].pct).replace(".", ",") + "%)";
           manchete_(frase + ". Posse em " + nomeMes(p.mesP) + ".", "mundo");
+          evt({ t: "eleicao", inst: inst.id, regra: e.regra, nome: w.nome, pct: w.pct, reeleito: !!w.incumbente, seg: e.cands[1] && e.cands[1].nome, pct2: e.cands[1] && e.cands[1].pct, lado: w.lado });
         }
         if (e && e.ano === p.ano && e.fase === "eleito" && agora >= iP) {
           e.fase = "empossado";
@@ -257,6 +368,7 @@
           lista.sort(function (a, b) { return (a.gerado ? 1 : 0) - (b.gerado ? 1 : 0) || b.forca - a.forca; });
           var motivo = pick(r, ["renúncia", "problemas de saúde", "crise política"]);
           manchete_(oc.nome + " deixa o comando " + (DE[inst.id] || inst.nome) + " por " + motivo + "; " + lista[0].nome + " assume.", "mundo");
+          evt({ t: "saida", inst: inst.id, nome: oc.nome, motivo: motivo, novo: lista[0].nome });
           empossar(inst, lista[0], motivo);
         }
       }
@@ -266,6 +378,7 @@
   function pick(r, a) { return a[Math.floor(r() * a.length)]; }
 
   /* ------------------------------------------------------------------ calendário (UI) */
+  D3.htmlCalendario = function () { return htmlCalendario(); };
   function htmlCalendario() {
     var v3 = st(); if (!v3) return "";
     var dd = dataJogo(), agora = mesIdx(dd.ano, dd.mes);
@@ -318,6 +431,7 @@
     elogio: { txt: "Posar ao lado deles e elogiar em público", efx: { pop: -0.2 }, nota: "custa imagem" }
   };
   var PROD = { eua: "etanol e aço", china: "máquinas e eletrônicos", russia: "fertilizantes", ue: "vinhos e queijos", franca: "equipamentos militares", alemanha: "peças automotivas", india: "medicamentos", argentina: "trigo", mexico: "autopeças", colombia: "café", venezuela: "petróleo", arabia: "petróleo", turquia: "têxteis", japao: "eletrônicos", onu: "—", fmi: "—", omc: "—", bm: "—" };
+  SULAM.forEach(function (p) { PROD[p.id] = p.prod; });
   function ganhoDe(pauta, inst, gov) {
     var p = String(pauta || "");
     if (gov) return { txt: "Investimento de US$ {v} mi em fábrica no estado", base: 400, unid: "mi", efx: { popGov: 1.4 } };
@@ -385,10 +499,12 @@
     // peso relativo: país menor que o Brasil chega mais disposto a ceder; potência maior, menos
     var pesoInst = inst.peso ? ((inst.peso.economico || 0) + (inst.peso.diplomatico || 0) + (inst.peso.militar || 0)) / 3 : 50;
     var assim = clamp(Math.round((55 - pesoInst) / 2.5), -12, 18);
+    var forca = ok(function () { return window.V3MUNDO_API.forcaRel(inst.id); }, null); // >1: Brasil maior que eles
+    if (forca != null) assim = clamp(Math.round(Math.log(forca) / Math.LN2 * 5), -12, 20);
     var disp = clamp(Math.round(rel.pessoal * 0.45 + rel.institucional * 0.2 + 8 - rel.rancor * 0.25 + (opts.prep || 0) + assim), 10, 85);
     var pedidos = pedidosDe(inst, opts.pauta, gov, r).sort(function () { return r() - 0.5; });
     DIP._cena = {
-      fase: modo === "viagem" ? "voo" : "reuniao", v3: true, instId: inst.id, modo: modo, pauta: opts.pauta, gov: gov,
+      fase: modo === "viagem" ? "voo" : "reuniao", v3: true, instId: inst.id, modo: modo, pauta: opts.pauta, gov: gov, transparencia: opts.transp || "fechada",
       disp: disp, rodada: 0, rodadas: modo === "telefone" ? 2 : modo === "video" ? 3 : 4,
       ganho: ganhoDe(opts.pauta, inst, gov), valor: 1, upgrades: 0, pedidos: pedidos, pedidoAtual: pedidos[0] || null, cedidos: [],
       log: [{ quem: "ele", txt: voz(oc).abre }].concat(assim >= 8 ? [{ quem: "info", txt: "O Brasil tem muito mais peso que este parceiro: eles chegam dispostos a ceder." }] : assim <= -6 ? [{ quem: "info", txt: "Potência de peso maior: a outra parte negocia de cima." }] : []), usouPessoal: 0, _custosOk: true, assim: assim
@@ -506,7 +622,7 @@
   function aplicarEfx(efx, mult, inst, gov) {
     var out = [];
     var x = ok(function () { return extInit(); }, null), mm = ok(function () { return M().mercado; }, null);
-    var bloco = { eua: "eua", fmi: "eua", bm: "eua", china: "china", russia: "china", ue: "ue", franca: "ue", alemanha: "ue", japao: "ue", argentina: "latam", mexico: "latam", colombia: "latam", venezuela: "latam" }[inst.id] || "brics";
+    var bloco = { eua: "eua", fmi: "eua", bm: "eua", china: "china", russia: "china", ue: "ue", franca: "ue", alemanha: "ue", japao: "ue", argentina: "latam", mexico: "latam", colombia: "latam", venezuela: "latam" }[inst.id] || (inst.eixo === "latam" ? "latam" : "brics");
     var rival = bloco === "eua" || bloco === "ue" ? "china" : bloco === "china" ? "eua" : null;
     Object.keys(efx).forEach(function (k) {
       var v = efx[k] * mult;
@@ -554,6 +670,7 @@
       rel.rancor = clamp((rel.rancor || 0) + 10, 0, 100);
       manchete_("Sem acordo: conversa com " + oc.nome + " (" + inst.nome + ") termina sem avanço.", "diplomacia");
     }
+    evt({ t: "encontro", inst: c.instId, res: res, lider: oc.nome, pauta: c.pauta, txt: valorTxt(c), modo: c.modo, transp: c.transparencia || "fechada", gov: c.gov });
     rel.ultimo_encontro_mes = DIP.mesAtual();
     rel.conhecimento = clamp((rel.conhecimento || 0) + 10, 0, 100);
     rel.historico = rel.historico || [];
@@ -612,6 +729,7 @@
   /* ------------------------------------------------------------------ voo com mapa real */
   var CAP_UF = { SP: { nome: "São Paulo", lat: -23.55, lng: -46.63 }, RJ: { nome: "Rio de Janeiro", lat: -22.91, lng: -43.17 }, MG: { nome: "Belo Horizonte", lat: -19.92, lng: -43.94 } };
   var ISO = { eua: "USA", china: "CHN", russia: "RUS", ue: "BEL", franca: "FRA", alemanha: "DEU", india: "IND", argentina: "ARG", mexico: "MEX", colombia: "COL", venezuela: "VEN", arabia: "SAU", turquia: "TUR", japao: "JPN", onu: "USA", fmi: "USA", omc: "CHE", bm: "USA" };
+  Object.assign(ISO, { paraguai: "600", uruguai: "858", chile: "152", bolivia: "068", peru: "604", equador: "218", guiana: "328", suriname: "740" });
   function origem() {
     var c = DIP.cargoJogador();
     if (c === "PRES") return DIP.CAPITAIS.brasilia;
@@ -633,6 +751,7 @@
     var g = window.V3GEO || { land: [], paises: {} };
     GEOC = { land: g.land.map(parsePoly).filter(function (ps) { return ps.some(function (p) { return p[1] > -60; }); }), paises: {} };
     Object.keys(g.paises).forEach(function (k) { GEOC.paises[k] = g.paises[k].map(parsePoly); });
+    var mu = window.V3MUNDO || {}; Object.keys(mu).forEach(function (k) { if (!GEOC.paises[k]) GEOC.paises[k] = mu[k][1].map(parsePoly); });
     return GEOC;
   }
   D3.animarVoo = function (instId, onDone) {
@@ -742,6 +861,7 @@
 
   /* ------------------------------------------------------------------ instalação */
   function instalar() {
+    sulamDIP();
     if (typeof DIP === "undefined" || !DIP.INSTITUICOES || DIP.__v3) return;
     DIP.__v3 = true;
     // 1) relógio mundial: substitui o tick antigo (que nunca rodava) e garante que rode
@@ -777,7 +897,7 @@
       if (a === "v3") { D3.acao(id); DIP.refreshUI(); return; }
       if (a === "v3fala") { var tx = (document.querySelector("[data-d3-fala]") || {}).value || ""; if (tx.trim().length < 3) return; var pr = D3.falar(tx); DIP.refreshUI(); pr.then(function () { DIP.refreshUI(); }); return; }
       if (a === "iniciar-voo" && c && !c.v3) {
-        var okk = D3.iniciar({ instId: c.instId, modo: c.modo, pauta: c.pauta, prep: Math.round(((c.preparacao || 40) - 40) / 4) });
+        var okk = D3.iniciar({ instId: c.instId, modo: c.modo, pauta: c.pauta, transp: c.transparencia, prep: Math.round(((c.preparacao || 40) - 40) / 4) });
         if (!okk) return;
         DIP.refreshUI();
         if (DIP._cena.fase === "voo") {

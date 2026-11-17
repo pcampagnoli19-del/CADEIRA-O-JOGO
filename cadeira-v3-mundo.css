@@ -1,0 +1,70 @@
+/* CADEIRA v3 — Mundo: mapa interativo, cúpulas e notícias do exterior */
+.mu-tela h2{margin:0 0 8px}
+.mu-status{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,rgba(0,151,57,.22),rgba(254,221,0,.1));margin-bottom:8px}
+.mu-br{display:flex;gap:8px;align-items:center}.mu-br>span{font-size:26px}.mu-br small{display:block;opacity:.75}
+.mu-chips{display:flex;gap:4px;flex-wrap:wrap}
+.mu-chip{font-size:.72em;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.08);opacity:.6}.mu-chip.on{background:#1f6f43;opacity:1;color:#fff;font-weight:700}
+.mu-zoom{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.mu-zoom button,.mu-filt button{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:inherit;border-radius:14px;padding:4px 10px;font:inherit;font-size:.8em;cursor:pointer}
+.mu-zoom button.on,.mu-filt button.on{background:#1d4ed8;border-color:#3b82f6;color:#fff}
+.mu-mapa-w{position:relative;border-radius:12px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;background:#0b1a2b;border:1px solid rgba(255,255,255,.08)}
+.mu-mapa{display:block;width:100%;height:auto;touch-action:pan-x pan-y}
+@media (max-width:700px){.mu-mapa.z-mundo{width:880px;max-width:none}.mu-mapa.z-asia{width:560px;max-width:none}}
+.mu-mar{fill:#0b1a2b}
+.mu-p{fill:#2a3646;stroke:#0b1a2b;stroke-width:.6;vector-effect:non-scaling-stroke}
+.mu-p.br{fill:#0f9d58;stroke:#fedd00;stroke-width:1.4}
+.mu-p.ativo{cursor:pointer;stroke:#eaf2ff;stroke-width:.8;opacity:.92;transition:opacity .15s}
+.mu-p.ativo:hover{opacity:1;stroke-width:1.6}
+.mu-p.sel{stroke:#fff;stroke-width:2.4;opacity:1;filter:drop-shadow(0 0 4px rgba(255,255,255,.7))}
+.mu-cap{fill:#fff;stroke:#0b1a2b;stroke-width:.8;cursor:pointer;vector-effect:non-scaling-stroke}
+.mu-cap.sel{fill:#fedd00;animation:muPulse 1.2s infinite}
+.mu-bsb{fill:#fedd00;stroke:#0f9d58;stroke-width:1;vector-effect:non-scaling-stroke}
+@keyframes muPulse{50%{opacity:.35}}
+.mu-leg{font-size:.7em;opacity:.85;padding:4px 2px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.mu-leg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-left:4px}.mu-leg i.br{background:#0f9d58;border:1px solid #fedd00}
+.mu-dica{opacity:.75;font-size:.86em;text-align:center;margin:8px 0}
+.mu-painel,.mu-brief,.mu-cup{margin:10px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.mu-ph{display:flex;gap:12px;align-items:center}
+.mu-ph img,.mu-ph .dip-foto{border-radius:10px;object-fit:cover}
+.mu-pn{display:flex;flex-direction:column;gap:2px}.mu-pn small{opacity:.75}.mu-pn b{font-size:1.1em}.mu-pn span{opacity:.75;font-size:.82em}
+.mu-bio{font-size:.84em;opacity:.85;margin:8px 0}
+.mu-kv{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.mu-kv>span{flex:1 1 130px;background:rgba(0,0,0,.22);border-radius:8px;padding:5px 8px;font-size:.74em;display:flex;flex-direction:column}
+.mu-kv b{font-size:1.25em}.mu-kv i{font-style:normal;opacity:.65}
+.mu-pos.def b,.mu-pos.def{color:#5fd38d}.mu-pos.cau b{color:#9ad16b}.mu-pos.alt b{color:#f0b429}.mu-pos.pot b{color:#ff7a7a}
+.mu-brief .mu-pos{display:inline-block;font-size:.8em}
+.mu-nota{font-size:.78em;opacity:.7;margin:6px 0}
+.mu-bts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mu-ops{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+.mu-ops.tri{grid-template-columns:repeat(3,1fr)}.mu-ops.dua{grid-template-columns:1fr 1fr}
+@media (max-width:520px){.mu-ops.tri{grid-template-columns:1fr}.mu-ops.dua{grid-template-columns:1fr}}
+.mu-op{text-align:left;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:inherit;border-radius:10px;padding:8px 10px;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.mu-op small{opacity:.72;font-size:.78em}.mu-op.on{border-color:#3b82f6;background:rgba(59,130,246,.18)}
+.mu-brief h4,.mu-cup h4,.mu-exig h4{margin:12px 0 6px}
+.mu-exig{margin-top:8px;padding:8px;border-radius:10px;background:rgba(217,83,79,.1)}
+.mu-exig .mu-op{margin-bottom:6px;width:100%}
+.mu-cup{background:linear-gradient(135deg,rgba(29,78,216,.2),rgba(255,255,255,.03));border-color:rgba(59,130,246,.4)}
+.mu-cup-h{display:flex;gap:10px;align-items:center}.mu-cup-ic{font-size:32px}.mu-cup-h small{display:block;opacity:.75}
+.mu-bil{display:flex;flex-wrap:wrap;gap:6px}
+.mu-bil button,.mu-orgs button{display:flex;gap:6px;align-items:center;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:inherit;border-radius:10px;padding:4px 8px 4px 4px;font:inherit;font-size:.8em;cursor:pointer;text-align:left}
+.mu-bil button.on,.mu-orgs button.on{border-color:#3b82f6;background:rgba(59,130,246,.18)}
+.mu-bil small,.mu-orgs small{display:block;opacity:.65;font-size:.85em}
+.mu-orgs h4{margin:12px 0 6px}.mu-orgs>div{display:flex;flex-wrap:wrap;gap:6px}
+.mu-ag,.mu-rank{margin:10px 0;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.03)}
+.mu-ag summary,.mu-rank summary{cursor:pointer;font-weight:700}
+.mu-ag ul{list-style:none;margin:6px 0;padding:0}.mu-ag li{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.mu-ag li>span{font-size:20px}.mu-ag small{display:block;opacity:.7}
+.mu-conv li{justify-content:space-between}.mu-conv li span{font-size:.85em}
+.mu-rank ol{list-style:none;margin:6px 0;padding:0}
+.mu-rank li{display:flex;gap:6px;align-items:center;padding:3px 0;font-size:.86em;border-bottom:1px solid rgba(255,255,255,.05)}
+.mu-rank li i{font-style:normal;width:30px;opacity:.7}.mu-rank li b{margin-left:auto}
+.mu-rank li em{font-style:normal;font-size:.7em;background:#334;padding:0 5px;border-radius:6px}
+.mu-rank li.br{background:rgba(15,157,88,.2);border-radius:6px;font-weight:700}
+.mu-ext .mu-filt{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 10px}
+.mu-nlist{display:flex;flex-direction:column;gap:8px}
+.mu-n{padding:10px;border-radius:10px;background:#f6f1e6;color:#1a1a1a;font-family:Georgia,"Times New Roman",serif}
+.mu-n.pt{background:#eef4ff}
+.mu-nh{display:flex;justify-content:space-between;font-family:system-ui,sans-serif;font-size:.72em;text-transform:uppercase;letter-spacing:.05em;color:#555}
+.mu-n h4{margin:4px 0;font-size:1.05em;line-height:1.25;color:#111}
+.mu-n p{margin:2px 0 6px;font-size:.86em;color:#333}
+.mu-tr{font-family:system-ui,sans-serif;font-size:.74em;border:1px solid #bbb;background:#fff;color:#1d4ed8;border-radius:12px;padding:2px 10px;cursor:pointer}
