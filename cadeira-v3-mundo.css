@@ -102,3 +102,16 @@
 .mu-ag li>span img{width:34px;height:24px;object-fit:contain;background:#fff;border-radius:4px}
 .mu-cup-ic img{width:64px;height:44px;object-fit:contain;background:#fff;border-radius:6px;padding:2px}
 .mu-nh span{display:flex;align-items:center;gap:6px}.mu-vl{height:22px;max-width:110px;object-fit:contain;background:#fff;border-radius:3px}
+.mu-outro{display:flex;gap:8px;align-items:center;margin:6px 0;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.05);font-size:.82em}.mu-outro small{display:block;opacity:.7}.mu-outro img{border-radius:6px}
+/* redes dos líderes */
+.mu-tws{display:flex;flex-direction:column;gap:8px}
+.mu-tw{padding:10px;border-radius:12px;background:#0f1419;border:1px solid #2f3336}
+.mu-tw.meu{border-color:#0f9d58}
+.mu-twh{display:flex;gap:8px;align-items:center}.mu-twh img{border-radius:50%;width:36px;height:36px;object-fit:cover}
+.mu-twh>div{flex:1;min-width:0}.mu-twh b{display:block;font-size:.88em}.mu-twh small{opacity:.6;font-size:.75em}
+.mu-tw p{margin:8px 0 6px;font-size:.92em;line-height:1.35;white-space:pre-wrap}
+.mu-tom{font-size:.68em;padding:2px 7px;border-radius:10px;background:#333;white-space:nowrap}
+.mu-tom.apaixonado{background:#9d174d}.mu-tom.caloroso{background:#166534}.mu-tom.protocolar{background:#374151}.mu-tom.frio{background:#1e3a8a}.mu-tom.acido{background:#9a3412}
+.mu-twf{display:flex;gap:10px;align-items:center;font-size:.76em;opacity:.85}.mu-twf small{opacity:.6;margin-left:auto}
+.mu-minhas h4{margin:8px 0 6px}
+.mu-twh>:first-child{width:36px;height:36px;flex:0 0 36px;overflow:hidden;border-radius:50%;display:flex;align-items:center;justify-content:center}.mu-twh>:first-child svg{width:36px;height:36px}
