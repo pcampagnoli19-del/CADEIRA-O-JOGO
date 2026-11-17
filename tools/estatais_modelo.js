@@ -338,6 +338,10 @@
   X.trocaAntigo = trocaAntigo;
   function instalar() {
     window.cardEstatais = X.card;
+    // atalho próprio no menu Poder
+    try { if (typeof VIEWS !== "undefined" && !VIEWS.estatais) VIEWS.estatais = function () { return X.card(); }; } catch (e) {}
+    try { var N = window.NAVH; if (N && N.HUBS && !N.__v3est) { var hp = N.HUBS.filter(function (x) { return x.id === "poder"; })[0]; if (hp) { N.__v3est = true; if (!hp.subs.some(function (x) { return x[0] === "estatais"; })) hp.subs.splice(Math.min(2, hp.subs.length), 0, ["estatais", "Estatais"]); } } } catch (e) {}
+    try { if (!TABS.some(function (t) { return t[0] === "estatais"; })) TABS.push(["estatais", "Estatais"]); } catch (e) {}
     if (typeof window.render === "function" && !window.render.__v3est) {
       var orr = window.render;
       var nr = function () { var r = orr.apply(this, arguments); ok(trocaAntigo); return r; };
