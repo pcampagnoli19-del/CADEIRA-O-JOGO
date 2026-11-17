@@ -163,6 +163,7 @@
     var tit = sub ? "Brasil ultrapassa " + p.nome + " e vira a " + pos + "ª maior economia do mundo" : p.nome + " passa o Brasil, que cai para " + pos + "º no ranking das economias";
     fato({ tipo: "economia", sec: "Economia", kick: "Ranking mundial", tit: tit, lead: "PIB brasileiro estimado em US$ " + nf(pibBR(), 2) + " trilhões, contra US$ " + nf(outro.pib, 2) + " tri " + (p.nome.match(/^[AEIOU]/) ? "da " : "de ") + p.nome + ".", peso: 70, jog: cid() === "PRES" });
     noticiaExt(outro.k, sub ? "rank_perde" : "rank_ganha", { pos: pos });
+    noticiaExt("brasil", sub ? "br_sobe" : "br_cai", { pos: pos });
     if (sub && p.inst) ok(function () { var rel = DIP.relacao(p.inst); rel.institucional = cl(rel.institucional + 3, 0, 100); });
     if (sub && pos === 1) fato({ tipo: "economia", sec: "Economia", kick: "Histórico", tit: "O Brasil é a maior economia do planeta", lead: "Pela primeira vez, o PIB brasileiro supera o dos Estados Unidos e o da China. Chancelarias do mundo inteiro recalculam a relação com Brasília.", peso: 95, jog: true });
   }
@@ -186,7 +187,7 @@
     if (k === "brasil") {
       fato({ tipo: "diplomacia", sec: "Mundo", kick: c, tit: "Brasil é admitido no " + c + " e passa a sentar à mesa das " + (c === "G7" ? "maiores economias do Ocidente" : "20 maiores economias"), lead: "A entrada coroa a escalada do PIB brasileiro, hoje o " + posDe("brasil") + "º do mundo.", peso: 90, jog: true });
       ok(function () { mudarAprovTodos(1.5); });
-      noticiaExt("eua", "clube_br", { c: c });
+      noticiaExt("brasil", "clube_br", { c: c });
     } else fato({ tipo: "diplomacia", sec: "Mundo", kick: c, tit: p.nome + " entra no " + c + " após subir no ranking das economias", lead: "", peso: 45 });
   }
   function saiuClube(k, c, pos) {
@@ -194,7 +195,7 @@
     if (k === "brasil") {
       fato({ tipo: "diplomacia", sec: "Mundo", kick: c, tit: "Brasil perde a cadeira no " + c + " depois de um ano fora das " + (c === "G7" ? "7" : "20") + " maiores economias", lead: "O país é hoje o " + pos + "º PIB do mundo. A oposição fala em vexame internacional.", peso: 90, jog: cid() === "PRES" });
       ok(function () { mudarAprovTodos(-1.5); });
-      noticiaExt("eua", "clube_br_sai", { c: c });
+      noticiaExt("brasil", "clube_br_sai", { c: c });
     } else fato({ tipo: "diplomacia", sec: "Mundo", kick: c, tit: p.nome + " deixa o " + c + " após anos fora do topo do ranking", lead: "", peso: 40 });
   }
 
@@ -277,6 +278,7 @@
     var nome = ok(function () { return J().nome; }, "Presidente");
     fato({ tipo: "diplomacia", sec: "Mundo", kick: e.nome, tit: nome + " discursa na " + e.nome + " em " + e.local.replace(/ \(.*\)$/, "") + bt, lead: l[0] + ": " + l[1] + ".", peso: 66, jog: true });
     noticiaExt(e.host || (p.bil && POR_INST[p.bil]) || "eua", "cupula_br", { ev: e, linha: l[0] });
+    if (Math.random() < 0.5) noticiaExt("brasil", "cupula_br", { ev: e, linha: l[0] });
     s.ev[p.key] = "foi"; s.pend = (s.fila || []).shift() || null;
     toast_("Participação registrada: prestígio internacional " + Math.round(s.prest) + ".", "ok");
   }
@@ -319,11 +321,16 @@
   }
 
   /* ================================================================ 5) NOTÍCIAS DO EXTERIOR */
-  var VEIC = { en: { eua: "The New York Times", reino_unido: "The Guardian", india: "The Times of India", guiana: "Stabroek News", _: "Reuters" }, es: { argentina: "Clarín", mexico: "El Universal", colombia: "El Tiempo", chile: "El Mercurio", peru: "El Comercio", equador: "El Universo", venezuela: "El Nacional", uruguai: "El País (Uruguai)", bolivia: "La Razón", paraguai: "ABC Color", _: "El País" }, fr: { _: "Le Monde" }, de: { _: "Der Spiegel" }, it: { _: "Corriere della Sera" }, zh: { _: "新华社 (Xinhua)" }, ru: { _: "ТАСС (TASS)" }, ja: { _: "日本経済新聞 (Nikkei)" }, ar: { _: "الشرق الأوسط (Asharq Al-Awsat)" }, tr: { _: "Hürriyet" }, nl: { _: "De Ware Tijd" } };
+  // um veículo por país; a Reuters pode assinar notícia de qualquer lugar, inclusive do Brasil
+  var VEIC = { en: { eua: "The New York Times", reino_unido: "The Guardian", india: "The Times of India", guiana: "Stabroek News", canada: "The Globe and Mail", australia: "The Sydney Morning Herald", coreia: "The Korea Herald", africa_sul: "News24", indonesia: "The Jakarta Post", polonia: "TVP World", ira: "Tehran Times", brasil: "Reuters", _: "Reuters" },
+    es: { argentina: "Clarín", mexico: "El Universal", colombia: "El Tiempo", chile: "El Mercurio", peru: "El Comercio", equador: "El Universo", venezuela: "El Nacional", uruguai: "El País (Uruguai)", bolivia: "La Razón", paraguai: "ABC Color", espanha: "El País", _: "El País" },
+    fr: { _: "Le Monde" }, de: { suica: "Neue Zürcher Zeitung", _: "Der Spiegel" }, it: { _: "Corriere della Sera" }, zh: { _: "Xinhua (新华社)" }, ru: { _: "TASS (ТАСС)" }, ja: { _: "Nikkei (日本経済新聞)" }, ar: { _: "Asharq Al-Awsat (الشرق الأوسط)" }, tr: { _: "Hürriyet" }, nl: { holanda: "De Telegraaf", suriname: "De Ware Tijd", _: "De Telegraaf" } };
+  var VLOGO = { "The New York Times": "nyt", "The Guardian": "guardian", "The Times of India": "toi", "Stabroek News": "stabroek", "The Globe and Mail": "globe", "The Sydney Morning Herald": "smh", "The Korea Herald": "koreaherald", "News24": "news24", "Reuters": "reuters", "Clarín": "clarin", "El Universal": "eluniversal", "El Tiempo": "eltiempo", "El Mercurio": "elmercurio", "El Comercio": "elcomercio", "El Universo": "eluniverso", "El Nacional": "elnacional", "El País (Uruguai)": "elpaisuy", "La Razón": "larazon", "ABC Color": "abccolor", "El País": "elpais", "Le Monde": "lemonde", "Der Spiegel": "spiegel", "Corriere della Sera": "corriere", "Xinhua (新华社)": "xinhua", "TASS (ТАСС)": "tass", "Nikkei (日本経済新聞)": "nikkei", "Asharq Al-Awsat (الشرق الأوسط)": "asharq", "Hürriyet": "hurriyet", "De Telegraaf": "telegraaf", "De Ware Tijd": "waretijd" };
+  function veicDe(lang, pk) { return (VEIC[lang] || {})[pk] || (VEIC[lang] || {})._ || "Reuters"; }
   var BR = { en: "Brazil", es: "Brasil", fr: "le Brésil", de: "Brasilien", it: "il Brasile", zh: "巴西", ru: "Бразилия", ja: "ブラジル", ar: "البرازيل", tr: "Brezilya", nl: "Brazilië" };
   var BRB = { en: "Brazil", es: "Brasil", fr: "Brésil", de: "Brasilien", it: "Brasile", zh: "巴西", ru: "Бразилии", ja: "ブラジル", ar: "البرازيل", tr: "Brezilya", nl: "Brazilië" };
   var NOMEL = { // nome do próprio país no idioma do jornal
-    eua: "the U.S.", reino_unido: "the U.K.", india: "India", guiana: "Guyana", canada: "Canada", australia: "Australia", coreia: "South Korea", indonesia: "Indonesia", polonia: "Poland", africa_sul: "South Africa", ira: "Iran",
+    brasil: "Brazil", eua: "the U.S.", reino_unido: "the U.K.", india: "India", guiana: "Guyana", canada: "Canada", australia: "Australia", coreia: "South Korea", indonesia: "Indonesia", polonia: "Poland", africa_sul: "South Africa", ira: "Iran",
     argentina: "Argentina", mexico: "México", colombia: "Colombia", chile: "Chile", peru: "Perú", equador: "Ecuador", venezuela: "Venezuela", uruguai: "Uruguay", bolivia: "Bolivia", paraguai: "Paraguay", espanha: "España",
     franca: "France", alemanha: "Deutschland", suica: "Schweiz", italia: "Italia", china: "中国", russia: "Россия", japao: "日本", arabia: "السعودية", turquia: "Türkiye", holanda: "Nederland", suriname: "Suriname" };
   // modelos: [título, linha fina] no idioma; {L} líder, {N} número, {P} país, {B} Brasil, {X} extra
@@ -350,6 +357,8 @@
       pt: ["Conversa entre {L} e o Brasil termina sem acordo", "Fontes descrevem um encontro tenso."] },
     exige_ok: { en: ["{L} yields to Brazilian pressure", "Brasília demanded: {Y}."], es: ["{L} cede ante la presión de Brasil", "Brasilia exigió: {Y}."], nl: ["{L} zwicht voor Braziliaanse druk", "Brasília eiste: {Y}."], pt: ["{L} cede à pressão brasileira", "Brasília exigiu: {Y}."] },
     exige_nao: { en: ["{L} rejects Brazil's demands: 'We are a sovereign nation'", "Brasília had demanded: {Y}."], es: ["{L} rechaza las exigencias de Brasil: «Somos un país soberano»", "Brasilia había exigido: {Y}."], nl: ["{L} wijst Braziliaanse eisen af: 'Wij zijn soeverein'", "Brasília eiste: {Y}."], pt: ["{L} rejeita as exigências do Brasil: \"Somos um país soberano\"", "Brasília havia exigido: {Y}."] },
+    br_sobe: { en: ["Brazil climbs to No. {N} in the world economy ranking", "Analysts credit growth and a stronger real for the rise."], pt: ["Brasil sobe para {N}º no ranking das economias", "Analistas creditam a subida ao crescimento e ao real mais forte."] },
+    br_cai: { en: ["Brazil slips to No. {N} among world economies", "A weaker real and slower growth weigh on the ranking."], pt: ["Brasil cai para {N}º entre as economias do mundo", "Real mais fraco e crescimento menor pesam no ranking."] },
     clube_br: { en: ["Brazil joins the {X} as its economy climbs", "Diplomats call it a historic shift in global power."], pt: ["Brasil entra no {X} com a escalada da economia", "Diplomatas falam em virada histórica no poder global."] },
     clube_br_sai: { en: ["Brazil loses its seat at the {X}", "A year outside the top economies costs Brasília its place."], pt: ["Brasil perde a cadeira no {X}", "Um ano fora das maiores economias custou o lugar."] },
     eleicao_br: { en: ["{L} wins Brazil's presidential election", "{Y}"], es: ["{L} gana las elecciones presidenciales en Brasil", "{Y}"], fr: ["{L} remporte la présidentielle au Brésil", "{Y}"], de: ["{L} gewinnt Präsidentschaftswahl in Brasilien", "{Y}"], it: ["{L} vince le presidenziali in Brasile", "{Y}"], zh: ["{L}赢得巴西总统选举", "{Y}"], ru: ["{L} побеждает на президентских выборах в Бразилии", "{Y}"], ja: ["ブラジル大統領選で{L}氏が勝利", "{Y}"], ar: ["{L} يفوز بالانتخابات الرئاسية في البرازيل", "{Y}"], tr: ["Brezilya'da devlet başkanlığı seçimini {L} kazandı", "{Y}"], nl: ["{L} wint presidentsverkiezingen in Brazilië", "{Y}"],
@@ -375,12 +384,14 @@
     var s = st(); if (!s || !PAIS[pk]) return null;
     var p = PAIS[pk], lang = p.lang === "pt" ? "en" : p.lang, md = T[tipo]; if (!md) return null;
     if (!md[lang]) lang = md.en ? "en" : "es";
+    var reuters = md.en && (pk === "brasil" || Math.random() < 0.18);
+    if (reuters) lang = "en";
     o = o || {};
     var ev = o.ev, v = { L: o.lider || o.nome || "", N: o.pct != null ? String(o.pct).replace(".", lang === "en" ? "." : ",") : o.pos || "", P: NOMEL[pk] || p.nome, B: BRB[lang] || "Brazil", X: o.x || (ev ? evNome(ev, lang) : "") || o.c || "", Y: o.y || o.linha || o.ex || "" };
     var vp = { L: v.L, N: o.pct != null ? String(o.pct).replace(".", ",") : o.pos || "", P: p.nome, B: "Brasil", X: o.xPt || (ev ? ev.nome : v.X), Y: o.yPt || v.Y };
     if (tipo === "rank_perde") v.N = o.pos;
     var nat = md[lang], pt = md.pt || ["", ""];
-    var n = { id: "X" + (++s.seq), pk: pk, lang: lang, veic: (VEIC[lang] || {})[pk] || (VEIC[lang] || {})._ || "Reuters", t: preenche(nat[0], v).replace(/^the /, "The "), l: preenche(nat[1], v), tPt: preenche(pt[0], vp), lPt: preenche(pt[1], vp), ano: D().ano, mes: D().mes, tipo: tipo };
+    var n = { id: "X" + (++s.seq), pk: pk, lang: lang, veic: reuters ? "Reuters" : veicDe(lang, pk), t: preenche(nat[0], v).replace(/^the /, "The "), l: preenche(nat[1], v), tPt: preenche(pt[0], vp), lPt: preenche(pt[1], vp), ano: D().ano, mes: D().mes, tipo: tipo };
     if (o.tPt) n.tPt = o.tPt; if (o.lPt) n.lPt = o.lPt;
     if (s.news.slice(0, 8).some(function (x) { return x.t === n.t; })) return null;
     s.news.unshift(n);
@@ -394,7 +405,7 @@
       var x = md === "en" ? "Japan" : "";
       var tt = preenche(T.filler[md][0], { P: NOMEL[k] || p.nome, X: x });
       if (s.news.slice(0, 12).some(function (n) { return n.t === tt; })) return;
-      s.news.unshift({ id: "X" + (++s.seq), pk: k, lang: md, veic: (VEIC[md] || {})[k] || (VEIC[md] || {})._ || "Reuters", t: preenche(T.filler[md][0], { P: NOMEL[k] || p.nome, X: x }), l: T.filler[md][1], tPt: p.nome + ": " + preenche(mpt[0], { X: "Japão" }), lPt: mpt[1], ano: D().ano, mes: D().mes, tipo: "filler" });
+      s.news.unshift({ id: "X" + (++s.seq), pk: k, lang: md, veic: veicDe(md, k), t: preenche(T.filler[md][0], { P: NOMEL[k] || p.nome, X: x }), l: T.filler[md][1], tPt: p.nome + ": " + preenche(mpt[0], { X: "Japão" }), lPt: mpt[1], ano: D().ano, mes: D().mes, tipo: "filler" });
     }
   }
   // eventos vindos da diplomacia (eleições, posses, encontros)
@@ -436,6 +447,7 @@
       if (["eua", "china", "argentina", "franca", "alemanha", "russia", "venezuela", "paraguai"].indexOf(pk) >= 0) noticiaExt(pk, "eleicao_br", { lider: nome, y: y[lang] || y.en, yPt: txtPt + "." });
       if (venc.jogador && inst) ok(function () { var r = DIP.relacao(inst); r.pessoal = cl(r.pessoal + afin * 6, 0, 100); });
     });
+    noticiaExt("brasil", "eleicao_br", { lider: nome, y: "Leaders react: " + reac.length + " governments have commented on the result.", yPt: reac.slice(0, 2).join("; ") + "." });
     fato({ tipo: "diplomacia", sec: "Mundo", kick: "Repercussão", tit: "Mundo reage à eleição de " + nome + (pct ? " (" + String(pct).replace(".", ",") + "%)" : ""), lead: reac.slice(0, 4).join("; ") + ".", peso: 74, jog: !!venc.jogador });
   }
   MU._repercussao = repercussao;
@@ -636,7 +648,7 @@
         rc.carregando = false; if (!j || !j.fala_pt) { refreshSe(); return; }
         rc.tipo = j.tipo || rc.tipo; rc.titulo = j.titulo || rc.titulo; rc.fala_pt = j.fala_pt; rc.fala_original = j.fala_original || null; rc.oferece = j.oferece || rc.oferece; rc.pede = j.pede || rc.pede;
         rc.ap = cl(+j.aprovacao_se_aceitar || 0, -2, 2); rc.rA = cl(+j.relacao_se_aceitar || 6, 0, 15); rc.rR = cl(+j.relacao_se_recusar || -6, -15, 0); rc.cr = cl(+j.crescimento_se_aceitar || 0, -0.1, 0.1); rc.ia = j._ia || "IA";
-        var k = POR_INST[instId]; if (k && j.manchete_original) { var p = PAIS[k]; s.news.unshift({ id: "X" + (++s.seq), pk: k, lang: p.lang === "pt" ? "en" : p.lang, veic: (VEIC[p.lang] || {})[k] || (VEIC[p.lang] || {})._ || "Reuters", t: j.manchete_original, l: j.fala_original || "", tPt: j.manchete_pt || rc.titulo, lPt: j.fala_pt, ano: D().ano, mes: D().mes, tipo: "recado_br" }); }
+        var k = POR_INST[instId]; if (k && j.manchete_original) { var p = PAIS[k]; s.news.unshift({ id: "X" + (++s.seq), pk: k, lang: p.lang === "pt" ? "en" : p.lang, veic: veicDe(p.lang === "pt" ? "en" : p.lang, k), t: j.manchete_original, l: j.fala_original || "", tPt: j.manchete_pt || rc.titulo, lPt: j.fala_pt, ano: D().ano, mes: D().mes, tipo: "recado_br" }); }
         refreshSe();
       }, function () { rc.carregando = false; refreshSe(); });
   }
@@ -677,7 +689,7 @@
     var lider = function (id) { var oc = DIP.ocupAtual(id); return { pais: DIP.instPorId(id).nome, lider: oc.nome, arquetipo: (DIP.ARQUETIPOS[oc.arquetipo] || {}).nome, ideologia: oc.ideologia }; };
     MU._iaMundo = true;
     ia.iaJSON("Você é a editoria internacional de um jogo realista de política (" + MES[D().mes] + "/" + D().ano + "). Invente UM acontecimento plausível do mês envolvendo estes dois líderes ou só o primeiro, coerente com a personalidade e a ideologia deles (acordo, atrito, viagem, discurso, crise interna, eleição, economia). Não invente crimes ou escândalos pessoais de pessoas reais.\nLíder 1: " + JSON.stringify(lider(a)) + "\nLíder 2: " + JSON.stringify(lider(b)) + "\nResponda só o JSON: pais (\"" + a + "\"), titulo_original e linha_original (como um jornal do país do líder 1 publicaria, no idioma " + (LANGN[la] || "inglês") + "), titulo_pt e linha_pt (tradução para o português do Brasil).", MUNDO_SCHEMA, 1)
-      .then(function (j) { MU._iaMundo = false; if (!j || !j.titulo_original) return; var k = POR_INST[a]; s.news.unshift({ id: "X" + (++s.seq), pk: k, lang: la, veic: (VEIC[la] || {})[k] || (VEIC[la] || {})._ || "Reuters", t: j.titulo_original, l: j.linha_original || "", tPt: j.titulo_pt, lPt: j.linha_pt || "", ano: D().ano, mes: D().mes, tipo: "ia", ia: j._ia }); }, function () { MU._iaMundo = false; });
+      .then(function (j) { MU._iaMundo = false; if (!j || !j.titulo_original) return; var k = POR_INST[a]; s.news.unshift({ id: "X" + (++s.seq), pk: k, lang: la, veic: veicDe(la, k), t: j.titulo_original, l: j.linha_original || "", tPt: j.titulo_pt, lPt: j.linha_pt || "", ano: D().ano, mes: D().mes, tipo: "ia", ia: j._ia }); }, function () { MU._iaMundo = false; });
   }
   MU._mundoIA = function () { mundoIA(st()); };
 
@@ -716,7 +728,7 @@
     if (!l.length) h += '<p class="txt">Nada ainda. As notícias de fora aparecem conforme os meses passam: eleições, posses, cúpulas, acordos e o ranking das economias.</p>';
     h += '<div class="mu-nlist">' + l.map(function (n) {
       var t = tr[n.id] || MU._tradTudo, p = PAIS[n.pk];
-      return '<article class="mu-n' + (t ? " pt" : "") + '"' + (n.lang === "ar" && !t ? ' dir="rtl"' : "") + '><div class="mu-nh"><span>' + (p ? p.flag : "🌐") + " " + esc_(n.veic) + "</span><small>" + MES[n.mes] + "/" + n.ano + "</small></div><h4>" + esc_(t ? n.tPt : n.t) + "</h4><p>" + esc_(t ? n.lPt : n.l) + '</p><button type="button" class="mu-tr" data-mu="trad" data-id="' + n.id + '">' + (t ? "Ver original (" + (LANGN[n.lang] || n.lang) + ")" : "Traduzir") + "</button></article>";
+      return '<article class="mu-n' + (t ? " pt" : "") + '"' + (n.lang === "ar" && !t ? ' dir="rtl"' : "") + '><div class="mu-nh"><span>' + (window.V3IMPRENSA_EXT && V3IMPRENSA_EXT[VLOGO[n.veic]] ? '<img class="mu-vl" alt="' + esc_(n.veic) + '" src="' + V3IMPRENSA_EXT[VLOGO[n.veic]] + '">' : "") + (p ? p.flag : "🌐") + " " + esc_(n.veic) + "</span><small>" + MES[n.mes] + "/" + n.ano + "</small></div><h4>" + esc_(t ? n.tPt : n.t) + "</h4><p>" + esc_(t ? n.lPt : n.l) + '</p><button type="button" class="mu-tr" data-mu="trad" data-id="' + n.id + '">' + (t ? "Ver original (" + (LANGN[n.lang] || n.lang) + ")" : "Traduzir") + "</button></article>";
     }).join("") + "</div></section>";
     return h;
   }

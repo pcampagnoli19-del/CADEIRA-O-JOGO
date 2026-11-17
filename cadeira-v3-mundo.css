@@ -101,3 +101,4 @@
 .mu-tags em{font-style:normal;font-size:.68em;background:#2c3a4f;padding:0 5px;border-radius:6px;margin-right:3px}
 .mu-ag li>span img{width:34px;height:24px;object-fit:contain;background:#fff;border-radius:4px}
 .mu-cup-ic img{width:64px;height:44px;object-fit:contain;background:#fff;border-radius:6px;padding:2px}
+.mu-nh span{display:flex;align-items:center;gap:6px}.mu-vl{height:22px;max-width:110px;object-fit:contain;background:#fff;border-radius:3px}
